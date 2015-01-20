@@ -1,8 +1,10 @@
-import jdk.nashorn.internal.runtime.regexp.RegExp;
+package com.atlassian.rstocker.cm;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.atlassian.rstocker.cm.Common.unescapeString;
 
 public class DocParser {
 
@@ -77,6 +79,19 @@ public class DocParser {
         return this.doc;
     }
 
+    // Walk through a block & children recursively, parsing string content
+    // into inline content where appropriate.  Returns new object.
+    private processInlines(Node block) {
+        Node node, event, t;
+        var walker = block.walker();
+        while ((event = walker.next())) {
+            node = event.node;
+            t = node.type();
+            if (!event.entering && (t === 'Paragraph' || t === 'Header')) {
+                this.inlineParser.parse(node, this.refmap);
+            }
+        }
+    }
 
     private Node document() {
         return new Node("Document", new int[][] {{1, 1}, {0, 0}});
@@ -424,7 +439,7 @@ public class DocParser {
     // or 'loose' status of a list, and parsing the beginnings
     // of paragraphs for reference definitions.  Reset the tip to the
     // parent of the closed block.
-    private int finalize(Node block, int lineNumber) {
+    private void finalize(Node block, int lineNumber) {
         int pos;
         // foo: top? looks like a bug
         // var above = block.parent || this.top;
@@ -432,7 +447,8 @@ public class DocParser {
         Node above = block.parent != null ? block.parent : this.tip;
         // don't do anything if the block is already closed
         if (!block.open) {
-            return 0;
+            // foo: can be void return
+            return;
         }
         block.open = false;
         block.sourcepos()[1] = new int[] {lineNumber, this.lastLineLength + 1};
@@ -464,15 +480,15 @@ public class DocParser {
             case "CodeBlock":
                 if (block.fence_length > 0) { // fenced
                     // first line becomes info string
-                    block.info = unescapeString(block.strings[0].trim());
-                    if (block.strings.length === 1) {
-                        block.literal = '';
+                    block.info = unescapeString(block.strings.get(0).trim());
+                    if (block.strings.size() == 1) {
+                        block.literal = "";
                     } else {
-                        block.literal = block.strings.slice(1).join('\n') + '\n';
+                        block.literal = join(block.strings.subList(1, block.strings.size()), "\n") + '\n';
                     }
                 } else { // indented
                     stripFinalBlankLines(block.strings);
-                    block.literal = block.strings.join('\n') + '\n';
+                    block.literal = join(block.strings, "\n") + '\n';
                 }
                 break;
 
@@ -482,15 +498,15 @@ public class DocParser {
                 Node item = block.firstChild;
                 while (item != null) {
                     // check for non-final list item ending with blank line:
-                    if (endsWithBlankLine(item) && item.next) {
+                    if (endsWithBlankLine(item) && item.next != null) {
                         block.list_data.tight = false;
                         break;
                     }
                     // recurse into children of list item, to see if there are
                     // spaces between any of them:
                     Node subitem = item.firstChild;
-                    while (subitem) {
-                        if (endsWithBlankLine(subitem) && (item.next || subitem.next)) {
+                    while (subitem != null) {
+                        if (endsWithBlankLine(subitem) && (item.next != null || subitem.next != null)) {
                             block.list_data.tight = false;
                             break;
                         }
@@ -505,26 +521,9 @@ public class DocParser {
         }
 
         this.tip = above;
-    };
-
-    private String[] tabSpaces = new String[]{ "    ", "   ", "  ", " " };
-
-    // Convert tabs to spaces on each line using a 4-space tab stop.
-    private String detabLine(String text) {
-        int start = 0;
-        int offset;
-        int lastStop = 0;
-
-        while ((offset = text.indexOf("\t", start)) != -1) {
-            int numspaces = (offset - lastStop) % 4;
-            String spaces = tabSpaces[numspaces];
-            text = text.substring(0, offset) + spaces + text.substring(offset + 1);
-            lastStop = offset + numspaces;
-            start = lastStop;
-        }
-
-        return text;
     }
+
+    private static final String[] tabSpaces = new String[]{ "    ", "   ", "  ", " " };
 
     // Attempt to match a regex in string s at offset offset.
     // Return index of match or -1.
@@ -659,12 +658,55 @@ public class DocParser {
     }
 
     // Returns true if string contains only space characters.
-    private boolean isBlank(String s) {
+    private static boolean isBlank(String s) {
         // foo: was re.test in JS, not sure if matches
         return !(reNonSpace.matcher(s).matches());
     }
 
-    private String join(Iterable<String> parts, String separator) {
+    // Convert tabs to spaces on each line using a 4-space tab stop.
+    private static String detabLine(String text) {
+        int start = 0;
+        int offset;
+        int lastStop = 0;
+
+        while ((offset = text.indexOf("\t", start)) != -1) {
+            int numspaces = (offset - lastStop) % 4;
+            String spaces = tabSpaces[numspaces];
+            text = text.substring(0, offset) + spaces + text.substring(offset + 1);
+            lastStop = offset + numspaces;
+            start = lastStop;
+        }
+
+        return text;
+    }
+
+    // destructively trip final blank lines in an array of strings
+    private static void stripFinalBlankLines(List<String> lns) {
+        int i = lns.size() - 1;
+        while (!reNonSpace.matcher(lns.get(i)).find()) {
+            lns.remove(i);
+            i--;
+        }
+    }
+
+    // Returns true if block ends with a blank line, descending if needed
+    // into lists and sublists.
+    private static boolean endsWithBlankLine(Node block) {
+        while (block != null) {
+            if (block.last_line_blank) {
+                return true;
+            }
+            String t = block.type();
+            if (t.equals("List") || t.equals("Item")) {
+                block = block.lastChild;
+            } else {
+                break;
+            }
+        }
+        return false;
+    };
+
+    private static String join(Iterable<String> parts, String separator) {
         return String.join(separator, parts);
     }
 

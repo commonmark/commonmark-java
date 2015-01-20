@@ -1,3 +1,5 @@
+package com.atlassian.rstocker.cm;
+
 public class ListData {
 
     int marker_offset;

@@ -1,3 +1,5 @@
+package com.atlassian.rstocker.cm;
+
 import java.util.List;
 
 public class Node {
@@ -9,7 +11,7 @@ public class Node {
     Node firstChild = null;
     public Node lastChild = null;
     private Node prev = null;
-    private Node next = null;
+    Node next = null;
 
     List<String> strings = null;
     public String string_content = null;
@@ -17,7 +19,7 @@ public class Node {
     public boolean open = true;
     String literal;
     public ListData list_data = null;
-//    this.info = null;
+    String info;
 //    this.destination = null;
 //    this.title = null;
     char fence_char; // null
@@ -124,5 +126,16 @@ public class Node {
         if (sibling.prev == null) {
             sibling.parent.firstChild = sibling;
         }
-    };
+    }
+
+    // foo: root field seems to be unnecessary
+
+//    var NodeWalker = function(root) {
+//        return { current: root,
+//                root: root,
+//                entering: true,
+//                next: next,
+//                resumeAt: resumeAt };
+//    };
+
 }
