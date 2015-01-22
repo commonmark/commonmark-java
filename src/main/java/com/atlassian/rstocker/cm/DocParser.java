@@ -49,6 +49,7 @@ public class DocParser {
     private int lineNumber = 0;
     private Node lastMatchedContainer;
     private int lastLineLength = 0;
+    private InlineParser inlineParser = new InlineParser();
 
     // The main parsing function.  Returns a parsed document AST.
     public Node parse(String input) {
@@ -81,13 +82,13 @@ public class DocParser {
 
     // Walk through a block & children recursively, parsing string content
     // into inline content where appropriate.  Returns new object.
-    private processInlines(Node block) {
-        Node node, event, t;
-        var walker = block.walker();
-        while ((event = walker.next())) {
-            node = event.node;
-            t = node.type();
-            if (!event.entering && (t === 'Paragraph' || t === 'Header')) {
+    private void processInlines(Node block) {
+        Node.NodeWalker walker = block.walker();
+        Node.NodeWalker.Entry entry;
+        while ((entry = walker.next()) != null) {
+            Node node = entry.node;
+            String t = node.type();
+            if (!entry.entering && (t.equals("Paragraph") || t.equals("Header"))) {
                 this.inlineParser.parse(node, this.refmap);
             }
         }

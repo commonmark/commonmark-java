@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Node {
 
+    // TODO: change to enum
     private final String _type;
     private final int[][] _sourcepos;
 
@@ -128,8 +129,61 @@ public class Node {
         }
     }
 
+    public NodeWalker walker() {
+        return new NodeWalker(this);
+    }
+
     // foo: root field seems to be unnecessary
 
+    public static class NodeWalker {
+        private Node current;
+        private boolean entering = true;
+
+        public NodeWalker(Node root) {
+            this.current = root;
+        }
+
+        public Entry next() {
+                Node cur = this.current;
+                boolean entering = this.entering;
+
+                if (cur == null) {
+                    return null;
+                }
+
+                boolean container = cur.isContainer();
+
+                if (entering && container) {
+                    if (cur.firstChild != null) {
+                        this.current = cur.firstChild;
+                        this.entering = true;
+                    } else {
+                        // stay on node but exit
+                        this.entering = false;
+                    }
+
+                } else if (cur.next == null) {
+                    this.current = cur.parent;
+                    this.entering = false;
+
+                } else {
+                    this.current = cur.next;
+                    this.entering = true;
+                }
+
+                return new Entry(cur, entering);
+        }
+
+        public static class Entry {
+            final Node node;
+            final boolean entering;
+
+            public Entry(Node node, boolean entering) {
+                this.node = node;
+                this.entering = entering;
+            }
+        }
+    }
 //    var NodeWalker = function(root) {
 //        return { current: root,
 //                root: root,

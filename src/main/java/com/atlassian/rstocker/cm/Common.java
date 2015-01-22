@@ -25,7 +25,7 @@ public class Common {
     }
 
     // Replace entities and backslash escapes with literal characters.
-    static String unescapeString(String s) {
+    public static String unescapeString(String s) {
         // foo:
 //        if (reBackslashOrAmp.matcher(s).find()) {
 //            return s.replace(reEntityOrEscapedChar, unescapeChar);
