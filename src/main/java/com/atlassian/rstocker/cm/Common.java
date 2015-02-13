@@ -3,6 +3,7 @@ package com.atlassian.rstocker.cm;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Common {
@@ -18,6 +19,15 @@ public class Common {
 	// foo: had flags 'gi' before
 	private static final Pattern reEntityOrEscapedChar =
 			Pattern.compile("\\\\" + ESCAPABLE + '|' + ENTITY, Pattern.CASE_INSENSITIVE);
+
+	private static final String XMLSPECIAL = "[&<>\"]";
+
+	// foo: had flags 'g' before
+	private static final Pattern reXmlSpecial = Pattern.compile(XMLSPECIAL);
+
+	// foo: had flags 'gi' before
+	private static final Pattern reXmlSpecialOrEntity = Pattern.compile(ENTITY + '|' + XMLSPECIAL,
+			Pattern.CASE_INSENSITIVE);
 
 	static char unescapeChar(String s) {
 		if (s.charAt(0) == '\\') {
@@ -53,4 +63,41 @@ public class Common {
 		return whitespace.matcher(input.toLowerCase(Locale.ROOT)).replaceAll(" ");
 	}
 
+	public static Escaper XML_ESCAPER = (s, preserveEntities) -> {
+		Pattern p = preserveEntities ? reXmlSpecialOrEntity : reXmlSpecial;
+		Matcher matcher = p.matcher(s);
+
+		if (!matcher.find()) {
+			return s;
+		}
+
+		StringBuilder sb = new StringBuilder(s.length() + 16);
+		int lastEnd = 0;
+		do {
+			sb.append(s, lastEnd, matcher.start());
+			String replaced = replaceUnsafeChar(matcher.group());
+			sb.append(replaced);
+			lastEnd = matcher.end();
+		} while (matcher.find());
+
+		if (lastEnd != s.length()) {
+			sb.append(s, lastEnd, s.length());
+		}
+		return sb.toString();
+	};
+
+	private static String replaceUnsafeChar(String s) {
+		switch (s) {
+		case "&":
+			return "&amp;";
+		case "<":
+			return "&lt;";
+		case ">":
+			return "&gt;";
+		case "\"":
+			return "&quot;";
+		default:
+			return s;
+		}
+	}
 }

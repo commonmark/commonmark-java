@@ -231,8 +231,7 @@ public class HtmlRenderer {
 	public static class Builder {
 
 		private String softbreak = "\n";
-		// TODO: XML escaper
-		private Escaper escaper = (input, preserveEntities) -> input;
+		private Escaper escaper = Common.XML_ESCAPER;
 		private boolean sourcepos = false;
 
 		public Builder softbreak(String softbreak) {
@@ -253,11 +252,6 @@ public class HtmlRenderer {
 		public HtmlRenderer build() {
 			return new HtmlRenderer(this);
 		}
-	}
-
-	@FunctionalInterface
-	public interface Escaper {
-		String escape(String input, boolean preserveEntities);
 	}
 
 	private static class HtmlWriter {
