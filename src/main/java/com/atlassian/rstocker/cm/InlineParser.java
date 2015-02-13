@@ -484,7 +484,11 @@ public class InlineParser {
 	String parseLinkDestination() {
 		String res = this.match(reLinkDestinationBraces);
 		if (res != null) { // chop off surrounding <..>:
-			return normalizeURI(unescapeString(res.substring(1, res.length() - 2)));
+			if (res.length() == 2) {
+				return "";
+			} else {
+				return normalizeURI(unescapeString(res.substring(1, res.length() - 2)));
+			}
 		} else {
 			res = this.match(reLinkDestination);
 			if (res != null) {

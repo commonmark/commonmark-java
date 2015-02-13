@@ -146,9 +146,9 @@ public class DocParser {
 
 			switch (container.type()) {
 			case BlockQuote:
-				if (indent <= 3 && ln.charAt(first_nonspace) == C_GREATERTHAN) {
+				if (indent <= 3 && first_nonspace < ln.length() && ln.charAt(first_nonspace) == C_GREATERTHAN) {
 					offset = first_nonspace + 1;
-					if (ln.charAt(offset) == C_SPACE) {
+					if (offset < ln.length() && ln.charAt(offset) == C_SPACE) {
 						offset++;
 					}
 				} else {
@@ -265,7 +265,7 @@ public class DocParser {
 				// blockquote
 				offset += 1;
 				// optional following space
-				if (ln.charAt(offset) == C_SPACE) {
+				if (offset < ln.length() && ln.charAt(offset) == C_SPACE) {
 					offset++;
 				}
 				allClosed = allClosed || this.closeUnmatchedBlocks();
@@ -403,6 +403,7 @@ public class DocParser {
 					// check for closing code fence:
 					Matcher matcher = null;
 					boolean matches = (indent <= 3 &&
+							first_nonspace < ln.length() &&
 							ln.charAt(first_nonspace) == container.fence_char &&
 							(matcher = reClosingCodeFence.matcher(ln.substring(first_nonspace)))
 									.find());
@@ -532,6 +533,9 @@ public class DocParser {
 	// Attempt to match a regex in string s at offset offset.
 	// Return index of match or -1.
 	private static int matchAt(Pattern pattern, String string, int offset) {
+		if (offset >= string.length()) {
+			return -1;
+		}
 		Matcher matcher = pattern.matcher(string.substring(offset));
 		boolean res = matcher.find();
 		if (!res) {
