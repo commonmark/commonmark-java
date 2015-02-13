@@ -215,13 +215,14 @@ public class InlineParser {
 		int pos = this.pos;
 		Node node;
 		if (subj.charAt(pos) == C_BACKSLASH) {
-			if (subj.charAt(pos + 1) == '\n') {
+			int next = pos + 1;
+			if (next < subj.length() && subj.charAt(next) == '\n') {
 				this.pos = this.pos + 2;
 				node = new Node(Type.Hardbreak);
 				block.appendChild(node);
-			} else if (reEscapable.matcher(subj.substring(pos + 1, pos + 2)).matches()) {
+			} else if (next < subj.length() && reEscapable.matcher(subj.substring(next, next + 1)).matches()) {
 				this.pos = this.pos + 2;
-				block.appendChild(text(subj.substring(pos + 1, pos + 2)));
+				block.appendChild(text(subj.substring(next, next + 1)));
 			} else {
 				this.pos++;
 				block.appendChild(text("\\"));
@@ -291,7 +292,7 @@ public class InlineParser {
 		}
 
 		cc_after = this.peek();
-		if (cc_after == -1) {
+		if (cc_after == '\0') {
 			char_after = "\n";
 		} else {
 			// foo: fromCodePoint?
