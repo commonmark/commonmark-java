@@ -3,7 +3,7 @@ package com.atlassian.rstocker.cm;
 import java.util.List;
 
 public class Node {
-	
+
 	public enum Type {
 		// containers
 		Document,
@@ -16,7 +16,7 @@ public class Node {
 		Strong,
 		Link,
 		Image,
-		
+
 		// non-container
 		CodeBlock,
 		HtmlBlock,
@@ -28,200 +28,200 @@ public class Node {
 		Code
 	}
 
-    private final Type _type;
-    private final int[][] _sourcepos;
+	private final Type _type;
+	private final int[][] _sourcepos;
 
-    Node parent = null;
-    Node firstChild = null;
-    public Node lastChild = null;
-    private Node prev = null;
-    Node next = null;
+	Node parent = null;
+	Node firstChild = null;
+	public Node lastChild = null;
+	private Node prev = null;
+	Node next = null;
 
-    List<String> strings = null;
-    public String string_content = null;
-    public boolean last_line_blank = false;
-    public boolean open = true;
-    String literal;
-    public ListData list_data = null;
-    String info;
-    String destination = null;
-    String title = null;
-    char fence_char; // null
-    public int fence_length = 0;
-    public int fence_offset = 0; // null
-    int level = 0; // null
+	List<String> strings = null;
+	public String string_content = null;
+	public boolean last_line_blank = false;
+	public boolean open = true;
+	String literal;
+	public ListData list_data = null;
+	String info;
+	String destination = null;
+	String title = null;
+	char fence_char; // null
+	public int fence_length = 0;
+	public int fence_offset = 0; // null
+	int level = 0; // null
 
-    public Node(Type nodeType) {
-    	this(nodeType, new int[0][0]);
-    }
-    
-    public Node(Type nodeType, int[][] sourcepos) {
-        this._type = nodeType;
-        this._sourcepos = sourcepos;
-    }
+	public Node(Type nodeType) {
+		this(nodeType, new int[0][0]);
+	}
 
-    public boolean isContainer() {
-        switch (_type) {
-            case Document:
-            case BlockQuote:
-            case List:
-            case Item:
-            case Paragraph:
-            case Header:
-            case Emph:
-            case Strong:
-            case Link:
-            case Image:
-                return true;
-            default:
-                return false;
-        }
-    }
+	public Node(Type nodeType, int[][] sourcepos) {
+		this._type = nodeType;
+		this._sourcepos = sourcepos;
+	}
 
-    public Type type() {
-        return this._type;
-    }
+	public boolean isContainer() {
+		switch (_type) {
+		case Document:
+		case BlockQuote:
+		case List:
+		case Item:
+		case Paragraph:
+		case Header:
+		case Emph:
+		case Strong:
+		case Link:
+		case Image:
+			return true;
+		default:
+			return false;
+		}
+	}
 
-    public int[][] sourcepos() {
-        return this._sourcepos;
-    }
-    
-    public boolean isListTight() {
-    	return list_data.tight;
-    }
-    
-    public String getListType() {
-    	return list_data.type;
-    }
-    
-    public int getListStart() {
-    	return list_data.start;
-    }
+	public Type type() {
+		return this._type;
+	}
 
-    public void appendChild(Node child) {
-        child.unlink();
-        child.parent = this;
-        if (this.lastChild != null) {
-            this.lastChild.next = child;
-            child.prev = this.lastChild;
-            this.lastChild = child;
-        } else {
-            this.firstChild = child;
-            this.lastChild = child;
-        }
-    }
+	public int[][] sourcepos() {
+		return this._sourcepos;
+	}
 
-    public void prependChild(Node child) {
-        child.unlink();
-        child.parent = this;
-        if (this.firstChild != null) {
-            this.firstChild.prev = child;
-            child.next = this.firstChild;
-            this.firstChild = child;
-        } else {
-            this.firstChild = child;
-            this.lastChild = child;
-        }
-    }
+	public boolean isListTight() {
+		return list_data.tight;
+	}
 
-    void unlink() {
-        if (this.prev != null) {
-            this.prev.next = this.next;
-        } else if (this.parent != null) {
-            this.parent.firstChild = this.next;
-        }
-        if (this.next != null) {
-            this.next.prev = this.prev;
-        } else if (this.parent != null) {
-            this.parent.lastChild = this.prev;
-        }
-        this.parent = null;
-        this.next = null;
-        this.prev = null;
-    }
+	public String getListType() {
+		return list_data.type;
+	}
 
-    public void insertAfter(Node sibling) {
-        sibling.unlink();
-        sibling.next = this.next;
-        if (sibling.next != null) {
-            sibling.next.prev = sibling;
-        }
-        sibling.prev = this;
-        this.next = sibling;
-        sibling.parent = this.parent;
-        if (sibling.next == null) {
-            sibling.parent.lastChild = sibling;
-        }
-    }
+	public int getListStart() {
+		return list_data.start;
+	}
 
-    public void insertBefore(Node sibling) {
-        sibling.unlink();
-        sibling.prev = this.prev;
-        if (sibling.prev != null) {
-            sibling.prev.next = sibling;
-        }
-        sibling.next = this;
-        this.prev = sibling;
-        sibling.parent = this.parent;
-        if (sibling.prev == null) {
-            sibling.parent.firstChild = sibling;
-        }
-    }
+	public void appendChild(Node child) {
+		child.unlink();
+		child.parent = this;
+		if (this.lastChild != null) {
+			this.lastChild.next = child;
+			child.prev = this.lastChild;
+			this.lastChild = child;
+		} else {
+			this.firstChild = child;
+			this.lastChild = child;
+		}
+	}
 
-    public NodeWalker walker() {
-        return new NodeWalker(this);
-    }
+	public void prependChild(Node child) {
+		child.unlink();
+		child.parent = this;
+		if (this.firstChild != null) {
+			this.firstChild.prev = child;
+			child.next = this.firstChild;
+			this.firstChild = child;
+		} else {
+			this.firstChild = child;
+			this.lastChild = child;
+		}
+	}
 
-    // foo: root field seems to be unnecessary
+	void unlink() {
+		if (this.prev != null) {
+			this.prev.next = this.next;
+		} else if (this.parent != null) {
+			this.parent.firstChild = this.next;
+		}
+		if (this.next != null) {
+			this.next.prev = this.prev;
+		} else if (this.parent != null) {
+			this.parent.lastChild = this.prev;
+		}
+		this.parent = null;
+		this.next = null;
+		this.prev = null;
+	}
 
-    public static class NodeWalker {
-        private Node current;
-        private boolean entering = true;
+	public void insertAfter(Node sibling) {
+		sibling.unlink();
+		sibling.next = this.next;
+		if (sibling.next != null) {
+			sibling.next.prev = sibling;
+		}
+		sibling.prev = this;
+		this.next = sibling;
+		sibling.parent = this.parent;
+		if (sibling.next == null) {
+			sibling.parent.lastChild = sibling;
+		}
+	}
 
-        public NodeWalker(Node root) {
-            this.current = root;
-        }
+	public void insertBefore(Node sibling) {
+		sibling.unlink();
+		sibling.prev = this.prev;
+		if (sibling.prev != null) {
+			sibling.prev.next = sibling;
+		}
+		sibling.next = this;
+		this.prev = sibling;
+		sibling.parent = this.parent;
+		if (sibling.prev == null) {
+			sibling.parent.firstChild = sibling;
+		}
+	}
 
-        public Entry next() {
-                Node cur = this.current;
-                boolean entering = this.entering;
+	public NodeWalker walker() {
+		return new NodeWalker(this);
+	}
 
-                if (cur == null) {
-                    return null;
-                }
+	// foo: root field seems to be unnecessary
 
-                boolean container = cur.isContainer();
+	public static class NodeWalker {
+		private Node current;
+		private boolean entering = true;
 
-                if (entering && container) {
-                    if (cur.firstChild != null) {
-                        this.current = cur.firstChild;
-                        this.entering = true;
-                    } else {
-                        // stay on node but exit
-                        this.entering = false;
-                    }
+		public NodeWalker(Node root) {
+			this.current = root;
+		}
 
-                } else if (cur.next == null) {
-                    this.current = cur.parent;
-                    this.entering = false;
+		public Entry next() {
+			Node cur = this.current;
+			boolean entering = this.entering;
 
-                } else {
-                    this.current = cur.next;
-                    this.entering = true;
-                }
+			if (cur == null) {
+				return null;
+			}
 
-                return new Entry(cur, entering);
-        }
+			boolean container = cur.isContainer();
 
-        public static class Entry {
-            final Node node;
-            final boolean entering;
+			if (entering && container) {
+				if (cur.firstChild != null) {
+					this.current = cur.firstChild;
+					this.entering = true;
+				} else {
+					// stay on node but exit
+					this.entering = false;
+				}
 
-            public Entry(Node node, boolean entering) {
-                this.node = node;
-                this.entering = entering;
-            }
-        }
-    }
+			} else if (cur.next == null) {
+				this.current = cur.parent;
+				this.entering = false;
+
+			} else {
+				this.current = cur.next;
+				this.entering = true;
+			}
+
+			return new Entry(cur, entering);
+		}
+
+		public static class Entry {
+			final Node node;
+			final boolean entering;
+
+			public Entry(Node node, boolean entering) {
+				this.node = node;
+				this.entering = entering;
+			}
+		}
+	}
 
 }
