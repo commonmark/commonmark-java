@@ -193,7 +193,7 @@ public class InlineParser {
 		String matched;
 		Node node;
 		while (!foundCode && (matched = this.match(reTicks)) != null) {
-			if (matched == ticks) {
+			if (matched.equals(ticks)) {
 				node = new Node(Type.Code);
 				String content = this.subject.substring(afterOpenTicks, this.pos - ticks.length());
 				node.literal = reWhitespace.matcher(content.trim()).replaceAll(" ");
