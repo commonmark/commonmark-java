@@ -238,7 +238,7 @@ public class InlineParser {
 		String m;
 		String dest;
 		if ((m = this.match(reEmailAutolink)) != null) {
-			dest = m.substring(1);
+			dest = m.substring(1, m.length() - 1);
 			Node node = new Node(Type.Link);
 			node.destination = normalizeURI("mailto:" + dest);
 			node.title = "";
@@ -246,7 +246,7 @@ public class InlineParser {
 			block.appendChild(node);
 			return true;
 		} else if ((m = this.match(reAutolink)) != null) {
-			dest = m.substring(1);
+			dest = m.substring(1, m.length() - 1);
 			Node node = new Node(Type.Link);
 			node.destination = normalizeURI(dest);
 			node.title = "";
@@ -487,7 +487,7 @@ public class InlineParser {
 			if (res.length() == 2) {
 				return "";
 			} else {
-				return normalizeURI(unescapeString(res.substring(1, res.length() - 2)));
+				return normalizeURI(unescapeString(res.substring(1, res.length() - 1)));
 			}
 		} else {
 			res = this.match(reLinkDestination);

@@ -1,7 +1,11 @@
 package com.atlassian.rstocker.cm;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,7 +54,8 @@ public class Common {
 	public static String normalizeURI(String uri) {
 		try {
 			// foo: equivalent to encodeURI(decodeURI(uri))?
-			return new URI(uri).normalize().toString();
+			String spacePercent = uri.replaceAll(" ", "%20");
+			return new URI(spacePercent).toASCIIString();
 		} catch (URISyntaxException e) {
 			return uri;
 		}

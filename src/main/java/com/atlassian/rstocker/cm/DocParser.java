@@ -665,8 +665,7 @@ public class DocParser {
 
 	// Returns true if string contains only space characters.
 	private static boolean isBlank(String s) {
-		// foo: was re.test in JS, not sure if matches
-		return !(reNonSpace.matcher(s).matches());
+		return !(reNonSpace.matcher(s).find());
 	}
 
 	// Convert tabs to spaces on each line using a 4-space tab stop.
