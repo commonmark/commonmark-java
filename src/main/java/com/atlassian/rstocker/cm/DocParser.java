@@ -20,7 +20,7 @@ public class DocParser {
 	private static String HTMLBLOCKOPEN = "<(?:" + BLOCKTAGNAME + "[\\s/>]" + "|" +
 			"/" + BLOCKTAGNAME + "[\\s>]" + "|" + "[?!])";
 
-	private static Pattern reHtmlBlockOpen = Pattern.compile('^' + HTMLBLOCKOPEN, 'i');
+	private static Pattern reHtmlBlockOpen = Pattern.compile('^' + HTMLBLOCKOPEN, Pattern.CASE_INSENSITIVE);
 
 	private static Pattern reHrule = Pattern
 			.compile("^(?:(?:\\* *){3,}|(?:_ *){3,}|(?:- *){3,}) *$");

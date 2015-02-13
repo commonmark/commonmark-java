@@ -56,7 +56,7 @@ public class InlineParser {
 	private static final Pattern rePunctuation = Pattern
 			.compile("^[\u2000-\u206F\u2E00-\u2E7F\\'!\"#\\$%&\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\]\\^_`\\{\\|\\}~]");
 
-	private static final Pattern reHtmlTag = Pattern.compile('^' + HTMLTAG, 'i');
+	private static final Pattern reHtmlTag = Pattern.compile('^' + HTMLTAG, Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern reLinkTitle = Pattern.compile(
 			"^(?:\"(" + ESCAPED_CHAR + "|[^\"\\x00])*\"" +
@@ -73,7 +73,7 @@ public class InlineParser {
 
 	private static final Pattern reEscapable = Pattern.compile(ESCAPABLE);
 
-	private static final Pattern reEntityHere = Pattern.compile('^' + ENTITY, 'i');
+	private static final Pattern reEntityHere = Pattern.compile('^' + ENTITY, Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern reTicks = Pattern.compile("`+");
 
