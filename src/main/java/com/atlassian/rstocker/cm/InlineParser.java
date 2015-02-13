@@ -1,5 +1,6 @@
 package com.atlassian.rstocker.cm;
 
+import static com.atlassian.rstocker.cm.Common.ESCAPABLE;
 import static com.atlassian.rstocker.cm.Common.normalizeReference;
 import static com.atlassian.rstocker.cm.Common.normalizeURI;
 import static com.atlassian.rstocker.cm.Common.unescapeString;
@@ -25,7 +26,6 @@ public class InlineParser {
     private static final char C_OPEN_PAREN = 40;
     private static final char C_COLON = 58;
     
-    private static final String ESCAPABLE = "[!\"#$%&\'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]";
     private static final String ESCAPED_CHAR = "\\\\" + ESCAPABLE;
     private static final String REG_CHAR = "[^\\\\()\\x00-\\x20]";
     private static final String IN_PARENS_NOSP = "\\((" + REG_CHAR + '|' + ESCAPED_CHAR + ")*\\)";
@@ -139,6 +139,9 @@ public class InlineParser {
  // If re matches at current position in the subject, advance
  // position in subject and return the match; otherwise return null.
  String match(Pattern re) {
+	 if (this.pos >= this.subject.length()) {
+		 return null;
+	 }
 	 Matcher matcher = re.matcher(this.subject.substring(this.pos));
      boolean m = matcher.find();
      if (m) {
@@ -156,8 +159,8 @@ public class InlineParser {
      if (this.pos < this.subject.length()) {
          return this.subject.charAt(this.pos);
      } else {
-    	 // foo: ????
-         return (char) -1;
+    	 // FIXME: not sure if this is bad or not
+         return '\0';
      }
  }
 
@@ -788,7 +791,7 @@ public class InlineParser {
     private boolean parseInline(Node block) {
         boolean res;
         char c = this.peek();
-        if (c == -1) {
+        if (c == '\0') {
             return false;
         }
         switch(c) {

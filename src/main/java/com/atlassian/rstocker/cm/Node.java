@@ -62,6 +62,18 @@ public class Node {
     public int[][] sourcepos() {
         return this._sourcepos;
     }
+    
+    public boolean isListTight() {
+    	return list_data.tight;
+    }
+    
+    public String getListType() {
+    	return list_data.type;
+    }
+    
+    public int getListStart() {
+    	return list_data.start;
+    }
 
     public void appendChild(Node child) {
         child.unlink();

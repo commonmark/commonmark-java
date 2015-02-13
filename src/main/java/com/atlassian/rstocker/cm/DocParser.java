@@ -445,7 +445,7 @@ public class DocParser {
         // foo: top? looks like a bug
         // var above = block.parent || this.top;
 
-        Node above = block.parent != null ? block.parent : this.tip;
+        Node above = block.parent;
         // don't do anything if the block is already closed
         if (!block.open) {
             // foo: can be void return
