@@ -3,9 +3,32 @@ package com.atlassian.rstocker.cm;
 import java.util.List;
 
 public class Node {
+	
+	public enum Type {
+		// containers
+		Document,
+		BlockQuote,
+		List,
+		Item,
+		Paragraph,
+		Header,
+		Emph,
+		Strong,
+		Link,
+		Image,
+		
+		// non-container
+		CodeBlock,
+		HtmlBlock,
+		HorizontalRule,
+		Text,
+		Softbreak,
+		Hardbreak,
+		Html,
+		Code
+	}
 
-    // TODO: change to enum
-    private final String _type;
+    private final Type _type;
     private final int[][] _sourcepos;
 
     Node parent = null;
@@ -28,34 +51,34 @@ public class Node {
     public int fence_offset = 0; // null
     int level = 0; // null
 
-    public Node(String nodeType) {
+    public Node(Type nodeType) {
     	this(nodeType, new int[0][0]);
     }
     
-    public Node(String nodeType, int[][] sourcepos) {
+    public Node(Type nodeType, int[][] sourcepos) {
         this._type = nodeType;
         this._sourcepos = sourcepos;
     }
 
     public boolean isContainer() {
         switch (_type) {
-            case "Document":
-            case "BlockQuote":
-            case "List":
-            case "Item":
-            case "Paragraph":
-            case "Header":
-            case "Emph":
-            case "Strong":
-            case "Link":
-            case "Image":
+            case Document:
+            case BlockQuote:
+            case List:
+            case Item:
+            case Paragraph:
+            case Header:
+            case Emph:
+            case Strong:
+            case Link:
+            case Image:
                 return true;
             default:
                 return false;
         }
     }
 
-    public String type() {
+    public Type type() {
         return this._type;
     }
 

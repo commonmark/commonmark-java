@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import com.atlassian.rstocker.cm.Node.NodeWalker;
 import com.atlassian.rstocker.cm.Node.NodeWalker.Entry;
+import com.atlassian.rstocker.cm.Node.Type;
 
 public class HtmlRenderer {
 
@@ -41,32 +42,32 @@ public class HtmlRenderer {
 			}
 
 			switch (node.type()) {
-			case "Text":
+			case Text:
 				html.raw(esc(node.literal, false));
 				break;
 
-			case "Softbreak":
+			case Softbreak:
 				html.raw(softbreak);
 				break;
 
-			case "Hardbreak":
+			case Hardbreak:
 				html.tag("br", true);
 				html.line();
 				break;
 
-			case "Emph":
+			case Emph:
 				html.tag(entering ? "em" : "/em");
 				break;
 
-			case "Strong":
+			case Strong:
 				html.tag(entering ? "strong" : "/strong");
 				break;
 
-			case "Html":
+			case Html:
 				html.raw(node.literal);
 				break;
 
-			case "Link":
+			case Link:
 				if (entering) {
 					attrs.add(new String[] { "href",
 							esc(node.destination, true) });
@@ -79,7 +80,7 @@ public class HtmlRenderer {
 				}
 				break;
 
-			case "Image":
+			case Image:
 				if (entering) {
 					if (html.isHtmlAllowed()) {
 						html.raw("<img src=\"" + esc(node.destination, true) +
@@ -97,19 +98,19 @@ public class HtmlRenderer {
 				}
 				break;
 
-			case "Code":
+			case Code:
 				html.tag("code");
 				html.raw(esc(node.literal, false));
 				html.tag("/code");
 				break;
 
-			case "Document":
+			case Document:
 				break;
 
-			case "Paragraph":
+			case Paragraph:
 				Node grandparent = node.parent.parent;
 				if (grandparent != null &&
-						grandparent.type() == "List") {
+						grandparent.type() == Type.List) {
 					if (grandparent.isListTight()) {
 						break;
 					}
@@ -123,7 +124,7 @@ public class HtmlRenderer {
 				}
 				break;
 
-			case "BlockQuote":
+			case BlockQuote:
 				if (entering) {
 					html.line();
 					html.tag("blockquote", attrs);
@@ -135,7 +136,7 @@ public class HtmlRenderer {
 				}
 				break;
 
-			case "Item":
+			case Item:
 				if (entering) {
 					html.tag("li", attrs);
 				} else {
@@ -144,7 +145,7 @@ public class HtmlRenderer {
 				}
 				break;
 
-			case "List":
+			case List:
 				String tagname = node.getListType().equals("Bullet") ? "ul"
 						: "ol";
 				if (entering) {
@@ -162,7 +163,7 @@ public class HtmlRenderer {
 				}
 				break;
 
-			case "Header":
+			case Header:
 				String htag = "h" + node.level;
 				if (entering) {
 					html.line();
@@ -173,7 +174,7 @@ public class HtmlRenderer {
 				}
 				break;
 
-			case "CodeBlock":
+			case CodeBlock:
 				// TODO: Just use indexOf(' ')
 				String[] info_words = node.info != null ? node.info.split(" +")
 						: new String[0];
@@ -190,13 +191,13 @@ public class HtmlRenderer {
 				html.line();
 				break;
 
-			case "HtmlBlock":
+			case HtmlBlock:
 				html.line();
 				html.raw(node.literal);
 				html.line();
 				break;
 
-			case "HorizontalRule":
+			case HorizontalRule:
 				html.line();
 				html.tag("hr", attrs, true);
 				html.line();

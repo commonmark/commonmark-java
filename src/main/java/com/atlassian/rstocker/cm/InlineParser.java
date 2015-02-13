@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.atlassian.rstocker.cm.Node.Type;
+
 public class InlineParser {
     // Constants for character codes:
 
@@ -131,7 +133,7 @@ public class InlineParser {
  // return the inline matched, advancing the subject.
 
     private static Node text(String s) {
-        Node node = new Node("Text");
+        Node node = new Node(Type.Text);
         node.literal = s;
         return node;
     }
@@ -183,7 +185,7 @@ public class InlineParser {
      Node node;
      while (!foundCode && (matched = this.match(reTicks)) != null) {
          if (matched == ticks) {
-             node = new Node("Code");
+             node = new Node(Type.Code);
              String content = this.subject.substring(afterOpenTicks, this.pos - ticks.length());
              node.literal = reWhitespace.matcher(content.trim()).replaceAll(" ");
              block.appendChild(node);
@@ -206,7 +208,7 @@ public class InlineParser {
      if (subj.charAt(pos) == C_BACKSLASH) {
          if (subj.charAt(pos + 1) == '\n') {
              this.pos = this.pos + 2;
-             node = new Node("Hardbreak");
+             node = new Node(Type.Hardbreak);
              block.appendChild(node);
          } else if (reEscapable.matcher(subj.substring(pos + 1, pos + 2)).matches()) {
              this.pos = this.pos + 2;
@@ -227,7 +229,7 @@ public class InlineParser {
      String dest;
      if ((m = this.match(reEmailAutolink)) != null) {
          dest = m.substring(1);
-         Node node = new Node("Link");
+         Node node = new Node(Type.Link);
          node.destination = normalizeURI("mailto:" + dest);
          node.title = "";
          node.appendChild(text(dest));
@@ -235,7 +237,7 @@ public class InlineParser {
          return true;
      } else if ((m = this.match(reAutolink)) != null) {
          dest = m.substring(1);
-         Node node = new Node("Link");
+         Node node = new Node(Type.Link);
          node.destination = normalizeURI(dest);
          node.title = "";
          node.appendChild(text(dest));
@@ -250,7 +252,7 @@ public class InlineParser {
  boolean parseHtmlTag(Node block) {
      String m = this.match(reHtmlTag);
      if (m != null) {
-         Node node = new Node("Html");
+         Node node = new Node(Type.Html);
          node.literal = m;
          block.appendChild(node);
          return true;
@@ -406,7 +408,7 @@ public class InlineParser {
                                       closer_inl.literal.length() - use_delims);
 
                  // build contents for new emph element
-                 Node emph = new Node(use_delims == 1 ? "Emph" : "Strong");
+                 Node emph = new Node(use_delims == 1 ? Type.Emph : Type.Strong);
 
                  tmp = opener_inl.next;
                  while (tmp != null && tmp != closer_inl) {
@@ -627,7 +629,7 @@ public class InlineParser {
      }
 
      if (matched) {
-         Node node = new Node(is_image ? "Image" : "Link");
+         Node node = new Node(is_image ? Type.Image : Type.Link);
          node.destination = dest;
          node.title = title != null ? title : "";
 
@@ -698,15 +700,15 @@ public class InlineParser {
      this.pos += 1; // assume we're at a \n
      // check previous node for trailing spaces
      Node lastc = block.lastChild;
-     if (lastc != null && lastc.type() == "Text") {
+     if (lastc != null && lastc.type() == Type.Text) {
          Matcher matcher = reFinalSpace.matcher(lastc.literal);
          int sps = matcher.find() ? matcher.end() - matcher.start() : 0;
          if (sps > 0) {
              lastc.literal = matcher.replaceAll("");
          }
-         block.appendChild(new Node(sps >= 2 ? "Hardbreak" : "Softbreak"));
+         block.appendChild(new Node(sps >= 2 ? Type.Hardbreak : Type.Softbreak));
      } else {
-         block.appendChild(new Node("Softbreak"));
+         block.appendChild(new Node(Type.Softbreak));
      }
      this.match(reInitialSpace); // gobble leading spaces in next line
      return true;
@@ -765,7 +767,7 @@ public class InlineParser {
      String normlabel = normalizeReference(rawlabel);
 
      if (!refmap.containsKey(normlabel)) {
-    	 Node link = new Node("Link");
+    	 Node link = new Node(Type.Link);
     	 link.destination = dest;
     	 link.title = title;
          refmap.put(normlabel, link);
@@ -829,7 +831,7 @@ public class InlineParser {
         }
         if (!res) {
             this.pos += 1;
-            Node textnode = new Node("Text");
+            Node textnode = new Node(Type.Text);
             // foo: fromCodePoint?
 			textnode.literal = String.valueOf(c);
             block.appendChild(textnode);
