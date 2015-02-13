@@ -172,6 +172,11 @@ public class Node {
 		return new NodeWalker(this);
 	}
 
+	@Override
+	public String toString() {
+		return "Node{type=" + _type + "}";
+	}
+
 	// foo: root field seems to be unnecessary
 
 	public static class NodeWalker {

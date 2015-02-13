@@ -473,7 +473,7 @@ public class InlineParser {
 		String title = this.match(reLinkTitle);
 		if (title != null) {
 			// chop off quotes from title and unescape:
-			return unescapeString(title.substring(1, title.length() - 2));
+			return unescapeString(title.substring(1, title.length() - 1));
 		} else {
 			return null;
 		}
@@ -776,7 +776,7 @@ public class InlineParser {
 		}
 
 		// make sure we're at line end:
-		if (this.match(reLineEnd) == null) {
+		if (this.pos != this.subject.length() && this.match(reLineEnd) == null) {
 			this.pos = startpos;
 			return 0;
 		}
