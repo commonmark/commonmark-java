@@ -21,13 +21,17 @@ public class Node {
     String literal;
     public ListData list_data = null;
     String info;
-//    this.destination = null;
-//    this.title = null;
+    String destination = null;
+    String title = null;
     char fence_char; // null
     public int fence_length = 0;
     public int fence_offset = 0; // null
     int level = 0; // null
 
+    public Node(String nodeType) {
+    	this(nodeType, new int[0][0]);
+    }
+    
     public Node(String nodeType, int[][] sourcepos) {
         this._type = nodeType;
         this._sourcepos = sourcepos;

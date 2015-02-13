@@ -45,7 +45,7 @@ public class DocParser {
     private Node doc;
     private Node tip;
     private Node oldtip;
-    private Map<Object, Object> refmap;
+    private Map<String, Node> refmap;
     private int lineNumber = 0;
     private Node lastMatchedContainer;
     private int lastLineLength = 0;
@@ -461,7 +461,7 @@ public class DocParser {
                 // try parsing the beginning as link reference definitions:
                 while (block.string_content.charAt(0) == C_OPEN_BRACKET &&
                         (pos = this.inlineParser.parseReference(block.string_content,
-                                this.refmap))) {
+                                this.refmap)) != 0) {
                     block.string_content = block.string_content.substring(pos);
                     if (isBlank(block.string_content)) {
                         block.unlink();

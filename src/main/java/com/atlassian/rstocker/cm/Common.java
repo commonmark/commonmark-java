@@ -1,5 +1,8 @@
 package com.atlassian.rstocker.cm;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class Common {
@@ -32,7 +35,22 @@ public class Common {
 //        } else {
             return s;
 //        }
-    };
+    }
+    
+    public static String normalizeURI(String uri) {
+        try {
+        	// foo: equivalent to encodeURI(decodeURI(uri))?
+        	return new URI(uri).normalize().toString();
+        } catch(URISyntaxException e) {
+            return uri;
+        }
+    }
+    
+    private static Pattern whitespace = Pattern.compile("[ \t\r\n]+");
 
+    public static String normalizeReference(String input) {
+    	// foo: is this the same as JS?
+    	return whitespace.matcher(input.toLowerCase(Locale.ROOT)).replaceAll(" ");
+    }
 
 }
