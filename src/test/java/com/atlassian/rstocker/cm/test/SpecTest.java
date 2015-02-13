@@ -1,0 +1,57 @@
+package com.atlassian.rstocker.cm.test;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.atlassian.rstocker.cm.DocParser;
+import com.atlassian.rstocker.cm.HtmlRenderer;
+import com.atlassian.rstocker.cm.Node;
+import com.atlassian.rstocker.cm.spec.SpecExample;
+import com.atlassian.rstocker.cm.spec.SpecReader;
+
+@RunWith(Parameterized.class)
+public class SpecTest {
+
+	private final DocParser parser = new DocParser();
+	private final HtmlRenderer renderer = HtmlRenderer.builder().build();
+	private final SpecExample example;
+
+	@Parameters(name = "{0}")
+	public static List<Object[]> data() throws Exception {
+		InputStream stream = SpecTest.class.getResourceAsStream("/spec.txt");
+		if (stream == null) {
+			throw new IllegalStateException(
+					"Could not load spec.txt classpath resource");
+		}
+
+		try (SpecReader reader = new SpecReader(stream)) {
+			List<SpecExample> examples = reader.read();
+			return examples.stream()
+					.map(example -> new Object[] { example })
+					.collect(Collectors.toList());
+		}
+	}
+
+	public SpecTest(SpecExample example) {
+		this.example = example;
+	}
+
+	@Test
+	public void testHtmlRendering() {
+		Node node = parser.parse(example.getSource());
+		String html = renderer.render(node);
+		// include source for better assertion errors
+		String expected = example.getHtml() + "\n\n" + example.getSource();
+		String actual = html + "\n\n" + example.getSource();
+		assertEquals(expected, actual);
+	}
+
+}

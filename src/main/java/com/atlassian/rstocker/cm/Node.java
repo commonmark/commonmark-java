@@ -200,12 +200,5 @@ public class Node {
             }
         }
     }
-//    var NodeWalker = function(root) {
-//        return { current: root,
-//                root: root,
-//                entering: true,
-//                next: next,
-//                resumeAt: resumeAt };
-//    };
 
 }

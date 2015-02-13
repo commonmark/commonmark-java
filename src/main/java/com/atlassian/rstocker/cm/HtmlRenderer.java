@@ -323,7 +323,7 @@ public class HtmlRenderer {
 		}
 
 		void line() {
-			if (buffer.charAt(buffer.length() - 1) != '\n') {
+			if (buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != '\n') {
 				buffer.append('\n');
 			}
 		}

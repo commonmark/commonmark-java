@@ -57,7 +57,7 @@ public class DocParser {
         this.tip = this.doc;
         this.refmap = new HashMap<>();
 //        if (this.options.time) { console.time("preparing input"); }
-        String[] lines = reLineEnding.split(input);
+        String[] lines = reLineEnding.split(input, -1);
         int len = lines.length;
         if (input.charAt(input.length() - 1) == C_NEWLINE) {
             // ignore last blank line created by final newline
