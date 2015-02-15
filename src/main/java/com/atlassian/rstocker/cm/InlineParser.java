@@ -4,7 +4,7 @@ import static com.atlassian.rstocker.cm.Common.ESCAPABLE;
 import static com.atlassian.rstocker.cm.Common.normalizeReference;
 import static com.atlassian.rstocker.cm.Common.normalizeURI;
 import static com.atlassian.rstocker.cm.Common.unescapeString;
-import static com.atlassian.rstocker.cm.Html5Entities.entityToChar;
+import static com.atlassian.rstocker.cm.Html5Entities.entityToString;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -692,7 +692,7 @@ public class InlineParser {
 	boolean parseEntity(Node block) {
 		String m;
 		if ((m = this.match(reEntityHere)) != null) {
-			block.appendChild(text(entityToChar(m)));
+			block.appendChild(text(entityToString(m)));
 			return true;
 		} else {
 			return false;

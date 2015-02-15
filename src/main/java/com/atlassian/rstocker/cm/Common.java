@@ -1,12 +1,9 @@
 package com.atlassian.rstocker.cm;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,29 +30,29 @@ public class Common {
 	private static final Pattern reXmlSpecialOrEntity = Pattern.compile(ENTITY + '|' + XMLSPECIAL,
 			Pattern.CASE_INSENSITIVE);
 
-	static char unescapeChar(String s) {
+	static String unescapeChar(String s) {
 		if (s.charAt(0) == '\\') {
-			return s.charAt(1);
+			return s.substring(1);
 		} else {
-			return s.charAt(1); // foo: entityToChar(s);
+			return Html5Entities.entityToString(s);
 		}
 	}
 
 	// Replace entities and backslash escapes with literal characters.
 	public static String unescapeString(String s) {
-		// foo:
-		// if (reBackslashOrAmp.matcher(s).find()) {
-		// return s.replace(reEntityOrEscapedChar, unescapeChar);
-		// } else {
-		return s;
-		// }
+		if (reBackslashOrAmp.matcher(s).find()) {
+			return replaceAll(reEntityOrEscapedChar, s, match -> unescapeChar(match));
+		} else {
+			return s;
+		}
 	}
 
 	public static String normalizeURI(String uri) {
 		try {
 			// foo: equivalent to encodeURI(decodeURI(uri))?
-			String spacePercent = uri.replaceAll(" ", "%20");
-			return new URI(spacePercent).toASCIIString();
+			uri = uri.replaceAll(" ", "%20");
+			uri = uri.replaceAll("\\\\", "%5C");
+			return new URI(uri).toASCIIString();
 		} catch (URISyntaxException e) {
 			return uri;
 		}
@@ -70,25 +67,7 @@ public class Common {
 
 	public static Escaper XML_ESCAPER = (s, preserveEntities) -> {
 		Pattern p = preserveEntities ? reXmlSpecialOrEntity : reXmlSpecial;
-		Matcher matcher = p.matcher(s);
-
-		if (!matcher.find()) {
-			return s;
-		}
-
-		StringBuilder sb = new StringBuilder(s.length() + 16);
-		int lastEnd = 0;
-		do {
-			sb.append(s, lastEnd, matcher.start());
-			String replaced = replaceUnsafeChar(matcher.group());
-			sb.append(replaced);
-			lastEnd = matcher.end();
-		} while (matcher.find());
-
-		if (lastEnd != s.length()) {
-			sb.append(s, lastEnd, s.length());
-		}
-		return sb.toString();
+		return replaceAll(p, s, match -> replaceUnsafeChar(match));
 	};
 
 	private static String replaceUnsafeChar(String s) {
@@ -104,5 +83,28 @@ public class Common {
 		default:
 			return s;
 		}
+	}
+
+	private static String replaceAll(Pattern p, String s,
+			Function<String, String> replacer) {
+		Matcher matcher = p.matcher(s);
+
+		if (!matcher.find()) {
+			return s;
+		}
+
+		StringBuilder sb = new StringBuilder(s.length() + 16);
+		int lastEnd = 0;
+		do {
+			sb.append(s, lastEnd, matcher.start());
+			String replaced = replacer.apply(matcher.group());
+			sb.append(replaced);
+			lastEnd = matcher.end();
+		} while (matcher.find());
+
+		if (lastEnd != s.length()) {
+			sb.append(s, lastEnd, s.length());
+		}
+		return sb.toString();
 	}
 }
