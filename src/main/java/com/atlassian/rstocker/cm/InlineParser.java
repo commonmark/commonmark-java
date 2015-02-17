@@ -54,7 +54,7 @@ public class InlineParser {
 	private static final String ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
 
 	private static final Pattern rePunctuation = Pattern
-			.compile("^[\u2000-\u206F\u2E00-\u2E7F\\'!\"#\\$%&\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\]\\^_`\\{\\|\\}~]");
+			.compile("^[\u2000-\u206F\u2E00-\u2E7F\\\\'!\"#\\$%&\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\]\\^_`\\{\\|\\}~]");
 
 	private static final Pattern reHtmlTag = Pattern.compile('^' + HTMLTAG, Pattern.CASE_INSENSITIVE);
 
@@ -92,13 +92,14 @@ public class InlineParser {
 
 	// foo: /g
 	private static final Pattern reWhitespace = Pattern.compile("\\s+");
-	private static final Pattern reSingleWhitespace = Pattern.compile("\\s");
 
 	private static final Pattern reFinalSpace = Pattern.compile(" *$");
 
 	private static final Pattern reLineEnd = Pattern.compile("^ *(?:\n|$)");
 
 	private static final Pattern reInitialSpace = Pattern.compile("^ *");
+
+	private static final Pattern reAsciiAlnum = Pattern.compile("[a-zA-Z0-9]");
 
 	private static final Pattern reLinkLabel = Pattern
 			.compile("^\\[(?:[^\\\\\\[\\]]|\\\\[\\[\\]]){0,1000}\\]");
@@ -302,7 +303,7 @@ public class InlineParser {
 		left_flanking = numdelims > 0 &&
 				!(reWhitespaceChar.matcher(char_after).matches()) &&
 				!(rePunctuation.matcher(char_after).matches() &&
-						!(reSingleWhitespace.matcher(char_before).matches()) &&
+						!(reWhitespaceChar.matcher(char_before).matches()) &&
 				!(rePunctuation.matcher(char_before).matches()));
 		right_flanking = numdelims > 0 &&
 				!(reWhitespaceChar.matcher(char_before).matches()) &&
@@ -310,8 +311,8 @@ public class InlineParser {
 						!(reWhitespaceChar.matcher(char_after).matches()) &&
 				!(rePunctuation.matcher(char_after).matches()));
 		if (cc == C_UNDERSCORE) {
-			can_open = left_flanking && !right_flanking;
-			can_close = right_flanking && !left_flanking;
+			can_open = left_flanking && !reAsciiAlnum.matcher(char_before).matches();
+			can_close = right_flanking && !reAsciiAlnum.matcher(char_after).matches();
 		} else {
 			can_open = left_flanking;
 			can_close = right_flanking;
