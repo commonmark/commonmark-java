@@ -53,6 +53,9 @@ public class Common {
 			uri = uri.replaceAll(" ", "%20");
 			uri = uri.replaceAll("\\\\", "%5C");
 			uri = uri.replaceAll("`", "%60");
+			uri = uri.replaceAll("\"", "%22");
+			uri = uri.replaceAll("\\]", "%5D");
+			uri = uri.replaceAll("\\[", "%5B");
 			return new URI(uri).toASCIIString();
 		} catch (URISyntaxException e) {
 			return uri;
