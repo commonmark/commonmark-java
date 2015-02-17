@@ -242,7 +242,7 @@ public class InlineParser {
 			dest = m.substring(1, m.length() - 1);
 			Node node = new Node(Type.Link);
 			node.destination = normalizeURI("mailto:" + dest);
-			node.title = "";
+			node.title = null;
 			node.appendChild(text(dest));
 			block.appendChild(node);
 			return true;
@@ -250,7 +250,7 @@ public class InlineParser {
 			dest = m.substring(1, m.length() - 1);
 			Node node = new Node(Type.Link);
 			node.destination = normalizeURI(dest);
-			node.title = "";
+			node.title = null;
 			node.appendChild(text(dest));
 			block.appendChild(node);
 			return true;
@@ -649,7 +649,7 @@ public class InlineParser {
 		if (matched) {
 			Node node = new Node(is_image ? Type.Image : Type.Link);
 			node.destination = dest;
-			node.title = title != null ? title : "";
+			node.title = title;
 
 			Node tmp, next;
 			tmp = opener.node.next;
@@ -771,7 +771,6 @@ public class InlineParser {
 		this.spnl();
 		title = this.parseLinkTitle();
 		if (title == null) {
-			title = "";
 			// rewind before spaces
 			this.pos = beforetitle;
 		}

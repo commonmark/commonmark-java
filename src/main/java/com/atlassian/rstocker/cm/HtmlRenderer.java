@@ -71,7 +71,7 @@ public class HtmlRenderer {
 				if (entering) {
 					attrs.add(new String[] { "href",
 							esc(node.destination, true) });
-					if (node.title != null && !node.title.isEmpty()) {
+					if (node.title != null) {
 						attrs.add(new String[] { "title", esc(node.title, true) });
 					}
 					html.tag("a", attrs);
