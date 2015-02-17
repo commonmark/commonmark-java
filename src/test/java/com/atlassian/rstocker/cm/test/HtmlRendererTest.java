@@ -18,7 +18,7 @@ public class HtmlRendererTest {
 		HtmlRenderer renderer = HtmlRenderer.builder().build();
 		String result = renderer.render(node);
 
-		assertEquals("\n<p>foo <em>bar</em></p>\n", result);
+		assertEquals("<p>foo <em>bar</em></p>\n", result);
 	}
 
 }
