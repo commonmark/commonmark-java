@@ -88,7 +88,7 @@ public class InlineParser {
 
 	private static final Pattern reSpnl = Pattern.compile("^ *(?:\n *)?");
 
-	private static final Pattern reWhitespaceChar = Pattern.compile("^\\s");
+	private static final Pattern reWhitespaceChar = Pattern.compile("^\\p{IsWhite_Space}");
 
 	// foo: /g
 	private static final Pattern reWhitespace = Pattern.compile("\\s+");
