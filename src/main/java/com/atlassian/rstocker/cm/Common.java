@@ -52,6 +52,7 @@ public class Common {
 			// foo: equivalent to encodeURI(decodeURI(uri))?
 			uri = uri.replaceAll(" ", "%20");
 			uri = uri.replaceAll("\\\\", "%5C");
+			uri = uri.replaceAll("`", "%60");
 			return new URI(uri).toASCIIString();
 		} catch (URISyntaxException e) {
 			return uri;
