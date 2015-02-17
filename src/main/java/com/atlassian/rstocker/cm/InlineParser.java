@@ -610,9 +610,9 @@ public class InlineParser {
 					this.spnl()
 					&&
 					// make sure there's a space before the title:
-					(reWhitespaceChar.matcher(this.subject.substring(this.pos - 1, this.pos))
+					((reWhitespaceChar.matcher(this.subject.substring(this.pos - 1, this.pos))
 							.matches()) &&
-					(title = this.parseLinkTitle()) != null &&
+					(title = this.parseLinkTitle()) != null || true) &&
 					this.spnl() &&
 					this.subject.charAt(this.pos) == ')') {
 				this.pos += 1;
