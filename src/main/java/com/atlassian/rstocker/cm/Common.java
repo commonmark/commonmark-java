@@ -1,7 +1,6 @@
 package com.atlassian.rstocker.cm;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -30,6 +29,13 @@ public class Common {
 	private static final Pattern reXmlSpecialOrEntity = Pattern.compile(ENTITY + '|' + XMLSPECIAL,
 			Pattern.CASE_INSENSITIVE);
 
+	// From MDN encodeURI documentation
+	private static final Pattern reEscapeInUri =
+			Pattern.compile("[^%;,/?:@&=+$#\\-_.!~*'()a-zA-Z0-9]");
+
+	private static final char[] HEX_DIGITS = new char[] {
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
 	static String unescapeChar(String s) {
 		if (s.charAt(0) == '\\') {
 			return s.substring(1);
@@ -41,25 +47,25 @@ public class Common {
 	// Replace entities and backslash escapes with literal characters.
 	public static String unescapeString(String s) {
 		if (reBackslashOrAmp.matcher(s).find()) {
-			return replaceAll(reEntityOrEscapedChar, s, match -> unescapeChar(match));
+			return replaceAll(reEntityOrEscapedChar, s, Common::unescapeChar);
 		} else {
 			return s;
 		}
 	}
 
 	public static String normalizeURI(String uri) {
-		try {
-			// foo: equivalent to encodeURI(decodeURI(uri))?
-			uri = uri.replaceAll(" ", "%20");
-			uri = uri.replaceAll("\\\\", "%5C");
-			uri = uri.replaceAll("`", "%60");
-			uri = uri.replaceAll("\"", "%22");
-			uri = uri.replaceAll("\\]", "%5D");
-			uri = uri.replaceAll("\\[", "%5B");
-			return new URI(uri).toASCIIString();
-		} catch (URISyntaxException e) {
-			return uri;
+		return replaceAll(reEscapeInUri, uri, Common::uriEscape);
+	}
+
+	private static String uriEscape(String s) {
+		byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+		StringBuilder sb = new StringBuilder(bytes.length * 3);
+		for (byte b : bytes) {
+			sb.append('%');
+			sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
+			sb.append(HEX_DIGITS[b & 0xF]);
 		}
+		return sb.toString();
 	}
 
 	private static Pattern whitespace = Pattern.compile("[ \t\r\n]+");
@@ -71,7 +77,7 @@ public class Common {
 
 	public static Escaper XML_ESCAPER = (s, preserveEntities) -> {
 		Pattern p = preserveEntities ? reXmlSpecialOrEntity : reXmlSpecial;
-		return replaceAll(p, s, match -> replaceUnsafeChar(match));
+		return replaceAll(p, s, Common::replaceUnsafeChar);
 	};
 
 	private static String replaceUnsafeChar(String s) {
