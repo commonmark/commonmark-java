@@ -98,8 +98,6 @@ public class InlineParser {
 
 	private static final Pattern reInitialSpace = Pattern.compile("^ *");
 
-	private static final Pattern reAsciiAlnum = Pattern.compile("[a-zA-Z0-9]");
-
 	private static final Pattern reLinkLabel = Pattern
 			.compile("^\\[(?:[^\\\\\\[\\]]|\\\\[\\[\\]]){0,1000}\\]");
 
@@ -310,8 +308,8 @@ public class InlineParser {
 						!(reWhitespaceChar.matcher(char_after).matches()) &&
 				!(rePunctuation.matcher(char_after).matches()));
 		if (cc == C_UNDERSCORE) {
-			can_open = left_flanking && !reAsciiAlnum.matcher(char_before).matches();
-			can_close = right_flanking && !reAsciiAlnum.matcher(char_after).matches();
+			can_open = left_flanking && !right_flanking;
+			can_close = right_flanking && !left_flanking;
 		} else {
 			can_open = left_flanking;
 			can_close = right_flanking;

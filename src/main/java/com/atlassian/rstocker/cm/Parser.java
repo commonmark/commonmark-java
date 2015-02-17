@@ -8,7 +8,7 @@ import com.atlassian.rstocker.cm.Node.Type;
 
 import static com.atlassian.rstocker.cm.Common.unescapeString;
 
-public class DocParser {
+public class Parser {
 
 	private static char C_GREATERTHAN = 62;
 	private static char C_NEWLINE = 10;
@@ -25,7 +25,7 @@ public class DocParser {
 	private static Pattern reHrule = Pattern
 			.compile("^(?:(?:\\* *){3,}|(?:_ *){3,}|(?:- *){3,}) *$");
 
-	private static Pattern reMaybeSpecial = Pattern.compile("^[ #`~*+_=<>0-9-]");
+	private static Pattern reMaybeSpecial = Pattern.compile("^[#`~*+_=<>0-9-]");
 
 	private static Pattern reNonSpace = Pattern.compile("[^ \t\n]");
 
@@ -68,7 +68,6 @@ public class DocParser {
 		// if (this.options.time) { console.timeEnd("preparing input"); }
 		// if (this.options.time) { console.time("block parsing"); }
 		for (int i = 0; i < len; i++) {
-			this.lineNumber += 1;
 			this.incorporateLine(lines[i]);
 		}
 		while (this.tip != null) {
@@ -109,14 +108,15 @@ public class DocParser {
 		int match;
 		ListData data;
 		boolean blank = false;
-		int indent;
+		int indent = 0;
 		int i;
 		int CODE_INDENT = 4;
 		boolean allClosed;
 
 		Node container = this.doc;
 		this.oldtip = this.tip;
-
+		this.lineNumber += 1;
+		
 		// replace NUL characters for security
 		if (ln.indexOf("\u0000") != -1) {
 			ln = ln.replace("\0", "\uFFFD");
@@ -128,10 +128,7 @@ public class DocParser {
 		// For each containing block, try to parse the associated line start.
 		// Bail out on failure: container will point to the last matching block.
 		// Set all_matched to false if not all containers match.
-		while (container.lastChild != null) {
-			if (!container.lastChild.open) {
-				break;
-			}
+		while (container.lastChild != null && container.lastChild.open) {
 			container = container.lastChild;
 
 			match = matchAt(reNonSpace, ln, offset);
@@ -157,12 +154,12 @@ public class DocParser {
 				break;
 
 			case Item:
-				if (indent >= container.list_data.marker_offset +
-						container.list_data.padding) {
-					offset += container.list_data.marker_offset +
-							container.list_data.padding;
-				} else if (blank) {
+				if (blank) {
 					offset = first_nonspace;
+				} else if (indent >= container.listData.markerOffset +
+						container.listData.padding) {
+					offset += container.listData.markerOffset +
+							container.listData.padding;
 				} else {
 					all_matched = false;
 				}
@@ -172,18 +169,29 @@ public class DocParser {
 			case HorizontalRule:
 				// a header can never container > 1 line, so fail to match:
 				all_matched = false;
-				if (blank) {
-					container.last_line_blank = true;
-				}
 				break;
 
 			case CodeBlock:
-				if (container.fence_length > 0) { // fenced
-					// skip optional spaces of fence offset
-					i = container.fence_offset;
-					while (i > 0 && ln.charAt(offset) == C_SPACE) {
-						offset++;
-						i--;
+				if (container.isFenced()) { // fenced
+					Matcher matcher = null;
+					boolean matches = (indent <= 3 &&
+							first_nonspace < ln.length() &&
+							ln.charAt(first_nonspace) == container.fenceChar &&
+							(matcher = reClosingCodeFence.matcher(ln.substring(first_nonspace)))
+									.find());
+					if (matches && matcher.group(0).length() >= container.fenceLength) {
+						// closing fence - we're at end of line, so we can return
+						all_matched = false;
+						this.finalize(container, this.lineNumber);
+						this.lastLineLength = ln.length() - 1; // -1 for newline
+						return;
+					} else {
+						// skip optional spaces of fence offset
+						i = container.fenceOffset;
+						while (i > 0 && ln.charAt(offset) == C_SPACE) {
+							offset++;
+							i--;
+						}
 					}
 				} else { // indented
 					if (indent >= CODE_INDENT) {
@@ -198,14 +206,12 @@ public class DocParser {
 
 			case HtmlBlock:
 				if (blank) {
-					container.last_line_blank = true;
 					all_matched = false;
 				}
 				break;
 
 			case Paragraph:
 				if (blank) {
-					container.last_line_blank = true;
 					all_matched = false;
 				}
 				break;
@@ -223,16 +229,14 @@ public class DocParser {
 		this.lastMatchedContainer = container;
 
 		// Check to see if we"ve hit 2nd blank line; if so break out of list:
-		if (blank && container.last_line_blank) {
+		if (blank && container.lastLineBlank) {
 			this.breakOutOfLists(container);
 		}
 
 		// Unless last matched container is a code block, try new container starts,
 		// adding children to the last matched container:
-		Type t = container.type();
-		while (t != Type.CodeBlock && t != Type.HtmlBlock &&
-				// this is a little performance optimization:
-				matchAt(reMaybeSpecial, ln, offset) != -1) {
+		while (true) {
+			Type t = container.type();
 
 			match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
@@ -245,6 +249,10 @@ public class DocParser {
 			}
 			indent = first_nonspace - offset;
 
+			if (t == Type.CodeBlock || t == Type.HtmlBlock) {
+				break;
+			}
+
 			if (indent >= CODE_INDENT) {
 				// indented code
 				if (this.tip.type() != Type.Paragraph && !blank) {
@@ -253,6 +261,11 @@ public class DocParser {
 							this.closeUnmatchedBlocks();
 					container = this.addChild(Type.CodeBlock, offset);
 				}
+				break;
+			}
+
+			// this is a little performance optimization:
+			if (matchAt(reMaybeSpecial, ln, first_nonspace) == -1) {
 				break;
 			}
 
@@ -288,9 +301,9 @@ public class DocParser {
 				int fence_length = matcher.group(0).length();
 				allClosed = allClosed || this.closeUnmatchedBlocks();
 				container = this.addChild(Type.CodeBlock, first_nonspace);
-				container.fence_length = fence_length;
-				container.fence_char = matcher.group(0).charAt(0);
-				container.fence_offset = indent;
+				container.fenceLength = fence_length;
+				container.fenceChar = matcher.group(0).charAt(0);
+				container.fenceOffset = indent;
 				offset += fence_length;
 				break;
 
@@ -330,14 +343,14 @@ public class DocParser {
 
 				// add the list if needed
 				if (t != Type.List ||
-						!(listsMatch(container.list_data, data))) {
+						!(listsMatch(container.listData, data))) {
 					container = this.addChild(Type.List, first_nonspace);
-					container.list_data = data;
+					container.listData = data;
 				}
 
 				// add the list item
 				container = this.addChild(Type.Item, first_nonspace);
-				container.list_data = data;
+				container.listData = data;
 
 			} else {
 				break;
@@ -348,16 +361,6 @@ public class DocParser {
 
 		// What remains at the offset is a text line. Add the text to the
 		// appropriate container.
-
-		match = matchAt(reNonSpace, ln, offset);
-		if (match == -1) {
-			first_nonspace = ln.length();
-			blank = true;
-		} else {
-			first_nonspace = match;
-			blank = false;
-		}
-		indent = first_nonspace - offset;
 
 		// First check for a lazy paragraph continuation:
 		if (!allClosed && !blank &&
@@ -373,49 +376,34 @@ public class DocParser {
 
 			// finalize any blocks not matched
 			allClosed = allClosed || this.closeUnmatchedBlocks();
-			t = container.type();
+			if (blank && container.lastChild != null) {
+				container.lastChild.lastLineBlank = true;
+			}
+
+			Type t = container.type();
 
 			// Block quote lines are never blank as they start with >
 			// and we don"t count blanks in fenced code for purposes of tight/loose
 			// lists or breaking out of lists. We also don"t set last_line_blank
-			// on an empty list item.
-			container.last_line_blank = blank &&
+			// on an empty list item, or if we just closed a fenced block.
+			boolean lastLineBlank = blank &&
 					!(t == Type.BlockQuote ||
-							t == Type.Header ||
-							(t == Type.CodeBlock && container.fence_length > 0) ||
+							(t == Type.CodeBlock && container.isFenced()) ||
 					(t == Type.Item &&
 							container.firstChild == null &&
 					container.sourcepos()[0][0] == this.lineNumber));
 
+			// propagate lastLineBlank up through parents:
 			Node cont = container;
-			while (cont.parent != null) {
-				cont.parent.last_line_blank = false;
+			while (cont != null) {
+				cont.lastLineBlank = lastLineBlank;
 				cont = cont.parent;
 			}
 
 			switch (t) {
 			case HtmlBlock:
-				this.addLine(ln, offset);
-				break;
-
 			case CodeBlock:
-				if (container.fence_length > 0) { // fenced
-					// check for closing code fence:
-					Matcher matcher = null;
-					boolean matches = (indent <= 3 &&
-							first_nonspace < ln.length() &&
-							ln.charAt(first_nonspace) == container.fence_char &&
-							(matcher = reClosingCodeFence.matcher(ln.substring(first_nonspace)))
-									.find());
-					if (matches && matcher.group(0).length() >= container.fence_length) {
-						// don"t add closing fence to container; instead, close it:
-						this.finalize(container, this.lineNumber);
-					} else {
-						this.addLine(ln, offset);
-					}
-				} else { // indented
-					this.addLine(ln, offset);
-				}
+				this.addLine(ln, offset);
 				break;
 
 			case Header:
@@ -450,11 +438,6 @@ public class DocParser {
 		// var above = block.parent || this.top;
 
 		Node above = block.parent;
-		// don't do anything if the block is already closed
-		if (!block.open) {
-			// foo: can be void return
-			return;
-		}
 		block.open = false;
 		block.sourcepos()[1] = new int[] { lineNumber, this.lastLineLength + 1 };
 
@@ -483,7 +466,7 @@ public class DocParser {
 			break;
 
 		case CodeBlock:
-			if (block.fence_length > 0) { // fenced
+			if (block.isFenced()) { // fenced
 				// first line becomes info string
 				block.info = unescapeString(block.strings.get(0).trim());
 				if (block.strings.size() == 1) {
@@ -498,13 +481,11 @@ public class DocParser {
 			break;
 
 		case List:
-			block.list_data.tight = true; // tight by default
-
 			Node item = block.firstChild;
 			while (item != null) {
 				// check for non-final list item ending with blank line:
 				if (endsWithBlankLine(item) && item.next != null) {
-					block.list_data.tight = false;
+					block.listData.tight = false;
 					break;
 				}
 				// recurse into children of list item, to see if there are
@@ -512,7 +493,7 @@ public class DocParser {
 				Node subitem = item.firstChild;
 				while (subitem != null) {
 					if (endsWithBlankLine(subitem) && (item.next != null || subitem.next != null)) {
-						block.list_data.tight = false;
+						block.listData.tight = false;
 						break;
 					}
 					subitem = subitem.next;
@@ -572,11 +553,7 @@ public class DocParser {
 	// Add a line to the block at the tip. We assume the tip
 	// can accept lines -- that check should be done before calling this.
 	private void addLine(String ln, int offset) {
-		String s = ln.substring(offset);
-		if (!(this.tip.open)) {
-			throw new RuntimeException("Attempted to add line (" + ln + ") to closed container.");
-		}
-		this.tip.strings.add(s);
+		this.tip.strings.add(ln.substring(offset));
 	}
 
 	// Add block of type tag as a child of the tip. If the tip can't
@@ -609,7 +586,7 @@ public class DocParser {
 		if ((match = reBulletListMarker.matcher(rest)).find()) {
 			spaces_after_marker = match.group(1).length();
 			data.type = "Bullet";
-			data.bullet_char = match.group(0).charAt(0);
+			data.bulletChar = match.group(0).charAt(0);
 
 		} else if ((match = reOrderedListMarker.matcher(rest)).find()) {
 			spaces_after_marker = match.group(3).length();
@@ -635,7 +612,7 @@ public class DocParser {
 	// in agglomerating list items into lists.
 	private boolean listsMatch(ListData list_data, ListData item_data) {
 		return (Objects.equals(list_data.type, item_data.type) &&
-				Objects.equals(list_data.delimiter, item_data.delimiter) && list_data.bullet_char == item_data.bullet_char);
+				Objects.equals(list_data.delimiter, item_data.delimiter) && list_data.bulletChar == item_data.bulletChar);
 	}
 
 	// Finalize and close any unmatched blocks. Returns true.
@@ -688,7 +665,7 @@ public class DocParser {
 	// destructively trip final blank lines in an array of strings
 	private static void stripFinalBlankLines(List<String> lns) {
 		int i = lns.size() - 1;
-		while (!reNonSpace.matcher(lns.get(i)).find()) {
+		while (i >= 0 && !reNonSpace.matcher(lns.get(i)).find()) {
 			lns.remove(i);
 			i--;
 		}
@@ -698,7 +675,7 @@ public class DocParser {
 	// into lists and sublists.
 	private static boolean endsWithBlankLine(Node block) {
 		while (block != null) {
-			if (block.last_line_blank) {
+			if (block.lastLineBlank) {
 				return true;
 			}
 			Type t = block.type();

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.atlassian.rstocker.cm.DocParser;
+import com.atlassian.rstocker.cm.Parser;
 import com.atlassian.rstocker.cm.HtmlRenderer;
 import com.atlassian.rstocker.cm.Node;
 import com.atlassian.rstocker.cm.spec.SpecExample;
@@ -20,7 +20,7 @@ import com.atlassian.rstocker.cm.spec.SpecReader;
 @RunWith(Parameterized.class)
 public class SpecTest {
 
-	private final DocParser parser = new DocParser();
+	private final Parser parser = new Parser();
 	private final HtmlRenderer renderer = HtmlRenderer.builder().build();
 	private final SpecExample example;
 

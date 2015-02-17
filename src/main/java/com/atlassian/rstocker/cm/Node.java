@@ -39,17 +39,17 @@ public class Node {
 
 	List<String> strings = null;
 	public String string_content = null;
-	public boolean last_line_blank = false;
+	boolean lastLineBlank = false;
 	public boolean open = true;
 	String literal;
-	public ListData list_data = null;
+	ListData listData = null;
 	String info;
 	String destination = null;
 	String title = null;
-	char fence_char; // null
-	public int fence_length = 0;
-	public int fence_offset = 0; // null
-	int level = 0; // null
+	char fenceChar;
+	int fenceLength = 0;
+	int fenceOffset = 0;
+	int level = 0;
 
 	public Node(Type nodeType) {
 		this(nodeType, new int[0][0]);
@@ -82,20 +82,24 @@ public class Node {
 		return this._type;
 	}
 
+	boolean isFenced() {
+		return fenceLength > 0;
+	}
+
 	public int[][] sourcepos() {
 		return this._sourcepos;
 	}
 
 	public boolean isListTight() {
-		return list_data.tight;
+		return listData.tight;
 	}
 
 	public String getListType() {
-		return list_data.type;
+		return listData.type;
 	}
 
 	public int getListStart() {
-		return list_data.start;
+		return listData.start;
 	}
 
 	public void appendChild(Node child) {
