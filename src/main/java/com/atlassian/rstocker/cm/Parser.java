@@ -52,6 +52,13 @@ public class Parser {
 	private int lastLineLength = 0;
 	private InlineParser inlineParser = new InlineParser();
 
+	private Parser(Builder builder) {
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
+
 	// The main parsing function. Returns a parsed document AST.
 	public Node parse(String input) {
 		this.doc = document();
@@ -692,4 +699,9 @@ public class Parser {
 		return String.join(separator, parts);
 	}
 
+	public static class Builder {
+		public Parser build() {
+			return new Parser(this);
+		}
+	}
 }

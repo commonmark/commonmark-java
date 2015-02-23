@@ -12,7 +12,7 @@ public class HtmlRendererTest {
 
 	@Test
 	public void foo() {
-		Parser parser = new Parser();
+		Parser parser = Parser.builder().build();
 		Node node = parser.parse("foo *bar*");
 
 		HtmlRenderer renderer = HtmlRenderer.builder().build();

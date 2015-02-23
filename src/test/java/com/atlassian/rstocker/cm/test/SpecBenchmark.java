@@ -60,7 +60,7 @@ public class SpecBenchmark {
 		long length = 0;
 		for (SpecExample example : examples) {
 			String result = HtmlRenderer.builder().build()
-					.render(new Parser().parse(example.getSource()));
+					.render(Parser.builder().build().parse(example.getSource()));
 			length += result.length();
 		}
 		return length;

@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class RenderingTestCase {
 
-    private final Parser parser = new Parser();
+    private final Parser parser = Parser.builder().build();
     private final HtmlRenderer renderer = HtmlRenderer.builder().build();
 
     protected void assertRendering(String source, String expectedHtml) {
