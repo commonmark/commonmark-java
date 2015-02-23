@@ -269,7 +269,7 @@ public class Parser {
 					offset += CODE_INDENT;
 					allClosed = allClosed ||
 							this.closeUnmatchedBlocks();
-					container = this.addChild(new CodeBlock(getSourcePos(offset)));
+					container = addChild(new CodeBlock(getSourcePos(offset)));
 				}
 				break;
 			}
@@ -292,14 +292,14 @@ public class Parser {
 					offset++;
 				}
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(new BlockQuote(getSourcePos(first_nonspace)));
+				container = addChild(new BlockQuote(getSourcePos(first_nonspace)));
 
 			} else if ((matcher = reATXHeaderMarker.matcher(ln.substring(offset))).find()) {
 				// ATX header
 				offset += matcher.group(0).length();
 				allClosed = allClosed || this.closeUnmatchedBlocks();
 				int level = matcher.group(0).trim().length(); // number of #s
-				Header header = this.addChild(new Header(getSourcePos(first_nonspace), level));
+				Header header = addChild(new Header(getSourcePos(first_nonspace), level));
 				container = header;
 
 				// remove trailing ###s:
@@ -313,7 +313,7 @@ public class Parser {
 				int fence_length = matcher.group(0).length();
 				allClosed = allClosed || this.closeUnmatchedBlocks();
 				char fenceChar = matcher.group(0).charAt(0);
-				CodeBlock codeBlock = new CodeBlock(getSourcePos(first_nonspace), fenceChar, fence_length, indent);
+				CodeBlock codeBlock = addChild(new CodeBlock(getSourcePos(first_nonspace), fenceChar, fence_length, indent));
 				container = codeBlock;
 				offset += fence_length;
 				break;
@@ -321,7 +321,7 @@ public class Parser {
 			} else if (matchAt(reHtmlBlockOpen, ln, offset) != -1) {
 				// html block
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(new HtmlBlock(getSourcePos(offset)));
+				container = addChild(new HtmlBlock(getSourcePos(offset)));
 				offset -= indent; // back up so spaces are part of block
 				break;
 
@@ -345,7 +345,7 @@ public class Parser {
 			} else if (matchAt(reHrule, ln, offset) != -1) {
 				// hrule
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(new HorizontalRule(getSourcePos(first_nonspace)));
+				container = addChild(new HorizontalRule(getSourcePos(first_nonspace)));
 				offset = ln.length() - 1;
 				break;
 
@@ -357,12 +357,12 @@ public class Parser {
 				// add the list if needed
 				if (t != Type.List ||
 						!(listsMatch((ListBlock) container, data))) {
-					ListBlock list = this.addChild(new ListBlock(getSourcePos(first_nonspace), data.type, data.delimiter, data.start, data.bulletChar));
+					ListBlock list = addChild(new ListBlock(getSourcePos(first_nonspace), data.type, data.delimiter, data.start, data.bulletChar));
 					list.setTight(true);
 				}
 
 				// add the list item
-				ListItem listItem = this.addChild(new ListItem(getSourcePos(first_nonspace)));
+				ListItem listItem = addChild(new ListItem(getSourcePos(first_nonspace)));
 				listItemOffset.put(listItem, data.markerOffset + data.padding);
 				container = listItem;
 
@@ -433,7 +433,7 @@ public class Parser {
 				} else {
 					// create paragraph container for line
 					// foo: in JS, there's a third argument, which looks like a bug
-					this.addChild(new Paragraph(getSourcePos(first_nonspace)));
+					addChild(new Paragraph(getSourcePos(first_nonspace)));
 					this.addLine(ln, first_nonspace);
 				}
 			}
