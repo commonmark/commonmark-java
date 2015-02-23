@@ -109,7 +109,7 @@ public class InlineParser {
 	// TODO: rename?
 	private Delimiter delimiters;
 	private int pos = 0;
-	private Map<String, Node> refmap;
+	private Map<String, Link> refmap;
 
 	// match: match,
 	// peek: peek,
@@ -237,17 +237,13 @@ public class InlineParser {
 		String dest;
 		if ((m = this.match(reEmailAutolink)) != null) {
 			dest = m.substring(1, m.length() - 1);
-			Node node = new Node(Type.Link);
-			node.destination = normalizeURI("mailto:" + dest);
-			node.title = null;
+			Link node = new Link(normalizeURI("mailto:" + dest), null);
 			node.appendChild(text(dest));
 			block.appendChild(node);
 			return true;
 		} else if ((m = this.match(reAutolink)) != null) {
 			dest = m.substring(1, m.length() - 1);
-			Node node = new Node(Type.Link);
-			node.destination = normalizeURI(dest);
-			node.title = null;
+			Link node = new Link(normalizeURI(dest), null);
 			node.appendChild(text(dest));
 			block.appendChild(node);
 			return true;
@@ -418,10 +414,9 @@ public class InlineParser {
 					// build contents for new emph element
 					Node emph = new Node(use_delims == 1 ? Type.Emph : Type.Strong);
 
-					tmp = opener_inl.next;
+					tmp = opener_inl.getNext();
 					while (tmp != null && tmp != closer_inl) {
-						next = tmp.next;
-						tmp.unlink();
+						next = tmp.getNext();
 						emph.appendChild(tmp);
 						tmp = next;
 					}
@@ -635,24 +630,21 @@ public class InlineParser {
 
 			// lookup rawlabel in refmap
 			// foo: normalizeReference?
-			Node link = this.refmap.get(normalizeReference(reflabel));
+			Link link = this.refmap.get(normalizeReference(reflabel));
 			if (link != null) {
-				dest = link.destination;
-				title = link.title;
+				dest = link.getDestination();
+				title = link.getTitle();
 				matched = true;
 			}
 		}
 
 		if (matched) {
-			Node node = new Node(is_image ? Type.Image : Type.Link);
-			node.destination = dest;
-			node.title = title;
+			Node node = is_image ? new Image(dest, title) : new Link(dest, title);
 
 			Node tmp, next;
-			tmp = opener.node.next;
+			tmp = opener.node.getNext();
 			while (tmp != null) {
-				next = tmp.next;
-				tmp.unlink();
+				next = tmp.getNext();
 				node.appendChild(tmp);
 				tmp = next;
 			}
@@ -730,7 +722,7 @@ public class InlineParser {
 	};
 
 	// Attempt to parse a link reference, modifying refmap.
-	int parseReference(String s, Map<String, Node> refmap) {
+	int parseReference(String s, Map<String, Link> refmap) {
 		this.subject = s;
 		this.pos = 0;
 		String rawlabel;
@@ -781,9 +773,7 @@ public class InlineParser {
 		String normlabel = normalizeReference(rawlabel);
 
 		if (!refmap.containsKey(normlabel)) {
-			Node link = new Node(Type.Link);
-			link.destination = dest;
-			link.title = title;
+			Link link = new Link(dest, title);
 			refmap.put(normlabel, link);
 		}
 		return this.pos - startpos;
@@ -791,7 +781,7 @@ public class InlineParser {
 
 	// Parse string_content in block into inline children,
 	// using refmap to resolve references.
-	public void parse(Node block, Map<String, Node> refmap) {
+	public void parse(Node block, Map<String, Link> refmap) {
 		this.subject = block.string_content.trim();
 		this.pos = 0;
 		this.refmap = refmap; // foo: || {};

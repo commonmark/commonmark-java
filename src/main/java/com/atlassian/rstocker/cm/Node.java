@@ -28,8 +28,8 @@ public class Node {
 		Code
 	}
 
+	// TODO: doesn't need to be a field with the subclasses
 	private final Type _type;
-	private final int[][] _sourcepos;
 
 	Node parent = null;
 	Node firstChild = null;
@@ -42,22 +42,10 @@ public class Node {
 	boolean lastLineBlank = false;
 	public boolean open = true;
 	String literal;
-	ListData listData = null;
 	String info;
-	String destination = null;
-	String title = null;
-	char fenceChar;
-	int fenceLength = 0;
-	int fenceOffset = 0;
-	int level = 0;
 
 	public Node(Type nodeType) {
-		this(nodeType, new int[0][0]);
-	}
-
-	public Node(Type nodeType, int[][] sourcepos) {
 		this._type = nodeType;
-		this._sourcepos = sourcepos;
 	}
 
 	public boolean isContainer() {
@@ -82,29 +70,21 @@ public class Node {
 		return this._type;
 	}
 
-	boolean isFenced() {
-		return fenceLength > 0;
+	public Node getNext() {
+		return next;
 	}
 
-	public int[][] sourcepos() {
-		return this._sourcepos;
+	public Node getParent() {
+		return parent;
 	}
 
-	public boolean isListTight() {
-		return listData.tight;
-	}
-
-	public String getListType() {
-		return listData.type;
-	}
-
-	public int getListStart() {
-		return listData.start;
+	protected void setParent(Node parent) {
+		this.parent = parent;
 	}
 
 	public void appendChild(Node child) {
 		child.unlink();
-		child.parent = this;
+		child.setParent(this);
 		if (this.lastChild != null) {
 			this.lastChild.next = child;
 			child.prev = this.lastChild;
@@ -117,7 +97,7 @@ public class Node {
 
 	public void prependChild(Node child) {
 		child.unlink();
-		child.parent = this;
+		child.setParent(this);
 		if (this.firstChild != null) {
 			this.firstChild.prev = child;
 			child.next = this.firstChild;
@@ -128,7 +108,7 @@ public class Node {
 		}
 	}
 
-	void unlink() {
+	public void unlink() {
 		if (this.prev != null) {
 			this.prev.next = this.next;
 		} else if (this.parent != null) {

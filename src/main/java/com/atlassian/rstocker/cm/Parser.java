@@ -43,14 +43,17 @@ public class Parser {
 
 	private static Pattern reLineEnding = Pattern.compile("\r\n|\n|\r");
 
-	private Node doc;
-	private Node tip;
-	private Node oldtip;
-	private Map<String, Node> refmap;
+	private Block doc;
+	private Block tip;
+	private Block oldtip;
+	private Map<String, Link> refmap;
 	private int lineNumber = 0;
 	private Node lastMatchedContainer;
 	private int lastLineLength = 0;
 	private InlineParser inlineParser = new InlineParser();
+
+	private Set<Block> openBlocks = new HashSet<>();
+	private Map<ListItem, Integer> listItemOffset = new HashMap<>();
 
 	private Parser(Builder builder) {
 	}
@@ -101,8 +104,8 @@ public class Parser {
 		}
 	}
 
-	private Node document() {
-		return new Node(Type.Document, new int[][] { { 1, 1 }, { 0, 0 } });
+	private Document document() {
+		return new Document(new SourcePos(1, 1));
 	}
 
 	// Analyze a line of text and update the document appropriately.
@@ -120,7 +123,7 @@ public class Parser {
 		int CODE_INDENT = 4;
 		boolean allClosed;
 
-		Node container = this.doc;
+		Block container = this.doc;
 		this.oldtip = this.tip;
 		this.lineNumber += 1;
 		
@@ -135,8 +138,8 @@ public class Parser {
 		// For each containing block, try to parse the associated line start.
 		// Bail out on failure: container will point to the last matching block.
 		// Set all_matched to false if not all containers match.
-		while (container.lastChild != null && container.lastChild.open) {
-			container = container.lastChild;
+		while (container.lastChild != null && container.lastChild instanceof Block && openBlocks.contains(container.lastChild)) {
+			container = (Block) container.lastChild;
 
 			match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
@@ -161,12 +164,11 @@ public class Parser {
 				break;
 
 			case Item:
+				ListItem item = (ListItem) container;
 				if (blank) {
 					offset = first_nonspace;
-				} else if (indent >= container.listData.markerOffset +
-						container.listData.padding) {
-					offset += container.listData.markerOffset +
-							container.listData.padding;
+				} else if (indent >= listItemOffset.get(item)) {
+					offset += listItemOffset.get(item);
 				} else {
 					all_matched = false;
 				}
@@ -179,22 +181,23 @@ public class Parser {
 				break;
 
 			case CodeBlock:
-				if (container.isFenced()) { // fenced
+				CodeBlock codeBlock = (CodeBlock) container;
+				if (codeBlock.isFenced()) { // fenced
 					Matcher matcher = null;
 					boolean matches = (indent <= 3 &&
 							first_nonspace < ln.length() &&
-							ln.charAt(first_nonspace) == container.fenceChar &&
+							ln.charAt(first_nonspace) == codeBlock.getFenceChar() &&
 							(matcher = reClosingCodeFence.matcher(ln.substring(first_nonspace)))
 									.find());
-					if (matches && matcher.group(0).length() >= container.fenceLength) {
+					if (matches && matcher.group(0).length() >= codeBlock.getFenceLength()) {
 						// closing fence - we're at end of line, so we can return
 						all_matched = false;
-						this.finalize(container, this.lineNumber);
+						this.finalize(codeBlock, this.lineNumber);
 						this.lastLineLength = ln.length() - 1; // -1 for newline
 						return;
 					} else {
 						// skip optional spaces of fence offset
-						i = container.fenceOffset;
+						i = codeBlock.getFenceOffset();
 						while (i > 0 && ln.charAt(offset) == C_SPACE) {
 							offset++;
 							i--;
@@ -227,7 +230,7 @@ public class Parser {
 			}
 
 			if (!all_matched) {
-				container = container.parent; // back up to last matching block
+				container = container.getParent(); // back up to last matching block
 				break;
 			}
 		}
@@ -266,7 +269,7 @@ public class Parser {
 					offset += CODE_INDENT;
 					allClosed = allClosed ||
 							this.closeUnmatchedBlocks();
-					container = this.addChild(Type.CodeBlock, offset);
+					container = this.addChild(new CodeBlock(getSourcePos(offset)));
 				}
 				break;
 			}
@@ -289,14 +292,16 @@ public class Parser {
 					offset++;
 				}
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(Type.BlockQuote, first_nonspace);
+				container = this.addChild(new BlockQuote(getSourcePos(first_nonspace)));
 
 			} else if ((matcher = reATXHeaderMarker.matcher(ln.substring(offset))).find()) {
 				// ATX header
 				offset += matcher.group(0).length();
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(Type.Header, first_nonspace);
-				container.level = matcher.group(0).trim().length(); // number of #s
+				int level = matcher.group(0).trim().length(); // number of #s
+				Header header = this.addChild(new Header(getSourcePos(first_nonspace), level));
+				container = header;
+
 				// remove trailing ###s:
 				String stripped = ln.substring(offset).replaceAll("^ *#+ *$", "")
 						.replaceAll(" +#+ *$", "");
@@ -307,28 +312,29 @@ public class Parser {
 				// fenced code block
 				int fence_length = matcher.group(0).length();
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(Type.CodeBlock, first_nonspace);
-				container.fenceLength = fence_length;
-				container.fenceChar = matcher.group(0).charAt(0);
-				container.fenceOffset = indent;
+				char fenceChar = matcher.group(0).charAt(0);
+				CodeBlock codeBlock = new CodeBlock(getSourcePos(first_nonspace), fenceChar, fence_length, indent);
+				container = codeBlock;
 				offset += fence_length;
 				break;
 
 			} else if (matchAt(reHtmlBlockOpen, ln, offset) != -1) {
 				// html block
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(Type.HtmlBlock, offset);
+				container = this.addChild(new HtmlBlock(getSourcePos(offset)));
 				offset -= indent; // back up so spaces are part of block
 				break;
 
 			} else if (t == Type.Paragraph &&
 					container.strings.size() == 1 &&
 					((matcher = reSetextHeaderLine.matcher(ln.substring(offset))).find())) {
+
+				Paragraph paragraph = (Paragraph) container;
 				// setext header line
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				Node header = new Node(Type.Header, container.sourcepos());
-				header.level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
-				header.strings = container.strings;
+				int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
+				Header header = new Header(paragraph.getSourcePos(), level);
+				header.strings = paragraph.strings;
 				container.insertAfter(header);
 				container.unlink();
 				container = header;
@@ -339,7 +345,7 @@ public class Parser {
 			} else if (matchAt(reHrule, ln, offset) != -1) {
 				// hrule
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = this.addChild(Type.HorizontalRule, first_nonspace);
+				container = this.addChild(new HorizontalRule(getSourcePos(first_nonspace)));
 				offset = ln.length() - 1;
 				break;
 
@@ -350,14 +356,15 @@ public class Parser {
 
 				// add the list if needed
 				if (t != Type.List ||
-						!(listsMatch(container.listData, data))) {
-					container = this.addChild(Type.List, first_nonspace);
-					container.listData = data;
+						!(listsMatch((ListBlock) container, data))) {
+					ListBlock list = this.addChild(new ListBlock(getSourcePos(first_nonspace), data.type, data.delimiter, data.start, data.bulletChar));
+					list.setTight(true);
 				}
 
 				// add the list item
-				container = this.addChild(Type.Item, first_nonspace);
-				container.listData = data;
+				ListItem listItem = this.addChild(new ListItem(getSourcePos(first_nonspace)));
+				listItemOffset.put(listItem, data.markerOffset + data.padding);
+				container = listItem;
 
 			} else {
 				break;
@@ -395,10 +402,10 @@ public class Parser {
 			// on an empty list item, or if we just closed a fenced block.
 			boolean lastLineBlank = blank &&
 					!(t == Type.BlockQuote ||
-							(t == Type.CodeBlock && container.isFenced()) ||
+							(t == Type.CodeBlock && ((CodeBlock) container).isFenced()) ||
 					(t == Type.Item &&
 							container.firstChild == null &&
-					container.sourcepos()[0][0] == this.lineNumber));
+							((ListItem) container).getSourcePos().getStartLine() == this.lineNumber));
 
 			// propagate lastLineBlank up through parents:
 			Node cont = container;
@@ -426,7 +433,7 @@ public class Parser {
 				} else {
 					// create paragraph container for line
 					// foo: in JS, there's a third argument, which looks like a bug
-					container = this.addChild(Type.Paragraph, this.lineNumber);
+					this.addChild(new Paragraph(getSourcePos(first_nonspace)));
 					this.addLine(ln, first_nonspace);
 				}
 			}
@@ -439,14 +446,14 @@ public class Parser {
 	// or 'loose' status of a list, and parsing the beginnings
 	// of paragraphs for reference definitions. Reset the tip to the
 	// parent of the closed block.
-	private void finalize(Node block, int lineNumber) {
+	private void finalize(Block block, int lineNumber) {
 		int pos;
 		// foo: top? looks like a bug
 		// var above = block.parent || this.top;
 
-		Node above = block.parent;
-		block.open = false;
-		block.sourcepos()[1] = new int[] { lineNumber, this.lastLineLength + 1 };
+		Block above = block.getParent();
+		openBlocks.remove(block);
+		block.setSourcePos(new SourcePos(block.getSourcePos().getStartLine(), block.getSourcePos().getStartColumn(), lineNumber, this.lastLineLength + 1));
 
 		switch (block.type()) {
 		case Paragraph:
@@ -473,7 +480,8 @@ public class Parser {
 			break;
 
 		case CodeBlock:
-			if (block.isFenced()) { // fenced
+			CodeBlock codeBlock = (CodeBlock) block;
+			if (codeBlock.isFenced()) { // fenced
 				// first line becomes info string
 				block.info = unescapeString(block.strings.get(0).trim());
 				if (block.strings.size() == 1) {
@@ -488,11 +496,12 @@ public class Parser {
 			break;
 
 		case List:
+			ListBlock list = (ListBlock) block;
 			Node item = block.firstChild;
 			while (item != null) {
 				// check for non-final list item ending with blank line:
 				if (endsWithBlankLine(item) && item.next != null) {
-					block.listData.tight = false;
+					list.setTight(false);
 					break;
 				}
 				// recurse into children of list item, to see if there are
@@ -500,7 +509,7 @@ public class Parser {
 				Node subitem = item.firstChild;
 				while (subitem != null) {
 					if (endsWithBlankLine(subitem) && (item.next != null || subitem.next != null)) {
-						block.listData.tight = false;
+						list.setTight(false);
 						break;
 					}
 					subitem = subitem.next;
@@ -537,23 +546,23 @@ public class Parser {
 	// document to the parent of the highest list, and finalizing
 	// all the lists. (This is used to implement the "two blank lines
 	// break of of all lists" feature.)
-	private void breakOutOfLists(Node block) {
-		Node b = block;
-		Node last_list = null;
+	private void breakOutOfLists(Block block) {
+		Block b = block;
+		Block last_list = null;
 		do {
 			if (b.type() == Type.List) {
 				last_list = b;
 			}
-			b = b.parent;
+			b = b.getParent();
 		} while (b != null);
 
 		if (last_list != null) {
 			while (block != last_list) {
 				this.finalize(block, this.lineNumber);
-				block = block.parent;
+				block = block.getParent();
 			}
 			this.finalize(last_list, this.lineNumber);
-			this.tip = last_list.parent;
+			this.tip = last_list.getParent();
 		}
 	}
 
@@ -566,18 +575,22 @@ public class Parser {
 	// Add block of type tag as a child of the tip. If the tip can't
 	// accept children, close and finalize it and try its parent,
 	// and so on til we find a block that can accept children.
-	private Node addChild(Type type, int offset) {
-		while (!canContain(this.tip.type(), type)) {
+	private <T extends Block> T addChild(T node) {
+		openBlocks.add(node);
+		while (!canContain(this.tip.type(), node.type())) {
 			this.finalize(this.tip, this.lineNumber - 1);
 		}
 
+		node.strings = new ArrayList<>();
+		node.string_content = null;
+		this.tip.appendChild(node);
+		this.tip = node;
+		return node;
+	}
+
+	private SourcePos getSourcePos(int offset) {
 		int column_number = offset + 1; // offset 0 = column 1
-		Node newBlock = new Node(type, new int[][] { { this.lineNumber, column_number }, { 0, 0 } });
-		newBlock.strings = new ArrayList<>();
-		newBlock.string_content = null;
-		this.tip.appendChild(newBlock);
-		this.tip = newBlock;
-		return newBlock;
+		return new SourcePos(this.lineNumber, column_number);
 	}
 
 	// Parse a list marker and return data on the marker (type,
@@ -592,14 +605,14 @@ public class Parser {
 		}
 		if ((match = reBulletListMarker.matcher(rest)).find()) {
 			spaces_after_marker = match.group(1).length();
-			data.type = "Bullet";
+			data.type = ListBlock.ListType.BULLET;
 			data.bulletChar = match.group(0).charAt(0);
 
 		} else if ((match = reOrderedListMarker.matcher(rest)).find()) {
 			spaces_after_marker = match.group(3).length();
-			data.type = "Ordered";
+			data.type = ListBlock.ListType.ORDERED;
 			data.start = Integer.parseInt(match.group(1));
-			data.delimiter = match.group(2);
+			data.delimiter = match.group(2).charAt(0);
 		} else {
 			return null;
 		}
@@ -617,9 +630,10 @@ public class Parser {
 	// Returns true if the two list items are of the same type,
 	// with the same delimiter and bullet character. This is used
 	// in agglomerating list items into lists.
-	private boolean listsMatch(ListData list_data, ListData item_data) {
-		return (Objects.equals(list_data.type, item_data.type) &&
-				Objects.equals(list_data.delimiter, item_data.delimiter) && list_data.bulletChar == item_data.bulletChar);
+	private boolean listsMatch(ListBlock list, ListData item_data) {
+		return (Objects.equals(list.getListType(), item_data.type) &&
+				list.getOrderedDelimiter() == item_data.delimiter &&
+				list.getBulletMarker() == item_data.bulletChar);
 	}
 
 	// Finalize and close any unmatched blocks. Returns true.
@@ -627,7 +641,7 @@ public class Parser {
 	private boolean closeUnmatchedBlocks() {
 		// finalize any blocks not matched
 		while (this.oldtip != this.lastMatchedContainer) {
-			Node parent = this.oldtip.parent;
+			Block parent = this.oldtip.getParent();
 			this.finalize(this.oldtip, this.lineNumber - 1);
 			this.oldtip = parent;
 		}

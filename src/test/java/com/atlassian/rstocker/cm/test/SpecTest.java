@@ -33,6 +33,7 @@ public class SpecTest extends RenderingTestCase {
 		try (SpecReader reader = new SpecReader(stream)) {
 			List<SpecExample> examples = reader.read();
 			return examples.stream()
+//					.filter(example -> example.toString().equals("Section \"Links\" example 1"))
 					.map(example -> new Object[] { example })
 					.collect(Collectors.toList());
 		}

@@ -2,12 +2,13 @@ package com.atlassian.rstocker.cm;
 
 public class ListData {
 
-	int markerOffset;
-	String type = null;
+	ListBlock.ListType type;
 	boolean tight = true;
 	char bulletChar;
 	int start; // null
-	String delimiter;
+	char delimiter;
+
+	int markerOffset;
 	int padding = 0; // null
 
 	public ListData(int indent) {

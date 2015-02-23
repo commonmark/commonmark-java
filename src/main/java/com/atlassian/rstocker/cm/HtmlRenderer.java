@@ -19,10 +19,10 @@ public class HtmlRenderer {
 		return new Builder();
 	}
 
-	public String render(Node block) {
+	public String render(Node nodeToRender) {
 		HtmlWriter html = new HtmlWriter();
 
-		NodeWalker walker = block.walker();
+		NodeWalker walker = nodeToRender.walker();
 		Entry entry;
 
 		while ((entry = walker.next()) != null) {
@@ -31,13 +31,14 @@ public class HtmlRenderer {
 
 			// TODO: meh
 			List<String[]> attrs = new ArrayList<>();
-			if (sourcepos) {
-				int[][] pos = node.sourcepos();
+			if (sourcepos && node instanceof Block) {
+				Block block = (Block) node;
+				SourcePos pos = block.getSourcePos();
 				if (pos != null) {
 					attrs.add(new String[] { "data-sourcepos",
-							"" + pos[0][0] + ':' +
-									pos[0][1] + '-' + pos[1][0] + ':' +
-									pos[1][1] });
+							"" + pos.getStartLine() + ':' +
+									pos.getStartColumn() + '-' + pos.getEndLine() + ':' +
+									pos.getEndColumn() });
 				}
 			}
 
@@ -68,11 +69,12 @@ public class HtmlRenderer {
 				break;
 
 			case Link:
+				Link link = (Link) node;
 				if (entering) {
 					attrs.add(new String[] { "href",
-							esc(node.destination, true) });
-					if (node.title != null) {
-						attrs.add(new String[] { "title", esc(node.title, true) });
+							esc(link.getDestination(), true) });
+					if (link.getTitle() != null) {
+						attrs.add(new String[] { "title", esc(link.getTitle(), true) });
 					}
 					html.tag("a", attrs);
 				} else {
@@ -81,17 +83,18 @@ public class HtmlRenderer {
 				break;
 
 			case Image:
+				Image image = (Image) node;
 				if (entering) {
 					if (html.isHtmlAllowed()) {
-						html.raw("<img src=\"" + esc(node.destination, true) +
+						html.raw("<img src=\"" + esc(image.getDestination(), true) +
 								"\" alt=\"");
 					}
 					html.enter();
 				} else {
 					html.leave();
 					if (html.isHtmlAllowed()) {
-						if (node.title != null) {
-							html.raw("\" title=\"" + esc(node.title, true));
+						if (image.getTitle() != null) {
+							html.raw("\" title=\"" + esc(image.getTitle(), true));
 						}
 						html.raw("\" />");
 					}
@@ -111,7 +114,8 @@ public class HtmlRenderer {
 				Node grandparent = node.parent.parent;
 				if (grandparent != null &&
 						grandparent.type() == Type.List) {
-					if (grandparent.isListTight()) {
+					ListBlock grandparentList = (ListBlock) grandparent;
+					if (grandparentList.isTight()) {
 						break;
 					}
 				}
@@ -146,10 +150,11 @@ public class HtmlRenderer {
 				break;
 
 			case List:
-				String tagname = node.getListType().equals("Bullet") ? "ul"
+				ListBlock list = (ListBlock) node;
+				String tagname = list.getListType() == ListBlock.ListType.BULLET ? "ul"
 						: "ol";
 				if (entering) {
-					int start = node.getListStart();
+					int start = list.getOrderedStart();
 					if (start > 1) {
 						attrs.add(new String[] { "start", String.valueOf(start) });
 					}
@@ -164,7 +169,8 @@ public class HtmlRenderer {
 				break;
 
 			case Header:
-				String htag = "h" + node.level;
+				Header header = (Header) node;
+				String htag = "h" + header.getLevel();
 				if (entering) {
 					html.line();
 					html.tag(htag, attrs);
