@@ -18,10 +18,8 @@ import com.atlassian.rstocker.cm.spec.SpecExample;
 import com.atlassian.rstocker.cm.spec.SpecReader;
 
 @RunWith(Parameterized.class)
-public class SpecTest {
+public class SpecTest extends RenderingTestCase {
 
-	private final Parser parser = new Parser();
-	private final HtmlRenderer renderer = HtmlRenderer.builder().build();
 	private final SpecExample example;
 
 	@Parameters(name = "{0}")
@@ -46,12 +44,7 @@ public class SpecTest {
 
 	@Test
 	public void testHtmlRendering() {
-		Node node = parser.parse(example.getSource());
-		String html = renderer.render(node);
-		// include source for better assertion errors
-		String expected = example.getHtml() + "\n\n" + example.getSource();
-		String actual = html + "\n\n" + example.getSource();
-		assertEquals(expected, actual);
+        assertRendering(example.getSource(), example.getHtml());
 	}
 
 }
