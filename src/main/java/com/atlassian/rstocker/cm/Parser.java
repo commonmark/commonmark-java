@@ -228,7 +228,7 @@ public class Parser {
 		allClosed = (container == this.oldtip);
 		this.lastMatchedContainer = container;
 
-		// Check to see if we"ve hit 2nd blank line; if so break out of list:
+		// Check to see if we've hit 2nd blank line; if so break out of list:
 		if (blank && container.lastLineBlank) {
 			this.breakOutOfLists(container);
 		}
@@ -383,8 +383,8 @@ public class Parser {
 			Type t = container.type();
 
 			// Block quote lines are never blank as they start with >
-			// and we don"t count blanks in fenced code for purposes of tight/loose
-			// lists or breaking out of lists. We also don"t set last_line_blank
+			// and we don't count blanks in fenced code for purposes of tight/loose
+			// lists or breaking out of lists. We also don't set last_line_blank
 			// on an empty list item, or if we just closed a fenced block.
 			boolean lastLineBlank = blank &&
 					!(t == Type.BlockQuote ||
