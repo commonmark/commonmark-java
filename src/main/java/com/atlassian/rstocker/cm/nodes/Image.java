@@ -1,7 +1,5 @@
 package com.atlassian.rstocker.cm.nodes;
 
-import com.atlassian.rstocker.cm.nodes.Node;
-
 public class Image extends Node {
 
 	private final String destination;
@@ -15,6 +13,11 @@ public class Image extends Node {
 	@Override
 	public Type getType() {
 		return Type.Image;
+	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
 	}
 
 	public String getDestination() {

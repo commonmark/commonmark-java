@@ -98,15 +98,20 @@ public class Parser {
 	// Walk through a block & children recursively, parsing string content
 	// into inline content where appropriate. Returns new object.
 	private void processInlines(Node block) {
-		Node.NodeWalker walker = block.walker();
-		Node.NodeWalker.Entry entry;
-		while ((entry = walker.next()) != null) {
-			Node node = entry.node;
-			Type t = node.getType();
-			if (!entry.entering && (t == Type.Paragraph || t == Type.Header)) {
-				this.inlineParser.parse(node, getContent((Block) node).getString(), this.refmap);
+		Visitor visitor = new AbstractVisitor() {
+			@Override
+			public void visit(Paragraph paragraph) {
+				visitChildren(paragraph);
+				inlineParser.parse(paragraph, getContent(paragraph).getString(), refmap);
 			}
-		}
+
+			@Override
+			public void visit(Header header) {
+				visitChildren(header);
+				inlineParser.parse(header, getContent(header).getString(), refmap);
+			}
+		};
+		block.accept(visitor);
 	}
 
 	private Document document() {

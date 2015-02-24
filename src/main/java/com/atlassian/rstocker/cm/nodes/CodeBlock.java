@@ -24,6 +24,11 @@ public class CodeBlock extends Block {
 		return Type.CodeBlock;
 	}
 
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
+
 	public CodeBlock(SourcePos sourcePos) {
 		this(sourcePos, '\0', 0, 0);
 	}

@@ -11,4 +11,9 @@ public class HorizontalRule extends Block {
 	public Type getType() {
 		return Type.HorizontalRule;
 	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
 }

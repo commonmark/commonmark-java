@@ -11,4 +11,9 @@ public class Document extends Block {
 	public Type getType() {
 		return Type.Document;
 	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
 }

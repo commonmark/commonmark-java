@@ -5,4 +5,9 @@ public class Emphasis extends Node {
 	public Type getType() {
 		return Type.Emph;
 	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
 }

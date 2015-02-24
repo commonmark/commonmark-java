@@ -11,9 +11,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.atlassian.rstocker.cm.Parser;
-import com.atlassian.rstocker.cm.HtmlRenderer;
-import com.atlassian.rstocker.cm.Node;
 import com.atlassian.rstocker.cm.spec.SpecExample;
 import com.atlassian.rstocker.cm.spec.SpecReader;
 
@@ -34,7 +31,7 @@ public class SpecTest extends RenderingTestCase {
 			List<SpecExample> examples = reader.read();
 			return examples.stream()
 //					.filter(example -> example.toString().equals("Section \"Links\" example 1"))
-					.map(example -> new Object[] { example })
+					.map(example -> new Object[]{example})
 					.collect(Collectors.toList());
 		}
 	}

@@ -32,25 +32,9 @@ public abstract class Node {
 	private Node prev = null;
 	private Node next = null;
 
-	public boolean isContainer() {
-		switch (getType()) {
-		case Document:
-		case BlockQuote:
-		case List:
-		case Item:
-		case Paragraph:
-		case Header:
-		case Emph:
-		case Strong:
-		case Link:
-		case Image:
-			return true;
-		default:
-			return false;
-		}
-	}
-
 	public abstract Type getType();
+
+	public abstract void accept(Visitor visitor);
 
 	public Node getNext() {
 		return next;
@@ -142,65 +126,9 @@ public abstract class Node {
 		}
 	}
 
-	public NodeWalker walker() {
-		return new NodeWalker(this);
-	}
-
 	@Override
 	public String toString() {
 		return "Node{type=" + getType() + "}";
-	}
-
-	// foo: root field seems to be unnecessary
-
-	public static class NodeWalker {
-		private Node current;
-		private boolean entering = true;
-
-		public NodeWalker(Node root) {
-			this.current = root;
-		}
-
-		public Entry next() {
-			Node cur = this.current;
-			boolean entering = this.entering;
-
-			if (cur == null) {
-				return null;
-			}
-
-			boolean container = cur.isContainer();
-
-			if (entering && container) {
-				if (cur.firstChild != null) {
-					this.current = cur.firstChild;
-					this.entering = true;
-				} else {
-					// stay on node but exit
-					this.entering = false;
-				}
-
-			} else if (cur.next == null) {
-				this.current = cur.parent;
-				this.entering = false;
-
-			} else {
-				this.current = cur.next;
-				this.entering = true;
-			}
-
-			return new Entry(cur, entering);
-		}
-
-		public static class Entry {
-			final Node node;
-			final boolean entering;
-
-			public Entry(Node node, boolean entering) {
-				this.node = node;
-				this.entering = entering;
-			}
-		}
 	}
 
 }

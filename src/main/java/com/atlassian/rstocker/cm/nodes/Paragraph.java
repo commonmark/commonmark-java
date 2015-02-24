@@ -11,4 +11,9 @@ public class Paragraph extends Block {
 	public Type getType() {
 		return Type.Paragraph;
 	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
 }

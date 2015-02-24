@@ -1,7 +1,5 @@
 package com.atlassian.rstocker.cm.nodes;
 
-import com.atlassian.rstocker.cm.nodes.Node;
-
 public class Html extends Node {
 
 	private String literal;
@@ -9,6 +7,11 @@ public class Html extends Node {
 	@Override
 	public Type getType() {
 		return Type.Html;
+	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
 	}
 
 	public String getLiteral() {

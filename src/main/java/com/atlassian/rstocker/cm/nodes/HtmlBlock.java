@@ -15,6 +15,11 @@ public class HtmlBlock extends Block {
 		return Type.HtmlBlock;
 	}
 
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
+
 	public String getLiteral() {
 		return literal;
 	}

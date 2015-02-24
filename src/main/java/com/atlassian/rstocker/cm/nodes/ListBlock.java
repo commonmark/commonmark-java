@@ -29,6 +29,11 @@ public class ListBlock extends Block {
 		return Type.List;
 	}
 
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
+
 	public ListType getListType() {
 		return type;
 	}

@@ -9,6 +9,8 @@ Fixes:
 * || this.top doesn't do anything
 * can be moved one line up:     if (rest.match(reHrule)) { return null; }
 *              !(/\s/.test(char_before)) && -> use reWhitespaceChar
+* processEmphasis doesn't need node?
+* processInlines: doesn't "Returns new object"
 
 Suggestions:
 * instead of type being String, make "enum"

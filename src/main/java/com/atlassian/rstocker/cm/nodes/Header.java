@@ -16,6 +16,11 @@ public class Header extends Block {
 		return Type.Header;
 	}
 
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
+
 	public int getLevel() {
 		return level;
 	}

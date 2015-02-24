@@ -11,4 +11,9 @@ public class ListItem extends Block {
 	public Type getType() {
 		return Type.Item;
 	}
+
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
 }

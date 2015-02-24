@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import com.atlassian.rstocker.cm.nodes.*;
-import com.atlassian.rstocker.cm.nodes.Node.NodeWalker;
-import com.atlassian.rstocker.cm.nodes.Node.NodeWalker.Entry;
 
 public class HtmlRenderer {
 
@@ -22,206 +20,8 @@ public class HtmlRenderer {
 	public String render(Node nodeToRender) {
 		HtmlWriter html = new HtmlWriter();
 
-		NodeWalker walker = nodeToRender.walker();
-		Entry entry;
-
-		while ((entry = walker.next()) != null) {
-			boolean entering = entry.entering;
-			Node node = entry.node;
-
-			// TODO: meh
-			List<String[]> attrs = new ArrayList<>();
-			if (sourcepos && node instanceof Block) {
-				Block block = (Block) node;
-				SourcePos pos = block.getSourcePos();
-				if (pos != null) {
-					attrs.add(new String[] { "data-sourcepos",
-							"" + pos.getStartLine() + ':' +
-									pos.getStartColumn() + '-' + pos.getEndLine() + ':' +
-									pos.getEndColumn() });
-				}
-			}
-
-			switch (node.getType()) {
-			case Text:
-				Text text = (Text) node;
-				html.raw(esc(text.getLiteral(), false));
-				break;
-
-			case Softbreak:
-				html.raw(softbreak);
-				break;
-
-			case Hardbreak:
-				html.tag("br", true);
-				html.line();
-				break;
-
-			case Emph:
-				html.tag(entering ? "em" : "/em");
-				break;
-
-			case Strong:
-				html.tag(entering ? "strong" : "/strong");
-				break;
-
-			case Html:
-				Html htmlNode = (Html) node;
-				html.raw(htmlNode.getLiteral());
-				break;
-
-			case Link:
-				Link link = (Link) node;
-				if (entering) {
-					attrs.add(new String[] { "href",
-							esc(link.getDestination(), true) });
-					if (link.getTitle() != null) {
-						attrs.add(new String[] { "title", esc(link.getTitle(), true) });
-					}
-					html.tag("a", attrs);
-				} else {
-					html.tag("/a");
-				}
-				break;
-
-			case Image:
-				Image image = (Image) node;
-				if (entering) {
-					if (html.isHtmlAllowed()) {
-						html.raw("<img src=\"" + esc(image.getDestination(), true) +
-								"\" alt=\"");
-					}
-					html.enter();
-				} else {
-					html.leave();
-					if (html.isHtmlAllowed()) {
-						if (image.getTitle() != null) {
-							html.raw("\" title=\"" + esc(image.getTitle(), true));
-						}
-						html.raw("\" />");
-					}
-				}
-				break;
-
-			case Code:
-				Code code = (Code) node;
-				html.tag("code");
-				html.raw(esc(code.getLiteral(), false));
-				html.tag("/code");
-				break;
-
-			case Document:
-				break;
-
-			case Paragraph:
-				Node parent = node.getParent();
-				if (parent != null) {
-					Node gramps = parent.getParent();
-					if (gramps != null && gramps instanceof ListBlock) {
-						ListBlock list = (ListBlock) gramps;
-						if (list.isTight()) {
-							break;
-						}
-					}
-				}
-				if (entering) {
-					html.line();
-					html.tag("p", attrs);
-				} else {
-					html.tag("/p");
-					html.line();
-				}
-				break;
-
-			case BlockQuote:
-				if (entering) {
-					html.line();
-					html.tag("blockquote", attrs);
-					html.line();
-				} else {
-					html.line();
-					html.tag("/blockquote");
-					html.line();
-				}
-				break;
-
-			case Item:
-				if (entering) {
-					html.tag("li", attrs);
-				} else {
-					html.tag("/li");
-					html.line();
-				}
-				break;
-
-			case List:
-				ListBlock list = (ListBlock) node;
-				String tagname = list.getListType() == ListBlock.ListType.BULLET ? "ul"
-						: "ol";
-				if (entering) {
-					int start = list.getOrderedStart();
-					if (start > 1) {
-						attrs.add(new String[] { "start", String.valueOf(start) });
-					}
-					html.line();
-					html.tag(tagname, attrs);
-					html.line();
-				} else {
-					html.line();
-					html.tag('/' + tagname);
-					html.line();
-				}
-				break;
-
-			case Header:
-				Header header = (Header) node;
-				String htag = "h" + header.getLevel();
-				if (entering) {
-					html.line();
-					html.tag(htag, attrs);
-				} else {
-					html.tag('/' + htag);
-					html.line();
-				}
-				break;
-
-			case CodeBlock:
-				// TODO: Just use indexOf(' ')
-				CodeBlock codeBlock = (CodeBlock) node;
-				String[] info_words = codeBlock.getInfo() != null ? codeBlock.getInfo().split(" +")
-						: new String[0];
-				if (info_words.length > 0 && info_words[0].length() > 0) {
-					attrs.add(new String[] { "class",
-							"language-" + esc(info_words[0], true) });
-				}
-				html.line();
-				html.tag("pre");
-				html.tag("code", attrs);
-				html.raw(esc(codeBlock.getLiteral(), false));
-				html.tag("/code");
-				html.tag("/pre");
-				html.line();
-				break;
-
-			case HtmlBlock:
-				HtmlBlock htmlBlock = (HtmlBlock) node;
-				html.line();
-				html.raw(htmlBlock.getLiteral());
-				html.line();
-				break;
-
-			case HorizontalRule:
-				html.line();
-				html.tag("hr", attrs, true);
-				html.line();
-				break;
-
-			default:
-				throw new IllegalStateException("Unknown node type "
-						+ node.getType());
-			}
-
-		}
+		RendererVisitor visitor = new RendererVisitor(html);
+		nodeToRender.accept(visitor);
 
 		return html.build();
 	}
@@ -264,6 +64,213 @@ public class HtmlRenderer {
 
 		public HtmlRenderer build() {
 			return new HtmlRenderer(this);
+		}
+	}
+
+	private class RendererVisitor extends AbstractVisitor {
+
+		private final HtmlWriter html;
+
+		public RendererVisitor(HtmlWriter html) {
+			this.html = html;
+		}
+
+		@Override
+		public void visit(Document document) {
+			visitChildren(document);
+		}
+
+		@Override
+		public void visit(Header header) {
+			String htag = "h" + header.getLevel();
+			html.line();
+			html.tag(htag, getAttrs(header));
+			visitChildren(header);
+			html.tag('/' + htag);
+			html.line();
+		}
+
+		@Override
+		public void visit(Paragraph paragraph) {
+			boolean inTightList = isInTightList(paragraph);
+			if (!inTightList) {
+				html.line();
+				html.tag("p", getAttrs(paragraph));
+			}
+			visitChildren(paragraph);
+			if (!inTightList) {
+				html.tag("/p");
+				html.line();
+			}
+		}
+
+		@Override
+		public void visit(ListBlock listBlock) {
+			String tagname = listBlock.getListType() == ListBlock.ListType.BULLET ? "ul"
+					: "ol";
+			int start = listBlock.getOrderedStart();
+			List<String[]> attrs = getAttrs(listBlock);
+			if (start > 1) {
+				attrs.add(new String[]{"start", String.valueOf(start)});
+			}
+			html.line();
+			html.tag(tagname, attrs);
+			html.line();
+			visitChildren(listBlock);
+			html.line();
+			html.tag('/' + tagname);
+			html.line();
+		}
+
+		@Override
+		public void visit(ListItem listItem) {
+			html.tag("li", getAttrs(listItem));
+			visitChildren(listItem);
+			html.tag("/li");
+			html.line();
+		}
+
+		@Override
+		public void visit(CodeBlock codeBlock) {
+			// TODO: Just use indexOf(' ')
+			String[] info_words = codeBlock.getInfo() != null ? codeBlock.getInfo().split(" +")
+					: new String[0];
+			List<String[]> attrs = getAttrs(codeBlock);
+			if (info_words.length > 0 && info_words[0].length() > 0) {
+				attrs.add(new String[]{"class",
+						"language-" + esc(info_words[0], true)});
+			}
+			html.line();
+			html.tag("pre");
+			html.tag("code", attrs);
+			html.raw(esc(codeBlock.getLiteral(), false));
+			html.tag("/code");
+			html.tag("/pre");
+			html.line();
+		}
+
+		@Override
+		public void visit(BlockQuote blockQuote) {
+			html.line();
+			html.tag("blockquote", getAttrs(blockQuote));
+			html.line();
+			visitChildren(blockQuote);
+			html.line();
+			html.tag("/blockquote");
+			html.line();
+		}
+
+		@Override
+		public void visit(HtmlBlock htmlBlock) {
+			html.line();
+			html.raw(htmlBlock.getLiteral());
+			html.line();
+		}
+
+		@Override
+		public void visit(HorizontalRule horizontalRule) {
+			html.line();
+			html.tag("hr", getAttrs(horizontalRule), true);
+			html.line();
+		}
+
+		@Override
+		public void visit(Link link) {
+			List<String[]> attrs = getAttrs(link);
+			attrs.add(new String[]{"href",
+					esc(link.getDestination(), true)});
+				if (link.getTitle() != null) {
+					attrs.add(new String[]{"title", esc(link.getTitle(), true)});
+				}
+				html.tag("a", attrs);
+			visitChildren(link);
+				html.tag("/a");
+		}
+
+		@Override
+		public void visit(Image image) {
+				if (html.isHtmlAllowed()) {
+					html.raw("<img src=\"" + esc(image.getDestination(), true) +
+							"\" alt=\"");
+				}
+				html.enter();
+			visitChildren(image);
+				html.leave();
+				if (html.isHtmlAllowed()) {
+					if (image.getTitle() != null) {
+						html.raw("\" title=\"" + esc(image.getTitle(), true));
+					}
+					html.raw("\" />");
+				}
+		}
+
+		@Override
+		public void visit(Emphasis emphasis) {
+			html.tag("em");
+			visitChildren(emphasis);
+			html.tag("/em");
+		}
+
+		@Override
+		public void visit(StrongEmphasis strongEmphasis) {
+			html.tag("strong");
+			visitChildren(strongEmphasis);
+			html.tag("/strong");
+		}
+
+		@Override
+		public void visit(Text text) {
+			html.raw(esc(text.getLiteral(), false));
+		}
+
+		@Override
+		public void visit(Code code) {
+			html.tag("code");
+			html.raw(esc(code.getLiteral(), false));
+			html.tag("/code");
+		}
+
+		@Override
+		public void visit(Html htmlNode) {
+			html.raw(htmlNode.getLiteral());
+		}
+
+		@Override
+		public void visit(SoftLineBreak softLineBreak) {
+			html.raw(softbreak);
+		}
+
+		@Override
+		public void visit(HardLineBreak hardLineBreak) {
+			html.tag("br", true);
+			html.line();
+		}
+
+		private boolean isInTightList(Paragraph paragraph) {
+			Node parent = paragraph.getParent();
+			if (parent != null) {
+				Node gramps = parent.getParent();
+				if (gramps != null && gramps instanceof ListBlock) {
+					ListBlock list = (ListBlock) gramps;
+					return list.isTight();
+				}
+			}
+			return false;
+		}
+
+		private List<String[]> getAttrs(Node node) {
+			List<String[]> attrs = new ArrayList<>();
+			if (sourcepos && node instanceof Block) {
+				Block block = (Block) node;
+				SourcePos pos = block.getSourcePos();
+				if (pos != null) {
+					attrs.add(new String[] { "data-sourcepos",
+							"" + pos.getStartLine() + ':' +
+									pos.getStartColumn() + '-' + pos.getEndLine() + ':' +
+									pos.getEndColumn() });
+				}
+			}
+			return attrs;
 		}
 	}
 
