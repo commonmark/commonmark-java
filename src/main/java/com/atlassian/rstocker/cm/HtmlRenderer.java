@@ -262,7 +262,7 @@ public class HtmlRenderer {
 			List<String[]> attrs = new ArrayList<>();
 			if (sourcepos && node instanceof Block) {
 				Block block = (Block) node;
-				SourcePos pos = block.getSourcePos();
+				SourcePosition pos = block.getSourcePosition();
 				if (pos != null) {
 					attrs.add(new String[] { "data-sourcepos",
 							"" + pos.getStartLine() + ':' +

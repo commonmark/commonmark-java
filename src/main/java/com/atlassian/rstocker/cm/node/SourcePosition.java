@@ -1,17 +1,17 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.node;
 
-public class SourcePos {
+public class SourcePosition {
 
 	private final int startLine;
 	private final int startColumn;
 	private final int endLine;
 	private final int endColumn;
 
-	public SourcePos(int startLine, int startColumn) {
+	public SourcePosition(int startLine, int startColumn) {
 		this(startLine, startColumn, 0, 0);
 	}
 
-	public SourcePos(int startLine, int startColumn, int endLine, int endColumn) {
+	public SourcePosition(int startLine, int startColumn, int endLine, int endColumn) {
 		this.startLine = startLine;
 		this.startColumn = startColumn;
 		this.endLine = endLine;

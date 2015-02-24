@@ -1,7 +1,5 @@
 package com.atlassian.rstocker.cm.node;
 
-import com.atlassian.rstocker.cm.SourcePos;
-
 public class CodeBlock extends Block {
 
 	private final char fenceChar;
@@ -12,8 +10,7 @@ public class CodeBlock extends Block {
 	private String literal;
 
 	// TODO: Split into two classes?
-	public CodeBlock(SourcePos sourcePos, char fenceChar, int fenceLength, int fenceOffset) {
-		super(sourcePos);
+	public CodeBlock(char fenceChar, int fenceLength, int fenceOffset) {
 		this.fenceChar = fenceChar;
 		this.fenceLength = fenceLength;
 		this.fenceOffset = fenceOffset;
@@ -29,8 +26,8 @@ public class CodeBlock extends Block {
 		visitor.visit(this);
 	}
 
-	public CodeBlock(SourcePos sourcePos) {
-		this(sourcePos, '\0', 0, 0);
+	public CodeBlock() {
+		this('\0', 0, 0);
 	}
 
 	public boolean isFenced() {

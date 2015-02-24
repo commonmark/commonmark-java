@@ -1,13 +1,10 @@
 package com.atlassian.rstocker.cm.node;
 
-import com.atlassian.rstocker.cm.SourcePos;
-
 public class Header extends Block {
 
 	private final int level;
 
-	public Header(SourcePos sourcePos, int level) {
-		super(sourcePos);
+	public Header(int level) {
 		this.level = level;
 	}
 

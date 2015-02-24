@@ -69,7 +69,8 @@ public class Parser {
 
 	// The main parsing function. Returns a parsed document AST.
 	public Node parse(String input) {
-		this.doc = document();
+		this.doc = new Document();
+		this.doc.setSourcePosition(new SourcePosition(1, 1));
 		this.tip = this.doc;
 		this.refmap = new HashMap<>();
 		// if (this.options.time) { console.time("preparing input"); }
@@ -112,10 +113,6 @@ public class Parser {
 			}
 		};
 		block.accept(visitor);
-	}
-
-	private Document document() {
-		return new Document(new SourcePos(1, 1));
 	}
 
 	// Analyze a line of text and update the document appropriately.
@@ -280,7 +277,7 @@ public class Parser {
 					offset += CODE_INDENT;
 					allClosed = allClosed ||
 							this.closeUnmatchedBlocks();
-					container = addChild(new CodeBlock(getSourcePos(offset)));
+					container = addChild(new CodeBlock(), offset);
 				}
 				break;
 			}
@@ -303,14 +300,14 @@ public class Parser {
 					offset++;
 				}
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = addChild(new BlockQuote(getSourcePos(first_nonspace)));
+				container = addChild(new BlockQuote(), first_nonspace);
 
 			} else if ((matcher = reATXHeaderMarker.matcher(ln.substring(offset))).find()) {
 				// ATX header
 				offset += matcher.group(0).length();
 				allClosed = allClosed || this.closeUnmatchedBlocks();
 				int level = matcher.group(0).trim().length(); // number of #s
-				Header header = addChild(new Header(getSourcePos(first_nonspace), level));
+				Header header = addChild(new Header(level), first_nonspace);
 				container = header;
 
 				// remove trailing ###s:
@@ -324,7 +321,7 @@ public class Parser {
 				int fence_length = matcher.group(0).length();
 				allClosed = allClosed || this.closeUnmatchedBlocks();
 				char fenceChar = matcher.group(0).charAt(0);
-				CodeBlock codeBlock = addChild(new CodeBlock(getSourcePos(first_nonspace), fenceChar, fence_length, indent));
+				CodeBlock codeBlock = addChild(new CodeBlock(fenceChar, fence_length, indent), first_nonspace);
 				container = codeBlock;
 				offset += fence_length;
 				break;
@@ -332,7 +329,7 @@ public class Parser {
 			} else if (matchAt(reHtmlBlockOpen, ln, offset) != -1) {
 				// html block
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = addChild(new HtmlBlock(getSourcePos(offset)));
+				container = addChild(new HtmlBlock(), offset);
 				offset -= indent; // back up so spaces are part of block
 				break;
 
@@ -344,7 +341,8 @@ public class Parser {
 				// setext header line
 				allClosed = allClosed || this.closeUnmatchedBlocks();
 				int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
-				Header header = new Header(paragraph.getSourcePos(), level);
+				Header header = new Header(level);
+				header.setSourcePosition(paragraph.getSourcePosition());
 				blockContent.put(header, getContent(paragraph));
 				container.insertAfter(header);
 				container.unlink();
@@ -356,7 +354,7 @@ public class Parser {
 			} else if (matchAt(reHrule, ln, offset) != -1) {
 				// hrule
 				allClosed = allClosed || this.closeUnmatchedBlocks();
-				container = addChild(new HorizontalRule(getSourcePos(first_nonspace)));
+				container = addChild(new HorizontalRule(), first_nonspace);
 				offset = ln.length() - 1;
 				break;
 
@@ -368,12 +366,12 @@ public class Parser {
 				// add the list if needed
 				if (t != Type.List ||
 						!(listsMatch((ListBlock) container, data))) {
-					ListBlock list = addChild(new ListBlock(getSourcePos(first_nonspace), data.type, data.delimiter, data.start, data.bulletChar));
+					ListBlock list = addChild(new ListBlock(data.type, data.delimiter, data.start, data.bulletChar), first_nonspace);
 					list.setTight(true);
 				}
 
 				// add the list item
-				ListItem listItem = addChild(new ListItem(getSourcePos(first_nonspace)));
+				ListItem listItem = addChild(new ListItem(), first_nonspace);
 				listItemOffset.put(listItem, data.markerOffset + data.padding);
 				container = listItem;
 
@@ -416,7 +414,7 @@ public class Parser {
 							(t == Type.CodeBlock && ((CodeBlock) container).isFenced()) ||
 					(t == Type.Item &&
 							container.getFirstChild() == null &&
-							container.getSourcePos().getStartLine() == this.lineNumber));
+							container.getSourcePosition().getStartLine() == this.lineNumber));
 
 			// propagate lastLineBlank up through parents:
 			Node cont = container;
@@ -444,7 +442,7 @@ public class Parser {
 				} else {
 					// create paragraph container for line
 					// foo: in JS, there's a third argument, which looks like a bug
-					addChild(new Paragraph(getSourcePos(first_nonspace)));
+					addChild(new Paragraph(), first_nonspace);
 					this.addLine(ln, first_nonspace);
 				}
 			}
@@ -463,7 +461,7 @@ public class Parser {
 
 		Block above = block.getParent();
 		openBlocks.remove(block);
-		block.setSourcePos(new SourcePos(block.getSourcePos().getStartLine(), block.getSourcePos().getStartColumn(), lineNumber, this.lastLineLength + 1));
+		block.setSourcePosition(new SourcePosition(block.getSourcePosition().getStartLine(), block.getSourcePosition().getStartColumn(), lineNumber, this.lastLineLength + 1));
 
 		switch (block.getType()) {
 		case Paragraph: {
@@ -597,21 +595,23 @@ public class Parser {
 	// Add block of type tag as a child of the tip. If the tip can't
 	// accept children, close and finalize it and try its parent,
 	// and so on til we find a block that can accept children.
-	private <T extends Block> T addChild(T node) {
-		openBlocks.add(node);
+	private <T extends Block> T addChild(T node, int offset) {
 		while (!canContain(this.tip.getType(), node.getType())) {
 			this.finalize(this.tip, this.lineNumber - 1);
 		}
 
+		node.setSourcePosition(getSourcePos(offset));
+		openBlocks.add(node);
 		blockContent.put(node, new BlockContent());
+
 		this.tip.appendChild(node);
 		this.tip = node;
 		return node;
 	}
 
-	private SourcePos getSourcePos(int offset) {
+	private SourcePosition getSourcePos(int offset) {
 		int column_number = offset + 1; // offset 0 = column 1
-		return new SourcePos(this.lineNumber, column_number);
+		return new SourcePosition(this.lineNumber, column_number);
 	}
 
 	private boolean isLastLineBlank(Node node) {
