@@ -37,8 +37,6 @@ public class Node {
 	private Node prev = null;
 	Node next = null;
 
-	List<String> strings = null;
-	public String string_content = null;
 	boolean lastLineBlank = false;
 	public boolean open = true;
 	String literal;

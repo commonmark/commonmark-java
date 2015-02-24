@@ -1,6 +1,6 @@
 package com.atlassian.rstocker.cm;
 
-public class ListData {
+class ListData {
 
 	ListBlock.ListType type;
 	boolean tight = true;

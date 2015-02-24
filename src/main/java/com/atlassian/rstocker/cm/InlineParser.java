@@ -781,8 +781,8 @@ public class InlineParser {
 
 	// Parse string_content in block into inline children,
 	// using refmap to resolve references.
-	public void parse(Node block, Map<String, Link> refmap) {
-		this.subject = block.string_content.trim();
+	public void parse(Node block, String content, Map<String, Link> refmap) {
+		this.subject = content.trim();
 		this.pos = 0;
 		this.refmap = refmap; // foo: || {};
 		this.delimiters = null;

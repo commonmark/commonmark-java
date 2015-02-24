@@ -29,6 +29,8 @@ public class Parser {
 
 	private static Pattern reNonSpace = Pattern.compile("[^ \t\n]");
 
+	private static Pattern reTrailingBlankLines = Pattern.compile("(?:\n[ \t]*)+$");
+
 	private static Pattern reBulletListMarker = Pattern.compile("^[*+-]( +|$)");
 
 	private static Pattern reOrderedListMarker = Pattern.compile("^(\\d+)([.)])( +|$)");
@@ -54,6 +56,7 @@ public class Parser {
 
 	private Set<Block> openBlocks = new HashSet<>();
 	private Map<ListItem, Integer> listItemOffset = new HashMap<>();
+	private Map<Block, BlockContent> blockContent = new HashMap<>();
 
 	private Parser(Builder builder) {
 	}
@@ -99,7 +102,7 @@ public class Parser {
 			Node node = entry.node;
 			Type t = node.type();
 			if (!entry.entering && (t == Type.Paragraph || t == Type.Header)) {
-				this.inlineParser.parse(node, this.refmap);
+				this.inlineParser.parse(node, getContent((Block) node).getString(), this.refmap);
 			}
 		}
 	}
@@ -305,7 +308,7 @@ public class Parser {
 				// remove trailing ###s:
 				String stripped = ln.substring(offset).replaceAll("^ *#+ *$", "")
 						.replaceAll(" +#+ *$", "");
-				container.strings = new ArrayList<>(Arrays.asList(stripped));
+				addLine(stripped, 0);
 				break;
 
 			} else if ((matcher = reCodeFence.matcher(ln.substring(offset))).find()) {
@@ -326,7 +329,7 @@ public class Parser {
 				break;
 
 			} else if (t == Type.Paragraph &&
-					container.strings.size() == 1 &&
+					getContent(container).hasSingleLine() &&
 					((matcher = reSetextHeaderLine.matcher(ln.substring(offset))).find())) {
 
 				Paragraph paragraph = (Paragraph) container;
@@ -334,7 +337,7 @@ public class Parser {
 				allClosed = allClosed || this.closeUnmatchedBlocks();
 				int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
 				Header header = new Header(paragraph.getSourcePos(), level);
-				header.strings = paragraph.strings;
+				blockContent.put(header, getContent(paragraph));
 				container.insertAfter(header);
 				container.unlink();
 				container = header;
@@ -379,7 +382,7 @@ public class Parser {
 		// First check for a lazy paragraph continuation:
 		if (!allClosed && !blank &&
 				this.tip.type() == Type.Paragraph &&
-				this.tip.strings.size() > 0) {
+				blockContent.get(tip).hasLines()) {
 			// lazy paragraph continuation
 
 			// foo: on DocParser? Looks like an error to me
@@ -405,7 +408,7 @@ public class Parser {
 							(t == Type.CodeBlock && ((CodeBlock) container).isFenced()) ||
 					(t == Type.Item &&
 							container.firstChild == null &&
-							((ListItem) container).getSourcePos().getStartLine() == this.lineNumber));
+							container.getSourcePos().getStartLine() == this.lineNumber));
 
 			// propagate lastLineBlank up through parents:
 			Node cont = container;
@@ -447,7 +450,6 @@ public class Parser {
 	// of paragraphs for reference definitions. Reset the tip to the
 	// parent of the closed block.
 	private void finalize(Block block, int lineNumber) {
-		int pos;
 		// foo: top? looks like a bug
 		// var above = block.parent || this.top;
 
@@ -456,46 +458,53 @@ public class Parser {
 		block.setSourcePos(new SourcePos(block.getSourcePos().getStartLine(), block.getSourcePos().getStartColumn(), lineNumber, this.lastLineLength + 1));
 
 		switch (block.type()) {
-		case Paragraph:
-			block.string_content = join(block.strings, "\n");
+		case Paragraph: {
+			int pos;
+			String content = getContent(block).getString();
 
 			// try parsing the beginning as link reference definitions:
-			while (block.string_content.charAt(0) == C_OPEN_BRACKET &&
-					(pos = this.inlineParser.parseReference(block.string_content,
+			while (content.charAt(0) == C_OPEN_BRACKET &&
+					(pos = this.inlineParser.parseReference(content,
 							this.refmap)) != 0) {
-				block.string_content = block.string_content.substring(pos);
-				if (isBlank(block.string_content)) {
+				content = content.substring(pos);
+				if (isBlank(content)) {
 					block.unlink();
 					break;
 				}
 			}
+			blockContent.put(block, new BlockContent(content));
 			break;
-
-		case Header:
-			block.string_content = join(block.strings, "\n");
-			break;
-
+		}
 		case HtmlBlock:
-			block.literal = join(block.strings, "\n");
+			block.literal = getContent(block).getString();
 			break;
 
-		case CodeBlock:
+		case CodeBlock: {
 			CodeBlock codeBlock = (CodeBlock) block;
+			BlockContent content = getContent(codeBlock);
+			boolean singleLine = content.hasSingleLine();
+			// add trailing newline
+			content.add("");
+			String contentString = content.getString();
+
 			if (codeBlock.isFenced()) { // fenced
 				// first line becomes info string
-				block.info = unescapeString(block.strings.get(0).trim());
-				if (block.strings.size() == 1) {
+				int firstNewline = contentString.indexOf('\n');
+				String firstLine = contentString.substring(0, firstNewline);
+				block.info = unescapeString(firstLine.trim());
+				if (singleLine) {
 					block.literal = "";
 				} else {
-					block.literal = join(block.strings.subList(1, block.strings.size()), "\n") + '\n';
+					String literal = contentString.substring(firstNewline + 1);
+					block.literal = literal;
 				}
 			} else { // indented
-				stripFinalBlankLines(block.strings);
-				block.literal = join(block.strings, "\n") + '\n';
+				String literal = reTrailingBlankLines.matcher(contentString).replaceFirst("\n");
+				block.literal = literal;
 			}
 			break;
-
-		case List:
+		}
+		case List: {
 			ListBlock list = (ListBlock) block;
 			Node item = block.firstChild;
 			while (item != null) {
@@ -517,7 +526,7 @@ public class Parser {
 				item = item.next;
 			}
 			break;
-
+		}
 		default:
 			break;
 		}
@@ -569,7 +578,11 @@ public class Parser {
 	// Add a line to the block at the tip. We assume the tip
 	// can accept lines -- that check should be done before calling this.
 	private void addLine(String ln, int offset) {
-		this.tip.strings.add(ln.substring(offset));
+		getContent(tip).add(ln.substring(offset));
+	}
+
+	private BlockContent getContent(Block block) {
+		return blockContent.get(block);
 	}
 
 	// Add block of type tag as a child of the tip. If the tip can't
@@ -581,8 +594,7 @@ public class Parser {
 			this.finalize(this.tip, this.lineNumber - 1);
 		}
 
-		node.strings = new ArrayList<>();
-		node.string_content = null;
+		blockContent.put(node, new BlockContent());
 		this.tip.appendChild(node);
 		this.tip = node;
 		return node;
@@ -683,15 +695,6 @@ public class Parser {
 		return text;
 	}
 
-	// destructively trip final blank lines in an array of strings
-	private static void stripFinalBlankLines(List<String> lns) {
-		int i = lns.size() - 1;
-		while (i >= 0 && !reNonSpace.matcher(lns.get(i)).find()) {
-			lns.remove(i);
-			i--;
-		}
-	}
-
 	// Returns true if block ends with a blank line, descending if needed
 	// into lists and sublists.
 	private static boolean endsWithBlankLine(Node block) {
@@ -707,10 +710,6 @@ public class Parser {
 			}
 		}
 		return false;
-	};
-
-	private static String join(Iterable<String> parts, String separator) {
-		return String.join(separator, parts);
 	}
 
 	public static class Builder {
