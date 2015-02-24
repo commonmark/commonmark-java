@@ -1,4 +1,4 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.internal;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -1,13 +1,10 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.internal;
 
 import com.atlassian.rstocker.cm.node.*;
 
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.atlassian.rstocker.cm.Common.*;
-import static com.atlassian.rstocker.cm.Html5Entities.entityToString;
 
 public class InlineParser {
 	// Constants for character codes:
@@ -25,7 +22,7 @@ public class InlineParser {
 	private static final char C_OPEN_PAREN = 40;
 	private static final char C_COLON = 58;
 
-	private static final String ESCAPED_CHAR = "\\\\" + ESCAPABLE;
+	private static final String ESCAPED_CHAR = "\\\\" + Common.ESCAPABLE;
 	private static final String REG_CHAR = "[^\\\\()\\x00-\\x20]";
 	private static final String IN_PARENS_NOSP = "\\((" + REG_CHAR + '|' + ESCAPED_CHAR + ")*\\)";
 	private static final String TAGNAME = "[A-Za-z][A-Za-z0-9]*";
@@ -68,7 +65,7 @@ public class InlineParser {
 	private static final Pattern reLinkDestination = Pattern.compile(
 			"^(?:" + REG_CHAR + "+|" + ESCAPED_CHAR + '|' + IN_PARENS_NOSP + ")*");
 
-	private static final Pattern reEscapable = Pattern.compile(ESCAPABLE);
+	private static final Pattern reEscapable = Pattern.compile(Common.ESCAPABLE);
 
 	private static final Pattern reEntityHere = Pattern.compile('^' + ENTITY, Pattern.CASE_INSENSITIVE);
 
@@ -234,13 +231,13 @@ public class InlineParser {
 		String dest;
 		if ((m = this.match(reEmailAutolink)) != null) {
 			dest = m.substring(1, m.length() - 1);
-			Link node = new Link(normalizeURI("mailto:" + dest), null);
+			Link node = new Link(Common.normalizeURI("mailto:" + dest), null);
 			node.appendChild(text(dest));
 			block.appendChild(node);
 			return true;
 		} else if ((m = this.match(reAutolink)) != null) {
 			dest = m.substring(1, m.length() - 1);
-			Link node = new Link(normalizeURI(dest), null);
+			Link node = new Link(Common.normalizeURI(dest), null);
 			node.appendChild(text(dest));
 			block.appendChild(node);
 			return true;
@@ -462,7 +459,7 @@ public class InlineParser {
 		String title = this.match(reLinkTitle);
 		if (title != null) {
 			// chop off quotes from title and unescape:
-			return unescapeString(title.substring(1, title.length() - 1));
+			return Common.unescapeString(title.substring(1, title.length() - 1));
 		} else {
 			return null;
 		}
@@ -476,12 +473,12 @@ public class InlineParser {
 			if (res.length() == 2) {
 				return "";
 			} else {
-				return normalizeURI(unescapeString(res.substring(1, res.length() - 1)));
+				return Common.normalizeURI(Common.unescapeString(res.substring(1, res.length() - 1)));
 			}
 		} else {
 			res = this.match(reLinkDestination);
 			if (res != null) {
-				return normalizeURI(unescapeString(res));
+				return Common.normalizeURI(Common.unescapeString(res));
 			} else {
 				return null;
 			}
@@ -626,7 +623,7 @@ public class InlineParser {
 
 			// lookup rawlabel in refmap
 			// foo: normalizeReference?
-			Link link = this.refmap.get(normalizeReference(reflabel));
+			Link link = this.refmap.get(Common.normalizeReference(reflabel));
 			if (link != null) {
 				dest = link.getDestination();
 				title = link.getTitle();
@@ -678,7 +675,7 @@ public class InlineParser {
 	boolean parseEntity(Node block) {
 		String m;
 		if ((m = this.match(reEntityHere)) != null) {
-			block.appendChild(text(entityToString(m)));
+			block.appendChild(text(Html5Entities.entityToString(m)));
 			return true;
 		} else {
 			return false;
@@ -767,7 +764,7 @@ public class InlineParser {
 			return 0;
 		}
 
-		String normlabel = normalizeReference(rawlabel);
+		String normlabel = Common.normalizeReference(rawlabel);
 
 		if (!refmap.containsKey(normlabel)) {
 			Link link = new Link(dest, title);

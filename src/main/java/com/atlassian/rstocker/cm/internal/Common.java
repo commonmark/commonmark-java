@@ -1,4 +1,6 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.internal;
+
+import com.atlassian.rstocker.cm.Escaper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
