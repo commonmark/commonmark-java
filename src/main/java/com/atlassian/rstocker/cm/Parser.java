@@ -476,10 +476,11 @@ public class Parser {
 			blockContent.put(block, new BlockContent(content));
 			break;
 		}
-		case HtmlBlock:
-			block.literal = getContent(block).getString();
+		case HtmlBlock: {
+			HtmlBlock htmlBlock = (HtmlBlock) block;
+			htmlBlock.setLiteral(getContent(block).getString());
 			break;
-
+		}
 		case CodeBlock: {
 			CodeBlock codeBlock = (CodeBlock) block;
 			BlockContent content = getContent(codeBlock);
@@ -492,16 +493,16 @@ public class Parser {
 				// first line becomes info string
 				int firstNewline = contentString.indexOf('\n');
 				String firstLine = contentString.substring(0, firstNewline);
-				block.info = unescapeString(firstLine.trim());
+				codeBlock.setInfo(unescapeString(firstLine.trim()));
 				if (singleLine) {
-					block.literal = "";
+					codeBlock.setLiteral("");
 				} else {
 					String literal = contentString.substring(firstNewline + 1);
-					block.literal = literal;
+					codeBlock.setLiteral(literal);
 				}
 			} else { // indented
 				String literal = reTrailingBlankLines.matcher(contentString).replaceFirst("\n");
-				block.literal = literal;
+				codeBlock.setLiteral(literal);
 			}
 			break;
 		}

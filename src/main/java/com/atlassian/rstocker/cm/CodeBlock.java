@@ -6,6 +6,10 @@ public class CodeBlock extends Block {
 	private final int fenceLength;
 	private final int fenceOffset;
 
+	private String info;
+	private String literal;
+
+	// TODO: Split into two classes?
 	public CodeBlock(SourcePos sourcePos, char fenceChar, int fenceLength, int fenceOffset) {
 		super(Type.CodeBlock, sourcePos);
 		this.fenceChar = fenceChar;
@@ -31,5 +35,21 @@ public class CodeBlock extends Block {
 
 	public int getFenceOffset() {
 		return fenceOffset;
+	}
+
+	public String getInfo() {
+		return info;
+	}
+
+	public void setInfo(String info) {
+		this.info = info;
+	}
+
+	public String getLiteral() {
+		return literal;
+	}
+
+	public void setLiteral(String literal) {
+		this.literal = literal;
 	}
 }

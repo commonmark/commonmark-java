@@ -38,7 +38,6 @@ public class Node {
 	Node next = null;
 
 	String literal;
-	String info;
 
 	public Node(Type nodeType) {
 		this._type = nodeType;

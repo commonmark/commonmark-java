@@ -182,7 +182,8 @@ public class HtmlRenderer {
 
 			case CodeBlock:
 				// TODO: Just use indexOf(' ')
-				String[] info_words = node.info != null ? node.info.split(" +")
+				CodeBlock codeBlock = (CodeBlock) node;
+				String[] info_words = codeBlock.getInfo() != null ? codeBlock.getInfo().split(" +")
 						: new String[0];
 				if (info_words.length > 0 && info_words[0].length() > 0) {
 					attrs.add(new String[] { "class",
@@ -191,15 +192,16 @@ public class HtmlRenderer {
 				html.line();
 				html.tag("pre");
 				html.tag("code", attrs);
-				html.raw(esc(node.literal, false));
+				html.raw(esc(codeBlock.getLiteral(), false));
 				html.tag("/code");
 				html.tag("/pre");
 				html.line();
 				break;
 
 			case HtmlBlock:
+				HtmlBlock htmlBlock = (HtmlBlock) node;
 				html.line();
-				html.raw(node.literal);
+				html.raw(htmlBlock.getLiteral());
 				html.line();
 				break;
 
