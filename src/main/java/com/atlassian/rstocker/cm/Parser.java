@@ -4,7 +4,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.atlassian.rstocker.cm.Node.Type;
+import com.atlassian.rstocker.cm.nodes.*;
+import com.atlassian.rstocker.cm.nodes.Node.Type;
 
 import static com.atlassian.rstocker.cm.Common.unescapeString;
 
@@ -101,7 +102,7 @@ public class Parser {
 		Node.NodeWalker.Entry entry;
 		while ((entry = walker.next()) != null) {
 			Node node = entry.node;
-			Type t = node.type();
+			Type t = node.getType();
 			if (!entry.entering && (t == Type.Paragraph || t == Type.Header)) {
 				this.inlineParser.parse(node, getContent((Block) node).getString(), this.refmap);
 			}
@@ -142,8 +143,9 @@ public class Parser {
 		// For each containing block, try to parse the associated line start.
 		// Bail out on failure: container will point to the last matching block.
 		// Set all_matched to false if not all containers match.
-		while (container.lastChild != null && container.lastChild instanceof Block && openBlocks.contains(container.lastChild)) {
-			container = (Block) container.lastChild;
+		while (container.getLastChild() != null && container.getLastChild() instanceof Block &&
+				openBlocks.contains(container.getLastChild())) {
+			container = (Block) container.getLastChild();
 
 			match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
@@ -155,7 +157,7 @@ public class Parser {
 			}
 			indent = first_nonspace - offset;
 
-			switch (container.type()) {
+			switch (container.getType()) {
 			case BlockQuote:
 				if (indent <= 3 && first_nonspace < ln.length() && ln.charAt(first_nonspace) == C_GREATERTHAN) {
 					offset = first_nonspace + 1;
@@ -250,7 +252,7 @@ public class Parser {
 		// Unless last matched container is a code block, try new container starts,
 		// adding children to the last matched container:
 		while (true) {
-			Type t = container.type();
+			Type t = container.getType();
 
 			match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
@@ -269,7 +271,7 @@ public class Parser {
 
 			if (indent >= CODE_INDENT) {
 				// indented code
-				if (this.tip.type() != Type.Paragraph && !blank) {
+				if (this.tip.getType() != Type.Paragraph && !blank) {
 					offset += CODE_INDENT;
 					allClosed = allClosed ||
 							this.closeUnmatchedBlocks();
@@ -382,7 +384,7 @@ public class Parser {
 
 		// First check for a lazy paragraph continuation:
 		if (!allClosed && !blank &&
-				this.tip.type() == Type.Paragraph &&
+				this.tip.getType() == Type.Paragraph &&
 				blockContent.get(tip).hasLines()) {
 			// lazy paragraph continuation
 
@@ -394,11 +396,11 @@ public class Parser {
 
 			// finalize any blocks not matched
 			allClosed = allClosed || this.closeUnmatchedBlocks();
-			if (blank && container.lastChild != null) {
-				setLastLineBlank(container.lastChild, true);
+			if (blank && container.getLastChild() != null) {
+				setLastLineBlank(container.getLastChild(), true);
 			}
 
-			Type t = container.type();
+			Type t = container.getType();
 
 			// Block quote lines are never blank as they start with >
 			// and we don't count blanks in fenced code for purposes of tight/loose
@@ -408,14 +410,14 @@ public class Parser {
 					!(t == Type.BlockQuote ||
 							(t == Type.CodeBlock && ((CodeBlock) container).isFenced()) ||
 					(t == Type.Item &&
-							container.firstChild == null &&
+							container.getFirstChild() == null &&
 							container.getSourcePos().getStartLine() == this.lineNumber));
 
 			// propagate lastLineBlank up through parents:
 			Node cont = container;
 			while (cont != null) {
 				setLastLineBlank(cont, lastLineBlank);
-				cont = cont.parent;
+				cont = cont.getParent();
 			}
 
 			switch (t) {
@@ -458,7 +460,7 @@ public class Parser {
 		openBlocks.remove(block);
 		block.setSourcePos(new SourcePos(block.getSourcePos().getStartLine(), block.getSourcePos().getStartColumn(), lineNumber, this.lastLineLength + 1));
 
-		switch (block.type()) {
+		switch (block.getType()) {
 		case Paragraph: {
 			int pos;
 			String content = getContent(block).getString();
@@ -508,24 +510,24 @@ public class Parser {
 		}
 		case List: {
 			ListBlock list = (ListBlock) block;
-			Node item = block.firstChild;
+			Node item = block.getFirstChild();
 			while (item != null) {
 				// check for non-final list item ending with blank line:
-				if (endsWithBlankLine(item) && item.next != null) {
+				if (endsWithBlankLine(item) && item.getNext() != null) {
 					list.setTight(false);
 					break;
 				}
 				// recurse into children of list item, to see if there are
 				// spaces between any of them:
-				Node subitem = item.firstChild;
+				Node subitem = item.getFirstChild();
 				while (subitem != null) {
-					if (endsWithBlankLine(subitem) && (item.next != null || subitem.next != null)) {
+					if (endsWithBlankLine(subitem) && (item.getNext() != null || subitem.getNext() != null)) {
 						list.setTight(false);
 						break;
 					}
-					subitem = subitem.next;
+					subitem = subitem.getNext();
 				}
-				item = item.next;
+				item = item.getNext();
 			}
 			break;
 		}
@@ -561,7 +563,7 @@ public class Parser {
 		Block b = block;
 		Block last_list = null;
 		do {
-			if (b.type() == Type.List) {
+			if (b.getType() == Type.List) {
 				last_list = b;
 			}
 			b = b.getParent();
@@ -592,7 +594,7 @@ public class Parser {
 	// and so on til we find a block that can accept children.
 	private <T extends Block> T addChild(T node) {
 		openBlocks.add(node);
-		while (!canContain(this.tip.type(), node.type())) {
+		while (!canContain(this.tip.getType(), node.getType())) {
 			this.finalize(this.tip, this.lineNumber - 1);
 		}
 
@@ -713,9 +715,9 @@ public class Parser {
 			if (isLastLineBlank(block)) {
 				return true;
 			}
-			Type t = block.type();
+			Type t = block.getType();
 			if (t == Type.List || t == Type.Item) {
-				block = block.lastChild;
+				block = block.getLastChild();
 			} else {
 				break;
 			}

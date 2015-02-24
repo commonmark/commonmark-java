@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.atlassian.rstocker.cm.Parser;
 import com.atlassian.rstocker.cm.HtmlRenderer;
-import com.atlassian.rstocker.cm.Node;
+import com.atlassian.rstocker.cm.nodes.Node;
 
 public class HtmlRendererTest {
 

@@ -1,8 +1,6 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.nodes;
 
-import java.util.List;
-
-public class Node {
+public abstract class Node {
 
 	public enum Type {
 		// containers
@@ -28,23 +26,14 @@ public class Node {
 		Code
 	}
 
-	// TODO: doesn't need to be a field with the subclasses
-	private final Type _type;
-
-	Node parent = null;
-	Node firstChild = null;
-	public Node lastChild = null;
+	private Node parent = null;
+	private Node firstChild = null;
+	private Node lastChild = null;
 	private Node prev = null;
-	Node next = null;
-
-	String literal;
-
-	public Node(Type nodeType) {
-		this._type = nodeType;
-	}
+	private Node next = null;
 
 	public boolean isContainer() {
-		switch (_type) {
+		switch (getType()) {
 		case Document:
 		case BlockQuote:
 		case List:
@@ -61,12 +50,18 @@ public class Node {
 		}
 	}
 
-	public Type type() {
-		return this._type;
-	}
+	public abstract Type getType();
 
 	public Node getNext() {
 		return next;
+	}
+
+	public Node getFirstChild() {
+		return firstChild;
+	}
+
+	public Node getLastChild() {
+		return lastChild;
 	}
 
 	public Node getParent() {
@@ -153,7 +148,7 @@ public class Node {
 
 	@Override
 	public String toString() {
-		return "Node{type=" + _type + "}";
+		return "Node{type=" + getType() + "}";
 	}
 
 	// foo: root field seems to be unnecessary

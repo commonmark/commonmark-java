@@ -1,11 +1,12 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.nodes;
+
+import com.atlassian.rstocker.cm.SourcePos;
 
 public abstract class Block extends Node {
 
 	private SourcePos sourcePos;
 
-	public Block(Type type, SourcePos sourcePos) {
-		super(type);
+	public Block(SourcePos sourcePos) {
 		this.sourcePos = sourcePos;
 	}
 
@@ -18,7 +19,7 @@ public abstract class Block extends Node {
 	}
 
 	public Block getParent() {
-		return (Block) parent;
+		return (Block) super.getParent();
 	}
 
 	@Override

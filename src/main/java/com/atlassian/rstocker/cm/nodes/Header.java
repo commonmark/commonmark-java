@@ -1,14 +1,19 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.nodes;
 
-import java.util.List;
+import com.atlassian.rstocker.cm.SourcePos;
 
 public class Header extends Block {
 
 	private final int level;
 
 	public Header(SourcePos sourcePos, int level) {
-		super(Type.Header, sourcePos);
+		super(sourcePos);
 		this.level = level;
+	}
+
+	@Override
+	public Type getType() {
+		return Type.Header;
 	}
 
 	public int getLevel() {

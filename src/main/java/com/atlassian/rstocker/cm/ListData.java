@@ -1,5 +1,7 @@
 package com.atlassian.rstocker.cm;
 
+import com.atlassian.rstocker.cm.nodes.ListBlock;
+
 class ListData {
 
 	ListBlock.ListType type;

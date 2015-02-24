@@ -1,4 +1,6 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.nodes;
+
+import com.atlassian.rstocker.cm.SourcePos;
 
 public class ListBlock extends Block {
 
@@ -15,11 +17,16 @@ public class ListBlock extends Block {
 
 	// TODO: Split into two classes?
 	public ListBlock(SourcePos sourcePos, ListType type, char orderedDelimiter, int orderedStart, char bulletMarker) {
-		super(Type.List, sourcePos);
+		super(sourcePos);
 		this.type = type;
 		this.orderedDelimiter = orderedDelimiter;
 		this.orderedStart = orderedStart;
 		this.bulletMarker = bulletMarker;
+	}
+
+	@Override
+	public Type getType() {
+		return Type.List;
 	}
 
 	public ListType getListType() {

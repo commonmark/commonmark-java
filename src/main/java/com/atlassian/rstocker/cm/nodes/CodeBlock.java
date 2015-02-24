@@ -1,4 +1,6 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.nodes;
+
+import com.atlassian.rstocker.cm.SourcePos;
 
 public class CodeBlock extends Block {
 
@@ -11,10 +13,15 @@ public class CodeBlock extends Block {
 
 	// TODO: Split into two classes?
 	public CodeBlock(SourcePos sourcePos, char fenceChar, int fenceLength, int fenceOffset) {
-		super(Type.CodeBlock, sourcePos);
+		super(sourcePos);
 		this.fenceChar = fenceChar;
 		this.fenceLength = fenceLength;
 		this.fenceOffset = fenceOffset;
+	}
+
+	@Override
+	public Type getType() {
+		return Type.CodeBlock;
 	}
 
 	public CodeBlock(SourcePos sourcePos) {

@@ -1,11 +1,18 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.nodes;
+
+import com.atlassian.rstocker.cm.SourcePos;
 
 public class HtmlBlock extends Block {
 
 	private String literal;
 
 	public HtmlBlock(SourcePos sourcePos) {
-		super(Type.HtmlBlock, sourcePos);
+		super(sourcePos);
+	}
+
+	@Override
+	public Type getType() {
+		return Type.HtmlBlock;
 	}
 
 	public String getLiteral() {

@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import com.atlassian.rstocker.cm.Node.NodeWalker;
-import com.atlassian.rstocker.cm.Node.NodeWalker.Entry;
-import com.atlassian.rstocker.cm.Node.Type;
+import com.atlassian.rstocker.cm.nodes.*;
+import com.atlassian.rstocker.cm.nodes.Node.NodeWalker;
+import com.atlassian.rstocker.cm.nodes.Node.NodeWalker.Entry;
 
 public class HtmlRenderer {
 
@@ -42,9 +42,10 @@ public class HtmlRenderer {
 				}
 			}
 
-			switch (node.type()) {
+			switch (node.getType()) {
 			case Text:
-				html.raw(esc(node.literal, false));
+				Text text = (Text) node;
+				html.raw(esc(text.getLiteral(), false));
 				break;
 
 			case Softbreak:
@@ -65,7 +66,8 @@ public class HtmlRenderer {
 				break;
 
 			case Html:
-				html.raw(node.literal);
+				Html htmlNode = (Html) node;
+				html.raw(htmlNode.getLiteral());
 				break;
 
 			case Link:
@@ -102,8 +104,9 @@ public class HtmlRenderer {
 				break;
 
 			case Code:
+				Code code = (Code) node;
 				html.tag("code");
-				html.raw(esc(node.literal, false));
+				html.raw(esc(code.getLiteral(), false));
 				html.tag("/code");
 				break;
 
@@ -111,12 +114,14 @@ public class HtmlRenderer {
 				break;
 
 			case Paragraph:
-				Node grandparent = node.parent.parent;
-				if (grandparent != null &&
-						grandparent.type() == Type.List) {
-					ListBlock grandparentList = (ListBlock) grandparent;
-					if (grandparentList.isTight()) {
-						break;
+				Node parent = node.getParent();
+				if (parent != null) {
+					Node gramps = parent.getParent();
+					if (gramps != null && gramps instanceof ListBlock) {
+						ListBlock list = (ListBlock) gramps;
+						if (list.isTight()) {
+							break;
+						}
 					}
 				}
 				if (entering) {
@@ -213,7 +218,7 @@ public class HtmlRenderer {
 
 			default:
 				throw new IllegalStateException("Unknown node type "
-						+ node.type());
+						+ node.getType());
 			}
 
 		}

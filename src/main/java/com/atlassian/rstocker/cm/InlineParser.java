@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.atlassian.rstocker.cm.Node.Type;
+import com.atlassian.rstocker.cm.nodes.*;
 
 public class InlineParser {
 	// Constants for character codes:
@@ -139,9 +139,9 @@ public class InlineParser {
 	// in the subject. If they succeed in matching anything, they
 	// return the inline matched, advancing the subject.
 
-	private static Node text(String s) {
-		Node node = new Node(Type.Text);
-		node.literal = s;
+	private static Text text(String s) {
+		Text node = new Text();
+		node.setLiteral(s);
 		return node;
 	}
 
@@ -189,12 +189,12 @@ public class InlineParser {
 		int afterOpenTicks = this.pos;
 		boolean foundCode = false;
 		String matched;
-		Node node;
 		while (!foundCode && (matched = this.match(reTicks)) != null) {
 			if (matched.equals(ticks)) {
-				node = new Node(Type.Code);
+				Code node = new Code();
 				String content = this.subject.substring(afterOpenTicks, this.pos - ticks.length());
-				node.literal = reWhitespace.matcher(content.trim()).replaceAll(" ");
+				String literal = reWhitespace.matcher(content.trim()).replaceAll(" ");
+				node.setLiteral(literal);
 				block.appendChild(node);
 				return true;
 			}
@@ -216,7 +216,7 @@ public class InlineParser {
 			int next = pos + 1;
 			if (next < subj.length() && subj.charAt(next) == '\n') {
 				this.pos = this.pos + 2;
-				node = new Node(Type.Hardbreak);
+				node = new HardLineBreak();
 				block.appendChild(node);
 			} else if (next < subj.length() && reEscapable.matcher(subj.substring(next, next + 1)).matches()) {
 				this.pos = this.pos + 2;
@@ -256,8 +256,8 @@ public class InlineParser {
 	boolean parseHtmlTag(Node block) {
 		String m = this.match(reHtmlTag);
 		if (m != null) {
-			Node node = new Node(Type.Html);
-			node.literal = m;
+			Html node = new Html();
+			node.setLiteral(m);
 			block.appendChild(node);
 			return true;
 		} else {
@@ -337,7 +337,7 @@ public class InlineParser {
 		}
 
 		this.pos += numdelims;
-		Node node = text(this.subject.substring(startpos, this.pos));
+		Text node = text(this.subject.substring(startpos, this.pos));
 		block.appendChild(node);
 
 		// Add entry to stack for this opener
@@ -368,7 +368,6 @@ public class InlineParser {
 
 	void processEmphasis(Node block, Delimiter stack_bottom) {
 		Delimiter opener, closer;
-		Node opener_inl, closer_inl;
 		Delimiter nextstack, tempstack;
 		int use_delims;
 		Node tmp, next;
@@ -398,21 +397,21 @@ public class InlineParser {
 						use_delims = closer.numdelims % 2 == 0 ? 2 : 1;
 					}
 
-					opener_inl = opener.node;
-					closer_inl = closer.node;
+					Text opener_inl = opener.node;
+					Text closer_inl = closer.node;
 
 					// remove used delimiters from stack elts and inlines
 					opener.numdelims -= use_delims;
 					closer.numdelims -= use_delims;
-					opener_inl.literal =
-							opener_inl.literal.substring(0,
-									opener_inl.literal.length() - use_delims);
-					closer_inl.literal =
-							closer_inl.literal.substring(0,
-									closer_inl.literal.length() - use_delims);
+					opener_inl.setLiteral(
+							opener_inl.getLiteral().substring(0,
+									opener_inl.getLiteral().length() - use_delims));
+					closer_inl.setLiteral(
+							closer_inl.getLiteral().substring(0,
+									closer_inl.getLiteral().length() - use_delims));
 
 					// build contents for new emph element
-					Node emph = new Node(use_delims == 1 ? Type.Emph : Type.Strong);
+					Node emph = use_delims == 1 ? new Emphasis() : new StrongEmphasis();
 
 					tmp = opener_inl.getNext();
 					while (tmp != null && tmp != closer_inl) {
@@ -503,7 +502,7 @@ public class InlineParser {
 		int startpos = this.pos;
 		this.pos += 1;
 
-		Node node = text("[");
+		Text node = text("[");
 		block.appendChild(node);
 
 		// Add entry to stack for this opener
@@ -529,7 +528,7 @@ public class InlineParser {
 		if (this.peek() == C_OPEN_BRACKET) {
 			this.pos += 1;
 
-			Node node = text("![");
+			Text node = text("![");
 			block.appendChild(node);
 
 			// Add entry to stack for this opener
@@ -706,16 +705,17 @@ public class InlineParser {
 	boolean parseNewline(Node block) {
 		this.pos += 1; // assume we're at a \n
 		// check previous node for trailing spaces
-		Node lastc = block.lastChild;
-		if (lastc != null && lastc.type() == Type.Text) {
-			Matcher matcher = reFinalSpace.matcher(lastc.literal);
+		Node lastChild = block.getLastChild();
+		if (lastChild != null && lastChild instanceof Text) {
+			Text text = (Text) lastChild;
+			Matcher matcher = reFinalSpace.matcher(text.getLiteral());
 			int sps = matcher.find() ? matcher.end() - matcher.start() : 0;
 			if (sps > 0) {
-				lastc.literal = matcher.replaceAll("");
+				text.setLiteral(matcher.replaceAll(""));
 			}
-			block.appendChild(new Node(sps >= 2 ? Type.Hardbreak : Type.Softbreak));
+			block.appendChild(sps >= 2 ? new HardLineBreak() : new SoftLineBreak());
 		} else {
-			block.appendChild(new Node(Type.Softbreak));
+			block.appendChild(new SoftLineBreak());
 		}
 		this.match(reInitialSpace); // gobble leading spaces in next line
 		return true;
@@ -835,10 +835,10 @@ public class InlineParser {
 		}
 		if (!res) {
 			this.pos += 1;
-			Node textnode = new Node(Type.Text);
+			Text text = new Text();
 			// foo: fromCodePoint?
-			textnode.literal = String.valueOf(c);
-			block.appendChild(textnode);
+			text.setLiteral(String.valueOf(c));
+			block.appendChild(text);
 		}
 
 		return true;
@@ -846,7 +846,7 @@ public class InlineParser {
 
 	private static class Delimiter {
 
-		final Node node;
+		final Text node;
 		Delimiter previous;
 		final int index;
 
@@ -858,7 +858,7 @@ public class InlineParser {
 		boolean can_close = false;
 		boolean active = true;
 
-		public Delimiter(Node node, Delimiter previous, int index) {
+		public Delimiter(Text node, Delimiter previous, int index) {
 			this.node = node;
 			this.previous = previous;
 			this.index = index;

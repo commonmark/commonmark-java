@@ -1,14 +1,20 @@
-package com.atlassian.rstocker.cm;
+package com.atlassian.rstocker.cm.nodes;
 
-public class Image extends Node {
+import com.atlassian.rstocker.cm.nodes.Node;
+
+public class Link extends Node {
 
 	private final String destination;
 	private final String title;
 
-	public Image(String destination, String title) {
-		super(Type.Image);
+	public Link(String destination, String title) {
 		this.destination = destination;
 		this.title = title;
+	}
+
+	@Override
+	public Type getType() {
+		return Type.Link;
 	}
 
 	public String getDestination() {
