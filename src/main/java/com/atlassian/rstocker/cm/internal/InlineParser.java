@@ -263,7 +263,7 @@ public class InlineParser {
 	// the number of delimiters and whether they are positioned such that
 	// they can open and/or close emphasis or strong emphasis. A utility
 	// function for strong/emph parsing.
-	ScanDelimsResult scanDelims(char cc) {
+	DelimiterRun scanDelims(char cc) {
 		int numdelims = 0;
 		String char_before;
 		String char_after;
@@ -305,24 +305,12 @@ public class InlineParser {
 			can_close = right_flanking;
 		}
 		this.pos = startpos;
-		return new ScanDelimsResult(numdelims, can_open, can_close);
+		return new DelimiterRun(numdelims, can_open, can_close);
 	};
-
-	private static class ScanDelimsResult {
-		private final int numdelims;
-		private final boolean can_open;
-		private final boolean can_close;
-
-		ScanDelimsResult(int numdelims, boolean can_open, boolean can_close) {
-			this.numdelims = numdelims;
-			this.can_open = can_open;
-			this.can_close = can_close;
-		}
-	}
 
 	// Attempt to parse emphasis or strong emphasis.
 	boolean parseEmphasis(char cc, Node block) {
-		ScanDelimsResult res = this.scanDelims(cc);
+		DelimiterRun res = this.scanDelims(cc);
 		int numdelims = res.numdelims;
 		int startpos = this.pos;
 
@@ -836,26 +824,6 @@ public class InlineParser {
 		}
 
 		return true;
-	};
-
-	private static class Delimiter {
-
-		final Text node;
-		Delimiter previous;
-		final int index;
-
-		char cc = C_BANG;
-		int numdelims = 1;
-		Delimiter next;
-		// foo2: camelCase these?
-		boolean can_open = true;
-		boolean can_close = false;
-		boolean active = true;
-
-		public Delimiter(Text node, Delimiter previous, int index) {
-			this.node = node;
-			this.previous = previous;
-			this.index = index;
-		}
 	}
+
 }
