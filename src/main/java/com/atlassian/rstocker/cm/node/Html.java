@@ -1,12 +1,12 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
-public class Code extends Node {
+public class Html extends Node {
 
 	private String literal;
 
 	@Override
 	public Type getType() {
-		return Type.Code;
+		return Type.Html;
 	}
 
 	@Override

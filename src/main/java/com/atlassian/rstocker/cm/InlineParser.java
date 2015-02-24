@@ -1,16 +1,13 @@
 package com.atlassian.rstocker.cm;
 
-import static com.atlassian.rstocker.cm.Common.ESCAPABLE;
-import static com.atlassian.rstocker.cm.Common.normalizeReference;
-import static com.atlassian.rstocker.cm.Common.normalizeURI;
-import static com.atlassian.rstocker.cm.Common.unescapeString;
-import static com.atlassian.rstocker.cm.Html5Entities.entityToString;
+import com.atlassian.rstocker.cm.node.*;
 
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.atlassian.rstocker.cm.nodes.*;
+import static com.atlassian.rstocker.cm.Common.*;
+import static com.atlassian.rstocker.cm.Html5Entities.entityToString;
 
 public class InlineParser {
 	// Constants for character codes:

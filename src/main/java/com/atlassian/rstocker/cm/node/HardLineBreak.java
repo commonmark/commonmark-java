@@ -1,9 +1,9 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
-public class Emphasis extends Node {
+public class HardLineBreak extends Node {
 	@Override
 	public Type getType() {
-		return Type.Emph;
+		return Type.Hardbreak;
 	}
 
 	@Override

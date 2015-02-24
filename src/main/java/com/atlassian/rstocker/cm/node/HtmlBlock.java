@@ -1,12 +1,18 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
-public class Html extends Node {
+import com.atlassian.rstocker.cm.SourcePos;
+
+public class HtmlBlock extends Block {
 
 	private String literal;
 
+	public HtmlBlock(SourcePos sourcePos) {
+		super(sourcePos);
+	}
+
 	@Override
 	public Type getType() {
-		return Type.Html;
+		return Type.HtmlBlock;
 	}
 
 	@Override

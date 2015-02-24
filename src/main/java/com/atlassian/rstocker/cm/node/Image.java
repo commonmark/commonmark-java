@@ -1,4 +1,4 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
 public class Image extends Node {
 

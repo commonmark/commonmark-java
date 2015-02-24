@@ -1,9 +1,9 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
-public class StrongEmphasis extends Node {
+public class Emphasis extends Node {
 	@Override
 	public Type getType() {
-		return Type.Strong;
+		return Type.Emph;
 	}
 
 	@Override

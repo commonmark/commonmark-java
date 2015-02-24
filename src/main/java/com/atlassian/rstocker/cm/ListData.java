@@ -1,6 +1,6 @@
 package com.atlassian.rstocker.cm;
 
-import com.atlassian.rstocker.cm.nodes.ListBlock;
+import com.atlassian.rstocker.cm.node.ListBlock;
 
 class ListData {
 

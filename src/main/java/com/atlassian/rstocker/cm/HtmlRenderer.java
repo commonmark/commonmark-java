@@ -1,11 +1,11 @@
 package com.atlassian.rstocker.cm;
 
+import com.atlassian.rstocker.cm.node.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import com.atlassian.rstocker.cm.nodes.*;
 
 public class HtmlRenderer {
 

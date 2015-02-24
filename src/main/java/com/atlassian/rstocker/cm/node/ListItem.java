@@ -1,15 +1,15 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
 import com.atlassian.rstocker.cm.SourcePos;
 
-public class HorizontalRule extends Block {
-	public HorizontalRule(SourcePos sourcePos) {
+public class ListItem extends Block {
+	public ListItem(SourcePos sourcePos) {
 		super(sourcePos);
 	}
 
 	@Override
 	public Type getType() {
-		return Type.HorizontalRule;
+		return Type.Item;
 	}
 
 	@Override

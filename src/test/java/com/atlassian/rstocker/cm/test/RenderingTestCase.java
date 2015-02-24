@@ -1,7 +1,7 @@
 package com.atlassian.rstocker.cm.test;
 
 import com.atlassian.rstocker.cm.HtmlRenderer;
-import com.atlassian.rstocker.cm.nodes.Node;
+import com.atlassian.rstocker.cm.node.Node;
 import com.atlassian.rstocker.cm.Parser;
 
 import static org.junit.Assert.assertEquals;

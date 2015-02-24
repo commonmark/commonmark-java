@@ -1,15 +1,15 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
 import com.atlassian.rstocker.cm.SourcePos;
 
-public class Paragraph extends Block {
-	public Paragraph(SourcePos sourcePos) {
+public class Document extends Block {
+	public Document(SourcePos sourcePos) {
 		super(sourcePos);
 	}
 
 	@Override
 	public Type getType() {
-		return Type.Paragraph;
+		return Type.Document;
 	}
 
 	@Override

@@ -1,11 +1,11 @@
 package com.atlassian.rstocker.cm;
 
+import com.atlassian.rstocker.cm.node.*;
+import com.atlassian.rstocker.cm.node.Node.Type;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.atlassian.rstocker.cm.nodes.*;
-import com.atlassian.rstocker.cm.nodes.Node.Type;
 
 import static com.atlassian.rstocker.cm.Common.unescapeString;
 

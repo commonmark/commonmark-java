@@ -1,9 +1,9 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
-public class HardLineBreak extends Node {
+public class SoftLineBreak extends Node {
 	@Override
 	public Type getType() {
-		return Type.Hardbreak;
+		return Type.Softbreak;
 	}
 
 	@Override

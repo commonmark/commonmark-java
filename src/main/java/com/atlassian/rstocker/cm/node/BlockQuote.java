@@ -1,15 +1,15 @@
-package com.atlassian.rstocker.cm.nodes;
+package com.atlassian.rstocker.cm.node;
 
 import com.atlassian.rstocker.cm.SourcePos;
 
-public class ListItem extends Block {
-	public ListItem(SourcePos sourcePos) {
+public class BlockQuote extends Block {
+	public BlockQuote(SourcePos sourcePos) {
 		super(sourcePos);
 	}
 
 	@Override
 	public Type getType() {
-		return Type.Item;
+		return Type.BlockQuote;
 	}
 
 	@Override
