@@ -37,8 +37,6 @@ public class Node {
 	private Node prev = null;
 	Node next = null;
 
-	boolean lastLineBlank = false;
-	public boolean open = true;
 	String literal;
 	String info;
 

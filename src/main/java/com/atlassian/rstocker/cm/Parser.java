@@ -57,6 +57,7 @@ public class Parser {
 	private Set<Block> openBlocks = new HashSet<>();
 	private Map<ListItem, Integer> listItemOffset = new HashMap<>();
 	private Map<Block, BlockContent> blockContent = new HashMap<>();
+	private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
 	private Parser(Builder builder) {
 	}
@@ -242,7 +243,7 @@ public class Parser {
 		this.lastMatchedContainer = container;
 
 		// Check to see if we've hit 2nd blank line; if so break out of list:
-		if (blank && container.lastLineBlank) {
+		if (blank && isLastLineBlank(container)) {
 			this.breakOutOfLists(container);
 		}
 
@@ -394,7 +395,7 @@ public class Parser {
 			// finalize any blocks not matched
 			allClosed = allClosed || this.closeUnmatchedBlocks();
 			if (blank && container.lastChild != null) {
-				container.lastChild.lastLineBlank = true;
+				setLastLineBlank(container.lastChild, true);
 			}
 
 			Type t = container.type();
@@ -413,7 +414,7 @@ public class Parser {
 			// propagate lastLineBlank up through parents:
 			Node cont = container;
 			while (cont != null) {
-				cont.lastLineBlank = lastLineBlank;
+				setLastLineBlank(cont, lastLineBlank);
 				cont = cont.parent;
 			}
 
@@ -605,6 +606,15 @@ public class Parser {
 		return new SourcePos(this.lineNumber, column_number);
 	}
 
+	private boolean isLastLineBlank(Node node) {
+		Boolean value = lastLineBlank.get(node);
+		return value != null && value;
+	}
+
+	private void setLastLineBlank(Node node, boolean value) {
+		lastLineBlank.put(node, value);
+	}
+
 	// Parse a list marker and return data on the marker (type,
 	// start, delimiter, bullet character, padding) or null.
 	private static ListData parseListMarker(String ln, int offset, int indent) {
@@ -697,9 +707,9 @@ public class Parser {
 
 	// Returns true if block ends with a blank line, descending if needed
 	// into lists and sublists.
-	private static boolean endsWithBlankLine(Node block) {
+	private boolean endsWithBlankLine(Node block) {
 		while (block != null) {
-			if (block.lastLineBlank) {
+			if (isLastLineBlank(block)) {
 				return true;
 			}
 			Type t = block.type();
