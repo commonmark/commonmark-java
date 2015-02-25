@@ -1,27 +1,27 @@
 package com.atlassian.rstocker.cm;
 
-import com.atlassian.rstocker.cm.internal.BlockParser;
+import com.atlassian.rstocker.cm.internal.DocumentParser;
 import com.atlassian.rstocker.cm.node.*;
 
 public class Parser {
 
-	private final BlockParser blockParser;
+	private final DocumentParser documentParser;
 
 	public static Builder builder() {
 		return new Builder();
 	}
 
-	private Parser(BlockParser blockParser) {
-		this.blockParser = blockParser;
+	private Parser(DocumentParser documentParser) {
+		this.documentParser = documentParser;
 	}
 
 	public Node parse(String input) {
-		return blockParser.parse(input);
+		return documentParser.parse(input);
 	}
 
 	public static class Builder {
 		public Parser build() {
-			return new Parser(new BlockParser());
+			return new Parser(new DocumentParser());
 		}
 	}
 }

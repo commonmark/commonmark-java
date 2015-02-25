@@ -2,6 +2,7 @@ package com.atlassian.rstocker.cm.internal;
 
 import com.atlassian.rstocker.cm.node.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,7 +104,7 @@ public class InlineParser {
 	// TODO: rename?
 	private Delimiter delimiters;
 	private int pos = 0;
-	private Map<String, Link> refmap;
+	private Map<String, Link> references = new HashMap<>();
 
 	// match: match,
 	// peek: peek,
@@ -611,7 +612,7 @@ public class InlineParser {
 
 			// lookup rawlabel in refmap
 			// foo: normalizeReference?
-			Link link = this.refmap.get(Common.normalizeReference(reflabel));
+			Link link = references.get(Common.normalizeReference(reflabel));
 			if (link != null) {
 				dest = link.getDestination();
 				title = link.getTitle();
@@ -704,7 +705,7 @@ public class InlineParser {
 	};
 
 	// Attempt to parse a link reference, modifying refmap.
-	int parseReference(String s, Map<String, Link> refmap) {
+	int parseReference(String s) {
 		this.subject = s;
 		this.pos = 0;
 		String rawlabel;
@@ -754,19 +755,18 @@ public class InlineParser {
 
 		String normlabel = Common.normalizeReference(rawlabel);
 
-		if (!refmap.containsKey(normlabel)) {
+		if (!references.containsKey(normlabel)) {
 			Link link = new Link(dest, title);
-			refmap.put(normlabel, link);
+			references.put(normlabel, link);
 		}
 		return this.pos - startpos;
 	};
 
 	// Parse string_content in block into inline children,
 	// using refmap to resolve references.
-	public void parse(Node block, String content, Map<String, Link> refmap) {
+	public void parse(Node block, String content) {
 		this.subject = content.trim();
 		this.pos = 0;
-		this.refmap = refmap; // foo: || {};
 		this.delimiters = null;
 		while (this.parseInline(block)) {
 		}

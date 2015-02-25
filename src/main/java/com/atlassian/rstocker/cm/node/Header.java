@@ -2,11 +2,7 @@ package com.atlassian.rstocker.cm.node;
 
 public class Header extends Block {
 
-	private final int level;
-
-	public Header(int level) {
-		this.level = level;
-	}
+	private int level;
 
 	@Override
 	public Type getType() {
@@ -20,5 +16,9 @@ public class Header extends Block {
 
 	public int getLevel() {
 		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
 	}
 }

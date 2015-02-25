@@ -2,23 +2,16 @@ package com.atlassian.rstocker.cm.node;
 
 public class ListBlock extends Block {
 
-	private final ListType type;
-	private final char orderedDelimiter;
-	private final int orderedStart;
-	private final char bulletMarker;
+	private ListType type;
+	private char orderedDelimiter;
+	private int orderedStart;
+	private char bulletMarker;
 	private boolean tight;
 
+	// TODO: Split into two classes instead?
 	public enum ListType {
 		BULLET,
 		ORDERED
-	}
-
-	// TODO: Split into two classes?
-	public ListBlock(ListType type, char orderedDelimiter, int orderedStart, char bulletMarker) {
-		this.type = type;
-		this.orderedDelimiter = orderedDelimiter;
-		this.orderedStart = orderedStart;
-		this.bulletMarker = bulletMarker;
 	}
 
 	@Override
@@ -35,16 +28,32 @@ public class ListBlock extends Block {
 		return type;
 	}
 
+	public void setListType(ListType type) {
+		this.type = type;
+	}
+
 	public char getOrderedDelimiter() {
 		return orderedDelimiter;
+	}
+
+	public void setOrderedDelimiter(char orderedDelimiter) {
+		this.orderedDelimiter = orderedDelimiter;
 	}
 
 	public int getOrderedStart() {
 		return orderedStart;
 	}
 
+	public void setOrderedStart(int orderedStart) {
+		this.orderedStart = orderedStart;
+	}
+
 	public char getBulletMarker() {
 		return bulletMarker;
+	}
+
+	public void setBulletMarker(char bulletMarker) {
+		this.bulletMarker = bulletMarker;
 	}
 
 	public void setTight(boolean tight) {

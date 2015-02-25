@@ -2,19 +2,12 @@ package com.atlassian.rstocker.cm.node;
 
 public class CodeBlock extends Block {
 
-	private final char fenceChar;
-	private final int fenceLength;
-	private final int fenceOffset;
+	private char fenceChar;
+	private int fenceLength;
+	private int fenceOffset;
 
 	private String info;
 	private String literal;
-
-	// TODO: Split into two classes?
-	public CodeBlock(char fenceChar, int fenceLength, int fenceOffset) {
-		this.fenceChar = fenceChar;
-		this.fenceLength = fenceLength;
-		this.fenceOffset = fenceOffset;
-	}
 
 	@Override
 	public Type getType() {
@@ -26,10 +19,6 @@ public class CodeBlock extends Block {
 		visitor.visit(this);
 	}
 
-	public CodeBlock() {
-		this('\0', 0, 0);
-	}
-
 	public boolean isFenced() {
 		return fenceLength > 0;
 	}
@@ -38,12 +27,24 @@ public class CodeBlock extends Block {
 		return fenceChar;
 	}
 
+	public void setFenceChar(char fenceChar) {
+		this.fenceChar = fenceChar;
+	}
+
 	public int getFenceLength() {
 		return fenceLength;
 	}
 
+	public void setFenceLength(int fenceLength) {
+		this.fenceLength = fenceLength;
+	}
+
 	public int getFenceOffset() {
 		return fenceOffset;
+	}
+
+	public void setFenceOffset(int fenceOffset) {
+		this.fenceOffset = fenceOffset;
 	}
 
 	public String getInfo() {
