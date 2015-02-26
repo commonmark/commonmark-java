@@ -13,16 +13,16 @@ public class BlockQuoteParser extends AbstractBlockParser {
 	}
 
 	@Override
-	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
-		int indent = nextNonSpace - offset[0];
+	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+		int indent = nextNonSpace - offset;
 		if (indent <= 3 && nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
-			offset[0] = nextNonSpace + 1;
-			if (offset[0] < line.length() && line.charAt(offset[0]) == ' ') {
-				offset[0]++;
+			int newOffset = nextNonSpace + 1;
+			if (newOffset < line.length() && line.charAt(newOffset) == ' ') {
+				newOffset++;
 			}
-			return ContinueResult.MATCHED;
+			return blockMatched(newOffset);
 		} else {
-			return ContinueResult.NOT_MATCHED;
+			return blockDidNotMatch();
 		}
 	}
 

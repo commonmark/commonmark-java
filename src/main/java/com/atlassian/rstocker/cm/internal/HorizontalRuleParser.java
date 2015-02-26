@@ -8,9 +8,9 @@ public class HorizontalRuleParser extends AbstractBlockParser {
 	private final HorizontalRule block = new HorizontalRule();
 
 	@Override
-	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
+	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
 		// a horizontal rule can never container > 1 line, so fail to match
-		return ContinueResult.NOT_MATCHED;
+		return blockDidNotMatch();
 	}
 
 	@Override

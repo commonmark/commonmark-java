@@ -15,16 +15,15 @@ public class ListItemParser extends AbstractBlockParser {
 	}
 
 	@Override
-	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
-		int indent = nextNonSpace - offset[0];
+	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+		int indent = nextNonSpace - offset;
 		if (blank) {
-			offset[0] = nextNonSpace;
-			return ContinueResult.MATCHED;
+			return blockMatched(nextNonSpace);
 		} else if (indent >= itemOffset) {
-			offset[0] += itemOffset;
-			return ContinueResult.MATCHED;
+			int newOffset = offset + itemOffset;
+			return blockMatched(newOffset);
 		} else {
-			return ContinueResult.NOT_MATCHED;
+			return blockDidNotMatch();
 		}
 	}
 

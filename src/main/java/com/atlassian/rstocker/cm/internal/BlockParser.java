@@ -5,17 +5,13 @@ import com.atlassian.rstocker.cm.node.Node;
 
 public interface BlockParser {
 
-	enum ContinueResult {
-		MATCHED,
-		NOT_MATCHED,
-		FINALIZE
-	}
-
 	boolean canContain(Node.Type type);
 
-	ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank);
+	ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank);
 
-	/** Returns true if block type can accept lines of text */
+	/**
+	 * Returns true if block type can accept lines of text
+	 */
 	boolean acceptsLine();
 
 	void addLine(String line);
@@ -25,4 +21,17 @@ public interface BlockParser {
 	void processInlines(InlineParser inlineParser);
 
 	Block getBlock();
+
+	interface ContinueResult {
+	}
+
+	interface BlockMatched extends ContinueResult {
+		int getNewOffset();
+	}
+
+	interface BlockDidNotMatch extends ContinueResult {
+	}
+
+	interface BlockMatchedAndCanBeFinalized extends ContinueResult {
+	}
 }

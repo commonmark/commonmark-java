@@ -16,8 +16,8 @@ public class ListBlockParser extends AbstractBlockParser {
 	}
 
 	@Override
-	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
-		return ContinueResult.MATCHED;
+	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+		return blockMatched(offset);
 	}
 
 	@Override

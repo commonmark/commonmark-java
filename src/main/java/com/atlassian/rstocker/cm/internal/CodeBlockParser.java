@@ -26,8 +26,9 @@ public class CodeBlockParser extends AbstractBlockParser {
 	}
 
 	@Override
-	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
-		int indent = nextNonSpace - offset[0];
+	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+		int indent = nextNonSpace - offset;
+		int newOffset = offset;
 		if (block.isFenced()) { // fenced
 			Matcher matcher = null;
 			boolean matches = (indent <= 3 &&
@@ -37,25 +38,25 @@ public class CodeBlockParser extends AbstractBlockParser {
 							.find());
 			if (matches && matcher.group(0).length() >= block.getFenceLength()) {
 				// closing fence - we're at end of line, so we can finalize now
-				return ContinueResult.FINALIZE;
+				return blockMatchedAndCanBeFinalized();
 			} else {
 				// skip optional spaces of fence offset
 				int i = block.getFenceOffset();
-				while (i > 0 && offset[0] < line.length() && line.charAt(offset[0]) == ' ') {
-					offset[0]++;
+				while (i > 0 && newOffset < line.length() && line.charAt(newOffset) == ' ') {
+					newOffset++;
 					i--;
 				}
 			}
 		} else { // indented
 			if (indent >= DocumentParser.CODE_INDENT) {
-				offset[0] += DocumentParser.CODE_INDENT;
+				newOffset += DocumentParser.CODE_INDENT;
 			} else if (blank) {
-				offset[0] = nextNonSpace;
+				newOffset = nextNonSpace;
 			} else {
-				return ContinueResult.NOT_MATCHED;
+				return blockDidNotMatch();
 			}
 		}
-		return ContinueResult.MATCHED;
+		return blockMatched(newOffset);
 	}
 
 	@Override

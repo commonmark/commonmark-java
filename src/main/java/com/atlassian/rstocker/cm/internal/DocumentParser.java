@@ -129,19 +129,17 @@ public class DocumentParser {
 				blank = false;
 			}
 
-			// TODO: use proper result object probably
-			int[] offsetBox = {offset};
-			BlockParser.ContinueResult result = blockParser.continueBlock(ln, nextNonSpace, offsetBox, blank);
-			offset = offsetBox[0];
-
-			if (result == BlockParser.ContinueResult.MATCHED) {
+			BlockParser.ContinueResult result = blockParser.continueBlock(ln, nextNonSpace, offset, blank);
+			if (result instanceof BlockParser.BlockMatched) {
+				BlockParser.BlockMatched blockMatched = (BlockParser.BlockMatched) result;
+				offset = blockMatched.getNewOffset();
 				matches++;
-			} else if (result == BlockParser.ContinueResult.NOT_MATCHED) {
-				break;
-			} else if (result == BlockParser.ContinueResult.FINALIZE) {
+			} else if (result instanceof BlockParser.BlockMatchedAndCanBeFinalized) {
 				finalize(blockParser, this.lineNumber);
 				lastLineLength = ln.length() - 1; // -1 for newline
 				return;
+			} else if (result instanceof BlockParser.BlockDidNotMatch) {
+				break;
 			}
 		}
 

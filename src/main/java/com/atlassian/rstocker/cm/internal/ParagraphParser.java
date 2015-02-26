@@ -11,8 +11,12 @@ public class ParagraphParser extends AbstractBlockParser {
 	private BlockContent content = new BlockContent();
 
 	@Override
-	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
-		return blank ? ContinueResult.NOT_MATCHED : ContinueResult.MATCHED;
+	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+		if (!blank) {
+			return blockMatched(offset);
+		} else {
+			return blockDidNotMatch();
+		}
 	}
 
 	@Override
