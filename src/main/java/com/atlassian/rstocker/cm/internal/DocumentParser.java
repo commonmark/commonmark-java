@@ -11,10 +11,6 @@ public class DocumentParser {
 	static char C_GREATERTHAN = 62;
 	static int CODE_INDENT = 4;
 
-	private static char C_NEWLINE = 10;
-	private static char C_SPACE = 32;
-	private static char C_OPEN_BRACKET = 91;
-
 	private static String BLOCKTAGNAME = "(?:article|header|aside|hgroup|iframe|blockquote|hr|body|li|map|button|object|canvas|ol|caption|output|col|p|colgroup|pre|dd|progress|div|section|dl|table|td|dt|tbody|embed|textarea|fieldset|tfoot|figcaption|th|figure|thead|footer|footer|tr|form|ul|h1|h2|h3|h4|h5|h6|video|script|style)";
 
 	private static String HTMLBLOCKOPEN = "<(?:" + BLOCKTAGNAME + "[\\s/>]" + "|" +
@@ -63,7 +59,7 @@ public class DocumentParser {
 		// if (this.options.time) { console.time("preparing input"); }
 		String[] lines = reLineEnding.split(input, -1);
 		int len = lines.length;
-		if (input.charAt(input.length() - 1) == C_NEWLINE) {
+		if (input.charAt(input.length() - 1) == '\n') {
 			// ignore last blank line created by final newline
 			len -= 1;
 		}
@@ -95,22 +91,17 @@ public class DocumentParser {
 	private void incorporateLine(String ln) {
 		int nextNonSpace;
 		int offset = 0;
-		int match;
-		ListData data;
 		boolean blank = false;
-		int indent = 0;
-		int CODE_INDENT = 4;
 
 		this.lineNumber += 1;
 
 		// replace NUL characters for security
-		if (ln.indexOf("\u0000") != -1) {
+		if (ln.contains("\u0000")) {
 			ln = ln.replace("\0", "\uFFFD");
 		}
 
 		// Convert tabs to spaces:
 		ln = detabLine(ln);
-
 
 		// For each containing block, try to parse the associated line start.
 		// Bail out on failure: container will point to the last matching block.
@@ -118,7 +109,7 @@ public class DocumentParser {
 		// The document will always match, can be skipped
 		int matches = 1;
 		for (BlockParser blockParser : activeBlockParsers.subList(1, activeBlockParsers.size())) {
-			match = matchAt(reNonSpace, ln, offset);
+			int match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
 				nextNonSpace = ln.length();
 				blank = true;
@@ -157,7 +148,7 @@ public class DocumentParser {
 		while (true) {
 			Node.Type t = container.getBlock().getType();
 
-			match = matchAt(reNonSpace, ln, offset);
+			int match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
 				nextNonSpace = ln.length();
 				blank = true;
@@ -166,7 +157,7 @@ public class DocumentParser {
 				nextNonSpace = match;
 				blank = false;
 			}
-			indent = nextNonSpace - offset;
+			int indent = nextNonSpace - offset;
 
 			if (t == Node.Type.CodeBlock || t == Node.Type.HtmlBlock) {
 				break;
@@ -189,14 +180,13 @@ public class DocumentParser {
 
 			offset = nextNonSpace;
 
-			char cc = ln.charAt(offset);
-
 			Matcher matcher;
-			if (cc == C_GREATERTHAN) {
+			ListData listData;
+			if (ln.charAt(offset) == '>') {
 				// blockquote
 				offset += 1;
 				// optional following space
-				if (offset < ln.length() && ln.charAt(offset) == C_SPACE) {
+				if (offset < ln.length() && ln.charAt(offset) == ' ') {
 					offset++;
 				}
 				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
@@ -211,7 +201,6 @@ public class DocumentParser {
 				String content = ln.substring(offset).replaceAll("^ *#+ *$", "")
 						.replaceAll(" +#+ *$", "");
 				container = addChild(new HeaderParser(level, content), nextNonSpace);
-
 				break;
 
 			} else if ((matcher = reCodeFence.matcher(ln.substring(offset))).find()) {
@@ -239,30 +228,28 @@ public class DocumentParser {
 				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
 				container = replaceBlock(new HeaderParser(level, paragraphParser.getContentString()));
-				offset = ln.length();
 				break;
 
 			} else if (matchAt(reHrule, ln, offset) != -1) {
 				// hrule
 				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				container = addChild(new HorizontalRuleParser(), nextNonSpace);
-				offset = ln.length() - 1;
 				break;
 
-			} else if ((data = parseListMarker(ln, offset, indent)) != null) {
+			} else if ((listData = parseListMarker(ln, offset, indent)) != null) {
 				// list item
 				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
-				offset += data.padding;
+				offset += listData.padding;
 
 				// add the list if needed
 				if (t != Node.Type.List ||
-						!(listsMatch((ListBlock) container.getBlock(), data))) {
-					ListBlockParser list = addChild(new ListBlockParser(data), nextNonSpace);
+						!(listsMatch((ListBlock) container.getBlock(), listData))) {
+					ListBlockParser list = addChild(new ListBlockParser(listData), nextNonSpace);
 					list.setTight(true);
 				}
 
 				// add the list item
-				container = addChild(new ListItemParser(data.markerOffset + data.padding), nextNonSpace);
+				container = addChild(new ListItemParser(listData.markerOffset + listData.padding), nextNonSpace);
 
 			} else {
 				break;
