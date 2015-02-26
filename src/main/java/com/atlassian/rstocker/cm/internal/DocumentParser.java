@@ -6,8 +6,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.atlassian.rstocker.cm.internal.Common.unescapeString;
-
 public class DocumentParser {
 
 	static char C_GREATERTHAN = 62;
@@ -51,6 +49,7 @@ public class DocumentParser {
 
 	private List<BlockParser> activeBlockParsers = new ArrayList<>();
 	private Set<BlockParser> allBlockParsers = new HashSet<>();
+	private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
 	public DocumentParser() {
 	}
@@ -59,7 +58,7 @@ public class DocumentParser {
 	public Document parse(String input) {
 		DocumentBlockParser documentBlockParser = new DocumentBlockParser();
 		documentBlockParser.getBlock().setSourcePosition(new SourcePosition(1, 1));
-		this.activeBlockParsers.add(documentBlockParser);
+		activateBlockParser(documentBlockParser);
 
 		// if (this.options.time) { console.time("preparing input"); }
 		String[] lines = reLineEnding.split(input, -1);
@@ -81,8 +80,7 @@ public class DocumentParser {
 		// if (this.options.time) { console.time("inline parsing"); }
 		this.processInlines();
 		// if (this.options.time) { console.timeEnd("inline parsing"); }
-		// FIXME: ?
-		return (Document) documentBlockParser.getBlock();
+		return documentBlockParser.getBlock();
 	}
 
 	// Walk through a block & children recursively, parsing string content
@@ -97,7 +95,7 @@ public class DocumentParser {
 	// We parse markdown text by calling this on each line of input,
 	// then finalizing the document.
 	private void incorporateLine(String ln) {
-		int first_nonspace;
+		int nextNonSpace;
 		int offset = 0;
 		int match;
 		ListData data;
@@ -119,21 +117,21 @@ public class DocumentParser {
 		// For each containing block, try to parse the associated line start.
 		// Bail out on failure: container will point to the last matching block.
 		// Set all_matched to false if not all containers match.
-		int matches = 0;
-		// FIXME: The document will always match, should be skipped
-		for (BlockParser blockParser : activeBlockParsers) {
+		// The document will always match, can be skipped
+		int matches = 1;
+		for (BlockParser blockParser : activeBlockParsers.subList(1, activeBlockParsers.size())) {
 			match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
-				first_nonspace = ln.length();
+				nextNonSpace = ln.length();
 				blank = true;
 			} else {
-				first_nonspace = match;
+				nextNonSpace = match;
 				blank = false;
 			}
 
 			// TODO: use proper result object probably
 			int[] offsetBox = {offset};
-			BlockParser.ContinueResult result = blockParser.parseLine(ln, first_nonspace, offsetBox, blank);
+			BlockParser.ContinueResult result = blockParser.continueBlock(ln, nextNonSpace, offsetBox, blank);
 			offset = offsetBox[0];
 
 			if (result == BlockParser.ContinueResult.MATCHED) {
@@ -153,8 +151,8 @@ public class DocumentParser {
 		boolean allClosed = unmatchedBlockParsers.isEmpty();
 
 		// Check to see if we've hit 2nd blank line; if so break out of list:
-		if (blank && container.isLastLineBlank()) {
-			List<BlockParser> matchedBlockParsers = activeBlockParsers.subList(0, matches);
+		if (blank && isLastLineBlank(container.getBlock())) {
+			List<BlockParser> matchedBlockParsers = new ArrayList<>(activeBlockParsers.subList(0, matches));
 			breakOutOfLists(matchedBlockParsers);
 		}
 
@@ -165,14 +163,14 @@ public class DocumentParser {
 
 			match = matchAt(reNonSpace, ln, offset);
 			if (match == -1) {
-				first_nonspace = ln.length();
+				nextNonSpace = ln.length();
 				blank = true;
 				break;
 			} else {
-				first_nonspace = match;
+				nextNonSpace = match;
 				blank = false;
 			}
-			indent = first_nonspace - offset;
+			indent = nextNonSpace - offset;
 
 			if (t == Node.Type.CodeBlock || t == Node.Type.HtmlBlock) {
 				break;
@@ -180,7 +178,7 @@ public class DocumentParser {
 
 			if (indent >= CODE_INDENT) {
 				// indented code
-				if (getTip().getBlock().getType() != Node.Type.Paragraph) {
+				if (getActiveBlockParser().getBlock().getType() != Node.Type.Paragraph) {
 					offset += CODE_INDENT;
 					allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
 					container = addChild(new CodeBlockParser(), offset);
@@ -189,11 +187,11 @@ public class DocumentParser {
 			}
 
 			// this is a little performance optimization:
-			if (matchAt(reMaybeSpecial, ln, first_nonspace) == -1) {
+			if (matchAt(reMaybeSpecial, ln, nextNonSpace) == -1) {
 				break;
 			}
 
-			offset = first_nonspace;
+			offset = nextNonSpace;
 
 			char cc = ln.charAt(offset);
 
@@ -206,19 +204,18 @@ public class DocumentParser {
 					offset++;
 				}
 				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
-				container = addChild(new BlockQuoteParser(), first_nonspace);
+				container = addChild(new BlockQuoteParser(), nextNonSpace);
 
 			} else if ((matcher = reATXHeaderMarker.matcher(ln.substring(offset))).find()) {
 				// ATX header
 				offset += matcher.group(0).length();
 				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
 				int level = matcher.group(0).trim().length(); // number of #s
-				container = addChild(new HeaderParser(level), first_nonspace);
-
 				// remove trailing ###s:
-				String stripped = ln.substring(offset).replaceAll("^ *#+ *$", "")
+				String content = ln.substring(offset).replaceAll("^ *#+ *$", "")
 						.replaceAll(" +#+ *$", "");
-				addLine(stripped, 0);
+				container = addChild(new HeaderParser(level, content), nextNonSpace);
+
 				break;
 
 			} else if ((matcher = reCodeFence.matcher(ln.substring(offset))).find()) {
@@ -226,7 +223,7 @@ public class DocumentParser {
 				int fence_length = matcher.group(0).length();
 				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
 				char fenceChar = matcher.group(0).charAt(0);
-				container = addChild(new CodeBlockParser(fenceChar, fence_length, indent), first_nonspace);
+				container = addChild(new CodeBlockParser(fenceChar, fence_length, indent), nextNonSpace);
 				offset += fence_length;
 				break;
 
@@ -241,17 +238,18 @@ public class DocumentParser {
 					((ParagraphParser) container).hasSingleLine() &&
 					((matcher = reSetextHeaderLine.matcher(ln.substring(offset))).find())) {
 
+				ParagraphParser paragraphParser = (ParagraphParser) container;
 				// setext header line
 				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
 				int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
-				container = replaceBlock(new HeaderParser(level));
+				container = replaceBlock(new HeaderParser(level, paragraphParser.getContentString()));
 				offset = ln.length();
 				break;
 
 			} else if (matchAt(reHrule, ln, offset) != -1) {
 				// hrule
 				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
-				container = addChild(new HorizontalRuleParser(), first_nonspace);
+				container = addChild(new HorizontalRuleParser(), nextNonSpace);
 				offset = ln.length() - 1;
 				break;
 
@@ -263,12 +261,12 @@ public class DocumentParser {
 				// add the list if needed
 				if (t != Node.Type.List ||
 						!(listsMatch((ListBlock) container.getBlock(), data))) {
-					ListBlockParser list = addChild(new ListBlockParser(data), first_nonspace);
+					ListBlockParser list = addChild(new ListBlockParser(data), nextNonSpace);
 					list.setTight(true);
 				}
 
 				// add the list item
-				container = addChild(new ListItemParser(data.markerOffset + data.padding), first_nonspace);
+				container = addChild(new ListItemParser(data.markerOffset + data.padding), nextNonSpace);
 
 			} else {
 				break;
@@ -280,8 +278,8 @@ public class DocumentParser {
 
 		// First check for a lazy paragraph continuation:
 		if (!allClosed && !blank &&
-				getTip() instanceof ParagraphParser &&
-				((ParagraphParser) getTip()).hasLines()) {
+				getActiveBlockParser() instanceof ParagraphParser &&
+				((ParagraphParser) getActiveBlockParser()).hasLines()) {
 			// lazy paragraph continuation
 
 			// foo: on DocParser? Looks like an error to me
@@ -291,10 +289,11 @@ public class DocumentParser {
 		} else { // not a lazy continuation
 
 			// finalize any blocks not matched
-			allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+			if (!allClosed) {
+				closeUnmatchedBlocks(unmatchedBlockParsers);
+			}
 			if (blank && container.getBlock().getLastChild() != null) {
-				// FIXME: Make it a state in this class again?
-//				setLastLineBlank(container.getLastChild(), true);
+				setLastLineBlank(container.getBlock().getLastChild(), true);
 			}
 
 			Block block = container.getBlock();
@@ -312,11 +311,11 @@ public class DocumentParser {
 									block.getSourcePosition().getStartLine() == this.lineNumber));
 
 			// propagate lastLineBlank up through parents:
-//			Node cont = container;
-//			while (cont != null) {
-//				setLastLineBlank(cont, lastLineBlank);
-//				cont = cont.getParent();
-//			}
+			Node cont = container.getBlock();
+			while (cont != null) {
+				setLastLineBlank(cont, lastLineBlank);
+				cont = cont.getParent();
+			}
 
 			switch (t) {
 				case HtmlBlock:
@@ -331,14 +330,14 @@ public class DocumentParser {
 
 				default:
 					if (container.acceptsLine()) {
-						this.addLine(ln, first_nonspace);
+						this.addLine(ln, nextNonSpace);
 					} else if (blank) {
 						break;
 					} else {
 						// create paragraph container for line
 						// foo: in JS, there's a third argument, which looks like a bug
-						addChild(new ParagraphParser(), first_nonspace);
-						this.addLine(ln, first_nonspace);
+						addChild(new ParagraphParser(), nextNonSpace);
+						this.addLine(ln, nextNonSpace);
 					}
 			}
 		}
@@ -354,14 +353,58 @@ public class DocumentParser {
 		// foo: top? looks like a bug
 		// var above = block.parent || this.top;
 
-		if (getTip() == blockParser) {
-			removeTip();
+		if (getActiveBlockParser() == blockParser) {
+			deactivateBlockParser();
 		}
 
 		Block block = blockParser.getBlock();
-		block.setSourcePosition(new SourcePosition(block.getSourcePosition().getStartLine(), block.getSourcePosition().getStartColumn(), lineNumber, this.lastLineLength + 1));
+		SourcePosition pos = block.getSourcePosition();
+		block.setSourcePosition(new SourcePosition(pos.getStartLine(), pos.getStartColumn(),
+				lineNumber, this.lastLineLength + 1));
 
 		blockParser.finalizeBlock(inlineParser);
+
+		if (blockParser instanceof ListBlockParser) {
+			ListBlockParser listBlockParser = (ListBlockParser) blockParser;
+			finalizeListTight(listBlockParser);
+		}
+	}
+
+	private void finalizeListTight(ListBlockParser listBlockParser) {
+		Node item = listBlockParser.getBlock().getFirstChild();
+		while (item != null) {
+			// check for non-final list item ending with blank line:
+			if (endsWithBlankLine(item) && item.getNext() != null) {
+				listBlockParser.setTight(false);
+				break;
+			}
+			// recurse into children of list item, to see if there are
+			// spaces between any of them:
+			Node subItem = item.getFirstChild();
+			while (subItem != null) {
+				if (endsWithBlankLine(subItem) && (item.getNext() != null || subItem.getNext() != null)) {
+					listBlockParser.setTight(false);
+					break;
+				}
+				subItem = subItem.getNext();
+			}
+			item = item.getNext();
+		}
+	}
+
+	private boolean endsWithBlankLine(Node block) {
+		while (block != null) {
+			if (isLastLineBlank(block)) {
+				return true;
+			}
+			Node.Type t = block.getType();
+			if (t == Node.Type.List || t == Node.Type.Item) {
+				block = block.getLastChild();
+			} else {
+				break;
+			}
+		}
+		return false;
 	}
 
 	private static final String[] tabSpaces = new String[] { "    ", "   ", "  ", " " };
@@ -405,43 +448,47 @@ public class DocumentParser {
 	// Add a line to the block at the tip. We assume the tip
 	// can accept lines -- that check should be done before calling this.
 	private void addLine(String ln, int offset) {
-		getTip().addLine(ln.substring(offset));
+		getActiveBlockParser().addLine(ln.substring(offset));
 	}
 
 	// Add block of type tag as a child of the tip. If the tip can't
 	// accept children, close and finalize it and try its parent,
 	// and so on til we find a block that can accept children.
 	private <T extends BlockParser> T addChild(T blockParser, int offset) {
-		while (!getTip().canContain(blockParser.getBlock().getType())) {
-			this.finalize(getTip(), this.lineNumber - 1);
+		while (!getActiveBlockParser().canContain(blockParser.getBlock().getType())) {
+			this.finalize(getActiveBlockParser(), this.lineNumber - 1);
 		}
 
 		blockParser.getBlock().setSourcePosition(getSourcePos(offset));
-		// TODO: Should they only be linked on finalize, so that we don't have to unlink when we replace blocks?
-		getTip().getBlock().appendChild(blockParser.getBlock());
-		activeBlockParsers.add(blockParser);
-		allBlockParsers.add(blockParser);
+		getActiveBlockParser().getBlock().appendChild(blockParser.getBlock());
+		activateBlockParser(blockParser);
 
 		return blockParser;
 	}
 
 	private <T extends BlockParser> T replaceBlock(T blockParser) {
-		BlockParser oldTip = getTip();
-		oldTip.getBlock().insertAfter(blockParser.getBlock());
-		oldTip.getBlock().unlink();
-		allBlockParsers.remove(oldTip);
-		blockParser.getBlock().setSourcePosition(oldTip.getBlock().getSourcePosition());
+		BlockParser old = getActiveBlockParser();
+		deactivateBlockParser();
+		allBlockParsers.remove(old);
 
-		removeTip();
-		activeBlockParsers.add(blockParser);
+		old.getBlock().insertAfter(blockParser.getBlock());
+		old.getBlock().unlink();
+		blockParser.getBlock().setSourcePosition(old.getBlock().getSourcePosition());
+		activateBlockParser(blockParser);
+
 		return blockParser;
 	}
 
-	private BlockParser getTip() {
+	private void activateBlockParser(BlockParser blockParser) {
+		activeBlockParsers.add(blockParser);
+		allBlockParsers.add(blockParser);
+	}
+
+	private BlockParser getActiveBlockParser() {
 		return activeBlockParsers.get(activeBlockParsers.size() - 1);
 	}
 
-	private void removeTip() {
+	private void deactivateBlockParser() {
 		activeBlockParsers.remove(activeBlockParsers.size() - 1);
 	}
 
@@ -450,14 +497,14 @@ public class DocumentParser {
 		return new SourcePosition(this.lineNumber, column_number);
 	}
 
-//	private boolean isLastLineBlank(Node node) {
-//		Boolean value = lastLineBlank.get(node);
-//		return value != null && value;
-//	}
-//
-//	private void setLastLineBlank(Node node, boolean value) {
-//		lastLineBlank.put(node, value);
-//	}
+	private boolean isLastLineBlank(Node node) {
+		Boolean value = lastLineBlank.get(node);
+		return value != null && value;
+	}
+
+	private void setLastLineBlank(Node node, boolean value) {
+		lastLineBlank.put(node, value);
+	}
 
 	// Parse a list marker and return data on the marker (type,
 	// start, delimiter, bullet character, padding) or null.

@@ -9,7 +9,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
 	private final BlockContent content = new BlockContent();
 
 	@Override
-	public ContinueResult parseLine(String line, int nextNonSpace, int[] offset, boolean blank) {
+	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
 		return blank ? ContinueResult.NOT_MATCHED : ContinueResult.MATCHED;
 	}
 

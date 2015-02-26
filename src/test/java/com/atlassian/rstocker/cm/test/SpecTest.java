@@ -30,7 +30,9 @@ public class SpecTest extends RenderingTestCase {
 		try (SpecReader reader = new SpecReader(stream)) {
 			List<SpecExample> examples = reader.read();
 			return examples.stream()
-					.filter(example -> example.toString().equals("Section \"List items\" example 9"))
+//					.filter(example -> example.toString().equals("Section \"List items\" example 9"))
+//					.filter(example -> example.toString().equals("Section \"Setext headers\" example 1"))
+//					.filter(example -> example.toString().equals("Section \"Precedence\" example 1"))
 					.map(example -> new Object[]{example})
 					.collect(Collectors.toList());
 		}

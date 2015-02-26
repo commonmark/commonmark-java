@@ -9,7 +9,7 @@ public class DocumentBlockParser extends AbstractBlockParser {
 	private final Document document = new Document();
 
 	@Override
-	public ContinueResult parseLine(String line, int nextNonSpace, int[] offset, boolean blank) {
+	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
 		return ContinueResult.MATCHED;
 	}
 
@@ -23,7 +23,7 @@ public class DocumentBlockParser extends AbstractBlockParser {
 	}
 
 	@Override
-	public Block getBlock() {
+	public Document getBlock() {
 		return document;
 	}
 }

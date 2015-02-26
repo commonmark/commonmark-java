@@ -26,7 +26,7 @@ public class CodeBlockParser extends AbstractBlockParser {
 	}
 
 	@Override
-	public ContinueResult parseLine(String line, int nextNonSpace, int[] offset, boolean blank) {
+	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
 		int indent = nextNonSpace - offset[0];
 		if (block.isFenced()) { // fenced
 			Matcher matcher = null;
@@ -41,7 +41,7 @@ public class CodeBlockParser extends AbstractBlockParser {
 			} else {
 				// skip optional spaces of fence offset
 				int i = block.getFenceOffset();
-				while (i > 0 && line.charAt(offset[0]) == ' ') {
+				while (i > 0 && offset[0] < line.length() && line.charAt(offset[0]) == ' ') {
 					offset[0]++;
 					i--;
 				}

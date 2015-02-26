@@ -4,16 +4,6 @@ import com.atlassian.rstocker.cm.node.Node;
 
 public abstract class AbstractBlockParser implements BlockParser {
 
-	private boolean lastLineBlank = false;
-
-	@Override
-	public void finalizeBlock(InlineParser inlineParser) {
-	}
-
-	@Override
-	public void processInlines(InlineParser inlineParser) {
-	}
-
 	@Override
 	public boolean canContain(Node.Type type) {
 		return false;
@@ -29,12 +19,10 @@ public abstract class AbstractBlockParser implements BlockParser {
 	}
 
 	@Override
-	public void setLastLineBlank(boolean lastLineBlank) {
-		this.lastLineBlank = lastLineBlank;
+	public void finalizeBlock(InlineParser inlineParser) {
 	}
 
 	@Override
-	public boolean isLastLineBlank() {
-		return lastLineBlank;
+	public void processInlines(InlineParser inlineParser) {
 	}
 }

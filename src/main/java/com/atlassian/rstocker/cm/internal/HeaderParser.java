@@ -6,19 +6,22 @@ import com.atlassian.rstocker.cm.node.Header;
 public class HeaderParser extends AbstractBlockParser {
 
 	private final Header block = new Header();
+	private final String content;
 
-	public HeaderParser(int level) {
+	public HeaderParser(int level, String content) {
 		block.setLevel(level);
+		this.content = content;
 	}
 
 	@Override
-	public ContinueResult parseLine(String line, int nextNonSpace, int[] offset, boolean blank) {
+	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
 		// a header can never container > 1 line, so fail to match
 		return ContinueResult.NOT_MATCHED;
 	}
 
 	@Override
-	public void addLine(String line) {
+	public void processInlines(InlineParser inlineParser) {
+		inlineParser.parse(block, content);
 	}
 
 	@Override

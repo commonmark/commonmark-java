@@ -2527,7 +2527,7 @@ the `>`:
 .
 
 
-## List items
+## List items# List items
 
 A [list marker](@list-marker) is a
 [bullet list marker] or an [ordered list marker].

@@ -15,7 +15,7 @@ public class ListItemParser extends AbstractBlockParser {
 	}
 
 	@Override
-	public ContinueResult parseLine(String line, int nextNonSpace, int[] offset, boolean blank) {
+	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
 		int indent = nextNonSpace - offset[0];
 		if (blank) {
 			offset[0] = nextNonSpace;

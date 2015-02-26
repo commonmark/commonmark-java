@@ -11,7 +11,7 @@ public class ParagraphParser extends AbstractBlockParser {
 	private BlockContent content = new BlockContent();
 
 	@Override
-	public ContinueResult parseLine(String line, int nextNonSpace, int[] offset, boolean blank) {
+	public ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank) {
 		return blank ? ContinueResult.NOT_MATCHED : ContinueResult.MATCHED;
 	}
 
@@ -64,5 +64,9 @@ public class ParagraphParser extends AbstractBlockParser {
 
 	public boolean hasLines() {
 		return content.hasLines();
+	}
+
+	public String getContentString() {
+		return content.getString();
 	}
 }

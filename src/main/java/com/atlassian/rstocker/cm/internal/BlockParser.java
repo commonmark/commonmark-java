@@ -11,7 +11,9 @@ public interface BlockParser {
 		FINALIZE
 	}
 
-	ContinueResult parseLine(String line, int nextNonSpace, int[] offset, boolean blank);
+	boolean canContain(Node.Type type);
+
+	ContinueResult continueBlock(String line, int nextNonSpace, int[] offset, boolean blank);
 
 	/** Returns true if block type can accept lines of text */
 	boolean acceptsLine();
@@ -22,11 +24,5 @@ public interface BlockParser {
 
 	void processInlines(InlineParser inlineParser);
 
-	boolean canContain(Node.Type type);
-
 	Block getBlock();
-
-	void setLastLineBlank(boolean lastLineBlank);
-
-	boolean isLastLineBlank();
 }
