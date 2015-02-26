@@ -288,32 +288,9 @@ public class DocumentParser {
 			if (!allClosed) {
 				finalizeBlocks(unmatchedBlockParsers);
 			}
-			if (blank && container.getBlock().getLastChild() != null) {
-				setLastLineBlank(container.getBlock().getLastChild(), true);
-			}
+			propagateLastLineBlank(container, blank);
 
-			Block block = container.getBlock();
-			Node.Type t = block.getType();
-
-			// Block quote lines are never blank as they start with >
-			// and we don't count blanks in fenced code for purposes of tight/loose
-			// lists or breaking out of lists. We also don't set last_line_blank
-			// on an empty list item, or if we just closed a fenced block.
-			boolean lastLineBlank = blank &&
-					!(t == Node.Type.BlockQuote ||
-							(t == Node.Type.CodeBlock && ((CodeBlock) block).isFenced()) ||
-							(t == Node.Type.Item &&
-									block.getFirstChild() == null &&
-									block.getSourcePosition().getStartLine() == this.lineNumber));
-
-			// propagate lastLineBlank up through parents:
-			Node cont = container.getBlock();
-			while (cont != null) {
-				setLastLineBlank(cont, lastLineBlank);
-				cont = cont.getParent();
-			}
-
-			switch (t) {
+			switch (container.getBlock().getType()) {
 				case HtmlBlock:
 				case CodeBlock:
 					this.addLine(ln, offset);
@@ -490,13 +467,40 @@ public class DocumentParser {
 		return new SourcePosition(this.lineNumber, column_number);
 	}
 
-	private boolean isLastLineBlank(Node node) {
-		Boolean value = lastLineBlank.get(node);
-		return value != null && value;
+	private void propagateLastLineBlank(BlockParser blockParser, boolean blank) {
+		if (blank && blockParser.getBlock().getLastChild() != null) {
+			setLastLineBlank(blockParser.getBlock().getLastChild(), true);
+		}
+
+		Block block = blockParser.getBlock();
+		Node.Type t = block.getType();
+
+		// Block quote lines are never blank as they start with >
+		// and we don't count blanks in fenced code for purposes of tight/loose
+		// lists or breaking out of lists. We also don't set last_line_blank
+		// on an empty list item, or if we just closed a fenced block.
+		boolean lastLineBlank = blank &&
+				!(t == Node.Type.BlockQuote ||
+						(t == Node.Type.CodeBlock && ((CodeBlock) block).isFenced()) ||
+						(t == Node.Type.Item &&
+								block.getFirstChild() == null &&
+								block.getSourcePosition().getStartLine() == this.lineNumber));
+
+		// propagate lastLineBlank up through parents:
+		Node cont = blockParser.getBlock();
+		while (cont != null) {
+			setLastLineBlank(cont, lastLineBlank);
+			cont = cont.getParent();
+		}
 	}
 
 	private void setLastLineBlank(Node node, boolean value) {
 		lastLineBlank.put(node, value);
+	}
+
+	private boolean isLastLineBlank(Node node) {
+		Boolean value = lastLineBlank.get(node);
+		return value != null && value;
 	}
 
 	// Parse a list marker and return data on the marker (type,
