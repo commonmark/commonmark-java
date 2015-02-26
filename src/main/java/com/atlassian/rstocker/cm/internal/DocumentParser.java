@@ -73,9 +73,7 @@ public class DocumentParser {
 		for (int i = 0; i < len; i++) {
 			this.incorporateLine(lines[i]);
 		}
-		for (int i = activeBlockParsers.size() - 1; i >= 0; i--) {
-			finalize(activeBlockParsers.get(i), len);
-		}
+		finalizeBlocks(activeBlockParsers, lineNumber);
 		// if (this.options.time) { console.timeEnd("block parsing"); }
 		// if (this.options.time) { console.time("inline parsing"); }
 		this.processInlines();
@@ -178,7 +176,7 @@ public class DocumentParser {
 				// indented code
 				if (getActiveBlockParser().getBlock().getType() != Node.Type.Paragraph) {
 					offset += CODE_INDENT;
-					allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+					allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 					container = addChild(new CodeBlockParser(), offset);
 				}
 				break;
@@ -201,13 +199,13 @@ public class DocumentParser {
 				if (offset < ln.length() && ln.charAt(offset) == C_SPACE) {
 					offset++;
 				}
-				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				container = addChild(new BlockQuoteParser(), nextNonSpace);
 
 			} else if ((matcher = reATXHeaderMarker.matcher(ln.substring(offset))).find()) {
 				// ATX header
 				offset += matcher.group(0).length();
-				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				int level = matcher.group(0).trim().length(); // number of #s
 				// remove trailing ###s:
 				String content = ln.substring(offset).replaceAll("^ *#+ *$", "")
@@ -219,7 +217,7 @@ public class DocumentParser {
 			} else if ((matcher = reCodeFence.matcher(ln.substring(offset))).find()) {
 				// fenced code block
 				int fence_length = matcher.group(0).length();
-				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				char fenceChar = matcher.group(0).charAt(0);
 				container = addChild(new CodeBlockParser(fenceChar, fence_length, indent), nextNonSpace);
 				offset += fence_length;
@@ -227,7 +225,7 @@ public class DocumentParser {
 
 			} else if (matchAt(reHtmlBlockOpen, ln, offset) != -1) {
 				// html block
-				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				container = addChild(new HtmlBlockParser(), offset);
 				offset -= indent; // back up so spaces are part of block
 				break;
@@ -238,7 +236,7 @@ public class DocumentParser {
 
 				ParagraphParser paragraphParser = (ParagraphParser) container;
 				// setext header line
-				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
 				container = replaceBlock(new HeaderParser(level, paragraphParser.getContentString()));
 				offset = ln.length();
@@ -246,14 +244,14 @@ public class DocumentParser {
 
 			} else if (matchAt(reHrule, ln, offset) != -1) {
 				// hrule
-				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				container = addChild(new HorizontalRuleParser(), nextNonSpace);
 				offset = ln.length() - 1;
 				break;
 
 			} else if ((data = parseListMarker(ln, offset, indent)) != null) {
 				// list item
-				allClosed = allClosed || closeUnmatchedBlocks(unmatchedBlockParsers);
+				allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
 				offset += data.padding;
 
 				// add the list if needed
@@ -288,7 +286,7 @@ public class DocumentParser {
 
 			// finalize any blocks not matched
 			if (!allClosed) {
-				closeUnmatchedBlocks(unmatchedBlockParsers);
+				finalizeBlocks(unmatchedBlockParsers);
 			}
 			if (blank && container.getBlock().getLastChild() != null) {
 				setLastLineBlank(container.getBlock().getLastChild(), true);
@@ -436,10 +434,7 @@ public class DocumentParser {
 		}
 
 		if (lastList != -1) {
-			for (int i = blockParsers.size() -1; i >= lastList; i--) {
-				BlockParser blockParser = blockParsers.get(i);
-				finalize(blockParser, lineNumber);
-			}
+			finalizeBlocks(blockParsers.subList(lastList, blockParsers.size()));
 		}
 	}
 
@@ -547,15 +542,17 @@ public class DocumentParser {
 				list.getBulletMarker() == item_data.bulletChar);
 	}
 
-	// Finalize and close any unmatched blocks. Returns true.
-	// foo: lol?
-	private boolean closeUnmatchedBlocks(List<BlockParser> blockParsers) {
-		// finalize any blocks not matched
+	// Finalize blocks of previous line. Returns true.
+	private boolean finalizeBlocks(List<BlockParser> blockParsers) {
+		finalizeBlocks(blockParsers, lineNumber - 1);
+		return true;
+	}
+
+	private void finalizeBlocks(List<BlockParser> blockParsers, int lineNumber) {
 		for (int i = blockParsers.size() - 1; i >= 0; i--) {
 			BlockParser blockParser = blockParsers.get(i);
-			finalize(blockParser, lineNumber - 1);
+			finalize(blockParser, lineNumber);
 		}
-		return true;
 	}
 
 	// Returns true if string contains only space characters.
