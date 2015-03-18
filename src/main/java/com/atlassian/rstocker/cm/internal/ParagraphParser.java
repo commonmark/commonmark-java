@@ -3,12 +3,17 @@ package com.atlassian.rstocker.cm.internal;
 import com.atlassian.rstocker.cm.node.Block;
 import com.atlassian.rstocker.cm.node.Node;
 import com.atlassian.rstocker.cm.node.Paragraph;
+import com.atlassian.rstocker.cm.node.SourcePosition;
 
 public class ParagraphParser extends AbstractBlockParser {
 
 	private final Paragraph block = new Paragraph();
 	// TODO: Can this be inlined?
 	private BlockContent content = new BlockContent();
+
+	public ParagraphParser(SourcePosition pos) {
+		block.setSourcePosition(pos);
+	}
 
 	@Override
 	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
@@ -55,6 +60,11 @@ public class ParagraphParser extends AbstractBlockParser {
 	@Override
 	public boolean canContain(Node.Type type) {
 		return false;
+	}
+
+	@Override
+	public boolean shouldTryBlockStarts() {
+		return true;
 	}
 
 	@Override

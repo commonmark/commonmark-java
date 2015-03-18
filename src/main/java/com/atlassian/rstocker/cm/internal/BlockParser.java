@@ -5,9 +5,11 @@ import com.atlassian.rstocker.cm.node.Node;
 
 public interface BlockParser {
 
+	ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank);
+
 	boolean canContain(Node.Type type);
 
-	ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank);
+	boolean shouldTryBlockStarts();
 
 	/**
 	 * Returns true if block type can accept lines of text

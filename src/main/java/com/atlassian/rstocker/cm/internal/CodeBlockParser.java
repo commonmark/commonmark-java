@@ -2,6 +2,7 @@ package com.atlassian.rstocker.cm.internal;
 
 import com.atlassian.rstocker.cm.node.Block;
 import com.atlassian.rstocker.cm.node.CodeBlock;
+import com.atlassian.rstocker.cm.node.SourcePosition;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,19 +11,22 @@ import static com.atlassian.rstocker.cm.internal.Common.unescapeString;
 
 public class CodeBlockParser extends AbstractBlockParser {
 
+	private static final Pattern OPENING_FENCE = Pattern.compile("^`{3,}(?!.*`)|^~{3,}(?!.*~)");
 	private static final Pattern CLOSING_FENCE = Pattern.compile("^(?:`{3,}|~{3,})(?= *$)");
 	private static final Pattern TRAILING_BLANK_LINES = Pattern.compile("(?:\n[ \t]*)+$");
 
 	private final CodeBlock block = new CodeBlock();
 	private final BlockContent content = new BlockContent();
 
-	public CodeBlockParser(char fenceChar, int fenceLength, int fenceOffset) {
+	public CodeBlockParser(SourcePosition pos) {
+		block.setSourcePosition(pos);
+	}
+
+	public CodeBlockParser(char fenceChar, int fenceLength, int fenceOffset, SourcePosition pos) {
 		block.setFenceChar(fenceChar);
 		block.setFenceLength(fenceLength);
 		block.setFenceOffset(fenceOffset);
-	}
-
-	public CodeBlockParser() {
+		block.setSourcePosition(pos);
 	}
 
 	@Override
@@ -96,6 +100,23 @@ public class CodeBlockParser extends AbstractBlockParser {
 	@Override
 	public Block getBlock() {
 		return block;
+	}
+
+	public static class Factory extends AbstractBlockParserFactory {
+
+		@Override
+		public StartResult tryStart(ParserState state) {
+			int nextNonSpace = state.getNextNonSpace();
+			Matcher matcher;
+			if ((matcher = OPENING_FENCE.matcher(state.getLine().substring(nextNonSpace))).find()) {
+				int fenceLength = matcher.group(0).length();
+				char fenceChar = matcher.group(0).charAt(0);
+				int indent = nextNonSpace - state.getOffset();
+				return start(new CodeBlockParser(fenceChar, fenceLength, indent, pos(state, nextNonSpace)), nextNonSpace + fenceLength, false);
+			} else {
+				return noStart();
+			}
+		}
 	}
 }
 

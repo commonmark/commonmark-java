@@ -16,6 +16,11 @@ public abstract class AbstractBlockParser implements BlockParser {
 	}
 
 	@Override
+	public boolean shouldTryBlockStarts() {
+		return false;
+	}
+
+	@Override
 	public boolean acceptsLine() {
 		return false;
 	}
@@ -33,7 +38,7 @@ public abstract class AbstractBlockParser implements BlockParser {
 	}
 
 	protected static BlockMatched blockMatched(int newOffset) {
-		return new AbstractMatchedBlock(newOffset);
+		return new BlockMatchedImpl(newOffset);
 	}
 
 	protected static BlockDidNotMatch blockDidNotMatch() {
@@ -44,10 +49,10 @@ public abstract class AbstractBlockParser implements BlockParser {
 		return BLOCK_MATCHED_AND_CAN_BE_FINALIZED;
 	}
 
-	private static class AbstractMatchedBlock implements BlockMatched {
+	private static class BlockMatchedImpl implements BlockMatched {
 		private final int newOffset;
 
-		public AbstractMatchedBlock(int newOffset) {
+		public BlockMatchedImpl(int newOffset) {
 			this.newOffset = newOffset;
 		}
 

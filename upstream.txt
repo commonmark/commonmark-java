@@ -18,3 +18,4 @@ Suggestions:
   make tag() write to buffer and return early
 * node.info.split(/ +/): only uses first element
 * Keep parser state out of node, e.g. strings, string_content
+* does parseListMarker need to check for hrule (again)?

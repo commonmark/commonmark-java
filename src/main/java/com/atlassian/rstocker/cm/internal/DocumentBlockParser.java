@@ -22,6 +22,11 @@ public class DocumentBlockParser extends AbstractBlockParser {
 	}
 
 	@Override
+	public boolean shouldTryBlockStarts() {
+		return true;
+	}
+
+	@Override
 	public Document getBlock() {
 		return document;
 	}

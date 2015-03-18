@@ -1,8 +1,8 @@
 package com.atlassian.rstocker.cm.internal;
 
-import com.atlassian.rstocker.cm.node.Block;
-import com.atlassian.rstocker.cm.node.ListItem;
-import com.atlassian.rstocker.cm.node.Node;
+import com.atlassian.rstocker.cm.node.*;
+
+import java.util.regex.Matcher;
 
 public class ListItemParser extends AbstractBlockParser {
 
@@ -10,8 +10,9 @@ public class ListItemParser extends AbstractBlockParser {
 
 	private int itemOffset;
 
-	public ListItemParser(int itemOffset) {
+	public ListItemParser(int itemOffset, SourcePosition pos) {
 		this.itemOffset = itemOffset;
+		block.setSourcePosition(pos);
 	}
 
 	@Override
@@ -33,7 +34,13 @@ public class ListItemParser extends AbstractBlockParser {
 	}
 
 	@Override
+	public boolean shouldTryBlockStarts() {
+		return true;
+	}
+
+	@Override
 	public Block getBlock() {
 		return block;
 	}
+
 }
