@@ -1,14 +1,7 @@
 Fixes:
-* parseBackticks return type
 * spnl: return boolean
-* Delimiter: index unused?
-* var sps = reFinalSpace.exec(lastc._literal)[0].length; -> exec can return null
-* /^ *(?:\n|$)/ -> extract into variable 
+* /^ *(?:\n|$)/ -> extract into variable
 * out/cr in html.js
-* twice: var ESCAPABLE = '[!"#$%&\'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]';
-* || this.top doesn't do anything
-* can be moved one line up:     if (rest.match(reHrule)) { return null; }
-*              !(/\s/.test(char_before)) && -> use reWhitespaceChar
 * processEmphasis doesn't need node?
 * processInlines: doesn't "Returns new object"
 
@@ -18,4 +11,4 @@ Suggestions:
   make tag() write to buffer and return early
 * node.info.split(/ +/): only uses first element
 * Keep parser state out of node, e.g. strings, string_content
-* does parseListMarker need to check for hrule (again)?
+* in parseListMarker, construct object from local variables at the end
