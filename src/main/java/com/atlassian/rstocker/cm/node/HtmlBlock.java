@@ -1,5 +1,10 @@
 package com.atlassian.rstocker.cm.node;
 
+/**
+ * HTML block
+ *
+ * @see <a href="http://spec.commonmark.org/0.18/#html-blocks">CommonMark Spec</a>
+ */
 public class HtmlBlock extends Block {
 
 	private String literal;
