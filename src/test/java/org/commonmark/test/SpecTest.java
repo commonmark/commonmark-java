@@ -1,8 +1,8 @@
 package org.commonmark.test;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.commonmark.spec.SpecExample;
 import org.commonmark.spec.SpecReader;
@@ -26,12 +26,11 @@ public class SpecTest extends RenderingTestCase {
 
 		try (SpecReader reader = new SpecReader(stream)) {
 			List<SpecExample> examples = reader.read();
-			return examples.stream()
-//					.filter(example -> example.toString().equals("Section \"List items\" example 9"))
-//					.filter(example -> example.toString().equals("Section \"Setext headers\" example 1"))
-//					.filter(example -> example.toString().equals("Section \"Precedence\" example 1"))
-					.map(example -> new Object[]{example})
-					.collect(Collectors.toList());
+			List<Object[]> data = new ArrayList<>();
+			for (SpecExample example : examples) {
+				data.add(new Object[] { example });
+			}
+			return data;
 		}
 	}
 

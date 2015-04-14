@@ -303,7 +303,8 @@ public class HtmlRenderer {
 		}
 
 		void tag(String name) {
-			tag(name, Collections.emptyList(), false);
+			List<String[]> attrs = Collections.emptyList();
+			tag(name, attrs, false);
 		}
 
 		void tag(String name, List<String[]> attrs) {
@@ -311,7 +312,8 @@ public class HtmlRenderer {
 		}
 
 		void tag(String name, boolean selfClosing) {
-			tag(name, Collections.emptyList(), selfClosing);
+			List<String[]> attrs = Collections.emptyList();
+			tag(name, attrs, selfClosing);
 		}
 
 		// Helper function to produce an HTML tag.

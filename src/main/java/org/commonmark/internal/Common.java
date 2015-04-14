@@ -4,7 +4,6 @@ import org.commonmark.Escaper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,36 +37,17 @@ public class Common {
 	private static final char[] HEX_DIGITS = new char[] {
 			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-	static String unescapeChar(String s) {
-		if (s.charAt(0) == '\\') {
-			return s.substring(1);
-		} else {
-			return Html5Entities.entityToString(s);
-		}
-	}
-
 	// Replace entities and backslash escapes with literal characters.
 	public static String unescapeString(String s) {
 		if (reBackslashOrAmp.matcher(s).find()) {
-			return replaceAll(reEntityOrEscapedChar, s, Common::unescapeChar);
+			return replaceAll(reEntityOrEscapedChar, s, UNESCAPE_REPLACER);
 		} else {
 			return s;
 		}
 	}
 
 	public static String normalizeURI(String uri) {
-		return replaceAll(reEscapeInUri, uri, Common::uriEscape);
-	}
-
-	private static String uriEscape(String s) {
-		byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-		StringBuilder sb = new StringBuilder(bytes.length * 3);
-		for (byte b : bytes) {
-			sb.append('%');
-			sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
-			sb.append(HEX_DIGITS[b & 0xF]);
-		}
-		return sb.toString();
+		return replaceAll(reEscapeInUri, uri, URI_REPLACER);
 	}
 
 	private static Pattern whitespace = Pattern.compile("[ \t\r\n]+");
@@ -77,28 +57,61 @@ public class Common {
 		return whitespace.matcher(input.toLowerCase(Locale.ROOT)).replaceAll(" ");
 	}
 
-	public static Escaper XML_ESCAPER = (s, preserveEntities) -> {
-		Pattern p = preserveEntities ? reXmlSpecialOrEntity : reXmlSpecial;
-		return replaceAll(p, s, Common::replaceUnsafeChar);
+	public static Escaper XML_ESCAPER = new Escaper() {
+		@Override
+		public String escape(String input, boolean preserveEntities) {
+			Pattern p = preserveEntities ? reXmlSpecialOrEntity : reXmlSpecial;
+			return replaceAll(p, input, UNSAFE_CHAR_REPLACER);
+		}
 	};
 
-	private static String replaceUnsafeChar(String s) {
-		switch (s) {
-		case "&":
-			return "&amp;";
-		case "<":
-			return "&lt;";
-		case ">":
-			return "&gt;";
-		case "\"":
-			return "&quot;";
-		default:
-			return s;
+	private static Replacer UNSAFE_CHAR_REPLACER = new Replacer() {
+		@Override
+		public void replace(String input, StringBuilder sb) {
+			switch (input) {
+				case "&":
+					sb.append("&amp;");
+					break;
+				case "<":
+					sb.append("&lt;");
+					break;
+				case ">":
+					sb.append("&gt;");
+					break;
+				case "\"":
+					sb.append("&quot;");
+					break;
+				default:
+					sb.append(input);
+			}
 		}
-	}
+	};
+
+	private static Replacer UNESCAPE_REPLACER = new Replacer() {
+		@Override
+		public void replace(String input, StringBuilder sb) {
+			if (input.charAt(0) == '\\') {
+				sb.append(input, 1, input.length());
+			} else {
+				sb.append(Html5Entities.entityToString(input));
+			}
+		}
+	};
+
+	private static Replacer URI_REPLACER = new Replacer() {
+		@Override
+		public void replace(String input, StringBuilder sb) {
+			byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+			for (byte b : bytes) {
+				sb.append('%');
+				sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
+				sb.append(HEX_DIGITS[b & 0xF]);
+			}
+		}
+	};
 
 	private static String replaceAll(Pattern p, String s,
-			Function<String, String> replacer) {
+	                                 Replacer replacer) {
 		Matcher matcher = p.matcher(s);
 
 		if (!matcher.find()) {
@@ -109,8 +122,7 @@ public class Common {
 		int lastEnd = 0;
 		do {
 			sb.append(s, lastEnd, matcher.start());
-			String replaced = replacer.apply(matcher.group());
-			sb.append(replaced);
+			replacer.replace(matcher.group(), sb);
 			lastEnd = matcher.end();
 		} while (matcher.find());
 
@@ -118,5 +130,9 @@ public class Common {
 			sb.append(s, lastEnd, s.length());
 		}
 		return sb.toString();
+	}
+
+	private interface Replacer {
+		void replace(String input, StringBuilder sb);
 	}
 }

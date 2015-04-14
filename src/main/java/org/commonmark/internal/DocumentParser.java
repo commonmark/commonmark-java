@@ -23,7 +23,7 @@ public class DocumentParser {
 	private int lastLineLength = 0;
 	private InlineParser inlineParser = new InlineParser();
 
-	private List<BlockParserFactory> blockParserFactories = Arrays.asList(
+	private List<BlockParserFactory> blockParserFactories = Arrays.<BlockParserFactory>asList(
 			new BlockQuoteParser.Factory(),
 			new HeaderParser.Factory(),
 			new CodeBlockParser.Factory(),
