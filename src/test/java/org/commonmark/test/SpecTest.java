@@ -1,9 +1,5 @@
 package org.commonmark.test;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.commonmark.spec.SpecExample;
 import org.commonmark.spec.SpecReader;
 import org.junit.Test;
@@ -11,36 +7,40 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 @RunWith(Parameterized.class)
 public class SpecTest extends RenderingTestCase {
 
-	private final SpecExample example;
+    private final SpecExample example;
 
-	@Parameters(name = "{0}")
-	public static List<Object[]> data() throws Exception {
-		InputStream stream = SpecTest.class.getResourceAsStream("/spec.txt");
-		if (stream == null) {
-			throw new IllegalStateException(
-					"Could not load spec.txt classpath resource");
-		}
+    public SpecTest(SpecExample example) {
+        this.example = example;
+    }
 
-		try (SpecReader reader = new SpecReader(stream)) {
-			List<SpecExample> examples = reader.read();
-			List<Object[]> data = new ArrayList<>();
-			for (SpecExample example : examples) {
-				data.add(new Object[] { example });
-			}
-			return data;
-		}
-	}
+    @Parameters(name = "{0}")
+    public static List<Object[]> data() throws Exception {
+        InputStream stream = SpecTest.class.getResourceAsStream("/spec.txt");
+        if (stream == null) {
+            throw new IllegalStateException(
+                    "Could not load spec.txt classpath resource");
+        }
 
-	public SpecTest(SpecExample example) {
-		this.example = example;
-	}
+        try (SpecReader reader = new SpecReader(stream)) {
+            List<SpecExample> examples = reader.read();
+            List<Object[]> data = new ArrayList<>();
+            for (SpecExample example : examples) {
+                data.add(new Object[]{example});
+            }
+            return data;
+        }
+    }
 
-	@Test
-	public void testHtmlRendering() {
+    @Test
+    public void testHtmlRendering() {
         assertRendering(example.getSource(), example.getHtml());
-	}
+    }
 
 }

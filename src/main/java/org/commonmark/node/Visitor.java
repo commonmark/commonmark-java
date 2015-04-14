@@ -2,39 +2,39 @@ package org.commonmark.node;
 
 public interface Visitor {
 
-	void visit(BlockQuote blockQuote);
+    void visit(BlockQuote blockQuote);
 
-	void visit(Code code);
+    void visit(Code code);
 
-	void visit(CodeBlock codeBlock);
+    void visit(CodeBlock codeBlock);
 
-	void visit(Document document);
+    void visit(Document document);
 
-	void visit(Emphasis emphasis);
+    void visit(Emphasis emphasis);
 
-	void visit(HardLineBreak hardLineBreak);
+    void visit(HardLineBreak hardLineBreak);
 
-	void visit(Header header);
+    void visit(Header header);
 
-	void visit(HorizontalRule horizontalRule);
+    void visit(HorizontalRule horizontalRule);
 
-	void visit(Html html);
+    void visit(Html html);
 
-	void visit(HtmlBlock htmlBlock);
+    void visit(HtmlBlock htmlBlock);
 
-	void visit(Image image);
+    void visit(Image image);
 
-	void visit(Link link);
+    void visit(Link link);
 
-	void visit(ListBlock listBlock);
+    void visit(ListBlock listBlock);
 
-	void visit(ListItem listItem);
+    void visit(ListItem listItem);
 
-	void visit(Paragraph paragraph);
+    void visit(Paragraph paragraph);
 
-	void visit(SoftLineBreak softLineBreak);
+    void visit(SoftLineBreak softLineBreak);
 
-	void visit(StrongEmphasis strongEmphasis);
+    void visit(StrongEmphasis strongEmphasis);
 
-	void visit(Text text);
+    void visit(Text text);
 }

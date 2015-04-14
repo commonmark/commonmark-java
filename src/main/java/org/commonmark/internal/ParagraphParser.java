@@ -7,80 +7,80 @@ import org.commonmark.node.SourcePosition;
 
 public class ParagraphParser extends AbstractBlockParser {
 
-	private final Paragraph block = new Paragraph();
-	// TODO: Can this be inlined?
-	private BlockContent content = new BlockContent();
+    private final Paragraph block = new Paragraph();
+    // TODO: Can this be inlined?
+    private BlockContent content = new BlockContent();
 
-	public ParagraphParser(SourcePosition pos) {
-		block.setSourcePosition(pos);
-	}
+    public ParagraphParser(SourcePosition pos) {
+        block.setSourcePosition(pos);
+    }
 
-	@Override
-	public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
-		if (!blank) {
-			return blockMatched(offset);
-		} else {
-			return blockDidNotMatch();
-		}
-	}
+    @Override
+    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+        if (!blank) {
+            return blockMatched(offset);
+        } else {
+            return blockDidNotMatch();
+        }
+    }
 
-	@Override
-	public boolean acceptsLine() {
-		return true;
-	}
+    @Override
+    public boolean acceptsLine() {
+        return true;
+    }
 
-	@Override
-	public void addLine(String line) {
-		content.add(line);
-	}
+    @Override
+    public void addLine(String line) {
+        content.add(line);
+    }
 
-	@Override
-	public void finalizeBlock(InlineParser inlineParser) {
-		int pos;
-		String contentString = content.getString();
+    @Override
+    public void finalizeBlock(InlineParser inlineParser) {
+        int pos;
+        String contentString = content.getString();
 
-		// try parsing the beginning as link reference definitions:
-		while (contentString.charAt(0) == '[' &&
-				(pos = inlineParser.parseReference(contentString)) != 0) {
-			contentString = contentString.substring(pos);
-			if (DocumentParser.isBlank(contentString)) {
-				block.unlink();
-				// TODO: Return something so that inlines aren't processed here?
-				break;
-			}
-		}
-		content = new BlockContent(contentString);
-	}
+        // try parsing the beginning as link reference definitions:
+        while (contentString.charAt(0) == '[' &&
+                (pos = inlineParser.parseReference(contentString)) != 0) {
+            contentString = contentString.substring(pos);
+            if (DocumentParser.isBlank(contentString)) {
+                block.unlink();
+                // TODO: Return something so that inlines aren't processed here?
+                break;
+            }
+        }
+        content = new BlockContent(contentString);
+    }
 
-	@Override
-	public void processInlines(InlineParser inlineParser) {
-		inlineParser.parse(block, content.getString());
-	}
+    @Override
+    public void processInlines(InlineParser inlineParser) {
+        inlineParser.parse(block, content.getString());
+    }
 
-	@Override
-	public boolean canContain(Node.Type type) {
-		return false;
-	}
+    @Override
+    public boolean canContain(Node.Type type) {
+        return false;
+    }
 
-	@Override
-	public boolean shouldTryBlockStarts() {
-		return true;
-	}
+    @Override
+    public boolean shouldTryBlockStarts() {
+        return true;
+    }
 
-	@Override
-	public Block getBlock() {
-		return block;
-	}
+    @Override
+    public Block getBlock() {
+        return block;
+    }
 
-	public boolean hasSingleLine() {
-		return content.hasSingleLine();
-	}
+    public boolean hasSingleLine() {
+        return content.hasSingleLine();
+    }
 
-	public boolean hasLines() {
-		return content.hasLines();
-	}
+    public boolean hasLines() {
+        return content.hasLines();
+    }
 
-	public String getContentString() {
-		return content.getString();
-	}
+    public String getContentString() {
+        return content.getString();
+    }
 }

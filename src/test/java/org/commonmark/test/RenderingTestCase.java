@@ -1,8 +1,8 @@
 package org.commonmark.test;
 
 import org.commonmark.HtmlRenderer;
-import org.commonmark.node.Node;
 import org.commonmark.Parser;
+import org.commonmark.node.Node;
 
 import static org.junit.Assert.assertEquals;
 
