@@ -230,7 +230,7 @@ public class InlineParser {
     boolean parseHtmlTag(Node block) {
         String m = this.match(reHtmlTag);
         if (m != null) {
-            Html node = new Html();
+            HtmlTag node = new HtmlTag();
             node.setLiteral(m);
             block.appendChild(node);
             return true;

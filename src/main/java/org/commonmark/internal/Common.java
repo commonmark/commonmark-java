@@ -56,6 +56,7 @@ public class Common {
             }
         }
     };
+
     public static Escaper XML_ESCAPER = new Escaper() {
         @Override
         public String escape(String input, boolean preserveEntities) {
@@ -63,6 +64,7 @@ public class Common {
             return replaceAll(p, input, UNSAFE_CHAR_REPLACER);
         }
     };
+
     private static Replacer UNESCAPE_REPLACER = new Replacer() {
         @Override
         public void replace(String input, StringBuilder sb) {

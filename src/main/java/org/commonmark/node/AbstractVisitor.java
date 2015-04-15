@@ -43,8 +43,8 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(Html html) {
-        visitChildren(html);
+    public void visit(HtmlTag htmlTag) {
+        visitChildren(htmlTag);
     }
 
     @Override

@@ -18,7 +18,7 @@ public interface Visitor {
 
     void visit(HorizontalRule horizontalRule);
 
-    void visit(Html html);
+    void visit(HtmlTag htmlTag);
 
     void visit(HtmlBlock htmlBlock);
 

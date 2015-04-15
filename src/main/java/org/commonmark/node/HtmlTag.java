@@ -5,7 +5,7 @@ package org.commonmark.node;
  *
  * @see <a href="http://spec.commonmark.org/0.18/#raw-html">CommonMark Spec</a>
  */
-public class Html extends Node {
+public class HtmlTag extends Node {
 
     private String literal;
 

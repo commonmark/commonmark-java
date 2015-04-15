@@ -11,12 +11,13 @@ import java.util.regex.Pattern;
 public class HtmlRenderer {
 
     private final String softbreak;
-    private final Escaper escaper;
+    private final boolean escapeHtml;
     private final boolean sourcepos;
+    private final Escaper escaper = Common.XML_ESCAPER;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
-        this.escaper = builder.escaper;
+        this.escapeHtml = builder.escapeHtml;
         this.sourcepos = builder.sourcepos;
     }
 
@@ -33,7 +34,7 @@ public class HtmlRenderer {
         return html.build();
     }
 
-    private String esc(String input, boolean preserveEntities) {
+    private String escape(String input, boolean preserveEntities) {
         return escaper.escape(input, preserveEntities);
     }
 
@@ -45,16 +46,25 @@ public class HtmlRenderer {
     public static class Builder {
 
         private String softbreak = "\n";
-        private Escaper escaper = Common.XML_ESCAPER;
         private boolean sourcepos = false;
+        private boolean escapeHtml = false;
 
         public Builder softbreak(String softbreak) {
             this.softbreak = softbreak;
             return this;
         }
 
-        public Builder escaper(Escaper escaper) {
-            this.escaper = escaper;
+        /**
+         * Whether {@link HtmlTag} and {@link HtmlBlock} should be escaped.
+         * <p/>
+         * Note that {@link HtmlTag} is only a tag itself, not the text between an opening tag and a closing tag. So markup
+         * in the text will be parsed as normal and is not affected by this option.
+         *
+         * @param escapeHtml true for escaping, false for preserving raw HTML
+         * @return {@code this}
+         */
+        public Builder escapeHtml(boolean escapeHtml) {
+            this.escapeHtml = escapeHtml;
             return this;
         }
 
@@ -215,12 +225,12 @@ public class HtmlRenderer {
             List<String[]> attrs = getAttrs(codeBlock);
             if (info_words.length > 0 && info_words[0].length() > 0) {
                 attrs.add(new String[]{"class",
-                        "language-" + esc(info_words[0], true)});
+                        "language-" + escape(info_words[0], true)});
             }
             html.line();
             html.tag("pre");
             html.tag("code", attrs);
-            html.raw(esc(codeBlock.getLiteral(), false));
+            html.raw(escape(codeBlock.getLiteral(), false));
             html.tag("/code");
             html.tag("/pre");
             html.line();
@@ -240,7 +250,11 @@ public class HtmlRenderer {
         @Override
         public void visit(HtmlBlock htmlBlock) {
             html.line();
-            html.raw(htmlBlock.getLiteral());
+            if (escapeHtml) {
+                html.raw(escape(htmlBlock.getLiteral(), false));
+            } else {
+                html.raw(htmlBlock.getLiteral());
+            }
             html.line();
         }
 
@@ -255,9 +269,9 @@ public class HtmlRenderer {
         public void visit(Link link) {
             List<String[]> attrs = getAttrs(link);
             attrs.add(new String[]{"href",
-                    esc(link.getDestination(), true)});
+                    escape(link.getDestination(), true)});
             if (link.getTitle() != null) {
-                attrs.add(new String[]{"title", esc(link.getTitle(), true)});
+                attrs.add(new String[]{"title", escape(link.getTitle(), true)});
             }
             html.tag("a", attrs);
             visitChildren(link);
@@ -267,7 +281,7 @@ public class HtmlRenderer {
         @Override
         public void visit(Image image) {
             if (html.isHtmlAllowed()) {
-                html.raw("<img src=\"" + esc(image.getDestination(), true) +
+                html.raw("<img src=\"" + escape(image.getDestination(), true) +
                         "\" alt=\"");
             }
             html.enter();
@@ -275,7 +289,7 @@ public class HtmlRenderer {
             html.leave();
             if (html.isHtmlAllowed()) {
                 if (image.getTitle() != null) {
-                    html.raw("\" title=\"" + esc(image.getTitle(), true));
+                    html.raw("\" title=\"" + escape(image.getTitle(), true));
                 }
                 html.raw("\" />");
             }
@@ -297,19 +311,23 @@ public class HtmlRenderer {
 
         @Override
         public void visit(Text text) {
-            html.raw(esc(text.getLiteral(), false));
+            html.raw(escape(text.getLiteral(), false));
         }
 
         @Override
         public void visit(Code code) {
             html.tag("code");
-            html.raw(esc(code.getLiteral(), false));
+            html.raw(escape(code.getLiteral(), false));
             html.tag("/code");
         }
 
         @Override
-        public void visit(Html htmlNode) {
-            html.raw(htmlNode.getLiteral());
+        public void visit(HtmlTag inlineHmtl) {
+            if (escapeHtml) {
+                html.raw(escape(inlineHmtl.getLiteral(), false));
+            } else {
+                html.raw(inlineHmtl.getLiteral());
+            }
         }
 
         @Override
