@@ -1,11 +1,12 @@
-package org.commonmark;
+package org.commonmark.html;
 
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class HtmlRenderer {
@@ -13,11 +14,13 @@ public class HtmlRenderer {
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean sourcepos;
+    private final CodeBlockAttributeProvider codeBlockAttributeProvider;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
         this.sourcepos = builder.sourcepos;
+        this.codeBlockAttributeProvider = builder.codeBlockAttributeProvider;
     }
 
     public static Builder builder() {
@@ -47,6 +50,7 @@ public class HtmlRenderer {
         private String softbreak = "\n";
         private boolean sourcepos = false;
         private boolean escapeHtml = false;
+        private CodeBlockAttributeProvider codeBlockAttributeProvider = new CodeBlockAttributeProvider();
 
         public Builder softbreak(String softbreak) {
             this.softbreak = softbreak;
@@ -69,6 +73,11 @@ public class HtmlRenderer {
 
         public Builder sourcepos(boolean sourcepos) {
             this.sourcepos = sourcepos;
+            return this;
+        }
+
+        public Builder codeBlockAttributeProvider(CodeBlockAttributeProvider codeBlockAttributeProvider) {
+            this.codeBlockAttributeProvider = codeBlockAttributeProvider;
             return this;
         }
 
@@ -105,21 +114,21 @@ public class HtmlRenderer {
         }
 
         void tag(String name) {
-            List<String[]> attrs = Collections.emptyList();
+            Map<String, String> attrs = Collections.emptyMap();
             tag(name, attrs, false);
         }
 
-        void tag(String name, List<String[]> attrs) {
+        void tag(String name, Map<String, String> attrs) {
             tag(name, attrs, false);
         }
 
         void tag(String name, boolean selfClosing) {
-            List<String[]> attrs = Collections.emptyList();
+            Map<String, String> attrs = Collections.emptyMap();
             tag(name, attrs, selfClosing);
         }
 
         // Helper function to produce an HTML tag.
-        void tag(String name, List<String[]> attrs, boolean selfclosing) {
+        void tag(String name, Map<String, String> attrs, boolean selfclosing) {
             if (!isHtmlAllowed()) {
                 return;
             }
@@ -127,11 +136,11 @@ public class HtmlRenderer {
             buffer.append('<');
             buffer.append(name);
             if (attrs != null && !attrs.isEmpty()) {
-                for (String[] attrib : attrs) {
+                for (Map.Entry<String, String> attrib : attrs.entrySet()) {
                     buffer.append(' ');
-                    buffer.append(attrib[0]);
+                    buffer.append(attrib.getKey());
                     buffer.append("=\"");
-                    buffer.append(attrib[1]);
+                    buffer.append(attrib.getValue());
                     buffer.append('"');
                 }
             }
@@ -195,9 +204,9 @@ public class HtmlRenderer {
             String tagname = listBlock.getListType() == ListBlock.ListType.BULLET ? "ul"
                     : "ol";
             int start = listBlock.getOrderedStart();
-            List<String[]> attrs = getAttrs(listBlock);
+            Map<String, String> attrs = getAttrs(listBlock);
             if (start > 1) {
-                attrs.add(new String[]{"start", String.valueOf(start)});
+                attrs.put("start", String.valueOf(start));
             }
             html.line();
             html.tag(tagname, attrs);
@@ -218,13 +227,11 @@ public class HtmlRenderer {
 
         @Override
         public void visit(CodeBlock codeBlock) {
-            // TODO: Just use indexOf(' ')
-            String[] info_words = codeBlock.getInfo() != null ? codeBlock.getInfo().split(" +")
-                    : new String[0];
-            List<String[]> attrs = getAttrs(codeBlock);
-            if (info_words.length > 0 && info_words[0].length() > 0) {
-                attrs.add(new String[]{"class",
-                        "language-" + escape(info_words[0], true)});
+            Map<String, String> providerAttributes = codeBlockAttributeProvider.getAttributes(codeBlock);
+            Map<String, String> attrs = new LinkedHashMap<>();
+            for (Map.Entry<String, String> attribute : providerAttributes.entrySet()) {
+                String escaped = escape(attribute.getValue(), true);
+                attrs.put(attribute.getKey(), escaped);
             }
             html.line();
             html.tag("pre");
@@ -266,11 +273,10 @@ public class HtmlRenderer {
 
         @Override
         public void visit(Link link) {
-            List<String[]> attrs = getAttrs(link);
-            attrs.add(new String[]{"href",
-                    escape(link.getDestination(), true)});
+            Map<String, String> attrs = getAttrs(link);
+            attrs.put("href", escape(link.getDestination(), true));
             if (link.getTitle() != null) {
-                attrs.add(new String[]{"title", escape(link.getTitle(), true)});
+                attrs.put("title", escape(link.getTitle(), true));
             }
             html.tag("a", attrs);
             visitChildren(link);
@@ -352,16 +358,16 @@ public class HtmlRenderer {
             return false;
         }
 
-        private List<String[]> getAttrs(Node node) {
-            List<String[]> attrs = new ArrayList<>();
+        private Map<String, String> getAttrs(Node node) {
+            Map<String, String> attrs = new LinkedHashMap<>();
             if (sourcepos && node instanceof Block) {
                 Block block = (Block) node;
                 SourcePosition pos = block.getSourcePosition();
                 if (pos != null) {
-                    attrs.add(new String[]{"data-sourcepos",
+                    attrs.put("data-sourcepos",
                             "" + pos.getStartLine() + ':' +
                                     pos.getStartColumn() + '-' + pos.getEndLine() + ':' +
-                                    pos.getEndColumn()});
+                                    pos.getEndColumn());
                 }
             }
             return attrs;

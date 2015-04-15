@@ -1,9 +1,14 @@
 package org.commonmark.test;
 
-import org.commonmark.HtmlRenderer;
+import org.commonmark.html.CodeBlockAttributeProvider;
+import org.commonmark.html.HtmlRenderer;
 import org.commonmark.Parser;
+import org.commonmark.node.CodeBlock;
 import org.commonmark.node.Node;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -38,6 +43,25 @@ public class HtmlRendererTest {
     public void textEscaping() {
         String rendered = defaultRenderer().render(parse("escaping: & < > \" '"));
         assertEquals("<p>escaping: &amp; &lt; &gt; &quot; '</p>\n", rendered);
+    }
+
+    @Test
+    public void codeBlockAttributeProvider() {
+        CodeBlockAttributeProvider custom = new CodeBlockAttributeProvider() {
+            @Override
+            public Map<String, String> getAttributes(CodeBlock codeBlock) {
+                Map<String, String> attributes = new HashMap<>();
+                attributes.put("data-custom", codeBlock.getInfo());
+                return attributes;
+            }
+        };
+
+        HtmlRenderer renderer = HtmlRenderer.builder().codeBlockAttributeProvider(custom).build();
+        String rendered = renderer.render(parse("```info\ncontent\n```"));
+        assertEquals("<pre><code data-custom=\"info\">content\n</code></pre>\n", rendered);
+
+        String rendered2 = renderer.render(parse("```evil\"\ncontent\n```"));
+        assertEquals("<pre><code data-custom=\"evil&quot;\">content\n</code></pre>\n", rendered2);
     }
 
     private static HtmlRenderer defaultRenderer() {

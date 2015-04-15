@@ -47,6 +47,9 @@ public class CodeBlock extends Block {
         this.fenceOffset = fenceOffset;
     }
 
+    /**
+     * @see <a href="http://spec.commonmark.org/0.18/#info-string">CommonMark spec</a>
+     */
     public String getInfo() {
         return info;
     }
