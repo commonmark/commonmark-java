@@ -1,41 +1,38 @@
-package org.commonmark.internal;
-
-import org.commonmark.Escaper;
+package org.commonmark.internal.util;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Common {
+public class Escaping {
 
-    // foo: not sure about [ in [
-    static final String ESCAPABLE = "[!\"#$%&\'()*+,./:;<=>?@\\[\\\\\\]^_`{|}~-]";
+    public static final String ESCAPABLE = "[!\"#$%&\'()*+,./:;<=>?@\\[\\\\\\]^_`{|}~-]";
+
     private static final String ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
-    // foo: not sure about the backslashes here
-    private static final Pattern reBackslashOrAmp = Pattern.compile("[\\\\&]");
 
-    // foo: had flags 'gi' before
-    private static final Pattern reEntityOrEscapedChar =
+    private static final Pattern BACKSLASH_OR_AMP = Pattern.compile("[\\\\&]");
+
+    private static final Pattern ENTITY_OR_ESCAPED_CHAR =
             Pattern.compile("\\\\" + ESCAPABLE + '|' + ENTITY, Pattern.CASE_INSENSITIVE);
 
-    private static final String XMLSPECIAL = "[&<>\"]";
+    private static final String XML_SPECIAL = "[&<>\"]";
 
-    // foo: had flags 'g' before
-    private static final Pattern reXmlSpecial = Pattern.compile(XMLSPECIAL);
+    private static final Pattern XML_SPECIAL_RE = Pattern.compile(XML_SPECIAL);
 
-    // foo: had flags 'gi' before
-    private static final Pattern reXmlSpecialOrEntity = Pattern.compile(ENTITY + '|' + XMLSPECIAL,
-            Pattern.CASE_INSENSITIVE);
+    private static final Pattern XML_SPECIAL_OR_ENTITY =
+            Pattern.compile(ENTITY + '|' + XML_SPECIAL, Pattern.CASE_INSENSITIVE);
 
     // From MDN encodeURI documentation
-    private static final Pattern reEscapeInUri =
+    private static final Pattern ESCAPE_IN_URI =
             Pattern.compile("[^%;,/?:@&=+$#\\-_.!~*'()a-zA-Z0-9]");
 
-    private static final char[] HEX_DIGITS = new char[]{
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    private static Pattern whitespace = Pattern.compile("[ \t\r\n]+");
-    private static Replacer UNSAFE_CHAR_REPLACER = new Replacer() {
+    private static final char[] HEX_DIGITS =
+            new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    private static final Pattern WHITESPACE = Pattern.compile("[ \t\r\n]+");
+
+    private static final Replacer UNSAFE_CHAR_REPLACER = new Replacer() {
         @Override
         public void replace(String input, StringBuilder sb) {
             switch (input) {
@@ -57,15 +54,7 @@ public class Common {
         }
     };
 
-    public static Escaper XML_ESCAPER = new Escaper() {
-        @Override
-        public String escape(String input, boolean preserveEntities) {
-            Pattern p = preserveEntities ? reXmlSpecialOrEntity : reXmlSpecial;
-            return replaceAll(p, input, UNSAFE_CHAR_REPLACER);
-        }
-    };
-
-    private static Replacer UNESCAPE_REPLACER = new Replacer() {
+    private static final Replacer UNESCAPE_REPLACER = new Replacer() {
         @Override
         public void replace(String input, StringBuilder sb) {
             if (input.charAt(0) == '\\') {
@@ -75,7 +64,8 @@ public class Common {
             }
         }
     };
-    private static Replacer URI_REPLACER = new Replacer() {
+
+    private static final Replacer URI_REPLACER = new Replacer() {
         @Override
         public void replace(String input, StringBuilder sb) {
             byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
@@ -87,26 +77,32 @@ public class Common {
         }
     };
 
-    // Replace entities and backslash escapes with literal characters.
+    public static String escapeHtml(String input, boolean preserveEntities) {
+        Pattern p = preserveEntities ? XML_SPECIAL_OR_ENTITY : XML_SPECIAL_RE;
+        return replaceAll(p, input, UNSAFE_CHAR_REPLACER);
+    }
+
+    /**
+     * Replace entities and backslash escapes with literal characters.
+     */
     public static String unescapeString(String s) {
-        if (reBackslashOrAmp.matcher(s).find()) {
-            return replaceAll(reEntityOrEscapedChar, s, UNESCAPE_REPLACER);
+        if (BACKSLASH_OR_AMP.matcher(s).find()) {
+            return replaceAll(ENTITY_OR_ESCAPED_CHAR, s, UNESCAPE_REPLACER);
         } else {
             return s;
         }
     }
 
     public static String normalizeURI(String uri) {
-        return replaceAll(reEscapeInUri, uri, URI_REPLACER);
+        return replaceAll(ESCAPE_IN_URI, uri, URI_REPLACER);
     }
 
     public static String normalizeReference(String input) {
         // foo: is this the same as JS?
-        return whitespace.matcher(input.toLowerCase(Locale.ROOT)).replaceAll(" ");
+        return WHITESPACE.matcher(input.toLowerCase(Locale.ROOT)).replaceAll(" ");
     }
 
-    private static String replaceAll(Pattern p, String s,
-                                     Replacer replacer) {
+    private static String replaceAll(Pattern p, String s, Replacer replacer) {
         Matcher matcher = p.matcher(s);
 
         if (!matcher.find()) {

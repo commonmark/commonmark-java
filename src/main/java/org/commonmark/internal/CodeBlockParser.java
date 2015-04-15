@@ -7,7 +7,7 @@ import org.commonmark.node.SourcePosition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.commonmark.internal.Common.unescapeString;
+import static org.commonmark.internal.util.Escaping.unescapeString;
 
 public class CodeBlockParser extends AbstractBlockParser {
 

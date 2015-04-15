@@ -1,4 +1,4 @@
-package org.commonmark.internal;
+package org.commonmark.internal.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

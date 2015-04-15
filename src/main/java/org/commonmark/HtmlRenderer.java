@@ -1,6 +1,6 @@
 package org.commonmark;
 
-import org.commonmark.internal.Common;
+import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.*;
 
 import java.util.ArrayList;
@@ -13,7 +13,6 @@ public class HtmlRenderer {
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean sourcepos;
-    private final Escaper escaper = Common.XML_ESCAPER;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
@@ -35,7 +34,7 @@ public class HtmlRenderer {
     }
 
     private String escape(String input, boolean preserveEntities) {
-        return escaper.escape(input, preserveEntities);
+        return Escaping.escapeHtml(input, preserveEntities);
     }
 
     // default options:
