@@ -10,11 +10,6 @@ public class CodeBlock extends Block {
     private String literal;
 
     @Override
-    public Type getType() {
-        return Type.CodeBlock;
-    }
-
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

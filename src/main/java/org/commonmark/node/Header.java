@@ -5,11 +5,6 @@ public class Header extends Block {
     private int level;
 
     @Override
-    public Type getType() {
-        return Type.Header;
-    }
-
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

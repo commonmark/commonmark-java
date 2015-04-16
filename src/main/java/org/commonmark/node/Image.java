@@ -11,11 +11,6 @@ public class Image extends Node {
     }
 
     @Override
-    public Type getType() {
-        return Type.Image;
-    }
-
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

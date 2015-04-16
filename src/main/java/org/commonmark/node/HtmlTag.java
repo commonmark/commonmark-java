@@ -10,11 +10,6 @@ public class HtmlTag extends Node {
     private String literal;
 
     @Override
-    public Type getType() {
-        return Type.Html;
-    }
-
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

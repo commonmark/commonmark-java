@@ -52,7 +52,7 @@ public class HeaderParser extends AbstractBlockParser {
                 // remove trailing ###s:
                 String content = line.substring(newOffset).replaceAll("^ *#+ *$", "")
                         .replaceAll(" +#+ *$", "");
-                return start(new HeaderParser(level, content, pos(state, nextNonSpace)), newOffset, false);
+                return start(new HeaderParser(level, content, pos(state, nextNonSpace)), line.length(), false);
 
             } else if (activeBlockParser instanceof ParagraphParser &&
                     ((ParagraphParser) activeBlockParser).hasSingleLine() &&
@@ -62,7 +62,7 @@ public class HeaderParser extends AbstractBlockParser {
                 ParagraphParser paragraphParser = (ParagraphParser) activeBlockParser;
                 int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
                 String content = paragraphParser.getContentString();
-                return start(new HeaderParser(level, content, paragraphParser.getBlock().getSourcePosition()), nextNonSpace, true);
+                return start(new HeaderParser(level, content, paragraphParser.getBlock().getSourcePosition()), line.length(), true);
             } else {
                 return noStart();
             }

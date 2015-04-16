@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.node.Block;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourcePosition;
@@ -13,7 +14,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean canContain(Node.Type type) {
+    public boolean canContain(Block block) {
         return true;
     }
 

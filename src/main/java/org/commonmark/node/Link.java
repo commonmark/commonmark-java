@@ -11,11 +11,6 @@ public class Link extends Node {
     }
 
     @Override
-    public Type getType() {
-        return Type.Link;
-    }
-
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

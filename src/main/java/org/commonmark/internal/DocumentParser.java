@@ -180,9 +180,15 @@ public class DocumentParser {
                 break;
             }
 
+            if (indent >= CODE_INDENT && getActiveBlockParser().getBlock() instanceof Paragraph) {
+                // An indented code block cannot interrupt a paragraph.
+                offset = nextNonSpace;
+                break;
+            }
+
             if (indent >= CODE_INDENT) {
-                // indented code or lazy paragraph continuation
-                if (getActiveBlockParser().getBlock().getType() != Node.Type.Paragraph) {
+                // indented code
+                if (!(getActiveBlockParser().getBlock() instanceof Paragraph)) {
                     offset += CODE_INDENT;
                     allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
                     blockParser = addChild(new CodeBlockParser(new SourcePosition(this.lineNumber, nextNonSpace)));
@@ -228,10 +234,7 @@ public class DocumentParser {
                 getActiveBlockParser() instanceof ParagraphParser &&
                 ((ParagraphParser) getActiveBlockParser()).hasLines()) {
             // lazy paragraph continuation
-
-            // foo: on DocParser? Looks like an error to me
-            // this.last_line_blank = false;
-            this.addLine(ln, offset);
+            addLine(ln, offset);
 
         } else { // not a lazy continuation
 
@@ -241,26 +244,13 @@ public class DocumentParser {
             }
             propagateLastLineBlank(blockParser, blank);
 
-            switch (blockParser.getBlock().getType()) {
-                case HtmlBlock:
-                case CodeBlock:
-                    this.addLine(ln, offset);
-                    break;
-
-                case Header:
-                case HorizontalRule:
-                    // nothing to do; we already added the contents.
-                    break;
-
-                default:
-                    if (blockParser.acceptsLine()) {
-                        this.addLine(ln, nextNonSpace);
-                    } else if (!blank) {
-                        // create paragraph container for line
-                        // foo: in JS, there's a third argument, which looks like a bug
-                        addChild(new ParagraphParser(new SourcePosition(this.lineNumber, nextNonSpace + 1)));
-                        this.addLine(ln, nextNonSpace);
-                    }
+            if (blockParser.acceptsLine()) {
+                addLine(ln, offset);
+            } else if (offset < ln.length() && !blank) {
+                // create paragraph container for line
+                // foo: in JS, there's a third argument, which looks like a bug
+                addChild(new ParagraphParser(new SourcePosition(this.lineNumber, nextNonSpace + 1)));
+                addLine(ln, nextNonSpace);
             }
         }
         this.lastLineLength = ln.length() - 1; // -1 for newline
@@ -320,8 +310,7 @@ public class DocumentParser {
             if (isLastLineBlank(block)) {
                 return true;
             }
-            Node.Type t = block.getType();
-            if (t == Node.Type.List || t == Node.Type.Item) {
+            if (block instanceof ListBlock || block instanceof ListItem) {
                 block = block.getLastChild();
             } else {
                 break;
@@ -358,7 +347,7 @@ public class DocumentParser {
     // accept children, close and finalize it and try its parent,
     // and so on til we find a block that can accept children.
     private <T extends BlockParser> T addChild(T blockParser) {
-        while (!getActiveBlockParser().canContain(blockParser.getBlock().getType())) {
+        while (!getActiveBlockParser().canContain(blockParser.getBlock())) {
             this.finalize(getActiveBlockParser(), this.lineNumber - 1);
         }
 
@@ -413,24 +402,23 @@ public class DocumentParser {
         }
 
         Block block = blockParser.getBlock();
-        Node.Type t = block.getType();
 
         // Block quote lines are never blank as they start with >
         // and we don't count blanks in fenced code for purposes of tight/loose
         // lists or breaking out of lists. We also don't set last_line_blank
         // on an empty list item, or if we just closed a fenced block.
         boolean lastLineBlank = blank &&
-                !(t == Node.Type.BlockQuote ||
-                        (t == Node.Type.CodeBlock && ((CodeBlock) block).isFenced()) ||
-                        (t == Node.Type.Item &&
+                !(block instanceof BlockQuote ||
+                        (block instanceof CodeBlock && ((CodeBlock) block).isFenced()) ||
+                        (block instanceof ListItem &&
                                 block.getFirstChild() == null &&
                                 block.getSourcePosition().getStartLine() == this.lineNumber));
 
         // propagate lastLineBlank up through parents:
-        Node cont = blockParser.getBlock();
-        while (cont != null) {
-            setLastLineBlank(cont, lastLineBlank);
-            cont = cont.getParent();
+        Node node = blockParser.getBlock();
+        while (node != null) {
+            setLastLineBlank(node, lastLineBlank);
+            node = node.getParent();
         }
     }
 

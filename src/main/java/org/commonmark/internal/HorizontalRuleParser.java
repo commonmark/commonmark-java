@@ -39,7 +39,7 @@ public class HorizontalRuleParser extends AbstractBlockParser {
         public StartResult tryStart(ParserState state) {
             int nextNonSpace = state.getNextNonSpace();
             if (H_RULE.matcher(state.getLine().substring(nextNonSpace)).matches()) {
-                return start(new HorizontalRuleParser(pos(state, nextNonSpace)), nextNonSpace, false);
+                return start(new HorizontalRuleParser(pos(state, nextNonSpace)), state.getLine().length(), false);
             } else {
                 return noStart();
             }

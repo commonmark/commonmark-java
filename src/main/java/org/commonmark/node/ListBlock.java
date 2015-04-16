@@ -9,11 +9,6 @@ public class ListBlock extends Block {
     private boolean tight;
 
     @Override
-    public Type getType() {
-        return Type.List;
-    }
-
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

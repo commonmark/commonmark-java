@@ -7,7 +7,7 @@ public interface BlockParser {
 
     ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank);
 
-    boolean canContain(Node.Type type);
+    boolean canContain(Block block);
 
     boolean shouldTryBlockStarts();
 

@@ -1,6 +1,6 @@
 package org.commonmark.internal;
 
-import org.commonmark.node.Node;
+import org.commonmark.node.Block;
 
 public abstract class AbstractBlockParser implements BlockParser {
 
@@ -11,7 +11,7 @@ public abstract class AbstractBlockParser implements BlockParser {
     };
 
     @Override
-    public boolean canContain(Node.Type type) {
+    public boolean canContain(Block block) {
         return false;
     }
 

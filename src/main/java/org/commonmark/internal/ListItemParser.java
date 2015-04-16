@@ -30,7 +30,7 @@ public class ListItemParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean canContain(Node.Type type) {
+    public boolean canContain(Block block) {
         return true;
     }
 

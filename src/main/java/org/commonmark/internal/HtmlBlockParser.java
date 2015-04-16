@@ -33,6 +33,11 @@ public class HtmlBlockParser extends AbstractBlockParser {
     }
 
     @Override
+    public boolean acceptsLine() {
+        return true;
+    }
+
+    @Override
     public void addLine(String line) {
         content.add(line);
     }

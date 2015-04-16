@@ -1,9 +1,6 @@
 package org.commonmark.internal;
 
-import org.commonmark.node.Block;
-import org.commonmark.node.ListBlock;
-import org.commonmark.node.Node;
-import org.commonmark.node.SourcePosition;
+import org.commonmark.node.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +29,8 @@ public class ListBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean canContain(Node.Type type) {
-        return type == Node.Type.Item;
+    public boolean canContain(Block block) {
+        return block instanceof ListItem;
     }
 
     @Override

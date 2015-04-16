@@ -8,8 +8,6 @@ public abstract class Node {
     private Node prev = null;
     private Node next = null;
 
-    public abstract Type getType();
-
     public abstract void accept(Visitor visitor);
 
     public Node getNext() {
@@ -100,35 +98,6 @@ public abstract class Node {
         if (sibling.prev == null) {
             sibling.parent.firstChild = sibling;
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Node{type=" + getType() + "}";
-    }
-
-    public enum Type {
-        // containers
-        Document,
-        BlockQuote,
-        List,
-        Item,
-        Paragraph,
-        Header,
-        Emph,
-        Strong,
-        Link,
-        Image,
-
-        // non-container
-        CodeBlock,
-        HtmlBlock,
-        HorizontalRule,
-        Text,
-        Softbreak,
-        Hardbreak,
-        Html,
-        Code
     }
 
 }

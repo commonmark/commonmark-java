@@ -5,11 +5,6 @@ public class Code extends Node {
     private String literal;
 
     @Override
-    public Type getType() {
-        return Type.Code;
-    }
-
-    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
