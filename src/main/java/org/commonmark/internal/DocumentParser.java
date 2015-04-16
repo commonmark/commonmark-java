@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 
 import java.util.*;
@@ -10,7 +11,6 @@ public class DocumentParser {
 
     private static final String[] tabSpaces = new String[]{"    ", "   ", "  ", " "};
     private static Pattern reMaybeSpecial = Pattern.compile("^[#`~*+_=<>0-9-]");
-    private static Pattern reNonSpace = Pattern.compile("[^ \t\n]");
     private static Pattern reLineEnding = Pattern.compile("\r\n|\n|\r");
 
     /**
@@ -60,11 +60,6 @@ public class DocumentParser {
         this.processInlines();
         // if (this.options.time) { console.timeEnd("inline parsing"); }
         return documentBlockParser.getBlock();
-    }
-
-    // Returns true if string contains only space characters.
-    static boolean isBlank(String s) {
-        return !(reNonSpace.matcher(s).find());
     }
 
     // Attempt to match a regex in string s at offset offset.
@@ -129,7 +124,7 @@ public class DocumentParser {
         // The document will always match, can be skipped
         int matches = 1;
         for (BlockParser blockParser : activeBlockParsers.subList(1, activeBlockParsers.size())) {
-            int match = matchAt(reNonSpace, ln, offset);
+            int match = Parsing.findNonSpace(ln, offset);
             if (match == -1) {
                 nextNonSpace = ln.length();
                 blank = true;
@@ -167,7 +162,7 @@ public class DocumentParser {
         // adding children to the last matched container:
         boolean blockStartsDone = false;
         while (!blockStartsDone) {
-            int match = matchAt(reNonSpace, ln, offset);
+            int match = Parsing.findNonSpace(ln, offset);
             if (match == -1) {
                 nextNonSpace = ln.length();
                 blank = true;
@@ -188,7 +183,7 @@ public class DocumentParser {
             }
 
             // this is a little performance optimization:
-            if (indent < IndentedCodeBlockParser.INDENT && matchAt(reMaybeSpecial, ln, nextNonSpace) == -1) {
+            if (indent < IndentedCodeBlockParser.INDENT && Parsing.isLetter(ln, nextNonSpace)) {
                 break;
             }
 

@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
@@ -43,7 +44,7 @@ public class ParagraphParser extends AbstractBlockParser {
         while (contentString.charAt(0) == '[' &&
                 (pos = inlineParser.parseReference(contentString)) != 0) {
             contentString = contentString.substring(pos);
-            if (DocumentParser.isBlank(contentString)) {
+            if (Parsing.isBlank(contentString)) {
                 block.unlink();
                 // TODO: Return something so that inlines aren't processed here?
                 break;
