@@ -2,14 +2,14 @@ package org.commonmark.internal;
 
 class DelimiterRun {
 
-    final int numdelims;
-    final boolean can_close;
-    final boolean can_open;
+    final int numDelims;
+    final boolean canClose;
+    final boolean canOpen;
 
-    DelimiterRun(int numdelims, boolean can_open, boolean can_close) {
-        this.numdelims = numdelims;
-        this.can_open = can_open;
-        this.can_close = can_close;
+    DelimiterRun(int numDelims, boolean canOpen, boolean canClose) {
+        this.numDelims = numDelims;
+        this.canOpen = canOpen;
+        this.canClose = canClose;
     }
 
 }

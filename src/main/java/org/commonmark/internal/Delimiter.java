@@ -6,13 +6,14 @@ class Delimiter {
 
     final Text node;
     final int index;
+
     Delimiter previous;
-    char cc;
-    int numdelims = 1;
     Delimiter next;
-    // foo2: camelCase these?
-    boolean can_open = true;
-    boolean can_close = false;
+
+    char delimiterChar;
+    int numDelims = 1;
+    boolean canOpen = true;
+    boolean canClose = false;
     boolean active = true;
 
     Delimiter(Text node, Delimiter previous, int index) {
