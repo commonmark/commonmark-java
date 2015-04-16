@@ -161,13 +161,13 @@ public class InlineParser {
         }
     }
 
-    // Returns the code for the character at the current subject position, or -1
-    // there are no more characters.
-    char peek() {
+    /**
+     * Returns the char at the current subject position, or {@code '\0'} in case there are no more characters.
+     */
+    private char peek() {
         if (this.pos < this.subject.length()) {
             return this.subject.charAt(this.pos);
         } else {
-            // FIXME: not sure if this is bad or not
             return '\0';
         }
     }
@@ -262,8 +262,7 @@ public class InlineParser {
         if (cc_after == '\0') {
             char_after = "\n";
         } else {
-            // foo: fromCodePoint?
-            char_after = "" + cc_after;
+            char_after = String.valueOf(cc_after);
         }
 
         left_flanking = numdelims > 0 &&
@@ -816,7 +815,8 @@ public class InlineParser {
         if (!res) {
             this.pos += 1;
             Text text = new Text();
-            // foo: fromCodePoint?
+            // When we get here, it's only for a single special character that turned out to not have a special meaning.
+            // So we shouldn't have a single surrogate here, hence it should be ok to turn it into a String.
             text.setLiteral(String.valueOf(c));
             block.appendChild(text);
         }
