@@ -1,6 +1,6 @@
 package org.commonmark.html;
 
-import org.commonmark.node.CodeBlock;
+import org.commonmark.node.FencedCodeBlock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,12 +8,12 @@ import java.util.Map;
 public class CodeBlockAttributeProvider {
 
     /**
-     * @param codeBlock the block to provide attributes for
+     * @param fencedCodeBlock the block to provide attributes for
      * @return a map of attribute name to values; the values will be escaped by the caller before rendering
      */
-    public Map<String, String> getAttributes(CodeBlock codeBlock) {
+    public Map<String, String> getAttributes(FencedCodeBlock fencedCodeBlock) {
         Map<String, String> attributes = new HashMap<>();
-        String info = codeBlock.getInfo();
+        String info = fencedCodeBlock.getInfo();
         if (info != null && !info.isEmpty()) {
             int space = info.indexOf(" ");
             String language;

@@ -17,7 +17,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
 
 
     private final HtmlBlock block = new HtmlBlock();
-    private final BlockContent content = new BlockContent();
+    private BlockContent content = new BlockContent();
 
     public HtmlBlockParser(SourcePosition pos) {
         block.setSourcePosition(pos);
@@ -45,6 +45,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
     @Override
     public void finalizeBlock(InlineParser inlineParser) {
         block.setLiteral(content.getString());
+        content = null;
     }
 
     @Override

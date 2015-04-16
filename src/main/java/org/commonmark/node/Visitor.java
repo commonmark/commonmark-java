@@ -11,11 +11,13 @@ public interface Visitor {
 
     void visit(Code code);
 
-    void visit(CodeBlock codeBlock);
 
     void visit(Document document);
 
     void visit(Emphasis emphasis);
+
+    void visit(FencedCodeBlock fencedCodeBlock);
+
 
     void visit(HardLineBreak hardLineBreak);
 
@@ -28,6 +30,8 @@ public interface Visitor {
     void visit(HtmlBlock htmlBlock);
 
     void visit(Image image);
+
+    void visit(IndentedCodeBlock indentedCodeBlock);
 
     void visit(Link link);
 

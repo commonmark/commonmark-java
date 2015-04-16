@@ -3,7 +3,7 @@ package org.commonmark.test;
 import org.commonmark.html.CodeBlockAttributeProvider;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.Parser;
-import org.commonmark.node.CodeBlock;
+import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Node;
 import org.junit.Test;
 
@@ -49,7 +49,7 @@ public class HtmlRendererTest {
     public void codeBlockAttributeProvider() {
         CodeBlockAttributeProvider custom = new CodeBlockAttributeProvider() {
             @Override
-            public Map<String, String> getAttributes(CodeBlock codeBlock) {
+            public Map<String, String> getAttributes(FencedCodeBlock codeBlock) {
                 Map<String, String> attributes = new HashMap<>();
                 attributes.put("data-custom", codeBlock.getInfo());
                 return attributes;

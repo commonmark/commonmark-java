@@ -5,11 +5,12 @@ import org.commonmark.node.*;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 public class HtmlRenderer {
+
+    private static final Map<String, String> NO_ATTRIBUTES = Collections.emptyMap();
 
     private final String softbreak;
     private final boolean escapeHtml;
@@ -114,8 +115,7 @@ public class HtmlRenderer {
         }
 
         void tag(String name) {
-            Map<String, String> attrs = Collections.emptyMap();
-            tag(name, attrs, false);
+            tag(name, NO_ATTRIBUTES, false);
         }
 
         void tag(String name, Map<String, String> attrs) {
@@ -123,8 +123,7 @@ public class HtmlRenderer {
         }
 
         void tag(String name, boolean selfClosing) {
-            Map<String, String> attrs = Collections.emptyMap();
-            tag(name, attrs, selfClosing);
+            tag(name, NO_ATTRIBUTES, selfClosing);
         }
 
         // Helper function to produce an HTML tag.
@@ -226,23 +225,6 @@ public class HtmlRenderer {
         }
 
         @Override
-        public void visit(CodeBlock codeBlock) {
-            Map<String, String> providerAttributes = codeBlockAttributeProvider.getAttributes(codeBlock);
-            Map<String, String> attrs = new LinkedHashMap<>();
-            for (Map.Entry<String, String> attribute : providerAttributes.entrySet()) {
-                String escaped = escape(attribute.getValue(), true);
-                attrs.put(attribute.getKey(), escaped);
-            }
-            html.line();
-            html.tag("pre");
-            html.tag("code", attrs);
-            html.raw(escape(codeBlock.getLiteral(), false));
-            html.tag("/code");
-            html.tag("/pre");
-            html.line();
-        }
-
-        @Override
         public void visit(BlockQuote blockQuote) {
             html.line();
             html.tag("blockquote", getAttrs(blockQuote));
@@ -251,6 +233,18 @@ public class HtmlRenderer {
             html.line();
             html.tag("/blockquote");
             html.line();
+        }
+
+        @Override
+        public void visit(FencedCodeBlock fencedCodeBlock) {
+            Map<String, String> providerAttributes = codeBlockAttributeProvider.getAttributes(fencedCodeBlock);
+            Map<String, String> attrs = new LinkedHashMap<>();
+            for (Map.Entry<String, String> attribute : providerAttributes.entrySet()) {
+                String escaped = escape(attribute.getValue(), true);
+                attrs.put(attribute.getKey(), escaped);
+            }
+            String literal = fencedCodeBlock.getLiteral();
+            renderCodeBlock(literal, attrs);
         }
 
         @Override
@@ -269,6 +263,11 @@ public class HtmlRenderer {
             html.line();
             html.tag("hr", getAttrs(horizontalRule), true);
             html.line();
+        }
+
+        @Override
+        public void visit(IndentedCodeBlock indentedCodeBlock) {
+            renderCodeBlock(indentedCodeBlock.getLiteral(), NO_ATTRIBUTES);
         }
 
         @Override
@@ -343,6 +342,16 @@ public class HtmlRenderer {
         @Override
         public void visit(HardLineBreak hardLineBreak) {
             html.tag("br", true);
+            html.line();
+        }
+
+        private void renderCodeBlock(String literal, Map<String, String> attributes) {
+            html.line();
+            html.tag("pre");
+            html.tag("code", attributes);
+            html.raw(escape(literal, false));
+            html.tag("/code");
+            html.tag("/pre");
             html.line();
         }
 

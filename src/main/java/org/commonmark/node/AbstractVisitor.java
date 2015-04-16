@@ -19,11 +19,6 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(CodeBlock codeBlock) {
-        visitChildren(codeBlock);
-    }
-
-    @Override
     public void visit(Document document) {
         visitChildren(document);
     }
@@ -31,6 +26,11 @@ public abstract class AbstractVisitor implements Visitor {
     @Override
     public void visit(Emphasis emphasis) {
         visitChildren(emphasis);
+    }
+
+    @Override
+    public void visit(FencedCodeBlock fencedCodeBlock) {
+        visitChildren(fencedCodeBlock);
     }
 
     @Override
@@ -61,6 +61,11 @@ public abstract class AbstractVisitor implements Visitor {
     @Override
     public void visit(Image image) {
         visitChildren(image);
+    }
+
+    @Override
+    public void visit(IndentedCodeBlock indentedCodeBlock) {
+        visitChildren(indentedCodeBlock);
     }
 
     @Override

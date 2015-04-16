@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 public class DocumentParser {
 
     private static final String[] tabSpaces = new String[]{"    ", "   ", "  ", " "};
-    static int CODE_INDENT = 4;
     private static Pattern reMaybeSpecial = Pattern.compile("^[#`~*+_=<>0-9-]");
     private static Pattern reNonSpace = Pattern.compile("[^ \t\n]");
     private static Pattern reLineEnding = Pattern.compile("\r\n|\n|\r");
+
     /**
      * 1-based line number
      */
@@ -21,9 +21,10 @@ public class DocumentParser {
     private InlineParser inlineParser = new InlineParser();
 
     private List<BlockParserFactory> blockParserFactories = Arrays.<BlockParserFactory>asList(
+            new IndentedCodeBlockParser.Factory(),
             new BlockQuoteParser.Factory(),
             new HeaderParser.Factory(),
-            new CodeBlockParser.Factory(),
+            new FencedCodeBlockParser.Factory(),
             new HtmlBlockParser.Factory(),
             new HorizontalRuleParser.Factory(),
             new ListBlockParser.Factory());
@@ -180,24 +181,14 @@ public class DocumentParser {
                 break;
             }
 
-            if (indent >= CODE_INDENT && getActiveBlockParser().getBlock() instanceof Paragraph) {
+            if (indent >= IndentedCodeBlockParser.INDENT && getActiveBlockParser().getBlock() instanceof Paragraph) {
                 // An indented code block cannot interrupt a paragraph.
                 offset = nextNonSpace;
                 break;
             }
 
-            if (indent >= CODE_INDENT) {
-                // indented code
-                if (!(getActiveBlockParser().getBlock() instanceof Paragraph)) {
-                    offset += CODE_INDENT;
-                    allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
-                    blockParser = addChild(new CodeBlockParser(new SourcePosition(this.lineNumber, nextNonSpace)));
-                }
-                break;
-            }
-
             // this is a little performance optimization:
-            if (matchAt(reMaybeSpecial, ln, nextNonSpace) == -1) {
+            if (indent < IndentedCodeBlockParser.INDENT && matchAt(reMaybeSpecial, ln, nextNonSpace) == -1) {
                 break;
             }
 
@@ -408,8 +399,7 @@ public class DocumentParser {
         // lists or breaking out of lists. We also don't set last_line_blank
         // on an empty list item, or if we just closed a fenced block.
         boolean lastLineBlank = blank &&
-                !(block instanceof BlockQuote ||
-                        (block instanceof CodeBlock && ((CodeBlock) block).isFenced()) ||
+                !(block instanceof BlockQuote || block instanceof FencedCodeBlock ||
                         (block instanceof ListItem &&
                                 block.getFirstChild() == null &&
                                 block.getSourcePosition().getStartLine() == this.lineNumber));

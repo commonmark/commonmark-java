@@ -1,6 +1,6 @@
 package org.commonmark.node;
 
-public class CodeBlock extends Block {
+public class FencedCodeBlock extends Block {
 
     private char fenceChar;
     private int fenceLength;
@@ -12,10 +12,6 @@ public class CodeBlock extends Block {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
-    }
-
-    public boolean isFenced() {
-        return fenceLength > 0;
     }
 
     public char getFenceChar() {
