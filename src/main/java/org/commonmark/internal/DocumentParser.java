@@ -62,21 +62,6 @@ public class DocumentParser {
         return documentBlockParser.getBlock();
     }
 
-    // Attempt to match a regex in string s at offset offset.
-    // Return index of match or -1.
-    private static int matchAt(Pattern pattern, String string, int offset) {
-        if (offset >= string.length()) {
-            return -1;
-        }
-        Matcher matcher = pattern.matcher(string.substring(offset));
-        boolean res = matcher.find();
-        if (!res) {
-            return -1;
-        } else {
-            return offset + matcher.start();
-        }
-    }
-
     // Convert tabs to spaces on each line using a 4-space tab stop.
     private static String detabLine(String text) {
         int start = 0;
