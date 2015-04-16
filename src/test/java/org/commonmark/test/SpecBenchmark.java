@@ -16,7 +16,7 @@ import java.util.List;
 @State(Scope.Benchmark)
 public class SpecBenchmark {
 
-    List<SpecExample> examples = getExamples();
+    private static final List<SpecExample> SPEC_EXAMPLES = getSpecExamples();
 
     public static void main(String[] args) throws Exception {
         Main.main(args);
@@ -24,11 +24,11 @@ public class SpecBenchmark {
 
     @Benchmark
     public void parseAndRender() throws Exception {
-        parseAndRender(examples);
+        parseAndRender(SPEC_EXAMPLES);
     }
 
     public void benchmarkOneOff() {
-        List<SpecExample> examples = getExamples();
+        List<SpecExample> examples = getSpecExamples();
 
         long expectedLength = parseAndRender(examples);
         long before = System.currentTimeMillis();
@@ -43,7 +43,7 @@ public class SpecBenchmark {
                 (after - before) + " ms");
     }
 
-    private static List<SpecExample> getExamples() {
+    private static List<SpecExample> getSpecExamples() {
         InputStream stream = SpecTest.class.getResourceAsStream("/spec.txt");
         if (stream == null) {
             throw new IllegalStateException("Could not load spec.txt classpath resource");
