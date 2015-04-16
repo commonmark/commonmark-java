@@ -1,5 +1,11 @@
 package org.commonmark.node;
 
+/**
+ * Abstract visitor that visits all children by default.
+ * <p/>
+ * Can be used to only process certain nodes. If you override a method and want visiting to descend into children,
+ * call {@link #visitChildren}.
+ */
 public abstract class AbstractVisitor implements Visitor {
 
     @Override
@@ -92,6 +98,11 @@ public abstract class AbstractVisitor implements Visitor {
         visitChildren(text);
     }
 
+    /**
+     * Visit the child nodes.
+     *
+     * @param node the parent node whose children should be visited
+     */
     protected void visitChildren(Node node) {
         Node child = node.getFirstChild();
         while (child != null) {

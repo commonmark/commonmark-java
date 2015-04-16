@@ -1,5 +1,10 @@
 package org.commonmark.node;
 
+/**
+ * Node visitor.
+ * <p/>
+ * See {@link AbstractVisitor} for a base class that can be extended.
+ */
 public interface Visitor {
 
     void visit(BlockQuote blockQuote);
