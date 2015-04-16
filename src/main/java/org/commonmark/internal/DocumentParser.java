@@ -234,7 +234,6 @@ public class DocumentParser {
                 addLine(ln, offset);
             } else if (offset < ln.length() && !blank) {
                 // create paragraph container for line
-                // foo: in JS, there's a third argument, which looks like a bug
                 addChild(new ParagraphParser(new SourcePosition(this.lineNumber, nextNonSpace + 1)));
                 addLine(ln, nextNonSpace);
             }
@@ -248,9 +247,6 @@ public class DocumentParser {
     // of paragraphs for reference definitions. Reset the tip to the
     // parent of the closed block.
     private void finalize(BlockParser blockParser, int lineNumber) {
-        // foo: top? looks like a bug
-        // var above = block.parent || this.top;
-
         if (getActiveBlockParser() == blockParser) {
             deactivateBlockParser();
         }

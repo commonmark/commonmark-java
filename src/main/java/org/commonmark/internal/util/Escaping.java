@@ -98,7 +98,6 @@ public class Escaping {
     }
 
     public static String normalizeReference(String input) {
-        // foo: is this the same as JS?
         return WHITESPACE.matcher(input.toLowerCase(Locale.ROOT)).replaceAll(" ");
     }
 

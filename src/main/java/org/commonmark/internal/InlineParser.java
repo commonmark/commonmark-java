@@ -86,7 +86,6 @@ public class InlineParser {
 
     private static final Pattern reWhitespaceChar = Pattern.compile("^\\p{IsWhite_Space}");
 
-    // foo: /g
     private static final Pattern reWhitespace = Pattern.compile("\\s+");
 
     private static final Pattern reFinalSpace = Pattern.compile(" *$");
@@ -99,7 +98,6 @@ public class InlineParser {
             .compile("^\\[(?:[^\\\\\\[\\]]|\\\\[\\[\\]]){0,1000}\\]");
 
     // Matches a string of non-special characters.
-    // foo: /m = multiline?
     private static final Pattern reMain = Pattern.compile("^[^\n`\\[\\]\\\\!<&*_]+");
 
     private String subject = "";
@@ -149,14 +147,13 @@ public class InlineParser {
 
     // If re matches at current position in the subject, advance
     // position in subject and return the match; otherwise return null.
-    String match(Pattern re) {
+    private String match(Pattern re) {
         if (this.pos >= this.subject.length()) {
             return null;
         }
         Matcher matcher = re.matcher(this.subject.substring(this.pos));
         boolean m = matcher.find();
         if (m) {
-            // foo: is this correct?
             this.pos += matcher.end();
             return matcher.group();
         } else {
@@ -592,7 +589,6 @@ public class InlineParser {
             }
 
             // lookup rawlabel in refmap
-            // foo: normalizeReference?
             Link link = references.get(Escaping.normalizeReference(reflabel));
             if (link != null) {
                 dest = link.getDestination();

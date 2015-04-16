@@ -88,8 +88,7 @@ public class HtmlRenderer {
     }
 
     private static class HtmlWriter {
-        // foo: \<?
-        private static final Pattern reHtmlTag = Pattern.compile("\\<[^>]*\\>");
+        private static final Pattern reHtmlTag = Pattern.compile("<[^>]*>");
 
         private StringBuilder buffer = new StringBuilder();
         private int nesting = 0;
