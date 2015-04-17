@@ -1,9 +1,5 @@
 Fixes:
-* spnl: return boolean
-* /^ *(?:\n|$)/ -> extract into variable
 * out/cr in html.js
-* processEmphasis doesn't need node?
-* processInlines: doesn't "Returns new object"
 
 Suggestions:
 * instead of type being String, make "enum"
