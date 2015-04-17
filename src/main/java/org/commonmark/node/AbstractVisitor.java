@@ -14,6 +14,11 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
+    public void visit(BulletList bulletList) {
+        visitChildren(bulletList);
+    }
+
+    @Override
     public void visit(Code code) {
         visitChildren(code);
     }
@@ -74,13 +79,13 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(ListBlock listBlock) {
-        visitChildren(listBlock);
+    public void visit(ListItem listItem) {
+        visitChildren(listItem);
     }
 
     @Override
-    public void visit(ListItem listItem) {
-        visitChildren(listItem);
+    public void visit(OrderedList orderedList) {
+        visitChildren(orderedList);
     }
 
     @Override

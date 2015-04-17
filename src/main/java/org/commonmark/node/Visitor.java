@@ -9,15 +9,15 @@ public interface Visitor {
 
     void visit(BlockQuote blockQuote);
 
-    void visit(Code code);
+    void visit(BulletList bulletList);
 
+    void visit(Code code);
 
     void visit(Document document);
 
     void visit(Emphasis emphasis);
 
     void visit(FencedCodeBlock fencedCodeBlock);
-
 
     void visit(HardLineBreak hardLineBreak);
 
@@ -35,9 +35,9 @@ public interface Visitor {
 
     void visit(Link link);
 
-    void visit(ListBlock listBlock);
-
     void visit(ListItem listItem);
+
+    void visit(OrderedList orderedList);
 
     void visit(Paragraph paragraph);
 

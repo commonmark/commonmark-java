@@ -198,32 +198,6 @@ public class HtmlRenderer {
         }
 
         @Override
-        public void visit(ListBlock listBlock) {
-            String tagname = listBlock.getListType() == ListBlock.ListType.BULLET ? "ul"
-                    : "ol";
-            int start = listBlock.getOrderedStart();
-            Map<String, String> attrs = getAttrs(listBlock);
-            if (start > 1) {
-                attrs.put("start", String.valueOf(start));
-            }
-            html.line();
-            html.tag(tagname, attrs);
-            html.line();
-            visitChildren(listBlock);
-            html.line();
-            html.tag('/' + tagname);
-            html.line();
-        }
-
-        @Override
-        public void visit(ListItem listItem) {
-            html.tag("li", getAttrs(listItem));
-            visitChildren(listItem);
-            html.tag("/li");
-            html.line();
-        }
-
-        @Override
         public void visit(BlockQuote blockQuote) {
             html.line();
             html.tag("blockquote", getAttrs(blockQuote));
@@ -232,6 +206,11 @@ public class HtmlRenderer {
             html.line();
             html.tag("/blockquote");
             html.line();
+        }
+
+        @Override
+        public void visit(BulletList bulletList) {
+            renderListBlock(bulletList, "ul", getAttrs(bulletList));
         }
 
         @Override
@@ -279,6 +258,24 @@ public class HtmlRenderer {
             html.tag("a", attrs);
             visitChildren(link);
             html.tag("/a");
+        }
+
+        @Override
+        public void visit(ListItem listItem) {
+            html.tag("li", getAttrs(listItem));
+            visitChildren(listItem);
+            html.tag("/li");
+            html.line();
+        }
+
+        @Override
+        public void visit(OrderedList orderedList) {
+            int start = orderedList.getStartNumber();
+            Map<String, String> attrs = getAttrs(orderedList);
+            if (start > 1) {
+                attrs.put("start", String.valueOf(start));
+            }
+            renderListBlock(orderedList, "ol", attrs);
         }
 
         @Override
@@ -351,6 +348,16 @@ public class HtmlRenderer {
             html.raw(escape(literal, false));
             html.tag("/code");
             html.tag("/pre");
+            html.line();
+        }
+
+        private void renderListBlock(ListBlock listBlock, String tagName, Map<String, String> attributes) {
+            html.line();
+            html.tag(tagName, attributes);
+            html.line();
+            visitChildren(listBlock);
+            html.line();
+            html.tag('/' + tagName);
             html.line();
         }
 
