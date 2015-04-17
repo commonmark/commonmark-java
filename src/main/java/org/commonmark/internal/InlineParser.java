@@ -117,7 +117,7 @@ public class InlineParser {
         this.delimiter = null;
         while (this.parseInline(block)) {
         }
-        this.processEmphasis(block, null);
+        this.processEmphasis(null);
     }
 
     // If re matches at current position in the subject, advance
@@ -300,7 +300,7 @@ public class InlineParser {
         }
     }
 
-    void processEmphasis(Node block, Delimiter stackBottom) {
+    void processEmphasis(Delimiter stackBottom) {
         Delimiter opener, closer;
         Delimiter nextstack, tempstack;
         int useDelims;
@@ -581,7 +581,7 @@ public class InlineParser {
                 tmp = next;
             }
             block.appendChild(node);
-            this.processEmphasis(node, opener.previous);
+            this.processEmphasis(opener.previous);
 
             opener.node.unlink();
 
