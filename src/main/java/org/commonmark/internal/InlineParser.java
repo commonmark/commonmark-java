@@ -726,9 +726,8 @@ public class InlineParser {
             return false;
         }
         int afterOpenTicks = this.pos;
-        boolean foundCode = false;
         String matched;
-        while (!foundCode && (matched = this.match(reTicks)) != null) {
+        while ((matched = this.match(reTicks)) != null) {
             if (matched.equals(ticks)) {
                 Code node = new Code();
                 String content = this.subject.substring(afterOpenTicks, this.pos - ticks.length());
