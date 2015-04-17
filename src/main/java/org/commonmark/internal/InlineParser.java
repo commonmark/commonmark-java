@@ -12,18 +12,18 @@ import java.util.regex.Pattern;
 public class InlineParser {
     // Constants for character codes:
 
-    private static final char C_NEWLINE = 10;
-    private static final char C_ASTERISK = 42;
-    private static final char C_UNDERSCORE = 95;
-    private static final char C_BACKTICK = 96;
-    private static final char C_OPEN_BRACKET = 91;
-    private static final char C_CLOSE_BRACKET = 93;
-    private static final char C_LESSTHAN = 60;
-    private static final char C_BANG = 33;
-    private static final char C_BACKSLASH = 92;
-    private static final char C_AMPERSAND = 38;
-    private static final char C_OPEN_PAREN = 40;
-    private static final char C_COLON = 58;
+    private static final char C_NEWLINE = '\n';
+    private static final char C_ASTERISK = '*';
+    private static final char C_UNDERSCORE = '_';
+    private static final char C_BACKTICK = '`';
+    private static final char C_OPEN_BRACKET = '[';
+    private static final char C_CLOSE_BRACKET = ']';
+    private static final char C_LESSTHAN = '<';
+    private static final char C_BANG = '!';
+    private static final char C_BACKSLASH = '\\';
+    private static final char C_AMPERSAND = '&';
+    private static final char C_OPEN_PAREN = '(';
+    private static final char C_COLON = ':';
 
     private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
     private static final String REG_CHAR = "[^\\\\()\\x00-\\x20]";
