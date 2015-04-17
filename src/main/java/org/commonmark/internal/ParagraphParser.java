@@ -46,7 +46,6 @@ public class ParagraphParser extends AbstractBlockParser {
             contentString = contentString.substring(pos);
             if (Parsing.isBlank(contentString)) {
                 block.unlink();
-                // TODO: Return something so that inlines aren't processed here?
                 break;
             }
         }
