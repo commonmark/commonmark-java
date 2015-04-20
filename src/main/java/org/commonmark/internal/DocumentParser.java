@@ -33,13 +33,14 @@ public class DocumentParser {
     public DocumentParser() {
     }
 
-    // The main parsing function. Returns a parsed document AST.
+    /**
+     * The main parsing function. Returns a parsed document AST.
+     */
     public Document parse(String input) {
         DocumentBlockParser documentBlockParser = new DocumentBlockParser();
         documentBlockParser.getBlock().setSourcePosition(new SourcePosition(1, 1));
         activateBlockParser(documentBlockParser);
 
-        // if (this.options.time) { console.time("preparing input"); }
         String[] lines = reLineEnding.split(input, -1);
         int len = lines.length;
         if (input.charAt(input.length() - 1) == '\n') {
@@ -47,20 +48,17 @@ public class DocumentParser {
             len -= 1;
         }
 
-        // if (this.options.time) { console.timeEnd("preparing input"); }
-        // if (this.options.time) { console.time("block parsing"); }
         for (int i = 0; i < len; i++) {
             this.incorporateLine(lines[i]);
         }
         finalizeBlocks(activeBlockParsers, lineNumber);
-        // if (this.options.time) { console.timeEnd("block parsing"); }
-        // if (this.options.time) { console.time("inline parsing"); }
         this.processInlines();
-        // if (this.options.time) { console.timeEnd("inline parsing"); }
         return documentBlockParser.getBlock();
     }
 
-    // Convert tabs to spaces on each line using a 4-space tab stop.
+    /**
+     * Convert tabs to spaces on each line using a 4-space tab stop.
+     */
     private static String detabLine(String text) {
         int start = 0;
         int offset;
@@ -77,17 +75,10 @@ public class DocumentParser {
         return text;
     }
 
-    // Walk through a block & children recursively, parsing string content
-    // into inline content where appropriate. Returns new object.
-    private void processInlines() {
-        for (BlockParser blockParser : allBlockParsers) {
-            blockParser.processInlines(inlineParser);
-        }
-    }
-
-    // Analyze a line of text and update the document appropriately.
-    // We parse markdown text by calling this on each line of input,
-    // then finalizing the document.
+    /**
+     * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
+     * line of input, then finalizing the document.
+     */
     private void incorporateLine(String ln) {
         int offset = 0;
         int nextNonSpace = 0;
@@ -224,11 +215,11 @@ public class DocumentParser {
         this.lastLineLength = ln.length() - 1; // -1 for newline
     }
 
-    // Finalize a block. Close it and do any necessary postprocessing,
-    // e.g. creating string_content from strings, setting the 'tight'
-    // or 'loose' status of a list, and parsing the beginnings
-    // of paragraphs for reference definitions. Reset the tip to the
-    // parent of the closed block.
+    /**
+     * Finalize a block. Close it and do any necessary postprocessing, e.g. creating string_content from strings,
+     * setting the 'tight' or 'loose' status of a list, and parsing the beginnings of paragraphs for reference
+     * definitions.
+     */
     private void finalize(BlockParser blockParser, int lineNumber) {
         if (getActiveBlockParser() == blockParser) {
             deactivateBlockParser();
@@ -245,6 +236,15 @@ public class DocumentParser {
         if (blockParser instanceof ListBlockParser) {
             ListBlockParser listBlockParser = (ListBlockParser) blockParser;
             finalizeListTight(listBlockParser);
+        }
+    }
+
+    /**
+     * Walk through a block & children recursively, parsing string content into inline content where appropriate.
+     */
+    private void processInlines() {
+        for (BlockParser blockParser : allBlockParsers) {
+            blockParser.processInlines(inlineParser);
         }
     }
 
@@ -284,10 +284,10 @@ public class DocumentParser {
         return false;
     }
 
-    // Break out of all containing lists, resetting the tip of the
-    // document to the parent of the highest list, and finalizing
-    // all the lists. (This is used to implement the "two blank lines
-    // break of of all lists" feature.)
+    /**
+     * Break out of all containing lists, resetting the tip of the document to the parent of the highest list,
+     * and finalizing all the lists. (This is used to implement the "two blank lines break of of all lists" feature.)
+     */
     private void breakOutOfLists(List<BlockParser> blockParsers) {
         int lastList = -1;
         for (int i = blockParsers.size() - 1; i >= 0; i--) {
@@ -302,15 +302,18 @@ public class DocumentParser {
         }
     }
 
-    // Add a line to the block at the tip. We assume the tip
-    // can accept lines -- that check should be done before calling this.
+    /**
+     * Add a line to the block at the tip. We assume the tip can accept lines -- that check should be done before
+     * calling this.
+     */
     private void addLine(String ln, int offset) {
         getActiveBlockParser().addLine(ln.substring(offset));
     }
 
-    // Add block of type tag as a child of the tip. If the tip can't
-    // accept children, close and finalize it and try its parent,
-    // and so on til we find a block that can accept children.
+    /**
+     * Add block of type tag as a child of the tip. If the tip can't  accept children, close and finalize it and try
+     * its parent, and so on til we find a block that can accept children.
+     */
     private <T extends BlockParser> T addChild(T blockParser) {
         while (!getActiveBlockParser().canContain(blockParser.getBlock())) {
             this.finalize(getActiveBlockParser(), this.lineNumber - 1);
@@ -377,7 +380,9 @@ public class DocumentParser {
         return value != null && value;
     }
 
-    // Finalize blocks of previous line. Returns true.
+    /**
+     * Finalize blocks of previous line. Returns true.
+     */
     private boolean finalizeBlocks(List<BlockParser> blockParsers) {
         finalizeBlocks(blockParsers, lineNumber - 1);
         return true;
