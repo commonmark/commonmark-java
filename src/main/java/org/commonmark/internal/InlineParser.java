@@ -23,6 +23,7 @@ public class InlineParser {
     private static final char C_BACKSLASH = '\\';
     private static final char C_AMPERSAND = '&';
     private static final char C_OPEN_PAREN = '(';
+    private static final char C_CLOSE_PAREN = ')';
     private static final char C_COLON = ':';
 
     private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
@@ -529,19 +530,18 @@ public class InlineParser {
         // Inline link?
         if (this.peek() == C_OPEN_PAREN) {
             this.pos++;
-            if (this.spnl() &&
-                    ((dest = this.parseLinkDestination()) != null)
-                    &&
-                    this.spnl()
-                    &&
-                    // make sure there's a space before the title:
-                    ((reWhitespaceChar.matcher(this.subject.substring(this.pos - 1, this.pos))
-                            .matches()) &&
-                            (title = this.parseLinkTitle()) != null || true) &&
-                    this.spnl() &&
-                    this.subject.charAt(this.pos) == ')') {
-                this.pos += 1;
-                matched = true;
+            this.spnl();
+            if ((dest = this.parseLinkDestination()) != null) {
+                this.spnl();
+                // title needs a whitespace before
+                if (reWhitespaceChar.matcher(this.subject.substring(this.pos - 1, this.pos)).matches()) {
+                    title = this.parseLinkTitle();
+                    this.spnl();
+                }
+                if (this.subject.charAt(this.pos) == C_CLOSE_PAREN) {
+                    this.pos += 1;
+                    matched = true;
+                }
             }
         } else {
 
