@@ -116,9 +116,13 @@ public class InlineParser {
         this.subject = content.trim();
         this.pos = 0;
         this.delimiter = null;
-        while (this.parseInline(block)) {
-        }
-        this.processEmphasis(null);
+
+        boolean moreToParse;
+        do {
+            moreToParse = parseInline(block);
+        } while (moreToParse);
+
+        processEmphasis(null);
     }
 
     // If re matches at current position in the subject, advance
