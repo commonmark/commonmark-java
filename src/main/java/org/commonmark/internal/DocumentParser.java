@@ -4,13 +4,11 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DocumentParser {
 
     private static final String[] tabSpaces = new String[]{"    ", "   ", "  ", " "};
-    private static Pattern reMaybeSpecial = Pattern.compile("^[#`~*+_=<>0-9-]");
     private static Pattern reLineEnding = Pattern.compile("\r\n|\n|\r");
 
     /**
@@ -324,19 +322,6 @@ public class DocumentParser {
         return blockParser;
     }
 
-    private <T extends BlockParser> T replaceBlock(T blockParser) {
-        BlockParser old = getActiveBlockParser();
-        deactivateBlockParser();
-        allBlockParsers.remove(old);
-
-        old.getBlock().insertAfter(blockParser.getBlock());
-        old.getBlock().unlink();
-        blockParser.getBlock().setSourcePosition(old.getBlock().getSourcePosition());
-        activateBlockParser(blockParser);
-
-        return blockParser;
-    }
-
     private void activateBlockParser(BlockParser blockParser) {
         activeBlockParsers.add(blockParser);
         allBlockParsers.add(blockParser);
@@ -356,11 +341,6 @@ public class DocumentParser {
         allBlockParsers.remove(old);
 
         old.getBlock().unlink();
-    }
-
-    private SourcePosition getSourcePos(int offset) {
-        int column_number = offset + 1; // offset 0 = column 1
-        return new SourcePosition(this.lineNumber, column_number);
     }
 
     private void propagateLastLineBlank(BlockParser blockParser, boolean blank) {
