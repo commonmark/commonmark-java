@@ -2,7 +2,7 @@ package org.commonmark.internal;
 
 public interface BlockParserFactory {
 
-    public StartResult tryStart(ParserState state);
+    StartResult tryStart(ParserState state);
 
     interface ParserState {
         String getLine();
