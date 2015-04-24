@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.ListItem;
-import org.commonmark.node.Node;
 import org.commonmark.node.SourcePosition;
 
 public class ListItemParser extends AbstractBlockParser {
@@ -17,7 +16,7 @@ public class ListItemParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         int indent = nextNonSpace - offset;
         if (blank) {
             return blockMatched(nextNonSpace);

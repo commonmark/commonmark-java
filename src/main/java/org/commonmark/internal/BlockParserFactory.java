@@ -5,7 +5,7 @@ public interface BlockParserFactory {
     StartResult tryStart(ParserState state);
 
     interface ParserState {
-        String getLine();
+        CharSequence getLine();
 
         int getOffset();
 

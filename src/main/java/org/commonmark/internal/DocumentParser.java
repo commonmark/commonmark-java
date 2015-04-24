@@ -1,15 +1,12 @@
 package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
+import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class DocumentParser {
-
-    private static final String[] tabSpaces = new String[]{"    ", "   ", "  ", " "};
-    private static Pattern reLineEnding = Pattern.compile("\r\n|\n|\r");
 
     /**
      * 1-based line number
@@ -41,56 +38,38 @@ public class DocumentParser {
         documentBlockParser.getBlock().setSourcePosition(new SourcePosition(1, 1));
         activateBlockParser(documentBlockParser);
 
-        String[] lines = reLineEnding.split(input, -1);
-        int len = lines.length;
-        if (input.charAt(input.length() - 1) == '\n') {
-            // ignore last blank line created by final newline
-            len -= 1;
+        int lineStart = 0;
+        int lineBreak;
+        while ((lineBreak = Parsing.findLineBreak(input, lineStart)) != -1) {
+            CharSequence line = Substring.of(input, lineStart, lineBreak);
+            incorporateLine(line);
+            if (lineBreak + 1 < input.length() && input.charAt(lineBreak) == '\r' && input.charAt(lineBreak + 1) == '\n') {
+                lineStart = lineBreak + 2;
+            } else {
+                lineStart = lineBreak + 1;
+            }
+        }
+        if (lineStart == 0 || lineStart < input.length()) {
+            incorporateLine(Substring.of(input, lineStart, input.length()));
         }
 
-        for (int i = 0; i < len; i++) {
-            this.incorporateLine(lines[i]);
-        }
         finalizeBlocks(activeBlockParsers, lineNumber);
         this.processInlines();
         return documentBlockParser.getBlock();
     }
 
     /**
-     * Convert tabs to spaces on each line using a 4-space tab stop.
-     */
-    private static String detabLine(String text) {
-        int start = 0;
-        int offset;
-        int lastStop = 0;
-
-        while ((offset = text.indexOf("\t", start)) != -1) {
-            int numspaces = (offset - lastStop) % 4;
-            String spaces = tabSpaces[numspaces];
-            text = text.substring(0, offset) + spaces + text.substring(offset + 1);
-            lastStop = offset + numspaces;
-            start = lastStop;
-        }
-
-        return text;
-    }
-
-    /**
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
      */
-    private void incorporateLine(String ln) {
+    private void incorporateLine(CharSequence ln) {
         int offset = 0;
         int nextNonSpace = 0;
         boolean blank = false;
 
         this.lineNumber += 1;
 
-        // replace NUL characters for security
-        ln = ln.replace('\0', '\uFFFD');
-
-        // Convert tabs to spaces:
-        ln = detabLine(ln);
+        ln = Parsing.prepareLine(ln);
 
         // For each containing block, try to parse the associated line start.
         // Bail out on failure: container will point to the last matching block.
@@ -306,8 +285,8 @@ public class DocumentParser {
      * Add a line to the block at the tip. We assume the tip can accept lines -- that check should be done before
      * calling this.
      */
-    private void addLine(String ln, int offset) {
-        getActiveBlockParser().addLine(ln.substring(offset));
+    private void addLine(CharSequence ln, int offset) {
+        getActiveBlockParser().addLine(ln.subSequence(offset, ln.length()));
     }
 
     /**
@@ -397,13 +376,13 @@ public class DocumentParser {
 
     private static class ParserStateImpl implements BlockParserFactory.ParserState {
 
-        private final String line;
+        private final CharSequence line;
         private final int offset;
         private final int nextNonSpace;
         private final BlockParser activeBlockParser;
         private final int lineNumber;
 
-        public ParserStateImpl(String line, int offset, int nextNonSpace, BlockParser activeBlockParser, int lineNumber) {
+        public ParserStateImpl(CharSequence line, int offset, int nextNonSpace, BlockParser activeBlockParser, int lineNumber) {
             this.line = line;
             this.offset = offset;
             this.nextNonSpace = nextNonSpace;
@@ -412,7 +391,7 @@ public class DocumentParser {
         }
 
         @Override
-        public String getLine() {
+        public CharSequence getLine() {
             return line;
         }
 

@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.BlockQuote;
-import org.commonmark.node.Node;
 import org.commonmark.node.SourcePosition;
 
 public class BlockQuoteParser extends AbstractBlockParser {
@@ -24,7 +23,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         int indent = nextNonSpace - offset;
         if (indent <= 3 && nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
             int newOffset = nextNonSpace + 1;
@@ -44,7 +43,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
 
     public static class Factory extends AbstractBlockParserFactory {
         public StartResult tryStart(ParserState state) {
-            String line = state.getLine();
+            CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpace();
             if (line.charAt(nextNonSpace) == '>') {
                 int newOffset = nextNonSpace + 1;

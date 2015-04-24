@@ -24,7 +24,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         if (!blank) {
             return blockMatched(offset);
         } else {
@@ -38,7 +38,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(String line) {
+    public void addLine(CharSequence line) {
         content.add(line);
     }
 
@@ -58,7 +58,8 @@ public class HtmlBlockParser extends AbstractBlockParser {
         @Override
         public StartResult tryStart(ParserState state) {
             int nextNonSpace = state.getNextNonSpace();
-            if (HTML_BLOCK_OPEN.matcher(state.getLine().substring(nextNonSpace)).find()) {
+            CharSequence line = state.getLine();
+            if (HTML_BLOCK_OPEN.matcher(line.subSequence(nextNonSpace, line.length())).find()) {
                 // spaces are part of block, so use offset
                 return start(new HtmlBlockParser(pos(state, nextNonSpace)), state.getOffset(), false);
             } else {

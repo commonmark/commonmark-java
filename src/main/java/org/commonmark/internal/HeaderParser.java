@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 public class HeaderParser extends AbstractBlockParser {
 
     private static Pattern ATX_HEADER = Pattern.compile("^#{1,6}(?: +|$)");
+    private static Pattern ATX_TRAILING = Pattern.compile("(^| ) *#+ *$");
     private static Pattern SETEXT_HEADER = Pattern.compile("^(?:=+|-+) *$");
 
     private final Header block = new Header();
@@ -22,7 +23,7 @@ public class HeaderParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         // a header can never container > 1 line, so fail to match
         return blockDidNotMatch();
     }
@@ -41,22 +42,21 @@ public class HeaderParser extends AbstractBlockParser {
 
         @Override
         public StartResult tryStart(ParserState state) {
-            String line = state.getLine();
+            CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpace();
             BlockParser activeBlockParser = state.getActiveBlockParser();
             Matcher matcher;
-            if ((matcher = ATX_HEADER.matcher(line.substring(nextNonSpace))).find()) {
+            if ((matcher = ATX_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 // ATX header
                 int newOffset = nextNonSpace + matcher.group(0).length();
                 int level = matcher.group(0).trim().length(); // number of #s
                 // remove trailing ###s:
-                String content = line.substring(newOffset).replaceAll("^ *#+ *$", "")
-                        .replaceAll(" +#+ *$", "");
+                String content = ATX_TRAILING.matcher(line.subSequence(newOffset, line.length())).replaceAll("");
                 return start(new HeaderParser(level, content, pos(state, nextNonSpace)), line.length(), false);
 
             } else if (activeBlockParser instanceof ParagraphParser &&
                     ((ParagraphParser) activeBlockParser).hasSingleLine() &&
-                    ((matcher = SETEXT_HEADER.matcher(line.substring(nextNonSpace))).find())) {
+                    ((matcher = SETEXT_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find())) {
                 // setext header line
 
                 ParagraphParser paragraphParser = (ParagraphParser) activeBlockParser;

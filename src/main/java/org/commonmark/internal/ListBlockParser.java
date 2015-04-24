@@ -21,7 +21,7 @@ public class ListBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         return blockMatched(offset);
     }
 
@@ -47,8 +47,8 @@ public class ListBlockParser extends AbstractBlockParser {
     /**
      * Parse a list marker and return data on the marker or null.
      */
-    private static ListData parseListMarker(String ln, int offset, int indent) {
-        String rest = ln.substring(offset);
+    private static ListData parseListMarker(CharSequence ln, int offset, int indent) {
+        CharSequence rest = ln.subSequence(offset, ln.length());
         int spacesAfterMarker;
         ListBlock listBlock;
 

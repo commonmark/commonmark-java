@@ -14,7 +14,7 @@ class BlockContent {
         sb = new StringBuilder(content);
     }
 
-    public void add(String line) {
+    public void add(CharSequence line) {
         if (lineCount != 0) {
             sb.append('\n');
         }

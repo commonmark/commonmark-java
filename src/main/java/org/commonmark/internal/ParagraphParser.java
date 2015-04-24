@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
-import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.SourcePosition;
 
@@ -17,7 +16,7 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         if (!blank) {
             return blockMatched(offset);
         } else {
@@ -31,7 +30,7 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(String line) {
+    public void addLine(CharSequence line) {
         content.add(line);
     }
 

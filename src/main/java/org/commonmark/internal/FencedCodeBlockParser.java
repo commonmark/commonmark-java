@@ -25,14 +25,14 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         int indent = nextNonSpace - offset;
         int newOffset = offset;
         Matcher matcher = null;
         boolean matches = (indent <= 3 &&
                 nextNonSpace < line.length() &&
                 line.charAt(nextNonSpace) == block.getFenceChar() &&
-                (matcher = CLOSING_FENCE.matcher(line.substring(nextNonSpace)))
+                (matcher = CLOSING_FENCE.matcher(line.subSequence(nextNonSpace, line.length())))
                         .find());
         if (matches && matcher.group(0).length() >= block.getFenceLength()) {
             // closing fence - we're at end of line, so we can finalize now
@@ -54,7 +54,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(String line) {
+    public void addLine(CharSequence line) {
         content.add(line);
     }
 
@@ -89,7 +89,8 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         public StartResult tryStart(ParserState state) {
             int nextNonSpace = state.getNextNonSpace();
             Matcher matcher;
-            if ((matcher = OPENING_FENCE.matcher(state.getLine().substring(nextNonSpace))).find()) {
+            CharSequence line = state.getLine();
+            if ((matcher = OPENING_FENCE.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 int fenceLength = matcher.group(0).length();
                 char fenceChar = matcher.group(0).charAt(0);
                 int indent = nextNonSpace - state.getOffset();

@@ -2,19 +2,18 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.Document;
-import org.commonmark.node.Node;
 
 public class DocumentBlockParser extends AbstractBlockParser {
 
     private final Document document = new Document();
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         return blockMatched(offset);
     }
 
     @Override
-    public void addLine(String line) {
+    public void addLine(CharSequence line) {
     }
 
     @Override

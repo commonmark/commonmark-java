@@ -26,7 +26,7 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     @Override
-    public void addLine(String line) {
+    public void addLine(CharSequence line) {
     }
 
     @Override

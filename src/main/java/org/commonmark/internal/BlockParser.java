@@ -5,7 +5,7 @@ import org.commonmark.node.Node;
 
 public interface BlockParser {
 
-    ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank);
+    ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank);
 
     boolean canContain(Block block);
 
@@ -16,7 +16,7 @@ public interface BlockParser {
      */
     boolean acceptsLine();
 
-    void addLine(String line);
+    void addLine(CharSequence line);
 
     void finalizeBlock(InlineParser inlineParser);
 

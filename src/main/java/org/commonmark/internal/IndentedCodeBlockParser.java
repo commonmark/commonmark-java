@@ -18,7 +18,7 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         int indent = nextNonSpace - offset;
         int newOffset = offset;
         if (indent >= INDENT) {
@@ -37,7 +37,7 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(String line) {
+    public void addLine(CharSequence line) {
         content.add(line);
     }
 

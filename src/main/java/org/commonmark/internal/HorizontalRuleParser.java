@@ -18,13 +18,13 @@ public class HorizontalRuleParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(String line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
         // a horizontal rule can never container > 1 line, so fail to match
         return blockDidNotMatch();
     }
 
     @Override
-    public void addLine(String line) {
+    public void addLine(CharSequence line) {
 
     }
 
@@ -38,8 +38,9 @@ public class HorizontalRuleParser extends AbstractBlockParser {
         @Override
         public StartResult tryStart(ParserState state) {
             int nextNonSpace = state.getNextNonSpace();
-            if (H_RULE.matcher(state.getLine().substring(nextNonSpace)).matches()) {
-                return start(new HorizontalRuleParser(pos(state, nextNonSpace)), state.getLine().length(), false);
+            CharSequence line = state.getLine();
+            if (H_RULE.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
+                return start(new HorizontalRuleParser(pos(state, nextNonSpace)), line.length(), false);
             } else {
                 return noStart();
             }
