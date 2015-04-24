@@ -16,37 +16,21 @@ import java.util.List;
 @State(Scope.Benchmark)
 public class SpecBenchmark {
 
-    private static final List<String> SPEC_EXAMPLES = getSpecExamples();
     private static final String SPEC = SpecReader.readSpec();
+    private static final List<String> SPEC_EXAMPLES = getSpecExamples();
 
     public static void main(String[] args) throws Exception {
         Main.main(args);
     }
 
     @Benchmark
-    public void parseAndRenderExamples() throws Exception {
-        parseAndRender(SPEC_EXAMPLES);
-    }
-
-    @Benchmark
-    public void parseAndRenderWholeSpec() {
+    public void wholeSpec() {
         parseAndRender(Collections.singletonList(SPEC));
     }
 
-    public void benchmarkOneOff() {
-        List<String> examples = getSpecExamples();
-
-        long expectedLength = parseAndRender(examples);
-        long before = System.currentTimeMillis();
-        long timedLength = parseAndRender(examples);
-        long after = System.currentTimeMillis();
-
-        if (timedLength != expectedLength) {
-            throw new IllegalStateException("Woops?");
-        }
-
-        System.out.println("Parsed, then rendered " + timedLength + " characters in " +
-                (after - before) + " ms");
+    @Benchmark
+    public void examples() {
+        parseAndRender(SPEC_EXAMPLES);
     }
 
     private static List<String> getSpecExamples() {
