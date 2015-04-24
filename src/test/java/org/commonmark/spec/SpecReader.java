@@ -1,5 +1,7 @@
 package org.commonmark.spec;
 
+import org.commonmark.test.SpecTest;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +12,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SpecReader implements AutoCloseable {
+public class SpecReader {
 
     private static final Pattern SECTION_PATTERN = Pattern.compile("#{1,6} *(.*)");
 
@@ -24,11 +26,41 @@ public class SpecReader implements AutoCloseable {
 
     private List<SpecExample> examples = new ArrayList<>();
 
-    public SpecReader(InputStream stream) {
+    private SpecReader(InputStream stream) {
         this.inputStream = stream;
     }
 
-    public List<SpecExample> read() throws IOException {
+    public static List<SpecExample> readExamples() {
+        try (InputStream stream = getStream()) {
+            return new SpecReader(stream).read();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String readSpec() {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static InputStream getStream() {
+        InputStream stream = SpecTest.class.getResourceAsStream("/spec.txt");
+        if (stream == null) {
+            throw new IllegalStateException("Could not load spec.txt classpath resource");
+        }
+        return stream;
+    }
+
+    private List<SpecExample> read() throws IOException {
         resetContents();
 
         try (BufferedReader reader = new BufferedReader(
@@ -40,11 +72,6 @@ public class SpecReader implements AutoCloseable {
         }
 
         return examples;
-    }
-
-    @Override
-    public void close() throws IOException {
-        inputStream.close();
     }
 
     private void processLine(String line) {

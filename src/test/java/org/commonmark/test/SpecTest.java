@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,21 +20,13 @@ public class SpecTest extends RenderingTestCase {
     }
 
     @Parameters(name = "{0}")
-    public static List<Object[]> data() throws Exception {
-        InputStream stream = SpecTest.class.getResourceAsStream("/spec.txt");
-        if (stream == null) {
-            throw new IllegalStateException(
-                    "Could not load spec.txt classpath resource");
+    public static List<Object[]> data() {
+        List<SpecExample> examples = SpecReader.readExamples();
+        List<Object[]> data = new ArrayList<>();
+        for (SpecExample example : examples) {
+            data.add(new Object[]{example});
         }
-
-        try (SpecReader reader = new SpecReader(stream)) {
-            List<SpecExample> examples = reader.read();
-            List<Object[]> data = new ArrayList<>();
-            for (SpecExample example : examples) {
-                data.add(new Object[]{example});
-            }
-            return data;
-        }
+        return data;
     }
 
     @Test
