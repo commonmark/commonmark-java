@@ -3,10 +3,7 @@ package org.commonmark.html;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.*;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.*;
 
 public class HtmlRenderer {
 
@@ -16,25 +13,29 @@ public class HtmlRenderer {
     private final boolean escapeHtml;
     private final boolean sourcepos;
     private final CodeBlockAttributeProvider codeBlockAttributeProvider;
+    private final List<CustomHtmlRenderer> customHtmlRenderers;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
         this.sourcepos = builder.sourcepos;
         this.codeBlockAttributeProvider = builder.codeBlockAttributeProvider;
+        this.customHtmlRenderers = builder.customHtmlRenderers;
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public String render(Node nodeToRender) {
-        HtmlWriter html = new HtmlWriter();
+    public void render(Node node, Appendable output) {
+        RendererVisitor rendererVisitor = new RendererVisitor(new HtmlWriter(output), customHtmlRenderers);
+        node.accept(rendererVisitor);
+    }
 
-        RendererVisitor visitor = new RendererVisitor(html);
-        nodeToRender.accept(visitor);
-
-        return html.build();
+    public String render(Node node) {
+        StringBuilder sb = new StringBuilder();
+        render(node, sb);
+        return sb.toString();
     }
 
     private String escape(String input, boolean preserveEntities) {
@@ -52,6 +53,7 @@ public class HtmlRenderer {
         private boolean sourcepos = false;
         private boolean escapeHtml = false;
         private CodeBlockAttributeProvider codeBlockAttributeProvider = new CodeBlockAttributeProvider();
+        private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
 
         public Builder softbreak(String softbreak) {
             this.softbreak = softbreak;
@@ -82,90 +84,24 @@ public class HtmlRenderer {
             return this;
         }
 
+        public Builder customHtmlRenderer(CustomHtmlRenderer customHtmlRenderer) {
+            this.customHtmlRenderers.add(customHtmlRenderer);
+            return this;
+        }
+
         public HtmlRenderer build() {
             return new HtmlRenderer(this);
-        }
-    }
-
-    private static class HtmlWriter {
-        private static final Pattern reHtmlTag = Pattern.compile("<[^>]*>");
-
-        private StringBuilder buffer = new StringBuilder();
-        private int nesting = 0;
-
-        void raw(String s) {
-            if (isHtmlAllowed()) {
-                buffer.append(s);
-            } else {
-                buffer.append(reHtmlTag.matcher(s).replaceAll(""));
-            }
-        }
-
-        boolean isHtmlAllowed() {
-            return nesting == 0;
-        }
-
-        void enter() {
-            nesting++;
-        }
-
-        void leave() {
-            nesting--;
-        }
-
-        void tag(String name) {
-            tag(name, NO_ATTRIBUTES, false);
-        }
-
-        void tag(String name, Map<String, String> attrs) {
-            tag(name, attrs, false);
-        }
-
-        void tag(String name, boolean selfClosing) {
-            tag(name, NO_ATTRIBUTES, selfClosing);
-        }
-
-        // Helper function to produce an HTML tag.
-        void tag(String name, Map<String, String> attrs, boolean selfclosing) {
-            if (!isHtmlAllowed()) {
-                return;
-            }
-
-            buffer.append('<');
-            buffer.append(name);
-            if (attrs != null && !attrs.isEmpty()) {
-                for (Map.Entry<String, String> attrib : attrs.entrySet()) {
-                    buffer.append(' ');
-                    buffer.append(attrib.getKey());
-                    buffer.append("=\"");
-                    buffer.append(attrib.getValue());
-                    buffer.append('"');
-                }
-            }
-            if (selfclosing) {
-                buffer.append(" /");
-            }
-
-            buffer.append('>');
-        }
-
-        void line() {
-            if (buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != '\n') {
-                buffer.append('\n');
-            }
-        }
-
-        String build() {
-            return buffer.toString();
         }
     }
 
     private class RendererVisitor extends AbstractVisitor {
 
         private final HtmlWriter html;
+        private final List<CustomHtmlRenderer> customHtmlRenderers;
 
-        public RendererVisitor(HtmlWriter html) {
+        public RendererVisitor(HtmlWriter html, List<CustomHtmlRenderer> customHtmlRenderers) {
             this.html = html;
+            this.customHtmlRenderers = customHtmlRenderers;
         }
 
         @Override
@@ -280,14 +216,14 @@ public class HtmlRenderer {
 
         @Override
         public void visit(Image image) {
-            if (html.isHtmlAllowed()) {
+            if (html.isTagAllowed()) {
                 html.raw("<img src=\"" + escape(image.getDestination(), true) +
                         "\" alt=\"");
             }
-            html.enter();
+            html.disableTags();
             visitChildren(image);
-            html.leave();
-            if (html.isHtmlAllowed()) {
+            html.enableTags();
+            if (html.isTagAllowed()) {
                 if (image.getTitle() != null) {
                     html.raw("\" title=\"" + escape(image.getTitle(), true));
                 }
@@ -322,11 +258,11 @@ public class HtmlRenderer {
         }
 
         @Override
-        public void visit(HtmlTag inlineHmtl) {
+        public void visit(HtmlTag htmlTag) {
             if (escapeHtml) {
-                html.raw(escape(inlineHmtl.getLiteral(), false));
+                html.raw(escape(htmlTag.getLiteral(), false));
             } else {
-                html.raw(inlineHmtl.getLiteral());
+                html.raw(htmlTag.getLiteral());
             }
         }
 
@@ -337,8 +273,27 @@ public class HtmlRenderer {
 
         @Override
         public void visit(HardLineBreak hardLineBreak) {
-            html.tag("br", true);
+            html.tag("br", NO_ATTRIBUTES, true);
             html.line();
+        }
+
+        @Override
+        public void visit(CustomBlock customBlock) {
+            renderCustom(customBlock);
+        }
+
+        @Override
+        public void visit(CustomNode customNode) {
+            renderCustom(customNode);
+        }
+
+        private void renderCustom(Node node) {
+            for (CustomHtmlRenderer customHtmlRenderer : customHtmlRenderers) {
+                boolean handled = customHtmlRenderer.render(node, html, this);
+                if (handled) {
+                    break;
+                }
+            }
         }
 
         private void renderCodeBlock(String literal, Map<String, String> attributes) {

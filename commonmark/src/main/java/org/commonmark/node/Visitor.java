@@ -46,4 +46,8 @@ public interface Visitor {
     void visit(StrongEmphasis strongEmphasis);
 
     void visit(Text text);
+
+    void visit(CustomBlock customBlock);
+
+    void visit(CustomNode customNode);
 }

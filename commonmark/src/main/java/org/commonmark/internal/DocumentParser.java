@@ -15,7 +15,7 @@ public class DocumentParser {
     private int lastLineLength = 0;
     private InlineParser inlineParser = new InlineParser();
 
-    private List<BlockParserFactory> blockParserFactories = Arrays.<BlockParserFactory>asList(
+    private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
             new IndentedCodeBlockParser.Factory(),
             new BlockQuoteParser.Factory(),
             new HeaderParser.Factory(),
@@ -23,11 +23,15 @@ public class DocumentParser {
             new HtmlBlockParser.Factory(),
             new HorizontalRuleParser.Factory(),
             new ListBlockParser.Factory());
+
+    private final List<BlockParserFactory> blockParserFactories;
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
     private Set<BlockParser> allBlockParsers = new HashSet<>();
     private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
-    public DocumentParser() {
+    public DocumentParser(List<BlockParserFactory> customBlockParserFactories) {
+        blockParserFactories = new ArrayList<>(CORE_FACTORIES);
+        blockParserFactories.addAll(customBlockParserFactories);
     }
 
     /**
@@ -408,6 +412,17 @@ public class DocumentParser {
         @Override
         public BlockParser getActiveBlockParser() {
             return activeBlockParser;
+        }
+
+        @Override
+        public CharSequence getParagraphStartLine() {
+            if (activeBlockParser instanceof ParagraphParser) {
+                ParagraphParser paragraphParser = (ParagraphParser) activeBlockParser;
+                if (paragraphParser.hasSingleLine()) {
+                    return paragraphParser.getContentString();
+                }
+            }
+            return null;
         }
 
         @Override

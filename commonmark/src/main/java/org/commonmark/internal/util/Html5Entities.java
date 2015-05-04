@@ -3,6 +3,7 @@ package org.commonmark.internal.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// TODO: Change to read .properties file instead
 public class Html5Entities {
 
     private static final Pattern ENTITY_PATTERN = Pattern.compile("^&#[Xx]?");

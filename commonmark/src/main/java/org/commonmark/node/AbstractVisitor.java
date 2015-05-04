@@ -108,6 +108,16 @@ public abstract class AbstractVisitor implements Visitor {
         visitChildren(text);
     }
 
+    @Override
+    public void visit(CustomBlock customBlock) {
+        visitChildren(customBlock);
+    }
+
+    @Override
+    public void visit(CustomNode customNode) {
+        visitChildren(customNode);
+    }
+
     /**
      * Visit the child nodes.
      *

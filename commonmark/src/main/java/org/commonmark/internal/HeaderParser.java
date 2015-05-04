@@ -44,7 +44,7 @@ public class HeaderParser extends AbstractBlockParser {
         public StartResult tryStart(ParserState state) {
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpace();
-            BlockParser activeBlockParser = state.getActiveBlockParser();
+            CharSequence paragraphStartLine = state.getParagraphStartLine();
             Matcher matcher;
             if ((matcher = ATX_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 // ATX header
@@ -54,15 +54,13 @@ public class HeaderParser extends AbstractBlockParser {
                 String content = ATX_TRAILING.matcher(line.subSequence(newOffset, line.length())).replaceAll("");
                 return start(new HeaderParser(level, content, pos(state, nextNonSpace)), line.length(), false);
 
-            } else if (activeBlockParser instanceof ParagraphParser &&
-                    ((ParagraphParser) activeBlockParser).hasSingleLine() &&
+            } else if (paragraphStartLine != null &&
                     ((matcher = SETEXT_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find())) {
                 // setext header line
 
-                ParagraphParser paragraphParser = (ParagraphParser) activeBlockParser;
                 int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
-                String content = paragraphParser.getContentString();
-                return start(new HeaderParser(level, content, paragraphParser.getBlock().getSourcePosition()), line.length(), true);
+                String content = paragraphStartLine.toString();
+                return start(new HeaderParser(level, content, state.getActiveBlockParser().getBlock().getSourcePosition()), line.length(), true);
             } else {
                 return noStart();
             }

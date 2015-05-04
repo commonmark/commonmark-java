@@ -2,8 +2,11 @@ package org.commonmark.node;
 
 public class Image extends Node {
 
-    private final String destination;
-    private final String title;
+    private String destination;
+    private String title;
+
+    public Image() {
+    }
 
     public Image(String destination, String title) {
         this.destination = destination;
@@ -19,7 +22,15 @@ public class Image extends Node {
         return destination;
     }
 
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
+
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

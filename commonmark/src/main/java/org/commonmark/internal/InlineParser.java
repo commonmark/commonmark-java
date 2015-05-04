@@ -450,7 +450,7 @@ public class InlineParser {
      */
     private boolean parseCloseBracket(Node block) {
         int startPos;
-        boolean is_image;
+        boolean isImage;
         String dest = null;
         String title = null;
         boolean matched = false;
@@ -485,7 +485,7 @@ public class InlineParser {
         }
 
         // If we got here, open is a potential opener
-        is_image = opener.delimiterChar == C_BANG;
+        isImage = opener.delimiterChar == C_BANG;
 
         // Check to see if we have a link/image
 
@@ -533,7 +533,7 @@ public class InlineParser {
         }
 
         if (matched) {
-            Node node = is_image ? new Image(dest, title) : new Link(dest, title);
+            Node node = isImage ? new Image(dest, title) : new Link(dest, title);
 
             Node tmp, next;
             tmp = opener.node.getNext();
@@ -550,7 +550,7 @@ public class InlineParser {
             // processEmphasis will remove this and later delimiters.
             // Now, for a link, we also deactivate earlier link openers.
             // (no links in links)
-            if (!is_image) {
+            if (!isImage) {
                 opener = this.delimiter;
                 while (opener != null) {
                     if (opener.delimiterChar == C_OPEN_BRACKET) {

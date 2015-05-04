@@ -13,7 +13,14 @@ public interface BlockParserFactory {
 
         BlockParser getActiveBlockParser();
 
+        /**
+         * @return the first line of the paragraph if the active block is a paragraph and we're on the second line,
+         * null otherwise
+         */
+        CharSequence getParagraphStartLine();
+
         int getLineNumber();
+
     }
 
     interface StartResult {

@@ -24,4 +24,9 @@ public class SpecialInputTest extends RenderingTestCase {
         assertRendering("surrogate pair: \uD834\uDD1E", "<p>surrogate pair: \uD834\uDD1E</p>\n");
     }
 
+    @Test
+    public void surrogatePairInLinkDestination() {
+        assertRendering("[title](\uD834\uDD1E)", "<p><a href=\"%F0%9D%84%9E\">title</a></p>\n");
+
+    }
 }
