@@ -11,12 +11,13 @@ import java.util.regex.Pattern;
 
 public class TableBlockParser extends AbstractBlockParser {
 
-    private static Pattern TABLE_HEADER_SEPARATOR = Pattern.compile("^\\|?(?:\\s*-{3,}\\s*\\|)+\\s*-{3,}\\s*\\|?\\s*$");
+    private static Pattern TABLE_HEADER_SEPARATOR = Pattern.compile("^\\|?(?:\\s*:?-{3,}:?\\s*\\|)+\\s*:?-{3,}:?\\s*\\|?\\s*$");
 
     private final TableBlock block = new TableBlock();
     private final List<CharSequence> rowLines = new ArrayList<>();
 
-    private boolean separatorLine = true;
+    private boolean nextIsSeparatorLine = true;
+    private String separatorLine = "";
 
     private TableBlockParser(CharSequence headerLine, SourcePosition sourcePosition) {
         rowLines.add(headerLine);
@@ -39,8 +40,9 @@ public class TableBlockParser extends AbstractBlockParser {
 
     @Override
     public void addLine(CharSequence line) {
-        if (separatorLine) {
-            separatorLine = false;
+        if (nextIsSeparatorLine) {
+            nextIsSeparatorLine = false;
+            separatorLine = line.toString();
         } else {
             rowLines.add(line);
         }
@@ -51,18 +53,19 @@ public class TableBlockParser extends AbstractBlockParser {
         Node section = new TableHead();
         block.appendChild(section);
 
+        List<TableCell.Alignment> alignments = parseAlignment(separatorLine);
+
         boolean header = true;
         for (CharSequence rowLine : rowLines) {
-            String s = rowLine.toString();
-            if (s.startsWith("|")) {
-                s = s.substring(1);
-            }
-            String[] cells = s.split("\\|");
+            String[] cells = split(rowLine);
             TableRow tableRow = new TableRow();
 
-            for (String cell : cells) {
+            for (int i = 0; i < cells.length; i++) {
+                String cell = cells[i];
+                TableCell.Alignment alignment = i < alignments.size() ? alignments.get(i) : null;
                 TableCell tableCell = new TableCell();
                 tableCell.setHeader(header);
+                tableCell.setAlignment(alignment);
                 inlineParser.parse(tableCell, cell.trim());
                 tableRow.appendChild(tableCell);
             }
@@ -78,6 +81,39 @@ public class TableBlockParser extends AbstractBlockParser {
         }
     }
 
+    private static String[] split(CharSequence input) {
+        String line = input.toString();
+        if (line.startsWith("|")) {
+            line = line.substring(1);
+        }
+        return line.split("\\|");
+    }
+
+    private static List<TableCell.Alignment> parseAlignment(String separatorLine) {
+        String[] parts = split(separatorLine);
+        List<TableCell.Alignment> alignments = new ArrayList<>();
+        for (String part : parts) {
+            String trimmed = part.trim();
+            boolean left = trimmed.startsWith(":");
+            boolean right = trimmed.endsWith(":");
+            TableCell.Alignment alignment = getAlignment(left, right);
+            alignments.add(alignment);
+        }
+        return alignments;
+    }
+
+    private static TableCell.Alignment getAlignment(boolean left, boolean right) {
+        if (left && right) {
+            return TableCell.Alignment.CENTER;
+        } else if (left) {
+            return TableCell.Alignment.LEFT;
+        } else if (right) {
+            return TableCell.Alignment.RIGHT;
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public Block getBlock() {
         return block;
@@ -90,10 +126,10 @@ public class TableBlockParser extends AbstractBlockParser {
             CharSequence line = state.getLine();
             CharSequence paragraphStartLine = state.getParagraphStartLine();
             if (paragraphStartLine != null && paragraphStartLine.toString().contains("|")) {
-                CharSequence lineAfterOffset = line.subSequence(state.getOffset(), line.length());
-                if (TABLE_HEADER_SEPARATOR.matcher(lineAfterOffset).find()) {
+                CharSequence separatorLine = line.subSequence(state.getOffset(), line.length());
+                if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).find()) {
                     SourcePosition sourcePosition = state.getActiveBlockParser().getBlock().getSourcePosition();
-                    return start(new TableBlockParser(paragraphStartLine, sourcePosition), line.length(), true);
+                    return start(new TableBlockParser(paragraphStartLine, sourcePosition), state.getOffset(), true);
                 }
             }
             return noStart();

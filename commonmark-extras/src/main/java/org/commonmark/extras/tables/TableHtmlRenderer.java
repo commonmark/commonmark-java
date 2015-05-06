@@ -5,6 +5,9 @@ import org.commonmark.html.HtmlWriter;
 import org.commonmark.node.Node;
 import org.commonmark.node.Visitor;
 
+import java.util.Collections;
+import java.util.Map;
+
 public class TableHtmlRenderer implements CustomHtmlRenderer {
 
     @Override
@@ -60,9 +63,29 @@ public class TableHtmlRenderer implements CustomHtmlRenderer {
 
     private void renderCell(TableCell tableCell, HtmlWriter htmlWriter, Visitor visitor) {
         String tag = tableCell.isHeader() ? "th" : "td";
-        htmlWriter.tag(tag);
+        htmlWriter.tag(tag, getAttributes(tableCell));
         visitChildren(tableCell, visitor);
         htmlWriter.tag("/" + tag);
+    }
+
+    private static Map<String, String> getAttributes(TableCell tableCell) {
+        if (tableCell.getAlignment() != null) {
+            return Collections.singletonMap("align", getAlignValue(tableCell.getAlignment()));
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
+    private static String getAlignValue(TableCell.Alignment alignment) {
+        switch (alignment) {
+            case LEFT:
+                return "left";
+            case CENTER:
+                return "center";
+            case RIGHT:
+                return "right";
+        }
+        throw new IllegalStateException("Unknown alignment: " + alignment);
     }
 
     private void visitChildren(Node node, Visitor visitor) {
