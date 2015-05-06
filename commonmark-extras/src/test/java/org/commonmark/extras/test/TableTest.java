@@ -113,6 +113,30 @@ public class TableTest {
     }
 
     @Test
+    public void escapedPipe() {
+        assertRendering("Abc|Def\n---|---\n1\\|2|20", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td>1|2</td><td>20</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
+    public void escapedBackslash() {
+        assertRendering("Abc|Def\n---|---\n1\\\\|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td>1\\</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
     public void alignLeft() {
         assertRendering("Abc|Def\n:---|---\n1|2", "<table>\n" +
                 "<thead>\n" +
@@ -193,5 +217,4 @@ public class TableTest {
         assertEquals(expected, actual);
     }
 
-    // TODO: Test escaping of |
 }

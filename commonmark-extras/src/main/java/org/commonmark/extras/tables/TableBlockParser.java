@@ -57,11 +57,11 @@ public class TableBlockParser extends AbstractBlockParser {
 
         boolean header = true;
         for (CharSequence rowLine : rowLines) {
-            String[] cells = split(rowLine);
+            List<String> cells = split(rowLine);
             TableRow tableRow = new TableRow();
 
-            for (int i = 0; i < cells.length; i++) {
-                String cell = cells[i];
+            for (int i = 0; i < cells.size(); i++) {
+                String cell = cells.get(i);
                 TableCell.Alignment alignment = i < alignments.size() ? alignments.get(i) : null;
                 TableCell tableCell = new TableCell();
                 tableCell.setHeader(header);
@@ -81,16 +81,13 @@ public class TableBlockParser extends AbstractBlockParser {
         }
     }
 
-    private static String[] split(CharSequence input) {
-        String line = input.toString();
-        if (line.startsWith("|")) {
-            line = line.substring(1);
-        }
-        return line.split("\\|");
+    @Override
+    public Block getBlock() {
+        return block;
     }
 
     private static List<TableCell.Alignment> parseAlignment(String separatorLine) {
-        String[] parts = split(separatorLine);
+        List<String> parts = split(separatorLine);
         List<TableCell.Alignment> alignments = new ArrayList<>();
         for (String part : parts) {
             String trimmed = part.trim();
@@ -100,6 +97,41 @@ public class TableBlockParser extends AbstractBlockParser {
             alignments.add(alignment);
         }
         return alignments;
+    }
+
+    private static List<String> split(CharSequence input) {
+        String line = input.toString().trim();
+        if (line.startsWith("|")) {
+            line = line.substring(1);
+        }
+        List<String> cells = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean escape = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (escape) {
+                escape = false;
+                sb.append(c);
+            } else {
+                switch (c) {
+                    case '\\':
+                        escape = true;
+                        // Removing the escaping '\' is handled by the inline parser later, so add it to cell
+                        sb.append(c);
+                        break;
+                    case '|':
+                        cells.add(sb.toString());
+                        sb.setLength(0);
+                        break;
+                    default:
+                        sb.append(c);
+                }
+            }
+        }
+        if (sb.length() > 0) {
+            cells.add(sb.toString());
+        }
+        return cells;
     }
 
     private static TableCell.Alignment getAlignment(boolean left, boolean right) {
@@ -112,11 +144,6 @@ public class TableBlockParser extends AbstractBlockParser {
         } else {
             return null;
         }
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     public static class Factory extends AbstractBlockParserFactory {
