@@ -99,20 +99,6 @@ public class TableTest {
     }
 
     @Test
-    public void insideBlockQuote() {
-        assertRendering("> Abc|Def\n> ---|---\n> 1|2", "<blockquote>\n" +
-                "<table>\n" +
-                "<thead>\n" +
-                "<tr><th>Abc</th><th>Def</th></tr>\n" +
-                "</thead>\n" +
-                "<tbody>\n" +
-                "<tr><td>1</td><td>2</td></tr>\n" +
-                "</tbody>\n" +
-                "</table>\n" +
-                "</blockquote>\n");
-    }
-
-    @Test
     public void escapedPipe() {
         assertRendering("Abc|Def\n---|---\n1\\|2|20", "<table>\n" +
                 "<thead>\n" +
@@ -202,6 +188,33 @@ public class TableTest {
         assertRendering("Abc|Def\n--- :|---", "<p>Abc|Def\n--- :|---</p>\n");
         assertRendering("Abc|Def\n---|: ---", "<p>Abc|Def\n---|: ---</p>\n");
         assertRendering("Abc|Def\n---|--- :", "<p>Abc|Def\n---|--- :</p>\n");
+    }
+
+    @Test
+    public void insideBlockQuote() {
+        assertRendering("> Abc|Def\n> ---|---\n> 1|2", "<blockquote>\n" +
+                "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td>1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n" +
+                "</blockquote>\n");
+    }
+
+    @Test
+    public void tableEndWithoutEmptyLine() {
+        assertRendering("Abc|Def\n---|---\n1|2\ntable, you are over", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td>1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n" +
+                "<p>table, you are over</p>\n");
     }
 
     private void assertRendering(String source, String expectedHtml) {
