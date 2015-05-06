@@ -55,13 +55,19 @@ public class TableBlockParser extends AbstractBlockParser {
 
         List<TableCell.Alignment> alignments = parseAlignment(separatorLine);
 
+        int headerColumns = -1;
         boolean header = true;
         for (CharSequence rowLine : rowLines) {
             List<String> cells = split(rowLine);
             TableRow tableRow = new TableRow();
 
-            for (int i = 0; i < cells.size(); i++) {
-                String cell = cells.get(i);
+            if (headerColumns == -1) {
+                headerColumns = cells.size();
+            }
+
+            // Body can not have more columns than head
+            for (int i = 0; i < headerColumns; i++) {
+                String cell = i < cells.size() ? cells.get(i) : "";
                 TableCell.Alignment alignment = i < alignments.size() ? alignments.get(i) : null;
                 TableCell tableCell = new TableCell();
                 tableCell.setHeader(header);
@@ -73,7 +79,7 @@ public class TableBlockParser extends AbstractBlockParser {
             section.appendChild(tableRow);
 
             if (header) {
-                // Format allows only one header row
+                // Format allows only one row in head
                 header = false;
                 section = new TableBody();
                 block.appendChild(section);
@@ -155,8 +161,12 @@ public class TableBlockParser extends AbstractBlockParser {
             if (paragraphStartLine != null && paragraphStartLine.toString().contains("|")) {
                 CharSequence separatorLine = line.subSequence(state.getOffset(), line.length());
                 if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).find()) {
-                    SourcePosition sourcePosition = state.getActiveBlockParser().getBlock().getSourcePosition();
-                    return start(new TableBlockParser(paragraphStartLine, sourcePosition), state.getOffset(), true);
+                    List<String> headParts = split(paragraphStartLine);
+                    List<String> separatorParts = split(separatorLine);
+                    if (separatorParts.size() >= headParts.size()) {
+                        SourcePosition sourcePosition = state.getActiveBlockParser().getBlock().getSourcePosition();
+                        return start(new TableBlockParser(paragraphStartLine, sourcePosition), state.getOffset(), true);
+                    }
                 }
             }
             return noStart();

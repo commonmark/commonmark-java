@@ -29,7 +29,7 @@ public class TableTest {
     }
 
     @Test
-    public void oneHeaderNoBody() {
+    public void oneHeadNoBody() {
         assertRendering("Abc|Def\n---|---", "<table>\n" +
                 "<thead>\n" +
                 "<tr><th>Abc</th><th>Def</th></tr>\n" +
@@ -39,7 +39,7 @@ public class TableTest {
     }
 
     @Test
-    public void oneHeaderOneBody() {
+    public void oneHeadOneBody() {
         assertRendering("Abc|Def\n---|---\n1|2", "<table>\n" +
                 "<thead>\n" +
                 "<tr><th>Abc</th><th>Def</th></tr>\n" +
@@ -48,6 +48,11 @@ public class TableTest {
                 "<tr><td>1</td><td>2</td></tr>\n" +
                 "</tbody>\n" +
                 "</table>\n");
+    }
+
+    @Test
+    public void separatorMustNotHaveLessPartsThanHead() {
+        assertRendering("Abc|Def|Ghi\n---|---\n1|2|3", "<p>Abc|Def|Ghi\n---|---\n1|2|3</p>\n");
     }
 
     @Test
@@ -188,6 +193,30 @@ public class TableTest {
         assertRendering("Abc|Def\n--- :|---", "<p>Abc|Def\n--- :|---</p>\n");
         assertRendering("Abc|Def\n---|: ---", "<p>Abc|Def\n---|: ---</p>\n");
         assertRendering("Abc|Def\n---|--- :", "<p>Abc|Def\n---|--- :</p>\n");
+    }
+
+    @Test
+    public void bodyCanNotHaveMoreColumnsThanHead() {
+        assertRendering("Abc|Def\n---|---\n1|2|3", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td>1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
+    public void bodyWithFewerColumnsThanHeadResultsInEmptyCells() {
+        assertRendering("Abc|Def|Ghi\n---|---|---\n1|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th><th>Ghi</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td>1</td><td>2</td><td></td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
     }
 
     @Test
