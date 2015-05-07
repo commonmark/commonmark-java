@@ -1,11 +1,13 @@
 package org.commonmark.internal;
 
+import org.commonmark.parser.DelimiterProcessor;
+import org.commonmark.internal.inline.AsteriskDelimiterProcessor;
+import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.node.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,7 +102,8 @@ public class InlineParser {
     /**
      * Matches a string of non-special characters.
      */
-    private static final Pattern MAIN = Pattern.compile("^[^\n`\\[\\]\\\\!<&*_]+");
+    private final Pattern mainPattern;
+    private final Map<Character, DelimiterProcessor> delimiterProcessors = new HashMap<>();
 
     private String subject = "";
     private int pos = 0;
@@ -110,6 +113,33 @@ public class InlineParser {
      */
     private Delimiter delimiter;
     private Map<String, Link> referenceMap = new HashMap<>();
+
+    public InlineParser(List<DelimiterProcessor> customDelimiterProcessors) {
+        addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()));
+        addDelimiterProcessors(customDelimiterProcessors);
+        mainPattern = calculateMainPattern(delimiterProcessors.keySet());
+    }
+
+    private void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors) {
+        for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
+            char c = delimiterProcessor.getDelimiterChar();
+            DelimiterProcessor existing = this.delimiterProcessors.put(c, delimiterProcessor);
+            if (existing != null) {
+                throw new IllegalArgumentException("Inline delimiter parser can not be registered more than once, delimiter character: " + c);
+            }
+        }
+    }
+
+    private static Pattern calculateMainPattern(Iterable<Character> delimiterSet) {
+        StringBuilder sb = new StringBuilder();
+        for (Character delimiterCharacter : delimiterSet) {
+            sb.append('\\');
+            sb.append(delimiterCharacter);
+        }
+        // Don't skip delimiter characters, they need special processing
+        String delimiterCharacters = sb.toString();
+        return Pattern.compile("^[^\n`\\[\\]\\\\!<&" + delimiterCharacters + "]+");
+    }
 
     /**
      * Parse content in block into inline children, using referenceMap to resolve referenceMap.
@@ -124,7 +154,7 @@ public class InlineParser {
             moreToParse = parseInline(block);
         } while (moreToParse);
 
-        processEmphasis(null);
+        processDelimiters(null);
     }
 
     /**
@@ -216,10 +246,6 @@ public class InlineParser {
             case C_BACKTICK:
                 res = this.parseBackticks(block);
                 break;
-            case C_ASTERISK:
-            case C_UNDERSCORE:
-                res = this.parseEmphasis(c, block);
-                break;
             case C_OPEN_BRACKET:
                 res = this.parseOpenBracket(block);
                 break;
@@ -236,7 +262,12 @@ public class InlineParser {
                 res = this.parseEntity(block);
                 break;
             default:
-                res = this.parseString(block);
+                DelimiterProcessor inlineDelimiter = delimiterProcessors.get(c);
+                if (inlineDelimiter != null) {
+                    res = parseDelimiters(inlineDelimiter, block);
+                } else {
+                    res = this.parseString(block);
+                }
                 break;
         }
         if (!res) {
@@ -363,14 +394,14 @@ public class InlineParser {
     }
 
     /**
-     * Attempt to parse emphasis or strong emphasis.
+     * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
-    private boolean parseEmphasis(char delimiterChar, Node block) {
-        DelimiterRun res = this.scanDelims(delimiterChar);
+    private boolean parseDelimiters(DelimiterProcessor inlineDelimiter, Node block) {
+        DelimiterRun res = this.scanDelims(inlineDelimiter);
         if (res == null) {
             return false;
         }
-        int numDelims = res.numDelims;
+        int numDelims = res.count;
         int startPos = this.pos;
 
         this.pos += numDelims;
@@ -379,7 +410,7 @@ public class InlineParser {
 
         // Add entry to stack for this opener
         this.delimiter = new Delimiter(node, this.delimiter, startPos);
-        this.delimiter.delimiterChar = delimiterChar;
+        this.delimiter.delimiterChar = inlineDelimiter.getDelimiterChar();
         this.delimiter.numDelims = numDelims;
         this.delimiter.canOpen = res.canOpen;
         this.delimiter.canClose = res.canClose;
@@ -543,7 +574,7 @@ public class InlineParser {
                 tmp = next;
             }
             block.appendChild(node);
-            this.processEmphasis(opener.previous);
+            this.processDelimiters(opener.previous);
 
             opener.node.unlink();
 
@@ -669,7 +700,7 @@ public class InlineParser {
      */
     private boolean parseString(Node block) {
         String m;
-        if ((m = this.match(MAIN)) != null) {
+        if ((m = this.match(mainPattern)) != null) {
             block.appendChild(text(m));
             return true;
         } else {
@@ -679,39 +710,36 @@ public class InlineParser {
 
     /**
      * Scan a sequence of characters with code delimiterChar, and return information about the number of delimiters
-     * and whether they are positioned such that they can open and/or close emphasis or strong emphasis. A utility
-     * function for strong/emph parsing.
+     * and whether they are positioned such that they can open and/or close emphasis or strong emphasis.
      *
      * @return information about delimiter run, or {@code null}
      */
-    private DelimiterRun scanDelims(char delimiterChar) {
+    private DelimiterRun scanDelims(DelimiterProcessor inlineDelimiter) {
         int startPos = this.pos;
 
-        int numDelims = 0;
+        int delimiterCount = 0;
+        char delimiterChar = inlineDelimiter.getDelimiterChar();
         while (this.peek() == delimiterChar) {
-            numDelims++;
+            delimiterCount++;
             this.pos++;
         }
 
-        if (numDelims == 0) {
+        if (delimiterCount < inlineDelimiter.getMinDelimiterCount()) {
+            this.pos = startPos;
             return null;
         }
 
-        String charBefore = startPos == 0 ? "\n" :
+        String before = startPos == 0 ? "\n" :
                 this.subject.substring(startPos - 1, startPos);
 
-        char ccAfter = this.peek();
-        String charAfter;
-        if (ccAfter == '\0') {
-            charAfter = "\n";
-        } else {
-            charAfter = String.valueOf(ccAfter);
-        }
+        char charAfter = this.peek();
+        String after = charAfter == '\0' ? "\n" :
+                String.valueOf(charAfter);
 
-        boolean beforeIsPunctuation = PUNCTUATION.matcher(charBefore).matches();
-        boolean beforeIsWhitespace = WHITESPACE_CHAR.matcher(charBefore).matches();
-        boolean afterIsWhitespace = WHITESPACE_CHAR.matcher(charAfter).matches();
-        boolean afterIsPunctuation = PUNCTUATION.matcher(charAfter).matches();
+        boolean beforeIsPunctuation = PUNCTUATION.matcher(before).matches();
+        boolean beforeIsWhitespace = WHITESPACE_CHAR.matcher(before).matches();
+        boolean afterIsWhitespace = WHITESPACE_CHAR.matcher(after).matches();
+        boolean afterIsPunctuation = PUNCTUATION.matcher(after).matches();
 
         boolean leftFlanking = !afterIsWhitespace &&
                 !(afterIsPunctuation && !beforeIsWhitespace && !beforeIsPunctuation);
@@ -728,14 +756,12 @@ public class InlineParser {
         }
 
         this.pos = startPos;
-        return new DelimiterRun(numDelims, canOpen, canClose);
+        return new DelimiterRun(delimiterCount, canOpen, canClose);
     }
 
-    private void processEmphasis(Delimiter stackBottom) {
+    private void processDelimiters(Delimiter stackBottom) {
         Delimiter opener, closer;
         Delimiter nextstack, tempstack;
-        int useDelims;
-        Node tmp, next;
 
         // find first closer above stackBottom:
         closer = this.delimiter;
@@ -744,8 +770,8 @@ public class InlineParser {
         }
         // move forward, looking for closers, and handling each
         while (closer != null) {
-            if (closer.canClose && (closer.delimiterChar == C_UNDERSCORE || closer.delimiterChar == C_ASTERISK)) {
-                // found emphasis closer. now look back for first matching opener:
+            if (closer.canClose && delimiterProcessors.containsKey(closer.delimiterChar)) {
+                // found delimiter closer. now look back for first matching opener:
                 opener = closer.previous;
                 while (opener != null && opener != stackBottom) {
                     if (opener.delimiterChar == closer.delimiterChar && opener.canOpen) {
@@ -754,12 +780,12 @@ public class InlineParser {
                     opener = opener.previous;
                 }
                 if (opener != null && opener != stackBottom) {
-                    // calculate actual number of delimiters used from this closer
-                    if (closer.numDelims < 3 || opener.numDelims < 3) {
-                        useDelims = closer.numDelims <= opener.numDelims ?
-                                closer.numDelims : opener.numDelims;
-                    } else {
-                        useDelims = closer.numDelims % 2 == 0 ? 2 : 1;
+                    DelimiterProcessor delimiterProcessor = delimiterProcessors.get(closer.delimiterChar);
+
+                    int useDelims = delimiterProcessor.getDelimiterUse(opener.numDelims, closer.numDelims);
+                    if (useDelims <= 0) {
+                        // nope
+                        useDelims = 1;
                     }
 
                     Text openerInl = opener.node;
@@ -775,17 +801,7 @@ public class InlineParser {
                             closerInl.getLiteral().substring(0,
                                     closerInl.getLiteral().length() - useDelims));
 
-                    // build contents for new emph element
-                    Node emph = useDelims == 1 ? new Emphasis() : new StrongEmphasis();
-
-                    tmp = openerInl.getNext();
-                    while (tmp != null && tmp != closerInl) {
-                        next = tmp.getNext();
-                        emph.appendChild(tmp);
-                        tmp = next;
-                    }
-
-                    openerInl.insertAfter(emph);
+                    delimiterProcessor.process(openerInl, closerInl, useDelims);
 
                     // remove elts btw opener and closer in delimiters stack
                     tempstack = closer.previous;

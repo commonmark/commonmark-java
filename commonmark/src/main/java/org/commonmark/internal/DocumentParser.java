@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.parser.DelimiterProcessor;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
@@ -8,12 +9,6 @@ import java.util.*;
 
 public class DocumentParser {
 
-    /**
-     * 1-based line number
-     */
-    private int lineNumber = 0;
-    private int lastLineLength = 0;
-    private InlineParser inlineParser = new InlineParser();
 
     private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
             new IndentedCodeBlockParser.Factory(),
@@ -24,14 +19,23 @@ public class DocumentParser {
             new HorizontalRuleParser.Factory(),
             new ListBlockParser.Factory());
 
+    /**
+     * 1-based line number
+     */
+    private int lineNumber = 0;
+    private int lastLineLength = 0;
+
+    private final InlineParser inlineParser;
     private final List<BlockParserFactory> blockParserFactories;
+
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
     private Set<BlockParser> allBlockParsers = new HashSet<>();
     private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
-    public DocumentParser(List<BlockParserFactory> customBlockParserFactories) {
+    public DocumentParser(List<BlockParserFactory> customBlockParserFactories, List<DelimiterProcessor> delimiterProcessors) {
         blockParserFactories = new ArrayList<>(CORE_FACTORIES);
         blockParserFactories.addAll(customBlockParserFactories);
+        inlineParser = new InlineParser(delimiterProcessors);
     }
 
     /**

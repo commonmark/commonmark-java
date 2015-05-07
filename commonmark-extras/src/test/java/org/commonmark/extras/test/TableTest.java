@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TableTest {
+public class TableTest extends RenderingTestCase {
 
     @Test
     public void mustHaveHeaderAndSeparator() {
@@ -246,17 +246,13 @@ public class TableTest {
                 "<p>table, you are over</p>\n");
     }
 
-    private void assertRendering(String source, String expectedHtml) {
-        Parser parser = Parser.builder().customBlockParserFactory(new TableBlockParser.Factory()).build();
-        HtmlRenderer renderer = HtmlRenderer.builder().customHtmlRenderer(new TableHtmlRenderer()).build();
-
-        Node node = parser.parse(source);
-        String html = renderer.render(node);
-
-        // include source for better assertion errors
-        String expected = expectedHtml + "\n\n" + source;
-        String actual = html + "\n\n" + source;
-        assertEquals(expected, actual);
+    @Override
+    protected void configureParser(Parser.Builder parserBuilder) {
+        parserBuilder.customBlockParserFactory(new TableBlockParser.Factory());
     }
 
+    @Override
+    protected void configureRenderer(HtmlRenderer.Builder rendererBuilder) {
+        rendererBuilder.customHtmlRenderer(new TableHtmlRenderer());
+    }
 }

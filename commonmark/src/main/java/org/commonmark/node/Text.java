@@ -4,6 +4,13 @@ public class Text extends Node {
 
     private String literal;
 
+    public Text() {
+    }
+
+    public Text(String literal) {
+        this.literal = literal;
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
