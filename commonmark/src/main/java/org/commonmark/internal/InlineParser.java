@@ -49,8 +49,9 @@ public class InlineParser {
             + "|" + PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
     private static final String ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
 
+    private static final String ASCII_PUNCTUATION = "'!\"#\\$%&\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~";
     private static final Pattern PUNCTUATION = Pattern
-            .compile("^[\u2000-\u206F\u2E00-\u2E7F\\\\'!\"#\\$%&\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\]\\^_`\\{\\|\\}~]");
+            .compile("^[" + ASCII_PUNCTUATION + "\\p{Pc}\\p{Pd}\\p{Pe}\\p{Pf}\\p{Pi}\\p{Po}\\p{Ps}]");
 
     private static final Pattern HTML_TAG = Pattern.compile('^' + HTMLTAG, Pattern.CASE_INSENSITIVE);
 
@@ -366,12 +367,11 @@ public class InlineParser {
      */
     private boolean parseEmphasis(char delimiterChar, Node block) {
         DelimiterRun res = this.scanDelims(delimiterChar);
-        int numDelims = res.numDelims;
-        int startPos = this.pos;
-
-        if (numDelims == 0) {
+        if (res == null) {
             return false;
         }
+        int numDelims = res.numDelims;
+        int startPos = this.pos;
 
         this.pos += numDelims;
         Text node = text(this.subject.substring(startPos, this.pos));
@@ -681,18 +681,24 @@ public class InlineParser {
      * Scan a sequence of characters with code delimiterChar, and return information about the number of delimiters
      * and whether they are positioned such that they can open and/or close emphasis or strong emphasis. A utility
      * function for strong/emph parsing.
+     *
+     * @return information about delimiter run, or {@code null}
      */
     private DelimiterRun scanDelims(char delimiterChar) {
         int startPos = this.pos;
-
-        String charBefore = this.pos == 0 ? "\n" :
-                this.subject.substring(this.pos - 1, this.pos);
 
         int numDelims = 0;
         while (this.peek() == delimiterChar) {
             numDelims++;
             this.pos++;
         }
+
+        if (numDelims == 0) {
+            return null;
+        }
+
+        String charBefore = startPos == 0 ? "\n" :
+                this.subject.substring(startPos - 1, startPos);
 
         char ccAfter = this.peek();
         String charAfter;
@@ -702,25 +708,25 @@ public class InlineParser {
             charAfter = String.valueOf(ccAfter);
         }
 
-        boolean leftFlanking = numDelims > 0 &&
-                !(WHITESPACE_CHAR.matcher(charAfter).matches()) &&
-                !(PUNCTUATION.matcher(charAfter).matches() &&
-                        !(WHITESPACE_CHAR.matcher(charBefore).matches()) &&
-                        !(PUNCTUATION.matcher(charBefore).matches()));
-        boolean rightFlanking = numDelims > 0 &&
-                !(WHITESPACE_CHAR.matcher(charBefore).matches()) &&
-                !(PUNCTUATION.matcher(charBefore).matches() &&
-                        !(WHITESPACE_CHAR.matcher(charAfter).matches()) &&
-                        !(PUNCTUATION.matcher(charAfter).matches()));
+        boolean beforeIsPunctuation = PUNCTUATION.matcher(charBefore).matches();
+        boolean beforeIsWhitespace = WHITESPACE_CHAR.matcher(charBefore).matches();
+        boolean afterIsWhitespace = WHITESPACE_CHAR.matcher(charAfter).matches();
+        boolean afterIsPunctuation = PUNCTUATION.matcher(charAfter).matches();
+
+        boolean leftFlanking = !afterIsWhitespace &&
+                !(afterIsPunctuation && !beforeIsWhitespace && !beforeIsPunctuation);
+        boolean rightFlanking = !beforeIsWhitespace &&
+                !(beforeIsPunctuation && !afterIsWhitespace && !afterIsPunctuation);
         boolean canOpen;
         boolean canClose;
         if (delimiterChar == C_UNDERSCORE) {
-            canOpen = leftFlanking && !rightFlanking;
-            canClose = rightFlanking && !leftFlanking;
+            canOpen = leftFlanking && (!rightFlanking || beforeIsPunctuation);
+            canClose = rightFlanking && (!leftFlanking || afterIsPunctuation);
         } else {
             canOpen = leftFlanking;
             canClose = rightFlanking;
         }
+
         this.pos = startPos;
         return new DelimiterRun(numDelims, canOpen, canClose);
     }
