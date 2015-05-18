@@ -121,13 +121,16 @@ public abstract class AbstractVisitor implements Visitor {
     /**
      * Visit the child nodes.
      *
-     * @param node the parent node whose children should be visited
+     * @param parent the parent node whose children should be visited
      */
-    protected void visitChildren(Node node) {
-        Node child = node.getFirstChild();
-        while (child != null) {
-            child.accept(this);
-            child = child.getNext();
+    protected void visitChildren(Node parent) {
+        Node node = parent.getFirstChild();
+        while (node != null) {
+            // A subclass of this visitor might modify the node, resulting in getNext returning a different node or no
+            // node after visiting it. So get the next node before visiting.
+            Node next = node.getNext();
+            node.accept(this);
+            node = next;
         }
     }
 }
