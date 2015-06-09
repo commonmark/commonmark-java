@@ -33,4 +33,9 @@ public class Image extends Node {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    @Override
+    protected String toStringAttributes() {
+        return "destination=" + destination + ", title=" + title;
+    }
 }

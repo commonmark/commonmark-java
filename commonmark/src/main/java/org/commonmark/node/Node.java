@@ -14,6 +14,10 @@ public abstract class Node {
         return next;
     }
 
+    public Node getPrevious() {
+        return prev;
+    }
+
     public Node getFirstChild() {
         return firstChild;
     }
@@ -100,4 +104,12 @@ public abstract class Node {
         }
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" + toStringAttributes() + "}";
+    }
+
+    protected String toStringAttributes() {
+        return "";
+    }
 }

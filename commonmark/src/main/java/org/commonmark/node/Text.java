@@ -23,4 +23,9 @@ public class Text extends Node {
     public void setLiteral(String literal) {
         this.literal = literal;
     }
+
+    @Override
+    protected String toStringAttributes() {
+        return "literal=" + literal;
+    }
 }

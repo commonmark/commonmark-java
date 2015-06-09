@@ -8,8 +8,8 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class RenderingTestCase {
 
-    private final Parser parser = Parser.builder().build();
-    private final HtmlRenderer renderer = HtmlRenderer.builder().build();
+    protected final Parser parser = Parser.builder().build();
+    protected final HtmlRenderer renderer = HtmlRenderer.builder().build();
 
     protected void assertRendering(String source, String expectedHtml) {
         Node node = parser.parse(source);

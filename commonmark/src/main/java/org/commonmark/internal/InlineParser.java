@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 public class InlineParser {
 
     private static final char C_NEWLINE = '\n';
-    private static final char C_ASTERISK = '*';
     private static final char C_UNDERSCORE = '_';
     private static final char C_BACKTICK = '`';
     private static final char C_OPEN_BRACKET = '[';
@@ -105,14 +104,20 @@ public class InlineParser {
     private final Pattern mainPattern;
     private final Map<Character, DelimiterProcessor> delimiterProcessors = new HashMap<>();
 
-    private String subject = "";
-    private int pos = 0;
+    /**
+     * Link references by ID, needs to be built up using parseReference before calling parse.
+     */
+    private Map<String, Link> referenceMap = new HashMap<>();
 
+    private Node block;
+    private String subject;
+    private int pos;
     /**
      * Stack of delimiters (emphasis, strong emphasis).
      */
     private Delimiter delimiter;
-    private Map<String, Link> referenceMap = new HashMap<>();
+
+    private StringBuilder currentText;
 
     public InlineParser(List<DelimiterProcessor> customDelimiterProcessors) {
         addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()));
@@ -142,23 +147,25 @@ public class InlineParser {
     }
 
     /**
-     * Parse content in block into inline children, using referenceMap to resolve referenceMap.
+     * Parse content in block into inline children, using reference map to resolve references.
      */
     public void parse(Node block, String content) {
+        this.block = block;
         this.subject = content.trim();
         this.pos = 0;
         this.delimiter = null;
 
         boolean moreToParse;
         do {
-            moreToParse = parseInline(block);
+            moreToParse = parseInline();
         } while (moreToParse);
+        flushTextNode();
 
         processDelimiters(null);
     }
 
     /**
-     * Attempt to parse a link reference, modifying refmap.
+     * Attempt to parse a link reference, modifying the internal reference map.
      *
      * @return how many characters were parsed as a reference, {@code 0} if none
      */
@@ -219,10 +226,31 @@ public class InlineParser {
         return this.pos - startPos;
     }
 
-    private static Text text(String s) {
-        Text node = new Text();
-        node.setLiteral(s);
+    private void appendText(CharSequence text) {
+        if (currentText != null) {
+            currentText.append(text);
+        } else {
+            currentText = new StringBuilder(text);
+        }
+    }
+
+    private void appendNode(Node node) {
+        flushTextNode();
+        block.appendChild(node);
+    }
+
+    // In some cases, we don't want the text to be appended to an existing node, we need it separate
+    private Text appendSeparateText(String text) {
+        Text node = new Text(text);
+        appendNode(node);
         return node;
+    }
+
+    private void flushTextNode() {
+        if (currentText != null) {
+            block.appendChild(new Text(currentText.toString()));
+            currentText = null;
+        }
     }
 
     /**
@@ -230,7 +258,7 @@ public class InlineParser {
      * On success, add the result to block's children and return true.
      * On failure, return false.
      */
-    private boolean parseInline(Node block) {
+    private boolean parseInline() {
         boolean res;
         char c = this.peek();
         if (c == '\0') {
@@ -238,35 +266,35 @@ public class InlineParser {
         }
         switch (c) {
             case C_NEWLINE:
-                res = this.parseNewline(block);
+                res = this.parseNewline();
                 break;
             case C_BACKSLASH:
-                res = this.parseBackslash(block);
+                res = this.parseBackslash();
                 break;
             case C_BACKTICK:
-                res = this.parseBackticks(block);
+                res = this.parseBackticks();
                 break;
             case C_OPEN_BRACKET:
-                res = this.parseOpenBracket(block);
+                res = this.parseOpenBracket();
                 break;
             case C_BANG:
-                res = this.parseBang(block);
+                res = this.parseBang();
                 break;
             case C_CLOSE_BRACKET:
-                res = this.parseCloseBracket(block);
+                res = this.parseCloseBracket();
                 break;
             case C_LESSTHAN:
-                res = this.parseAutolink(block) || this.parseHtmlTag(block);
+                res = this.parseAutolink() || this.parseHtmlTag();
                 break;
             case C_AMPERSAND:
-                res = this.parseEntity(block);
+                res = this.parseEntity();
                 break;
             default:
                 DelimiterProcessor inlineDelimiter = delimiterProcessors.get(c);
                 if (inlineDelimiter != null) {
-                    res = parseDelimiters(inlineDelimiter, block);
+                    res = parseDelimiters(inlineDelimiter);
                 } else {
-                    res = this.parseString(block);
+                    res = this.parseString();
                 }
                 break;
         }
@@ -275,7 +303,7 @@ public class InlineParser {
             // When we get here, it's only for a single special character that turned out to not have a special meaning.
             // So we shouldn't have a single surrogate here, hence it should be ok to turn it into a String.
             String literal = String.valueOf(c);
-            block.appendChild(text(literal));
+            appendText(literal);
         }
 
         return true;
@@ -321,10 +349,14 @@ public class InlineParser {
     /**
      * Parse a newline. If it was preceded by two spaces, return a hard line break; otherwise a soft line break.
      */
-    private boolean parseNewline(Node block) {
+    private boolean parseNewline() {
         this.pos += 1; // assume we're at a \n
-        // check previous node for trailing spaces
+
+        // We're gonna add a new node in any case and we need to check the last text node, so flush outstanding text.
+        flushTextNode();
+
         Node lastChild = block.getLastChild();
+        // Check previous node for trailing spaces
         if (lastChild != null && lastChild instanceof Text) {
             Text text = (Text) lastChild;
             Matcher matcher = FINAL_SPACE.matcher(text.getLiteral());
@@ -332,9 +364,9 @@ public class InlineParser {
             if (sps > 0) {
                 text.setLiteral(matcher.replaceAll(""));
             }
-            block.appendChild(sps >= 2 ? new HardLineBreak() : new SoftLineBreak());
+            appendNode(sps >= 2 ? new HardLineBreak() : new SoftLineBreak());
         } else {
-            block.appendChild(new SoftLineBreak());
+            appendNode(new SoftLineBreak());
         }
         this.match(INITIAL_SPACE); // gobble leading spaces in next line
         return true;
@@ -344,7 +376,7 @@ public class InlineParser {
      * Parse a backslash-escaped special character, adding either the escaped  character, a hard line break
      * (if the backslash is followed by a newline), or a literal backslash to the block's children.
      */
-    private boolean parseBackslash(Node block) {
+    private boolean parseBackslash() {
         String subj = this.subject;
         int pos = this.pos;
         Node node;
@@ -353,13 +385,13 @@ public class InlineParser {
             if (next < subj.length() && subj.charAt(next) == '\n') {
                 this.pos = this.pos + 2;
                 node = new HardLineBreak();
-                block.appendChild(node);
+                appendNode(node);
             } else if (next < subj.length() && ESCAPABLE.matcher(subj.substring(next, next + 1)).matches()) {
                 this.pos = this.pos + 2;
-                block.appendChild(text(subj.substring(next, next + 1)));
+                appendText(subj.substring(next, next + 1));
             } else {
                 this.pos++;
-                block.appendChild(text("\\"));
+                appendText("\\");
             }
             return true;
         } else {
@@ -370,7 +402,7 @@ public class InlineParser {
     /**
      * Attempt to parse backticks, adding either a backtick code span or a literal sequence of backticks.
      */
-    private boolean parseBackticks(Node block) {
+    private boolean parseBackticks() {
         String ticks = this.match(TICKS_HERE);
         if (ticks == null) {
             return false;
@@ -383,20 +415,20 @@ public class InlineParser {
                 String content = this.subject.substring(afterOpenTicks, this.pos - ticks.length());
                 String literal = WHITESPACE.matcher(content.trim()).replaceAll(" ");
                 node.setLiteral(literal);
-                block.appendChild(node);
+                appendNode(node);
                 return true;
             }
         }
         // If we got here, we didn't match a closing backtick sequence.
         this.pos = afterOpenTicks;
-        block.appendChild(text(ticks));
+        appendText(ticks);
         return true;
     }
 
     /**
      * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
-    private boolean parseDelimiters(DelimiterProcessor inlineDelimiter, Node block) {
+    private boolean parseDelimiters(DelimiterProcessor inlineDelimiter) {
         DelimiterRun res = this.scanDelims(inlineDelimiter);
         if (res == null) {
             return false;
@@ -405,8 +437,7 @@ public class InlineParser {
         int startPos = this.pos;
 
         this.pos += numDelims;
-        Text node = text(this.subject.substring(startPos, this.pos));
-        block.appendChild(node);
+        Text node = appendSeparateText(this.subject.substring(startPos, this.pos));
 
         // Add entry to stack for this opener
         this.delimiter = new Delimiter(node, this.delimiter, startPos);
@@ -414,7 +445,6 @@ public class InlineParser {
         this.delimiter.numDelims = numDelims;
         this.delimiter.canOpen = res.canOpen;
         this.delimiter.canClose = res.canClose;
-        this.delimiter.active = true;
         if (this.delimiter.previous != null) {
             this.delimiter.previous.next = this.delimiter;
         }
@@ -425,12 +455,11 @@ public class InlineParser {
     /**
      * Add open bracket to delimiter stack and add a text node to block's children.
      */
-    private boolean parseOpenBracket(Node block) {
+    private boolean parseOpenBracket() {
         int startPos = this.pos;
         this.pos += 1;
 
-        Text node = text("[");
-        block.appendChild(node);
+        Text node = appendSeparateText("[");
 
         // Add entry to stack for this opener
         this.delimiter = new Delimiter(node, this.delimiter, startPos);
@@ -438,7 +467,7 @@ public class InlineParser {
         this.delimiter.numDelims = 1;
         this.delimiter.canOpen = true;
         this.delimiter.canClose = false;
-        this.delimiter.active = true;
+        this.delimiter.allowed = true;
         if (this.delimiter.previous != null) {
             this.delimiter.previous.next = this.delimiter;
         }
@@ -450,14 +479,13 @@ public class InlineParser {
      * If next character is [, and ! delimiter to delimiter stack and add a text node to block's children.
      * Otherwise just add a text node.
      */
-    private boolean parseBang(Node block) {
+    private boolean parseBang() {
         int startPos = this.pos;
         this.pos += 1;
         if (this.peek() == C_OPEN_BRACKET) {
             this.pos += 1;
 
-            Text node = text("![");
-            block.appendChild(node);
+            Text node = appendSeparateText("![");
 
             // Add entry to stack for this opener
             this.delimiter = new Delimiter(node, this.delimiter, startPos + 1);
@@ -465,12 +493,12 @@ public class InlineParser {
             this.delimiter.numDelims = 1;
             this.delimiter.canOpen = true;
             this.delimiter.canClose = false;
-            this.delimiter.active = true;
+            this.delimiter.allowed = true;
             if (this.delimiter.previous != null) {
                 this.delimiter.previous.next = this.delimiter;
             }
         } else {
-            block.appendChild(text("!"));
+            appendText("!");
         }
         return true;
     }
@@ -479,46 +507,38 @@ public class InlineParser {
      * Try to match close bracket against an opening in the delimiter stack. Add either a link or image, or a
      * plain [ character, to block's children. If there is a matching delimiter, remove it from the delimiter stack.
      */
-    private boolean parseCloseBracket(Node block) {
-        int startPos;
-        boolean isImage;
-        String dest = null;
-        String title = null;
-        boolean matched = false;
-        String reflabel;
-        Delimiter opener;
-
+    private boolean parseCloseBracket() {
         this.pos += 1;
-        startPos = this.pos;
+        int startPos = this.pos;
 
         // look through stack of delimiters for a [ or ![
-        opener = this.delimiter;
-
+        Delimiter opener = this.delimiter;
         while (opener != null) {
-            if (opener.delimiterChar == C_OPEN_BRACKET || opener.delimiterChar == C_BANG) {
+            if (!opener.matched && (opener.delimiterChar == C_OPEN_BRACKET || opener.delimiterChar == C_BANG)) {
                 break;
             }
             opener = opener.previous;
         }
 
         if (opener == null) {
-            // no matched opener, just return a literal
-            block.appendChild(text("]"));
+            // No matched opener, just return a literal.
+            appendText("]");
             return true;
         }
 
-        if (!opener.active) {
-            // no matched opener, just return a literal
-            block.appendChild(text("]"));
-            // take opener off emphasis stack
-            this.removeDelimiter(opener);
+        if (!opener.allowed) {
+            // Matching opener but it's not allowed, just return a literal.
+            appendText("]");
+            // We could remove the opener now, but that would complicate text node merging. So just skip it next time.
+            opener.matched = true;
             return true;
         }
-
-        // If we got here, open is a potential opener
-        isImage = opener.delimiterChar == C_BANG;
 
         // Check to see if we have a link/image
+
+        String dest = null;
+        String title = null;
+        boolean isLinkOrImage = false;
 
         // Inline link?
         if (this.peek() == C_OPEN_PAREN) {
@@ -533,71 +553,78 @@ public class InlineParser {
                 }
                 if (this.subject.charAt(this.pos) == C_CLOSE_PAREN) {
                     this.pos += 1;
-                    matched = true;
+                    isLinkOrImage = true;
                 }
             }
-        } else {
+        } else { // maybe reference link
 
-            // Next, see if there's a link label
-            int savepos = this.pos;
+            // See if there's a link label
             this.spnl();
-            int beforelabel = this.pos;
-            int n = this.parseLinkLabel();
-            if (n == 0 || n == 2) {
+
+            int beforeLabel = this.pos;
+            int labelLength = this.parseLinkLabel();
+            String ref;
+            if (labelLength == 0 || labelLength == 2) {
                 // empty or missing second label
-                reflabel = this.subject.substring(opener.index, startPos);
+                ref = this.subject.substring(opener.index, startPos);
             } else {
-                reflabel = this.subject.substring(beforelabel, beforelabel + n);
+                ref = this.subject.substring(beforeLabel, beforeLabel + labelLength);
             }
-            if (n == 0) {
+            if (labelLength == 0) {
                 // If shortcut reference link, rewind before spaces we skipped.
-                this.pos = savepos;
+                this.pos = startPos;
             }
 
-            // lookup rawlabel in refmap
-            Link link = referenceMap.get(Escaping.normalizeReference(reflabel));
+            Link link = referenceMap.get(Escaping.normalizeReference(ref));
             if (link != null) {
                 dest = link.getDestination();
                 title = link.getTitle();
-                matched = true;
+                isLinkOrImage = true;
             }
         }
 
-        if (matched) {
-            Node node = isImage ? new Image(dest, title) : new Link(dest, title);
+        if (isLinkOrImage) {
+            // If we got here, open is a potential opener
+            boolean isImage = opener.delimiterChar == C_BANG;
+            Node linkOrImage = isImage ? new Image(dest, title) : new Link(dest, title);
 
-            Node tmp, next;
-            tmp = opener.node.getNext();
-            while (tmp != null) {
-                next = tmp.getNext();
-                node.appendChild(tmp);
-                tmp = next;
+            // Flush text now. We don't need to worry about combining it with adjacent text nodes, as we'll wrap it in a
+            // link or image node.
+            flushTextNode();
+
+            Node node = opener.node.getNext();
+            while (node != null) {
+                Node next = node.getNext();
+                linkOrImage.appendChild(node);
+                node = next;
             }
-            block.appendChild(node);
-            this.processDelimiters(opener.previous);
+            appendNode(linkOrImage);
 
-            opener.node.unlink();
+            // Process delimiters such as emphasis inside link/image
+            processDelimiters(opener);
+            removeDelimiterAndNode(opener);
 
-            // processEmphasis will remove this and later delimiters.
-            // Now, for a link, we also deactivate earlier link openers.
-            // (no links in links)
+            // Links within links are not allowed. We found this link, so there can be no other link around it.
             if (!isImage) {
-                opener = this.delimiter;
-                while (opener != null) {
-                    if (opener.delimiterChar == C_OPEN_BRACKET) {
-                        opener.active = false; // deactivate this opener
+                Delimiter delim = this.delimiter;
+                while (delim != null) {
+                    if (delim.delimiterChar == C_OPEN_BRACKET) {
+                        // Disallow link opener. It will still get matched, but will not result in a link.
+                        delim.allowed = false;
                     }
-                    opener = opener.previous;
+                    delim = delim.previous;
                 }
             }
 
             return true;
 
-        } else { // no match
+        } else { // no link or image
 
-            this.removeDelimiter(opener); // remove this opener from stack
+            appendText("]");
+            // We could remove the opener now, but that would complicate text node merging.
+            // E.g. `[link] (/uri)` isn't a link because of the space, so we want to keep appending text.
+            opener.matched = true;
             this.pos = startPos;
-            block.appendChild(text("]"));
             return true;
         }
     }
@@ -647,20 +674,19 @@ public class InlineParser {
     /**
      * Attempt to parse an autolink (URL or email in pointy brackets).
      */
-    private boolean parseAutolink(Node block) {
+    private boolean parseAutolink() {
         String m;
-        String dest;
         if ((m = this.match(EMAIL_AUTOLINK)) != null) {
-            dest = m.substring(1, m.length() - 1);
+            String dest = m.substring(1, m.length() - 1);
             Link node = new Link(Escaping.normalizeURI("mailto:" + dest), null);
-            node.appendChild(text(dest));
-            block.appendChild(node);
+            node.appendChild(new Text(dest));
+            appendNode(node);
             return true;
         } else if ((m = this.match(AUTOLINK)) != null) {
-            dest = m.substring(1, m.length() - 1);
+            String dest = m.substring(1, m.length() - 1);
             Link node = new Link(Escaping.normalizeURI(dest), null);
-            node.appendChild(text(dest));
-            block.appendChild(node);
+            node.appendChild(new Text(dest));
+            appendNode(node);
             return true;
         } else {
             return false;
@@ -670,12 +696,12 @@ public class InlineParser {
     /**
      * Attempt to parse a raw HTML tag.
      */
-    private boolean parseHtmlTag(Node block) {
+    private boolean parseHtmlTag() {
         String m = this.match(HTML_TAG);
         if (m != null) {
             HtmlTag node = new HtmlTag();
             node.setLiteral(m);
-            block.appendChild(node);
+            appendNode(node);
             return true;
         } else {
             return false;
@@ -685,10 +711,10 @@ public class InlineParser {
     /**
      * Attempt to parse an entity, return Entity object if successful.
      */
-    private boolean parseEntity(Node block) {
+    private boolean parseEntity() {
         String m;
         if ((m = this.match(ENTITY_HERE)) != null) {
-            block.appendChild(text(Html5Entities.entityToString(m)));
+            appendText(Html5Entities.entityToString(m));
             return true;
         } else {
             return false;
@@ -698,10 +724,10 @@ public class InlineParser {
     /**
      * Parse a run of ordinary characters, or a single character with a special meaning in markdown, as a plain string.
      */
-    private boolean parseString(Node block) {
+    private boolean parseString() {
         String m;
         if ((m = this.match(mainPattern)) != null) {
-            block.appendChild(text(m));
+            appendText(m);
             return true;
         } else {
             return false;
@@ -760,11 +786,8 @@ public class InlineParser {
     }
 
     private void processDelimiters(Delimiter stackBottom) {
-        Delimiter opener, closer;
-        Delimiter nextstack, tempstack;
-
         // find first closer above stackBottom:
-        closer = this.delimiter;
+        Delimiter closer = this.delimiter;
         while (closer != null && closer.previous != stackBottom) {
             closer = closer.previous;
         }
@@ -772,7 +795,7 @@ public class InlineParser {
         while (closer != null) {
             if (closer.canClose && delimiterProcessors.containsKey(closer.delimiterChar)) {
                 // found delimiter closer. now look back for first matching opener:
-                opener = closer.previous;
+                Delimiter opener = closer.previous;
                 while (opener != null && opener != stackBottom) {
                     if (opener.delimiterChar == closer.delimiterChar && opener.canOpen) {
                         break;
@@ -788,40 +811,31 @@ public class InlineParser {
                         useDelims = 1;
                     }
 
-                    Text openerInl = opener.node;
-                    Text closerInl = closer.node;
+                    Text openerNode = opener.node;
+                    Text closerNode = closer.node;
 
                     // remove used delimiters from stack elts and inlines
                     opener.numDelims -= useDelims;
                     closer.numDelims -= useDelims;
-                    openerInl.setLiteral(
-                            openerInl.getLiteral().substring(0,
-                                    openerInl.getLiteral().length() - useDelims));
-                    closerInl.setLiteral(
-                            closerInl.getLiteral().substring(0,
-                                    closerInl.getLiteral().length() - useDelims));
+                    openerNode.setLiteral(
+                            openerNode.getLiteral().substring(0,
+                                    openerNode.getLiteral().length() - useDelims));
+                    closerNode.setLiteral(
+                            closerNode.getLiteral().substring(0,
+                                    closerNode.getLiteral().length() - useDelims));
 
-                    delimiterProcessor.process(openerInl, closerInl, useDelims);
-
-                    // remove elts btw opener and closer in delimiters stack
-                    tempstack = closer.previous;
-                    while (tempstack != null && tempstack != opener) {
-                        nextstack = tempstack.previous;
-                        this.removeDelimiter(tempstack);
-                        tempstack = nextstack;
-                    }
+                    removeDelimitersBetween(opener, closer);
+                    delimiterProcessor.process(openerNode, closerNode, useDelims);
 
                     // if opener has 0 delims, remove it and the inline
                     if (opener.numDelims == 0) {
-                        openerInl.unlink();
-                        this.removeDelimiter(opener);
+                        removeDelimiterAndNode(opener);
                     }
 
                     if (closer.numDelims == 0) {
-                        closerInl.unlink();
-                        tempstack = closer.next;
-                        this.removeDelimiter(closer);
-                        closer = tempstack;
+                        Delimiter next = closer.next;
+                        removeDelimiterAndNode(closer);
+                        closer = next;
                     }
 
                 } else {
@@ -836,8 +850,58 @@ public class InlineParser {
 
         // remove all delimiters
         while (this.delimiter != stackBottom) {
-            this.removeDelimiter(this.delimiter);
+            removeDelimiterKeepNode(this.delimiter);
         }
+    }
+
+    private void removeDelimitersBetween(Delimiter opener, Delimiter closer) {
+        Delimiter delimiter = closer.previous;
+        while (delimiter != null && delimiter != opener) {
+            Delimiter previousDelimiter = delimiter.previous;
+            removeDelimiterKeepNode(delimiter);
+            delimiter = previousDelimiter;
+        }
+    }
+
+    /**
+     * Remove the delimiter and the corresponding text node. For used delimiters, e.g. `*` in `*foo*`.
+     */
+    private void removeDelimiterAndNode(Delimiter delim) {
+        Text node = delim.node;
+        Text previousText = delim.getPreviousNonDelimiterTextNode();
+        Text nextText = delim.getNextNonDelimiterTextNode();
+        if (previousText != null && nextText != null) {
+            // Merge adjacent text nodes
+            previousText.setLiteral(previousText.getLiteral() + nextText.getLiteral());
+            nextText.unlink();
+        }
+
+        node.unlink();
+        removeDelimiter(delim);
+    }
+
+    /**
+     * Remove the delimiter but keep the corresponding node as text. For unused delimiters such as `_` in `foo_bar`.
+     */
+    private void removeDelimiterKeepNode(Delimiter delim) {
+        Text node = delim.node;
+        Text previousText = delim.getPreviousNonDelimiterTextNode();
+        Text nextText = delim.getNextNonDelimiterTextNode();
+        if (previousText != null || nextText != null) {
+            // Merge adjacent text nodes into one
+            StringBuilder sb = new StringBuilder(node.getLiteral());
+            if (previousText != null) {
+                sb.insert(0, previousText.getLiteral());
+                previousText.unlink();
+            }
+            if (nextText != null) {
+                sb.append(nextText.getLiteral());
+                nextText.unlink();
+            }
+            node.setLiteral(sb.toString());
+        }
+
+        removeDelimiter(delim);
     }
 
     private void removeDelimiter(Delimiter delim) {
