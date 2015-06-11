@@ -26,6 +26,18 @@ public class AutolinkPostProcessorTest extends RenderingTestCase {
                         "Example 3: <a href=\"http://example.com/foo_(bar)\">http://example.com/foo_(bar)</a></p>\n");
     }
 
+    @Test
+    public void emailUsesMailto() {
+        assertRendering("foo@example.com",
+                "<p><a href=\"mailto:foo@example.com\">foo@example.com</a></p>\n");
+    }
+
+    @Test
+    public void emailWithTldNotLinked() {
+        assertRendering("foo@com",
+                "<p>foo@com</p>\n");
+    }
+
     @Override
     protected void configureParser(Parser.Builder parserBuilder) {
         parserBuilder.postProcessor(new AutolinkPostProcessor());
