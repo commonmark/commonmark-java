@@ -96,8 +96,6 @@ public class InlineParser {
 
     private static final Pattern LINE_END = Pattern.compile("^ *(?:\n|$)");
 
-    private static final Pattern INITIAL_SPACE = Pattern.compile("^ *");
-
     /**
      * Matches a string of non-special characters.
      */
@@ -356,19 +354,25 @@ public class InlineParser {
         flushTextNode();
 
         Node lastChild = block.getLastChild();
-        // Check previous node for trailing spaces
-        if (lastChild != null && lastChild instanceof Text) {
+        // Check previous text for trailing spaces.
+        // The "endsWith" is an optimization to avoid an RE match in the common case.
+        if (lastChild != null && lastChild instanceof Text && ((Text) lastChild).getLiteral().endsWith(" ")) {
             Text text = (Text) lastChild;
-            Matcher matcher = FINAL_SPACE.matcher(text.getLiteral());
-            int sps = matcher.find() ? matcher.end() - matcher.start() : 0;
-            if (sps > 0) {
-                text.setLiteral(matcher.replaceAll(""));
+            String literal = text.getLiteral();
+            Matcher matcher = FINAL_SPACE.matcher(literal);
+            int spaces = matcher.find() ? matcher.end() - matcher.start() : 0;
+            if (spaces > 0) {
+                text.setLiteral(literal.substring(0, literal.length() - spaces));
             }
-            appendNode(sps >= 2 ? new HardLineBreak() : new SoftLineBreak());
+            appendNode(spaces >= 2 ? new HardLineBreak() : new SoftLineBreak());
         } else {
             appendNode(new SoftLineBreak());
         }
-        this.match(INITIAL_SPACE); // gobble leading spaces in next line
+
+        // gobble leading spaces in next line
+        while (pos < subject.length() && subject.charAt(pos) == ' ') {
+            pos++;
+        }
         return true;
     }
 
