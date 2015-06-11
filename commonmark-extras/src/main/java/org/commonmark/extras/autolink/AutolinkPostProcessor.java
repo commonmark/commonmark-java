@@ -1,6 +1,5 @@
 package org.commonmark.extras.autolink;
 
-import org.commonmark.extras.TextFusingVisitor;
 import org.commonmark.node.*;
 import org.commonmark.parser.PostProcessor;
 import org.nibor.autolink.LinkExtractor;
@@ -17,14 +16,12 @@ public class AutolinkPostProcessor implements PostProcessor {
 
     @Override
     public Node process(Node node) {
-        TextFusingVisitor textFusingVisitor = new TextFusingVisitor();
         Visitor autolinkVisitor = new AbstractVisitor() {
             @Override
             public void visit(Text text) {
                 linkify(text);
             }
         };
-        node.accept(textFusingVisitor);
         node.accept(autolinkVisitor);
         return node;
     }
