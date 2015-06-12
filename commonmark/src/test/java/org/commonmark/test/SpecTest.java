@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class SpecTest extends RenderingTestCase {
 
-    private final SpecExample example;
+    protected final SpecExample example;
 
     public SpecTest(SpecExample example) {
         this.example = example;
