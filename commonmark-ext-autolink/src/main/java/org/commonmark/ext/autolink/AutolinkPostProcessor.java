@@ -16,12 +16,7 @@ public class AutolinkPostProcessor implements PostProcessor {
 
     @Override
     public Node process(Node node) {
-        Visitor autolinkVisitor = new AbstractVisitor() {
-            @Override
-            public void visit(Text text) {
-                linkify(text);
-            }
-        };
+        AutolinkVisitor autolinkVisitor = new AutolinkVisitor();
         node.accept(autolinkVisitor);
         return node;
     }
@@ -81,4 +76,21 @@ public class AutolinkPostProcessor implements PostProcessor {
         return node;
     }
 
+    private class AutolinkVisitor extends AbstractVisitor {
+        int inLink = 0;
+
+        @Override
+        public void visit(Link link) {
+            inLink++;
+            super.visit(link);
+            inLink--;
+        }
+
+        @Override
+        public void visit(Text text) {
+            if (inLink == 0) {
+                linkify(text);
+            }
+        }
+    }
 }

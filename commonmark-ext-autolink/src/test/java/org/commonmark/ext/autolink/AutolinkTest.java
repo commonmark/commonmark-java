@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 
-public class AutolinkPostProcessorTest extends RenderingTestCase {
+public class AutolinkTest extends RenderingTestCase {
 
     @Test
     public void oneTextNode() {
@@ -38,6 +38,12 @@ public class AutolinkPostProcessorTest extends RenderingTestCase {
     public void emailWithTldNotLinked() {
         assertRendering("foo@com",
                 "<p>foo@com</p>\n");
+    }
+
+    @Test
+    public void dontLinkTextWithinLinks() {
+        assertRendering("<http://example.com>",
+                "<p><a href=\"http://example.com\">http://example.com</a></p>\n");
     }
 
     @Override
