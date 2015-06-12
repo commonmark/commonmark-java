@@ -1,9 +1,10 @@
 package org.commonmark.ext.gfm.tables;
 
-import org.commonmark.Parser;
-import org.commonmark.html.HtmlRenderer;
+import org.commonmark.Extension;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
+
+import java.util.Collections;
 
 public class TablesTest extends RenderingTestCase {
 
@@ -243,12 +244,8 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Override
-    protected void configureParser(Parser.Builder parserBuilder) {
-        parserBuilder.customBlockParserFactory(new TableBlockParser.Factory());
+    protected Iterable<? extends Extension> getExtensions() {
+        return Collections.singleton(TablesExtension.create());
     }
 
-    @Override
-    protected void configureRenderer(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.customHtmlRenderer(new TableHtmlRenderer());
-    }
 }

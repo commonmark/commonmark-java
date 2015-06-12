@@ -1,8 +1,10 @@
 package org.commonmark.ext.autolink;
 
-import org.commonmark.Parser;
+import org.commonmark.Extension;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
+
+import java.util.Collections;
 
 public class AutolinkPostProcessorTest extends RenderingTestCase {
 
@@ -39,7 +41,8 @@ public class AutolinkPostProcessorTest extends RenderingTestCase {
     }
 
     @Override
-    protected void configureParser(Parser.Builder parserBuilder) {
-        parserBuilder.postProcessor(new AutolinkPostProcessor());
+    protected Iterable<? extends Extension> getExtensions() {
+        return Collections.singleton(AutolinkExtension.create());
     }
+
 }

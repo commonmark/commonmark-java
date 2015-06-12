@@ -1,9 +1,10 @@
 package org.commonmark.ext.gfm.strikethrough;
 
-import org.commonmark.Parser;
-import org.commonmark.html.HtmlRenderer;
+import org.commonmark.Extension;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
+
+import java.util.Collections;
 
 public class StrikethroughTest extends RenderingTestCase {
 
@@ -56,12 +57,7 @@ public class StrikethroughTest extends RenderingTestCase {
     }
 
     @Override
-    protected void configureParser(Parser.Builder parserBuilder) {
-        parserBuilder.customDelimiterProcessor(new StrikethroughDelimiterProcessor());
-    }
-
-    @Override
-    protected void configureRenderer(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.customHtmlRenderer(new StrikethroughHtmlRenderer());
+    protected Iterable<? extends Extension> getExtensions() {
+        return Collections.singleton(StrikethroughExtension.create());
     }
 }

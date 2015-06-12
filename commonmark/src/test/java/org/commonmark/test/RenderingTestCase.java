@@ -1,9 +1,12 @@
 package org.commonmark.test;
 
+import org.commonmark.Extension;
 import org.commonmark.Parser;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.node.Node;
 import org.junit.Before;
+
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
@@ -14,13 +17,19 @@ public abstract class RenderingTestCase {
 
     @Before
     public void setup() {
-        Parser.Builder parserBuilder = Parser.builder();
+        Iterable<? extends Extension> extensions = getExtensions();
+
+        Parser.Builder parserBuilder = Parser.builder().extensions(extensions);
         configureParser(parserBuilder);
         parser = parserBuilder.build();
 
-        HtmlRenderer.Builder rendererBuilder = HtmlRenderer.builder();
+        HtmlRenderer.Builder rendererBuilder = HtmlRenderer.builder().extensions(extensions);
         configureRenderer(rendererBuilder);
         renderer = rendererBuilder.build();
+    }
+
+    protected Iterable<? extends Extension> getExtensions() {
+        return Collections.emptyList();
     }
 
     protected void configureParser(Parser.Builder parserBuilder) {

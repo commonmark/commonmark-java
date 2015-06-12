@@ -41,6 +41,20 @@ public class Parser {
             return new Parser(new DocumentParser(blockParserFactories, delimiterProcessors), postProcessors);
         }
 
+        /**
+         * @param extensions extensions to use on this parser
+         * @return this
+         */
+        public Builder extensions(Iterable<? extends Extension> extensions) {
+            for (Extension extension : extensions) {
+                if (extension instanceof ParserExtension) {
+                    ParserExtension parserExtension = (ParserExtension) extension;
+                    parserExtension.extend(this);
+                }
+            }
+            return this;
+        }
+
         public Builder customBlockParserFactory(BlockParserFactory blockParserFactory) {
             blockParserFactories.add(blockParserFactory);
             return this;
@@ -55,5 +69,12 @@ public class Parser {
             postProcessors.add(postProcessor);
             return this;
         }
+    }
+
+    /**
+     * Extension for parser.
+     */
+    public interface ParserExtension extends Extension {
+        void extend(Builder parserBuilder);
     }
 }

@@ -1,5 +1,6 @@
 package org.commonmark.html;
 
+import org.commonmark.Extension;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.*;
 
@@ -84,6 +85,20 @@ public class HtmlRenderer {
             return this;
         }
 
+        /**
+         * @param extensions extensions to use on this HTML renderer
+         * @return this
+         */
+        public Builder extensions(Iterable<? extends Extension> extensions) {
+            for (Extension extension : extensions) {
+                if (extension instanceof HtmlRendererExtension) {
+                    HtmlRendererExtension htmlRendererExtension = (HtmlRendererExtension) extension;
+                    htmlRendererExtension.extend(this);
+                }
+            }
+            return this;
+        }
+
         public Builder customHtmlRenderer(CustomHtmlRenderer customHtmlRenderer) {
             this.customHtmlRenderers.add(customHtmlRenderer);
             return this;
@@ -92,6 +107,13 @@ public class HtmlRenderer {
         public HtmlRenderer build() {
             return new HtmlRenderer(this);
         }
+    }
+
+    /**
+     * Extension for HTML renderer.
+     */
+    public interface HtmlRendererExtension extends Extension {
+        void extend(Builder rendererBuilder);
     }
 
     private class RendererVisitor extends AbstractVisitor {
