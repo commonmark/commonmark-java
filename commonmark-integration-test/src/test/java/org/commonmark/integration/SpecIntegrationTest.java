@@ -51,7 +51,7 @@ public class SpecIntegrationTest extends SpecTest {
         m.put("<foo\\+@bar.example.com>\n", "<p>&lt;<a href=\"mailto:foo+@bar.example.com\">foo+@bar.example.com</a>&gt;</p>\n");
 
         // Not a spec autolink because of unknown scheme, but autolink extension doesn't limit schemes
-        m.put("<heck://bing.bong>\n", "<p>&lt;<a href=\"heck://bing.bong&gt;\">heck://bing.bong&gt;</a></p>\n");
+        m.put("<heck://bing.bong>\n", "<p>&lt;<a href=\"heck://bing.bong%3E\">heck://bing.bong&gt;</a></p>\n");
 
         // Not a spec autolink because of spaces, but autolink extension doesn't limit schemes
         m.put("< http://foo.bar >\n", "<p>&lt; <a href=\"http://foo.bar\">http://foo.bar</a> &gt;</p>\n");

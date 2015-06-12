@@ -13,6 +13,7 @@ public class HtmlRenderer {
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean sourcepos;
+    private final boolean percentEncodeUrls;
     private final CodeBlockAttributeProvider codeBlockAttributeProvider;
     private final List<CustomHtmlRenderer> customHtmlRenderers;
 
@@ -20,6 +21,7 @@ public class HtmlRenderer {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
         this.sourcepos = builder.sourcepos;
+        this.percentEncodeUrls = builder.percentEncodeUrls;
         this.codeBlockAttributeProvider = builder.codeBlockAttributeProvider;
         this.customHtmlRenderers = builder.customHtmlRenderers;
     }
@@ -43,6 +45,14 @@ public class HtmlRenderer {
         return Escaping.escapeHtml(input, preserveEntities);
     }
 
+    private String optionallyPercentEncodeUrl(String url) {
+        if (percentEncodeUrls) {
+            return Escaping.percentEncodeUrl(url);
+        } else {
+            return url;
+        }
+    }
+
     // default options:
     // softbreak: '\n', // by default, soft breaks are rendered as newlines in
     // HTML
@@ -55,6 +65,7 @@ public class HtmlRenderer {
         private boolean escapeHtml = false;
         private CodeBlockAttributeProvider codeBlockAttributeProvider = new CodeBlockAttributeProvider();
         private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
+        private boolean percentEncodeUrls = false;
 
         public Builder softbreak(String softbreak) {
             this.softbreak = softbreak;
@@ -72,6 +83,22 @@ public class HtmlRenderer {
          */
         public Builder escapeHtml(boolean escapeHtml) {
             this.escapeHtml = escapeHtml;
+            return this;
+        }
+
+        /**
+         * Whether URLs of link or images should be percent-encoded. If enabled, the following is done:
+         * <ul>
+         *     <li>Existing percent-encoded parts are preserved (e.g. "%20" is kept as "%20")</li>
+         *     <li>Reserved characters such as "/" are preserved, except for "[" and "]" (see encodeURI in JS)</li>
+         *     <li>Unreserved characters such as "a" are preserved</li>
+         *     <li>Other characters such umlauts are percent-encoded</li>
+         * </ul>
+         * @param percentEncodeUrls true to percent-encode, false for leaving as-is; default is false
+         * @return {@code this}
+         */
+        public Builder percentEncodeUrls(boolean percentEncodeUrls) {
+            this.percentEncodeUrls = percentEncodeUrls;
             return this;
         }
 
@@ -209,7 +236,8 @@ public class HtmlRenderer {
         @Override
         public void visit(Link link) {
             Map<String, String> attrs = getAttrs(link);
-            attrs.put("href", escape(link.getDestination(), true));
+            String url = optionallyPercentEncodeUrl(link.getDestination());
+            attrs.put("href", escape(url, true));
             if (link.getTitle() != null) {
                 attrs.put("title", escape(link.getTitle(), true));
             }
@@ -239,7 +267,8 @@ public class HtmlRenderer {
         @Override
         public void visit(Image image) {
             if (html.isTagAllowed()) {
-                html.raw("<img src=\"" + escape(image.getDestination(), true) +
+                String url = optionallyPercentEncodeUrl(image.getDestination());
+                html.raw("<img src=\"" + escape(url, true) +
                         "\" alt=\"");
             }
             html.disableTags();

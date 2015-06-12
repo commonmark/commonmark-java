@@ -1,8 +1,8 @@
 package org.commonmark.test;
 
+import org.commonmark.Parser;
 import org.commonmark.html.CodeBlockAttributeProvider;
 import org.commonmark.html.HtmlRenderer;
-import org.commonmark.Parser;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Node;
 import org.junit.Test;
@@ -46,6 +46,38 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void percendEncodeUrlDisabled() {
+        assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo&amp;bar)")));
+        assertEquals("<p><a href=\"ä\">a</a></p>\n", defaultRenderer().render(parse("[a](ä)")));
+        assertEquals("<p><a href=\"foo%20bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo%20bar)")));
+    }
+
+    @Test
+    public void percentEncodeUrl() {
+        // Entities are escaped anyway
+        assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo&amp;bar)")));
+        // Existing encoding is preserved
+        assertEquals("<p><a href=\"foo%20bar\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%20bar)")));
+        assertEquals("<p><a href=\"foo%61\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%61)")));
+        // Invalid encoding is escaped
+        assertEquals("<p><a href=\"foo%25\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%)")));
+        assertEquals("<p><a href=\"foo%25a\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%a)")));
+        assertEquals("<p><a href=\"foo%25a_\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%a_)")));
+        assertEquals("<p><a href=\"foo%25xx\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%xx)")));
+        // Reserved characters are preserved, except for '[' and ']'
+        assertEquals("<p><a href=\"!*'();:@&amp;=+$,/?#%5B%5D\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](!*'();:@&=+$,/?#[])")));
+        // Unreserved characters are preserved
+        assertEquals("<p><a href=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~\">a</a></p>\n",
+                percentEncodingRenderer().render(parse("[a](ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~)")));
+        // Other characters are percent-encoded (LATIN SMALL LETTER A WITH DIAERESIS)
+        assertEquals("<p><a href=\"%C3%A4\">a</a></p>\n",
+                percentEncodingRenderer().render(parse("[a](ä)")));
+        // Other characters are percent-encoded (MUSICAL SYMBOL G CLEF, surrogate pair in UTF-16)
+        assertEquals("<p><a href=\"%F0%9D%84%9E\">a</a></p>\n",
+                percentEncodingRenderer().render(parse("[a](\uD834\uDD1E)")));
+    }
+
+    @Test
     public void codeBlockAttributeProvider() {
         CodeBlockAttributeProvider custom = new CodeBlockAttributeProvider() {
             @Override
@@ -74,6 +106,10 @@ public class HtmlRendererTest {
 
     private static HtmlRenderer htmlEscapingRenderer() {
         return HtmlRenderer.builder().escapeHtml(true).build();
+    }
+
+    private static HtmlRenderer percentEncodingRenderer() {
+        return HtmlRenderer.builder().percentEncodeUrls(true).build();
     }
 
     private static Node parse(String source) {

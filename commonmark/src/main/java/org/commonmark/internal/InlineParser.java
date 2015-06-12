@@ -642,12 +642,12 @@ public class InlineParser {
             if (res.length() == 2) {
                 return "";
             } else {
-                return Escaping.normalizeURI(Escaping.unescapeString(res.substring(1, res.length() - 1)));
+                return Escaping.unescapeString(res.substring(1, res.length() - 1));
             }
         } else {
             res = this.match(LINK_DESTINATION);
             if (res != null) {
-                return Escaping.normalizeURI(Escaping.unescapeString(res));
+                return Escaping.unescapeString(res);
             } else {
                 return null;
             }
@@ -682,13 +682,13 @@ public class InlineParser {
         String m;
         if ((m = this.match(EMAIL_AUTOLINK)) != null) {
             String dest = m.substring(1, m.length() - 1);
-            Link node = new Link(Escaping.normalizeURI("mailto:" + dest), null);
+            Link node = new Link("mailto:" + dest, null);
             node.appendChild(new Text(dest));
             appendNode(node);
             return true;
         } else if ((m = this.match(AUTOLINK)) != null) {
             String dest = m.substring(1, m.length() - 1);
-            Link node = new Link(Escaping.normalizeURI(dest), null);
+            Link node = new Link(dest, null);
             node.appendChild(new Text(dest));
             appendNode(node);
             return true;

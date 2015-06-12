@@ -23,9 +23,9 @@ public class Escaping {
     private static final Pattern XML_SPECIAL_OR_ENTITY =
             Pattern.compile(ENTITY + '|' + XML_SPECIAL, Pattern.CASE_INSENSITIVE);
 
-    // From MDN encodeURI documentation
+    // From RFC 3986 (see "reserved", "unreserved") except don't escape '[' or ']' to be compatible with JS encodeURI
     private static final Pattern ESCAPE_IN_URI =
-            Pattern.compile("[^%;,/?:@&=+$#\\-_.!~*'()a-zA-Z0-9]");
+            Pattern.compile("(%[a-fA-F0-9]{0,2}|[^:/?#@!$&'()*+,;=a-zA-Z0-9\\-._~])");
 
     private static final char[] HEX_DIGITS =
             new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -68,11 +68,22 @@ public class Escaping {
     private static final Replacer URI_REPLACER = new Replacer() {
         @Override
         public void replace(String input, StringBuilder sb) {
-            byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
-            for (byte b : bytes) {
-                sb.append('%');
-                sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
-                sb.append(HEX_DIGITS[b & 0xF]);
+            if (input.startsWith("%")) {
+                if (input.length() == 3) {
+                    // Already percent-encoded, preserve
+                    sb.append(input);
+                } else {
+                    // %25 is the percent-encoding for %
+                    sb.append("%25");
+                    sb.append(input, 1, input.length());
+                }
+            } else {
+                byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+                for (byte b : bytes) {
+                    sb.append('%');
+                    sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
+                    sb.append(HEX_DIGITS[b & 0xF]);
+                }
             }
         }
     };
@@ -93,8 +104,8 @@ public class Escaping {
         }
     }
 
-    public static String normalizeURI(String uri) {
-        return replaceAll(ESCAPE_IN_URI, uri, URI_REPLACER);
+    public static String percentEncodeUrl(String s) {
+        return replaceAll(ESCAPE_IN_URI, s, URI_REPLACER);
     }
 
     public static String normalizeReference(String input) {

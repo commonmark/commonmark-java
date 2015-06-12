@@ -1,5 +1,6 @@
 package org.commonmark.test;
 
+import org.commonmark.html.HtmlRenderer;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
@@ -68,4 +69,9 @@ public class SpecTest extends RenderingTestCase {
         });
     }
 
+    @Override
+    protected void configureRenderer(HtmlRenderer.Builder rendererBuilder) {
+        // The spec says URL-escaping is optional, but the examples assume that it's enabled.
+        rendererBuilder.percentEncodeUrls(true);
+    }
 }
