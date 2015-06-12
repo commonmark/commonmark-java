@@ -1,15 +1,33 @@
 package org.commonmark.test;
 
-import org.commonmark.html.HtmlRenderer;
 import org.commonmark.Parser;
+import org.commonmark.html.HtmlRenderer;
 import org.commonmark.node.Node;
+import org.junit.Before;
 
 import static org.junit.Assert.assertEquals;
 
 public abstract class RenderingTestCase {
 
-    protected final Parser parser = Parser.builder().build();
-    protected final HtmlRenderer renderer = HtmlRenderer.builder().build();
+    protected Parser parser;
+    protected HtmlRenderer renderer;
+
+    @Before
+    public void setup() {
+        Parser.Builder parserBuilder = Parser.builder();
+        configureParser(parserBuilder);
+        parser = parserBuilder.build();
+
+        HtmlRenderer.Builder rendererBuilder = HtmlRenderer.builder();
+        configureRenderer(rendererBuilder);
+        renderer = rendererBuilder.build();
+    }
+
+    protected void configureParser(Parser.Builder parserBuilder) {
+    }
+
+    protected void configureRenderer(HtmlRenderer.Builder rendererBuilder) {
+    }
 
     protected void assertRendering(String source, String expectedHtml) {
         Node node = parser.parse(source);

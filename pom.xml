@@ -12,6 +12,9 @@
     <modules>
         <module>commonmark</module>
         <module>commonmark-extras</module>
+        <module>commonmark-ext-autolink</module>
+        <module>commonmark-ext-gfm-strikethrough</module>
+        <module>commonmark-ext-gfm-tables</module>
     </modules>
 
     <properties>

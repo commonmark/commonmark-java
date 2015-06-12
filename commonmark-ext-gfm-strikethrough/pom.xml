@@ -8,8 +8,8 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>commonmark-extras</artifactId>
-    <description>Extra functionality to be plugged into commonmark-java</description>
+    <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
+    <description>commonmark-java extension for GFM strikethrough using ~~~ (GitHub Flavored Markdown)</description>
 
     <dependencies>
         <dependency>
@@ -24,13 +24,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
+            <groupId>com.atlassian.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
