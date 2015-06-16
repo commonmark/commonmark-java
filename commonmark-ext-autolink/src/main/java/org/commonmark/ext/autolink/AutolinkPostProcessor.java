@@ -29,9 +29,6 @@ public class AutolinkPostProcessor implements PostProcessor {
         int last = 0;
         for (LinkSpan link : links) {
             String linkText = literal.substring(link.getBeginIndex(), link.getEndIndex());
-            if (!shouldLink(link, linkText)) {
-                continue;
-            }
             if (link.getBeginIndex() != last) {
                 lastNode = insertNode(new Text(literal.substring(last, link.getBeginIndex())), lastNode);
             }
@@ -46,21 +43,6 @@ public class AutolinkPostProcessor implements PostProcessor {
             insertNode(new Text(literal.substring(last)), lastNode);
         }
         text.unlink();
-    }
-
-    private static boolean shouldLink(LinkSpan linkSpan, String linkText) {
-        if (linkSpan.getType() == LinkType.EMAIL) {
-            int at = linkText.lastIndexOf('@');
-            if (at == -1) {
-                // Should never happen
-                return false;
-            }
-            // We don't want "foo@com" to be linked, even though it's technically valid.
-            int dot = linkText.indexOf('.', at + 1);
-            return dot != -1;
-        } else {
-            return true;
-        }
     }
 
     private static String getDestination(LinkSpan linkSpan, String linkText) {
