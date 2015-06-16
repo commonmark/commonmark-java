@@ -120,7 +120,7 @@ public class ListBlockParser extends AbstractBlockParser {
             List<BlockParser> blockParsers = new ArrayList<>(2);
 
             // add the list if needed
-            BlockParser active = state.getActiveBlockParser();
+            BlockParser active = state.getMatchedBlockParser();
             if (!(active instanceof ListBlockParser) ||
                     !(listsMatch((ListBlock) active.getBlock(), listData.listBlock))) {
 

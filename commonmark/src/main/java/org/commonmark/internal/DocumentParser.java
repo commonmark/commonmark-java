@@ -9,6 +9,7 @@ import java.util.*;
 
 public class DocumentParser {
 
+    private static final int INDENT = 4;
 
     private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
             new IndentedCodeBlockParser.Factory(),
@@ -121,39 +122,46 @@ public class DocumentParser {
 
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
-        boolean blockStartsDone = false;
+        boolean blockStartsDone = !(blockParser.getBlock() instanceof Paragraph) && blockParser.acceptsLine();
         while (!blockStartsDone) {
+            // TODO: This is basically the same as above. Consider turning them into fields.
+            // Maybe that would also allow making DocumentParser implement ParserState, so we don't need a separate
+            // object while keeping the API nice.
             int match = Parsing.findNonSpace(ln, offset);
             if (match == -1) {
                 nextNonSpace = ln.length();
                 blank = true;
-                break;
+//                break;
+            } else {
+                nextNonSpace = match;
+                blank = false;
             }
-            nextNonSpace = match;
-            blank = false;
             int indent = nextNonSpace - offset;
             boolean codeIndent = indent >= IndentedCodeBlockParser.INDENT;
 
-            if (!blockParser.shouldTryBlockStarts()) {
-                break;
-            }
+//            if (!blockParser.shouldTryBlockStarts()) {
+//                break;
+//            }
 
-            if (codeIndent && getActiveBlockParser().getBlock() instanceof Paragraph) {
-                // An indented code block cannot interrupt a paragraph.
+//            if (codeIndent && getActiveBlockParser().getBlock() instanceof Paragraph) {
+//                // An indented code block cannot interrupt a paragraph.
+//                offset = nextNonSpace;
+//                break;
+//            }
+
+            // this is a little performance optimization:
+            if (!codeIndent && Parsing.isLetter(ln, nextNonSpace)) {
                 offset = nextNonSpace;
                 break;
             }
 
-            // this is a little performance optimization:
-            if (!codeIndent && Parsing.isLetter(ln, nextNonSpace)) {
-                break;
-            }
-
             blockStartsDone = true;
+            boolean noStarts = true;
             for (BlockParserFactory blockParserFactory : blockParserFactories) {
-                ParserStateImpl state = new ParserStateImpl(ln, offset, nextNonSpace, blockParser, lineNumber);
+                ParserStateImpl state = new ParserStateImpl(ln, offset, nextNonSpace, blockParser, getActiveBlockParser(), lineNumber);
                 BlockParserFactory.StartResult result = blockParserFactory.tryStart(state);
                 if (result instanceof BlockParserFactory.BlockStart) {
+                    noStarts = false;
                     BlockParserFactory.BlockStart blockStart = (BlockParserFactory.BlockStart) result;
                     allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
                     offset = blockStart.getNewOffset();
@@ -171,6 +179,11 @@ public class DocumentParser {
 
                     break;
                 }
+            }
+            // TODO: ugh...
+            if (noStarts) {
+                offset = nextNonSpace;
+                break;
             }
         }
 
@@ -389,11 +402,13 @@ public class DocumentParser {
         private final int nextNonSpace;
         private final BlockParser activeBlockParser;
         private final int lineNumber;
+        private final BlockParser matchedBlockParser;
 
-        public ParserStateImpl(CharSequence line, int offset, int nextNonSpace, BlockParser activeBlockParser, int lineNumber) {
+        public ParserStateImpl(CharSequence line, int offset, int nextNonSpace, BlockParser matchedBlockParser, BlockParser activeBlockParser, int lineNumber) {
             this.line = line;
             this.offset = offset;
             this.nextNonSpace = nextNonSpace;
+            this.matchedBlockParser = matchedBlockParser;
             this.activeBlockParser = activeBlockParser;
             this.lineNumber = lineNumber;
         }
@@ -414,13 +429,23 @@ public class DocumentParser {
         }
 
         @Override
+        public boolean isIndented() {
+            return (nextNonSpace - offset) >= INDENT;
+        }
+
+        @Override
+        public BlockParser getMatchedBlockParser() {
+            return matchedBlockParser;
+        }
+
+        @Override
         public BlockParser getActiveBlockParser() {
             return activeBlockParser;
         }
 
         @Override
         public CharSequence getParagraphStartLine() {
-            if (activeBlockParser instanceof ParagraphParser) {
+            if (matchedBlockParser instanceof ParagraphParser) {
                 ParagraphParser paragraphParser = (ParagraphParser) activeBlockParser;
                 if (paragraphParser.hasSingleLine()) {
                     return paragraphParser.getContentString();

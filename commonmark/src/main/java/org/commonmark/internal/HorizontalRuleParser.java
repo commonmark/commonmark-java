@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 public class HorizontalRuleParser extends AbstractBlockParser {
 
-
     private static Pattern H_RULE = Pattern.compile("^(?:(?:\\* *){3,}|(?:_ *){3,}|(?:- *){3,}) *$");
 
     private final HorizontalRule block = new HorizontalRule();
@@ -39,7 +38,7 @@ public class HorizontalRuleParser extends AbstractBlockParser {
         public StartResult tryStart(ParserState state) {
             int nextNonSpace = state.getNextNonSpace();
             CharSequence line = state.getLine();
-            if (H_RULE.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
+            if (!state.isIndented() && H_RULE.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
                 return start(new HorizontalRuleParser(pos(state, nextNonSpace)), line.length(), false);
             } else {
                 return noStart();

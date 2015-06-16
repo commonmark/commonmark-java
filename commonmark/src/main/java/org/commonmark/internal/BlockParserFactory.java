@@ -11,7 +11,11 @@ public interface BlockParserFactory {
 
         int getNextNonSpace();
 
+        boolean isIndented();
+
         BlockParser getActiveBlockParser();
+
+        BlockParser getMatchedBlockParser();
 
         /**
          * @return the first line of the paragraph if the active block is a paragraph and we're on the second line,

@@ -64,7 +64,8 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
             int offset = state.getOffset();
             int nextNonSpace = state.getNextNonSpace();
             int indent = nextNonSpace - offset;
-            if (indent >= INDENT) {
+            boolean blank = nextNonSpace == state.getLine().length();
+            if (indent >= INDENT && !(state.getActiveBlockParser().getBlock() instanceof Paragraph) && !blank) {
                 int newOffset = offset + INDENT;
                 return start(new IndentedCodeBlockParser(pos(state, nextNonSpace)), newOffset, false);
             } else {

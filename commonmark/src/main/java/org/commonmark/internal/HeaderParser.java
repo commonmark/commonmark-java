@@ -42,6 +42,9 @@ public class HeaderParser extends AbstractBlockParser {
 
         @Override
         public StartResult tryStart(ParserState state) {
+            if (state.isIndented()) {
+                return noStart();
+            }
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpace();
             CharSequence paragraphStartLine = state.getParagraphStartLine();

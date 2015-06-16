@@ -382,15 +382,14 @@ public class InlineParser {
      */
     private boolean parseBackslash() {
         String subj = this.subject;
-        int next = this.pos + 1;
-        if (next < subj.length() && subj.charAt(next) == '\n') {
-            this.pos = this.pos + 2;
+        pos++;
+        if (peek() == '\n') {
             appendNode(new HardLineBreak());
-        } else if (next < subj.length() && ESCAPABLE.matcher(subj.substring(next, next + 1)).matches()) {
-            this.pos = this.pos + 2;
-            appendText(subj.substring(next, next + 1));
+            pos++;
+        } else if (pos < subj.length() && ESCAPABLE.matcher(subj.substring(pos, pos + 1)).matches()) {
+            appendText(subj.substring(pos, pos + 1));
+            pos++;
         } else {
-            this.pos++;
             appendText("\\");
         }
         return true;
