@@ -72,7 +72,7 @@ public class InlineParser {
     private static final Pattern LINK_LABEL = Pattern
             .compile("^\\[(?:[^\\\\\\[\\]]|\\\\[\\[\\]]){0,1000}\\]");
 
-    private static final Pattern ESCAPABLE = Pattern.compile(Escaping.ESCAPABLE);
+    private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
     private static final Pattern ENTITY_HERE = Pattern.compile('^' + ENTITY, Pattern.CASE_INSENSITIVE);
 
@@ -382,25 +382,18 @@ public class InlineParser {
      */
     private boolean parseBackslash() {
         String subj = this.subject;
-        int pos = this.pos;
-        Node node;
-        if (subj.charAt(pos) == C_BACKSLASH) {
-            int next = pos + 1;
-            if (next < subj.length() && subj.charAt(next) == '\n') {
-                this.pos = this.pos + 2;
-                node = new HardLineBreak();
-                appendNode(node);
-            } else if (next < subj.length() && ESCAPABLE.matcher(subj.substring(next, next + 1)).matches()) {
-                this.pos = this.pos + 2;
-                appendText(subj.substring(next, next + 1));
-            } else {
-                this.pos++;
-                appendText("\\");
-            }
-            return true;
+        int next = this.pos + 1;
+        if (next < subj.length() && subj.charAt(next) == '\n') {
+            this.pos = this.pos + 2;
+            appendNode(new HardLineBreak());
+        } else if (next < subj.length() && ESCAPABLE.matcher(subj.substring(next, next + 1)).matches()) {
+            this.pos = this.pos + 2;
+            appendText(subj.substring(next, next + 1));
         } else {
-            return false;
+            this.pos++;
+            appendText("\\");
         }
+        return true;
     }
 
     /**
