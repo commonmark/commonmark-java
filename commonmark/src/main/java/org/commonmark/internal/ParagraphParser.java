@@ -36,24 +36,29 @@ public class ParagraphParser extends AbstractBlockParser {
 
     @Override
     public void finalizeBlock(InlineParser inlineParser) {
-        int pos;
         String contentString = content.getString();
+        boolean hasReferenceDefs = false;
 
+        int pos;
         // try parsing the beginning as link reference definitions:
-        while (contentString.charAt(0) == '[' &&
+        while (contentString.length() > 3 && contentString.charAt(0) == '[' &&
                 (pos = inlineParser.parseReference(contentString)) != 0) {
             contentString = contentString.substring(pos);
-            if (Parsing.isBlank(contentString)) {
-                block.unlink();
-                break;
-            }
+            hasReferenceDefs = true;
         }
-        content = new BlockContent(contentString);
+        if (hasReferenceDefs && Parsing.isBlank(contentString)) {
+            block.unlink();
+            content = null;
+        } else {
+            content = new BlockContent(contentString);
+        }
     }
 
     @Override
     public void processInlines(InlineParser inlineParser) {
-        inlineParser.parse(block, content.getString());
+        if (content != null) {
+            inlineParser.parse(block, content.getString());
+        }
     }
 
     @Override
