@@ -179,8 +179,7 @@ public class DocumentParser {
 
         // First check for a lazy paragraph continuation:
         if (!allClosed && !blank &&
-                getActiveBlockParser() instanceof ParagraphParser &&
-                ((ParagraphParser) getActiveBlockParser()).hasLines()) {
+                getActiveBlockParser() instanceof ParagraphParser) {
             // lazy paragraph continuation
             addLine(ln, offset);
 

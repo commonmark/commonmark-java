@@ -26,10 +26,6 @@ class BlockContent {
         return lineCount == 1;
     }
 
-    public boolean hasLines() {
-        return lineCount > 0;
-    }
-
     public String getString() {
         return sb.toString();
     }
