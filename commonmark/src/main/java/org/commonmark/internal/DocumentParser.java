@@ -132,19 +132,20 @@ public class DocumentParser {
             nextNonSpace = match;
             blank = false;
             int indent = nextNonSpace - offset;
+            boolean codeIndent = indent >= IndentedCodeBlockParser.INDENT;
 
             if (!blockParser.shouldTryBlockStarts()) {
                 break;
             }
 
-            if (indent >= IndentedCodeBlockParser.INDENT && getActiveBlockParser().getBlock() instanceof Paragraph) {
+            if (codeIndent && getActiveBlockParser().getBlock() instanceof Paragraph) {
                 // An indented code block cannot interrupt a paragraph.
                 offset = nextNonSpace;
                 break;
             }
 
             // this is a little performance optimization:
-            if (indent < IndentedCodeBlockParser.INDENT && Parsing.isLetter(ln, nextNonSpace)) {
+            if (!codeIndent && Parsing.isLetter(ln, nextNonSpace)) {
                 break;
             }
 
