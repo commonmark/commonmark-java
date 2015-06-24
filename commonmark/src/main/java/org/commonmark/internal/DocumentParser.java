@@ -7,9 +7,7 @@ import org.commonmark.node.*;
 
 import java.util.*;
 
-public class DocumentParser {
-
-    private static final int INDENT = 4;
+public class DocumentParser implements ParserState {
 
     private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
             new IndentedCodeBlockParser.Factory(),
@@ -20,10 +18,14 @@ public class DocumentParser {
             new HorizontalRuleParser.Factory(),
             new ListBlockParser.Factory());
 
+    private CharSequence line;
     /**
      * 1-based line number
      */
     private int lineNumber = 0;
+    private int index = 0;
+    private int nextNonSpace = 0;
+
     private int lastLineLength = 0;
 
     private final InlineParser inlineParser;
@@ -67,18 +69,54 @@ public class DocumentParser {
         return documentBlockParser.getBlock();
     }
 
+    @Override
+    public CharSequence getLine() {
+        return line;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
+
+    @Override
+    public int getNextNonSpaceIndex() {
+        return nextNonSpace;
+    }
+
+    @Override
+    public boolean isBlank() {
+        return nextNonSpace == line.length();
+    }
+
+    @Override
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    @Override
+    public BlockParser getActiveBlockParser() {
+        return activeBlockParsers.get(activeBlockParsers.size() - 1);
+    }
+
+    private void findNextNonSpace() {
+        int match = Parsing.findNonSpace(line, index);
+        if (match == -1) {
+            nextNonSpace = line.length();
+        } else {
+            nextNonSpace = match;
+        }
+    }
+
     /**
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
      */
     private void incorporateLine(CharSequence ln) {
-        int offset = 0;
-        int nextNonSpace = 0;
-        boolean blank = false;
-
-        this.lineNumber += 1;
-
-        ln = Parsing.prepareLine(ln);
+        line = Parsing.prepareLine(ln);
+        index = 0;
+        nextNonSpace = 0;
+        lineNumber += 1;
 
         // For each containing block, try to parse the associated line start.
         // Bail out on failure: container will point to the last matching block.
@@ -86,23 +124,16 @@ public class DocumentParser {
         // The document will always match, can be skipped
         int matches = 1;
         for (BlockParser blockParser : activeBlockParsers.subList(1, activeBlockParsers.size())) {
-            int match = Parsing.findNonSpace(ln, offset);
-            if (match == -1) {
-                nextNonSpace = ln.length();
-                blank = true;
-            } else {
-                nextNonSpace = match;
-                blank = false;
-            }
+            findNextNonSpace();
 
-            BlockParser.ContinueResult result = blockParser.continueBlock(ln, nextNonSpace, offset, blank);
+            BlockParser.ContinueResult result = blockParser.tryContinue(this);
             if (result instanceof BlockParser.BlockMatched) {
                 BlockParser.BlockMatched blockMatched = (BlockParser.BlockMatched) result;
-                offset = blockMatched.getNewOffset();
+                index = blockMatched.getNewIndex();
                 matches++;
             } else if (result instanceof BlockParser.BlockMatchedAndCanBeFinalized) {
                 finalize(blockParser, this.lineNumber);
-                lastLineLength = ln.length() - 1; // -1 for newline
+                lastLineLength = line.length() - 1; // -1 for newline
                 return;
             } else if (result instanceof BlockParser.BlockDidNotMatch) {
                 break;
@@ -115,7 +146,7 @@ public class DocumentParser {
         boolean allClosed = unmatchedBlockParsers.isEmpty();
 
         // Check to see if we've hit 2nd blank line; if so break out of list:
-        if (blank && isLastLineBlank(blockParser.getBlock())) {
+        if (isBlank() && isLastLineBlank(blockParser.getBlock())) {
             List<BlockParser> matchedBlockParsers = new ArrayList<>(activeBlockParsers.subList(0, matches));
             breakOutOfLists(matchedBlockParsers);
         }
@@ -124,47 +155,26 @@ public class DocumentParser {
         // adding children to the last matched container:
         boolean blockStartsDone = !(blockParser.getBlock() instanceof Paragraph) && blockParser.acceptsLine();
         while (!blockStartsDone) {
-            // TODO: This is basically the same as above. Consider turning them into fields.
-            // Maybe that would also allow making DocumentParser implement ParserState, so we don't need a separate
-            // object while keeping the API nice.
-            int match = Parsing.findNonSpace(ln, offset);
-            if (match == -1) {
-                nextNonSpace = ln.length();
-                blank = true;
-//                break;
-            } else {
-                nextNonSpace = match;
-                blank = false;
-            }
-            int indent = nextNonSpace - offset;
+            findNextNonSpace();
+            int indent = getNextNonSpaceIndex() - getIndex();
             boolean codeIndent = indent >= IndentedCodeBlockParser.INDENT;
 
-//            if (!blockParser.shouldTryBlockStarts()) {
-//                break;
-//            }
-
-//            if (codeIndent && getActiveBlockParser().getBlock() instanceof Paragraph) {
-//                // An indented code block cannot interrupt a paragraph.
-//                offset = nextNonSpace;
-//                break;
-//            }
-
             // this is a little performance optimization:
-            if (!codeIndent && Parsing.isLetter(ln, nextNonSpace)) {
-                offset = nextNonSpace;
+            if (!codeIndent && Parsing.isLetter(line, nextNonSpace)) {
+                index = nextNonSpace;
                 break;
             }
 
             blockStartsDone = true;
             boolean noStarts = true;
             for (BlockParserFactory blockParserFactory : blockParserFactories) {
-                ParserStateImpl state = new ParserStateImpl(ln, offset, nextNonSpace, blockParser, getActiveBlockParser(), lineNumber);
-                BlockParserFactory.StartResult result = blockParserFactory.tryStart(state);
+                MatchedBlockParser matchedBlockParser = new MatchedBlockParserImpl(blockParser);
+                BlockParserFactory.StartResult result = blockParserFactory.tryStart(this, matchedBlockParser);
                 if (result instanceof BlockParserFactory.BlockStart) {
                     noStarts = false;
                     BlockParserFactory.BlockStart blockStart = (BlockParserFactory.BlockStart) result;
                     allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
-                    offset = blockStart.getNewOffset();
+                    index = blockStart.getNewOffset();
 
                     if (blockStart.replaceActiveBlockParser()) {
                         removeActiveBlockParser();
@@ -182,7 +192,7 @@ public class DocumentParser {
             }
             // TODO: ugh...
             if (noStarts) {
-                offset = nextNonSpace;
+                index = nextNonSpace;
                 break;
             }
         }
@@ -191,10 +201,10 @@ public class DocumentParser {
         // appropriate container.
 
         // First check for a lazy paragraph continuation:
-        if (!allClosed && !blank &&
+        if (!allClosed && !isBlank() &&
                 getActiveBlockParser() instanceof ParagraphParser) {
             // lazy paragraph continuation
-            addLine(ln, offset);
+            addLine(index);
 
         } else { // not a lazy continuation
 
@@ -202,14 +212,15 @@ public class DocumentParser {
             if (!allClosed) {
                 finalizeBlocks(unmatchedBlockParsers);
             }
-            propagateLastLineBlank(blockParser, blank);
+            propagateLastLineBlank(blockParser, isBlank());
 
             if (blockParser.acceptsLine()) {
-                addLine(ln, offset);
-            } else if (offset < ln.length() && !blank) {
+                addLine(index);
+                // TODO: !isBlank enough?
+            } else if (index < ln.length() && !isBlank()) {
                 // create paragraph container for line
                 addChild(new ParagraphParser(new SourcePosition(this.lineNumber, nextNonSpace + 1)));
-                addLine(ln, nextNonSpace);
+                addLine(nextNonSpace);
             }
         }
         this.lastLineLength = ln.length() - 1; // -1 for newline
@@ -306,8 +317,8 @@ public class DocumentParser {
      * Add a line to the block at the tip. We assume the tip can accept lines -- that check should be done before
      * calling this.
      */
-    private void addLine(CharSequence ln, int offset) {
-        getActiveBlockParser().addLine(ln.subSequence(offset, ln.length()));
+    private void addLine(int index) {
+        getActiveBlockParser().addLine(line.subSequence(index, line.length()));
     }
 
     /**
@@ -328,10 +339,6 @@ public class DocumentParser {
     private void activateBlockParser(BlockParser blockParser) {
         activeBlockParsers.add(blockParser);
         allBlockParsers.add(blockParser);
-    }
-
-    private BlockParser getActiveBlockParser() {
-        return activeBlockParsers.get(activeBlockParsers.size() - 1);
     }
 
     private void deactivateBlockParser() {
@@ -395,42 +402,12 @@ public class DocumentParser {
         }
     }
 
-    private static class ParserStateImpl implements BlockParserFactory.ParserState {
+    private static class MatchedBlockParserImpl implements MatchedBlockParser {
 
-        private final CharSequence line;
-        private final int offset;
-        private final int nextNonSpace;
-        private final BlockParser activeBlockParser;
-        private final int lineNumber;
         private final BlockParser matchedBlockParser;
 
-        public ParserStateImpl(CharSequence line, int offset, int nextNonSpace, BlockParser matchedBlockParser, BlockParser activeBlockParser, int lineNumber) {
-            this.line = line;
-            this.offset = offset;
-            this.nextNonSpace = nextNonSpace;
+        public MatchedBlockParserImpl(BlockParser matchedBlockParser) {
             this.matchedBlockParser = matchedBlockParser;
-            this.activeBlockParser = activeBlockParser;
-            this.lineNumber = lineNumber;
-        }
-
-        @Override
-        public CharSequence getLine() {
-            return line;
-        }
-
-        @Override
-        public int getOffset() {
-            return offset;
-        }
-
-        @Override
-        public int getNextNonSpace() {
-            return nextNonSpace;
-        }
-
-        @Override
-        public boolean isIndented() {
-            return (nextNonSpace - offset) >= INDENT;
         }
 
         @Override
@@ -439,24 +416,14 @@ public class DocumentParser {
         }
 
         @Override
-        public BlockParser getActiveBlockParser() {
-            return activeBlockParser;
-        }
-
-        @Override
         public CharSequence getParagraphStartLine() {
             if (matchedBlockParser instanceof ParagraphParser) {
-                ParagraphParser paragraphParser = (ParagraphParser) activeBlockParser;
+                ParagraphParser paragraphParser = (ParagraphParser) matchedBlockParser;
                 if (paragraphParser.hasSingleLine()) {
                     return paragraphParser.getContentString();
                 }
             }
             return null;
-        }
-
-        @Override
-        public int getLineNumber() {
-            return lineNumber;
         }
     }
 }

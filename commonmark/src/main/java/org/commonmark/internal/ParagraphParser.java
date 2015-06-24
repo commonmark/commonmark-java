@@ -16,9 +16,9 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
-        if (!blank) {
-            return blockMatched(offset);
+    public ContinueResult tryContinue(ParserState state) {
+        if (!state.isBlank()) {
+            return blockMatched(state.getIndex());
         } else {
             return blockDidNotMatch();
         }

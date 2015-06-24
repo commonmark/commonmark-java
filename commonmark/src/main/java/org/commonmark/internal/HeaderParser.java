@@ -23,7 +23,7 @@ public class HeaderParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
+    public ContinueResult tryContinue(ParserState parserState) {
         // a header can never container > 1 line, so fail to match
         return blockDidNotMatch();
     }
@@ -41,13 +41,13 @@ public class HeaderParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state) {
-            if (state.isIndented()) {
+        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+            if (state.getNextNonSpaceIndex() - state.getIndex() >= 4) {
                 return noStart();
             }
             CharSequence line = state.getLine();
-            int nextNonSpace = state.getNextNonSpace();
-            CharSequence paragraphStartLine = state.getParagraphStartLine();
+            int nextNonSpace = state.getNextNonSpaceIndex();
+            CharSequence paragraphStartLine = matchedBlockParser.getParagraphStartLine();
             Matcher matcher;
             if ((matcher = ATX_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 // ATX header

@@ -37,8 +37,8 @@ public abstract class AbstractBlockParser implements BlockParser {
     public void processInlines(InlineParser inlineParser) {
     }
 
-    protected static BlockMatched blockMatched(int newOffset) {
-        return new BlockMatchedImpl(newOffset);
+    protected static BlockMatched blockMatched(int newIndex) {
+        return new BlockMatchedImpl(newIndex);
     }
 
     protected static BlockDidNotMatch blockDidNotMatch() {
@@ -50,15 +50,15 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     private static class BlockMatchedImpl implements BlockMatched {
-        private final int newOffset;
+        private final int newIndex;
 
-        public BlockMatchedImpl(int newOffset) {
-            this.newOffset = newOffset;
+        public BlockMatchedImpl(int newIndex) {
+            this.newIndex = newIndex;
         }
 
         @Override
-        public int getNewOffset() {
-            return newOffset;
+        public int getNewIndex() {
+            return newIndex;
         }
     }
 }

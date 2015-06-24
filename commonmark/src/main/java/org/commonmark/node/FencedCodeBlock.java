@@ -4,7 +4,7 @@ public class FencedCodeBlock extends Block {
 
     private char fenceChar;
     private int fenceLength;
-    private int fenceOffset;
+    private int fenceIndent;
 
     private String info;
     private String literal;
@@ -30,12 +30,12 @@ public class FencedCodeBlock extends Block {
         this.fenceLength = fenceLength;
     }
 
-    public int getFenceOffset() {
-        return fenceOffset;
+    public int getFenceIndent() {
+        return fenceIndent;
     }
 
-    public void setFenceOffset(int fenceOffset) {
-        this.fenceOffset = fenceOffset;
+    public void setFenceIndent(int fenceIndent) {
+        this.fenceIndent = fenceIndent;
     }
 
     /**

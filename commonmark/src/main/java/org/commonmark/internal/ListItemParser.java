@@ -16,13 +16,15 @@ public class ListItemParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
-        int indent = nextNonSpace - offset;
-        if (blank) {
-            return blockMatched(nextNonSpace);
-        } else if (indent >= itemOffset) {
-            int newOffset = offset + itemOffset;
-            return blockMatched(newOffset);
+    public ContinueResult tryContinue(ParserState state) {
+        if (state.isBlank()) {
+            return blockMatched(state.getNextNonSpaceIndex());
+        }
+
+        int indent = state.getNextNonSpaceIndex() - state.getIndex();
+        if (indent >= itemOffset) {
+            int newIndex = state.getIndex() + itemOffset;
+            return blockMatched(newIndex);
         } else {
             return blockDidNotMatch();
         }

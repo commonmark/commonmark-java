@@ -21,8 +21,10 @@ public class ListBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
-        return blockMatched(offset);
+    public ContinueResult tryContinue(ParserState state) {
+        // List blocks themselves don't have any markers, only list items. So try to stay in the list.
+        // If there is a block start other than list item, canContain makes sure that this list is closed.
+        return blockMatched(state.getIndex());
     }
 
     @Override
@@ -106,9 +108,9 @@ public class ListBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state) {
-            int nextNonSpace = state.getNextNonSpace();
-            int indent = nextNonSpace - state.getOffset();
+        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+            int nextNonSpace = state.getNextNonSpaceIndex();
+            int indent = nextNonSpace - state.getIndex();
             ListData listData = parseListMarker(state.getLine(), nextNonSpace, indent);
             if (listData == null) {
                 return noStart();
@@ -120,9 +122,9 @@ public class ListBlockParser extends AbstractBlockParser {
             List<BlockParser> blockParsers = new ArrayList<>(2);
 
             // add the list if needed
-            BlockParser active = state.getMatchedBlockParser();
-            if (!(active instanceof ListBlockParser) ||
-                    !(listsMatch((ListBlock) active.getBlock(), listData.listBlock))) {
+            BlockParser matched = matchedBlockParser.getMatchedBlockParser();
+            if (!(matched instanceof ListBlockParser) ||
+                    !(listsMatch((ListBlock) matched.getBlock(), listData.listBlock))) {
 
                 ListBlockParser listBlockParser = new ListBlockParser(listData.listBlock, pos(state, nextNonSpace));
                 listBlockParser.setTight(true);

@@ -23,14 +23,16 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
-        int indent = nextNonSpace - offset;
+    public ContinueResult tryContinue(ParserState state) {
+        int nextNonSpace = state.getNextNonSpaceIndex();
+        CharSequence line = state.getLine();
+        int indent = nextNonSpace - state.getIndex();
         if (indent <= 3 && nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
-            int newOffset = nextNonSpace + 1;
-            if (newOffset < line.length() && line.charAt(newOffset) == ' ') {
-                newOffset++;
+            int newIndex = nextNonSpace + 1;
+            if (newIndex < line.length() && line.charAt(newIndex) == ' ') {
+                newIndex++;
             }
-            return blockMatched(newOffset);
+            return blockMatched(newIndex);
         } else {
             return blockDidNotMatch();
         }
@@ -42,9 +44,9 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     public static class Factory extends AbstractBlockParserFactory {
-        public StartResult tryStart(ParserState state) {
+        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
-            int nextNonSpace = state.getNextNonSpace();
+            int nextNonSpace = state.getNextNonSpaceIndex();
             if (line.charAt(nextNonSpace) == '>') {
                 int newOffset = nextNonSpace + 1;
                 // optional following space

@@ -155,17 +155,17 @@ public class TableBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state) {
+        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
             CharSequence paragraphStartLine = state.getParagraphStartLine();
             if (paragraphStartLine != null && paragraphStartLine.toString().contains("|")) {
-                CharSequence separatorLine = line.subSequence(state.getOffset(), line.length());
+                CharSequence separatorLine = line.subSequence(state.getIndex(), line.length());
                 if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).find()) {
                     List<String> headParts = split(paragraphStartLine);
                     List<String> separatorParts = split(separatorLine);
                     if (separatorParts.size() >= headParts.size()) {
                         SourcePosition sourcePosition = state.getActiveBlockParser().getBlock().getSourcePosition();
-                        return start(new TableBlockParser(paragraphStartLine, sourcePosition), state.getOffset(), true);
+                        return start(new TableBlockParser(paragraphStartLine, sourcePosition), state.getIndex(), true);
                     }
                 }
             }

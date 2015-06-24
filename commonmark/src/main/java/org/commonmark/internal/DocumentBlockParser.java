@@ -8,8 +8,8 @@ public class DocumentBlockParser extends AbstractBlockParser {
     private final Document document = new Document();
 
     @Override
-    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
-        return blockMatched(offset);
+    public ContinueResult tryContinue(ParserState state) {
+        return blockMatched(state.getIndex());
     }
 
     @Override

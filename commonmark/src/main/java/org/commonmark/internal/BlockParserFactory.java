@@ -2,30 +2,7 @@ package org.commonmark.internal;
 
 public interface BlockParserFactory {
 
-    StartResult tryStart(ParserState state);
-
-    interface ParserState {
-        CharSequence getLine();
-
-        int getOffset();
-
-        int getNextNonSpace();
-
-        boolean isIndented();
-
-        BlockParser getActiveBlockParser();
-
-        BlockParser getMatchedBlockParser();
-
-        /**
-         * @return the first line of the paragraph if the active block is a paragraph and we're on the second line,
-         * null otherwise
-         */
-        CharSequence getParagraphStartLine();
-
-        int getLineNumber();
-
-    }
+    StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser);
 
     interface StartResult {
     }

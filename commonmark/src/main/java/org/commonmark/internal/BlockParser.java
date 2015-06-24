@@ -5,8 +5,7 @@ import org.commonmark.node.Node;
 
 public interface BlockParser {
 
-    // TODO: Change params to interface, similar to ParserState
-    ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank);
+    ContinueResult tryContinue(ParserState parserState);
 
     boolean canContain(Block block);
 
@@ -29,7 +28,7 @@ public interface BlockParser {
     }
 
     interface BlockMatched extends ContinueResult {
-        int getNewOffset();
+        int getNewIndex();
     }
 
     interface BlockDidNotMatch extends ContinueResult {
