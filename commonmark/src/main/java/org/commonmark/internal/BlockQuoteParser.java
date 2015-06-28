@@ -3,6 +3,8 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 public class BlockQuoteParser extends AbstractBlockParser {
 
@@ -23,7 +25,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
         CharSequence line = state.getLine();
         int indent = nextNonSpace - state.getIndex();
@@ -32,9 +34,9 @@ public class BlockQuoteParser extends AbstractBlockParser {
             if (newIndex < line.length() && line.charAt(newIndex) == ' ') {
                 newIndex++;
             }
-            return blockMatched(newIndex);
+            return BlockContinue.of(newIndex);
         } else {
-            return blockDidNotMatch();
+            return BlockContinue.none();
         }
     }
 
@@ -44,7 +46,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     public static class Factory extends AbstractBlockParserFactory {
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
             if (line.charAt(nextNonSpace) == '>') {
@@ -53,9 +55,9 @@ public class BlockQuoteParser extends AbstractBlockParser {
                 if (newOffset < line.length() && line.charAt(newOffset) == ' ') {
                     newOffset++;
                 }
-                return start(new BlockQuoteParser(pos(state, nextNonSpace)), newOffset, false);
+                return BlockStart.of(new BlockQuoteParser(pos(state, nextNonSpace)), newOffset);
             } else {
-                return noStart();
+                return BlockStart.none();
             }
         }
     }

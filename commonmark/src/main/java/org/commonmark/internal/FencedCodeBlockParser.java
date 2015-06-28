@@ -3,6 +3,8 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +27,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
         int indent = nextNonSpace - state.getIndex();
         int newIndex = state.getIndex();
@@ -38,7 +40,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
                         .find());
         if (matches && matcher.group(0).length() >= block.getFenceLength()) {
             // closing fence - we're at end of line, so we can finalize now
-            return blockMatchedAndCanBeFinalized();
+            return BlockContinue.finished();
         } else {
             // skip optional spaces of fence indent
             int i = block.getFenceIndent();
@@ -47,7 +49,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
                 i--;
             }
         }
-        return blockMatched(newIndex);
+        return BlockContinue.of(newIndex);
     }
 
     @Override
@@ -88,7 +90,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
             Matcher matcher;
             CharSequence line = state.getLine();
@@ -96,9 +98,10 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
                 int fenceLength = matcher.group(0).length();
                 char fenceChar = matcher.group(0).charAt(0);
                 int indent = nextNonSpace - state.getIndex();
-                return start(new FencedCodeBlockParser(fenceChar, fenceLength, indent, pos(state, nextNonSpace)), nextNonSpace + fenceLength, false);
+                FencedCodeBlockParser blockParser = new FencedCodeBlockParser(fenceChar, fenceLength, indent, pos(state, nextNonSpace));
+                return BlockStart.of(blockParser, nextNonSpace + fenceLength);
             } else {
-                return noStart();
+                return BlockStart.none();
             }
         }
     }

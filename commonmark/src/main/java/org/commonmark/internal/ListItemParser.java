@@ -3,6 +3,7 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.ListItem;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
 
 public class ListItemParser extends AbstractBlockParser {
 
@@ -16,17 +17,17 @@ public class ListItemParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         if (state.isBlank()) {
-            return blockMatched(state.getNextNonSpaceIndex());
+            return BlockContinue.of(state.getNextNonSpaceIndex());
         }
 
         int indent = state.getNextNonSpaceIndex() - state.getIndex();
         if (indent >= itemOffset) {
             int newIndex = state.getIndex() + itemOffset;
-            return blockMatched(newIndex);
+            return BlockContinue.of(newIndex);
         } else {
-            return blockDidNotMatch();
+            return BlockContinue.none();
         }
     }
 

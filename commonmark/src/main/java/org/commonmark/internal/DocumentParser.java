@@ -1,5 +1,7 @@
 package org.commonmark.internal;
 
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 import org.commonmark.parser.DelimiterProcessor;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.internal.util.Substring;
@@ -126,16 +128,18 @@ public class DocumentParser implements ParserState {
         for (BlockParser blockParser : activeBlockParsers.subList(1, activeBlockParsers.size())) {
             findNextNonSpace();
 
-            BlockParser.ContinueResult result = blockParser.tryContinue(this);
-            if (result instanceof BlockParser.BlockMatched) {
-                BlockParser.BlockMatched blockMatched = (BlockParser.BlockMatched) result;
-                index = blockMatched.getNewIndex();
-                matches++;
-            } else if (result instanceof BlockParser.BlockMatchedAndCanBeFinalized) {
-                finalize(blockParser, this.lineNumber);
-                lastLineLength = line.length() - 1; // -1 for newline
-                return;
-            } else if (result instanceof BlockParser.BlockDidNotMatch) {
+            BlockContinue result = blockParser.tryContinue(this);
+            if (result instanceof BlockContinueImpl) {
+                BlockContinueImpl blockContinue = (BlockContinueImpl) result;
+                if (blockContinue.isFinalize()) {
+                    finalize(blockParser, this.lineNumber);
+                    lastLineLength = line.length() - 1; // -1 for newline
+                    return;
+                } else {
+                    index = blockContinue.getNewIndex();
+                    matches++;
+                }
+            } else {
                 break;
             }
         }
@@ -167,14 +171,15 @@ public class DocumentParser implements ParserState {
 
             blockStartsDone = true;
             boolean noStarts = true;
+            MatchedBlockParser matchedBlockParser = new MatchedBlockParserImpl(blockParser);
+
             for (BlockParserFactory blockParserFactory : blockParserFactories) {
-                MatchedBlockParser matchedBlockParser = new MatchedBlockParserImpl(blockParser);
-                BlockParserFactory.StartResult result = blockParserFactory.tryStart(this, matchedBlockParser);
-                if (result instanceof BlockParserFactory.BlockStart) {
+                BlockStart result = blockParserFactory.tryStart(this, matchedBlockParser);
+                if (result instanceof BlockStartImpl) {
                     noStarts = false;
-                    BlockParserFactory.BlockStart blockStart = (BlockParserFactory.BlockStart) result;
+                    BlockStartImpl blockStart = (BlockStartImpl) result;
                     allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
-                    index = blockStart.getNewOffset();
+                    index = blockStart.getNewIndex();
 
                     if (blockStart.replaceActiveBlockParser()) {
                         removeActiveBlockParser();

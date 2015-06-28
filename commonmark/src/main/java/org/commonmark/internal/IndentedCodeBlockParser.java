@@ -1,6 +1,8 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.*;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 import java.util.regex.Pattern;
 
@@ -18,7 +20,7 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         int indent = state.getNextNonSpaceIndex() - state.getIndex();
         int newIndex = state.getIndex();
         if (indent >= INDENT) {
@@ -26,9 +28,9 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
         } else if (state.isBlank()) {
             newIndex = state.getNextNonSpaceIndex();
         } else {
-            return blockDidNotMatch();
+            return BlockContinue.none();
         }
-        return blockMatched(newIndex);
+        return BlockContinue.of(newIndex);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int offset = state.getIndex();
             int nextNonSpace = state.getNextNonSpaceIndex();
             int indent = nextNonSpace - offset;
@@ -68,9 +70,9 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
             // An indented code block cannot interrupt a paragraph.
             if (indent >= INDENT && !(state.getActiveBlockParser().getBlock() instanceof Paragraph) && !blank) {
                 int newOffset = offset + INDENT;
-                return start(new IndentedCodeBlockParser(pos(state, nextNonSpace)), newOffset, false);
+                return BlockStart.of(new IndentedCodeBlockParser(pos(state, nextNonSpace)), newOffset);
             } else {
-                return noStart();
+                return BlockStart.none();
             }
         }
     }

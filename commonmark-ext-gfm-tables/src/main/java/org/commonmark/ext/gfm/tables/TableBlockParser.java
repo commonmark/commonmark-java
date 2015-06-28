@@ -4,6 +4,8 @@ import org.commonmark.internal.*;
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +27,11 @@ public class TableBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult continueBlock(CharSequence line, int nextNonSpace, int offset, boolean blank) {
-        if (line.toString().contains("|")) {
-            return blockMatched(offset);
+    public BlockContinue tryContinue(ParserState state) {
+        if (state.getLine().toString().contains("|")) {
+            return BlockContinue.of(state.getIndex());
         } else {
-            return blockDidNotMatch();
+            return BlockContinue.none();
         }
     }
 
@@ -155,9 +157,9 @@ public class TableBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
-            CharSequence paragraphStartLine = state.getParagraphStartLine();
+            CharSequence paragraphStartLine = matchedBlockParser.getParagraphStartLine();
             if (paragraphStartLine != null && paragraphStartLine.toString().contains("|")) {
                 CharSequence separatorLine = line.subSequence(state.getIndex(), line.length());
                 if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).find()) {
@@ -165,11 +167,11 @@ public class TableBlockParser extends AbstractBlockParser {
                     List<String> separatorParts = split(separatorLine);
                     if (separatorParts.size() >= headParts.size()) {
                         SourcePosition sourcePosition = state.getActiveBlockParser().getBlock().getSourcePosition();
-                        return start(new TableBlockParser(paragraphStartLine, sourcePosition), state.getIndex(), true);
+                        return BlockStart.of(new TableBlockParser(paragraphStartLine, sourcePosition), state.getIndex(), true);
                     }
                 }
             }
-            return noStart();
+            return BlockStart.none();
         }
     }
 

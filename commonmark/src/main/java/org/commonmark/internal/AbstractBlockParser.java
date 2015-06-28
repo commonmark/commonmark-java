@@ -4,12 +4,6 @@ import org.commonmark.node.Block;
 
 public abstract class AbstractBlockParser implements BlockParser {
 
-    private static final BlockDidNotMatch BLOCK_DID_NOT_MATCH = new BlockDidNotMatch() {
-    };
-
-    private static final BlockMatchedAndCanBeFinalized BLOCK_MATCHED_AND_CAN_BE_FINALIZED = new BlockMatchedAndCanBeFinalized() {
-    };
-
     @Override
     public boolean canContain(Block block) {
         return false;
@@ -37,28 +31,4 @@ public abstract class AbstractBlockParser implements BlockParser {
     public void processInlines(InlineParser inlineParser) {
     }
 
-    protected static BlockMatched blockMatched(int newIndex) {
-        return new BlockMatchedImpl(newIndex);
-    }
-
-    protected static BlockDidNotMatch blockDidNotMatch() {
-        return BLOCK_DID_NOT_MATCH;
-    }
-
-    protected static BlockMatchedAndCanBeFinalized blockMatchedAndCanBeFinalized() {
-        return BLOCK_MATCHED_AND_CAN_BE_FINALIZED;
-    }
-
-    private static class BlockMatchedImpl implements BlockMatched {
-        private final int newIndex;
-
-        public BlockMatchedImpl(int newIndex) {
-            this.newIndex = newIndex;
-        }
-
-        @Override
-        public int getNewIndex() {
-            return newIndex;
-        }
-    }
 }

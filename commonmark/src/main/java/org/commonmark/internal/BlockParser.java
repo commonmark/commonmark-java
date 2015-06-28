@@ -2,10 +2,11 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
+import org.commonmark.parser.BlockContinue;
 
 public interface BlockParser {
 
-    ContinueResult tryContinue(ParserState parserState);
+    BlockContinue tryContinue(ParserState parserState);
 
     boolean canContain(Block block);
 
@@ -24,16 +25,4 @@ public interface BlockParser {
 
     Block getBlock();
 
-    interface ContinueResult {
-    }
-
-    interface BlockMatched extends ContinueResult {
-        int getNewIndex();
-    }
-
-    interface BlockDidNotMatch extends ContinueResult {
-    }
-
-    interface BlockMatchedAndCanBeFinalized extends ContinueResult {
-    }
 }

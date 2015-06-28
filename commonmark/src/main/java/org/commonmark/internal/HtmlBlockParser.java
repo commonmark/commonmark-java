@@ -3,6 +3,8 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 import java.util.regex.Pattern;
 
@@ -24,11 +26,11 @@ public class HtmlBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         if (!state.isBlank()) {
-            return blockMatched(state.getIndex());
+            return BlockContinue.of(state.getIndex());
         } else {
-            return blockDidNotMatch();
+            return BlockContinue.none();
         }
     }
 
@@ -56,14 +58,14 @@ public class HtmlBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
             CharSequence line = state.getLine();
             if (HTML_BLOCK_OPEN.matcher(line.subSequence(nextNonSpace, line.length())).find()) {
                 // spaces are part of block, so use offset
-                return start(new HtmlBlockParser(pos(state, nextNonSpace)), state.getIndex(), false);
+                return BlockStart.of(new HtmlBlockParser(pos(state, nextNonSpace)), state.getIndex());
             } else {
-                return noStart();
+                return BlockStart.none();
             }
         }
     }

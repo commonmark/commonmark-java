@@ -4,6 +4,7 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
 
 public class ParagraphParser extends AbstractBlockParser {
 
@@ -16,11 +17,11 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         if (!state.isBlank()) {
-            return blockMatched(state.getIndex());
+            return BlockContinue.of(state.getIndex());
         } else {
-            return blockDidNotMatch();
+            return BlockContinue.none();
         }
     }
 
@@ -64,11 +65,6 @@ public class ParagraphParser extends AbstractBlockParser {
     @Override
     public boolean canContain(Block block) {
         return false;
-    }
-
-    @Override
-    public boolean shouldTryBlockStarts() {
-        return true;
     }
 
     @Override

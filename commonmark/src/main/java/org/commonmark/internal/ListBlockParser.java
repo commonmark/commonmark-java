@@ -1,6 +1,8 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.*;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,20 +23,15 @@ public class ListBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         // List blocks themselves don't have any markers, only list items. So try to stay in the list.
         // If there is a block start other than list item, canContain makes sure that this list is closed.
-        return blockMatched(state.getIndex());
+        return BlockContinue.of(state.getIndex());
     }
 
     @Override
     public boolean canContain(Block block) {
         return block instanceof ListItem;
-    }
-
-    @Override
-    public boolean shouldTryBlockStarts() {
-        return true;
     }
 
     @Override
@@ -108,12 +105,12 @@ public class ListBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
             int indent = nextNonSpace - state.getIndex();
             ListData listData = parseListMarker(state.getLine(), nextNonSpace, indent);
             if (listData == null) {
-                return noStart();
+                return BlockStart.none();
             }
 
             // list item
@@ -136,7 +133,7 @@ public class ListBlockParser extends AbstractBlockParser {
             int itemOffset = listData.indent + listData.padding;
             blockParsers.add(new ListItemParser(itemOffset, pos(state, nextNonSpace)));
 
-            return start(blockParsers, newOffset, false);
+            return BlockStart.of(blockParsers, newOffset, false);
         }
     }
 }

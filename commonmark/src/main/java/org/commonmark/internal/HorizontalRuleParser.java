@@ -3,6 +3,8 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.HorizontalRule;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 import java.util.regex.Pattern;
 
@@ -17,9 +19,9 @@ public class HorizontalRuleParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
+    public BlockContinue tryContinue(ParserState state) {
         // a horizontal rule can never container > 1 line, so fail to match
-        return blockDidNotMatch();
+        return BlockContinue.none();
     }
 
     @Override
@@ -35,17 +37,17 @@ public class HorizontalRuleParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int offset = state.getIndex();
             int nextNonSpace = state.getNextNonSpaceIndex();
             if (nextNonSpace - offset >= 4) {
-                return noStart();
+                return BlockStart.none();
             }
             CharSequence line = state.getLine();
             if (H_RULE.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
-                return start(new HorizontalRuleParser(pos(state, nextNonSpace)), line.length(), false);
+                return BlockStart.of(new HorizontalRuleParser(pos(state, nextNonSpace)), line.length());
             } else {
-                return noStart();
+                return BlockStart.none();
             }
         }
     }

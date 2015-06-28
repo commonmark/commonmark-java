@@ -3,6 +3,8 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.Header;
 import org.commonmark.node.SourcePosition;
+import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.BlockStart;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,9 +25,9 @@ public class HeaderParser extends AbstractBlockParser {
     }
 
     @Override
-    public ContinueResult tryContinue(ParserState parserState) {
+    public BlockContinue tryContinue(ParserState parserState) {
         // a header can never container > 1 line, so fail to match
-        return blockDidNotMatch();
+        return BlockContinue.none();
     }
 
     @Override
@@ -41,9 +43,9 @@ public class HeaderParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
-        public StartResult tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             if (state.getNextNonSpaceIndex() - state.getIndex() >= 4) {
-                return noStart();
+                return BlockStart.none();
             }
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
@@ -55,7 +57,7 @@ public class HeaderParser extends AbstractBlockParser {
                 int level = matcher.group(0).trim().length(); // number of #s
                 // remove trailing ###s:
                 String content = ATX_TRAILING.matcher(line.subSequence(newOffset, line.length())).replaceAll("");
-                return start(new HeaderParser(level, content, pos(state, nextNonSpace)), line.length(), false);
+                return BlockStart.of(new HeaderParser(level, content, pos(state, nextNonSpace)), line.length());
 
             } else if (paragraphStartLine != null &&
                     ((matcher = SETEXT_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find())) {
@@ -63,9 +65,9 @@ public class HeaderParser extends AbstractBlockParser {
 
                 int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
                 String content = paragraphStartLine.toString();
-                return start(new HeaderParser(level, content, state.getActiveBlockParser().getBlock().getSourcePosition()), line.length(), true);
+                return BlockStart.of(new HeaderParser(level, content, state.getActiveBlockParser().getBlock().getSourcePosition()), line.length(), true);
             } else {
-                return noStart();
+                return BlockStart.none();
             }
         }
     }

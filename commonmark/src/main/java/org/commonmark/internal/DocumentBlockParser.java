@@ -2,14 +2,15 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.Document;
+import org.commonmark.parser.BlockContinue;
 
 public class DocumentBlockParser extends AbstractBlockParser {
 
     private final Document document = new Document();
 
     @Override
-    public ContinueResult tryContinue(ParserState state) {
-        return blockMatched(state.getIndex());
+    public BlockContinue tryContinue(ParserState state) {
+        return BlockContinue.of(state.getIndex());
     }
 
     @Override
@@ -18,11 +19,6 @@ public class DocumentBlockParser extends AbstractBlockParser {
 
     @Override
     public boolean canContain(Block block) {
-        return true;
-    }
-
-    @Override
-    public boolean shouldTryBlockStarts() {
         return true;
     }
 
