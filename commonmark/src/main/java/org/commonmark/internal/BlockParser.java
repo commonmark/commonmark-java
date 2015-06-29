@@ -1,21 +1,18 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Block;
-import org.commonmark.node.Node;
 import org.commonmark.parser.BlockContinue;
 
 public interface BlockParser {
 
     BlockContinue tryContinue(ParserState parserState);
 
-    boolean canContain(Block block);
-
-    boolean shouldTryBlockStarts();
-
     /**
-     * Returns true if block type can accept lines of text
+     * Return true if the block that is parsed is a container (contains other blocks), or false if it's a leaf.
      */
-    boolean acceptsLine();
+    boolean isContainer();
+
+    boolean canContain(Block block);
 
     void addLine(CharSequence line);
 

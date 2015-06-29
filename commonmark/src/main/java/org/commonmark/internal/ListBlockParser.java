@@ -30,6 +30,11 @@ public class ListBlockParser extends AbstractBlockParser {
     }
 
     @Override
+    public boolean isContainer() {
+        return true;
+    }
+
+    @Override
     public boolean canContain(Block block) {
         return block instanceof ListItem;
     }

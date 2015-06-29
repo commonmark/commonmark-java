@@ -26,11 +26,6 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean acceptsLine() {
-        return true;
-    }
-
-    @Override
     public void addLine(CharSequence line) {
         content.add(line);
     }
@@ -60,11 +55,6 @@ public class ParagraphParser extends AbstractBlockParser {
         if (content != null) {
             inlineParser.parse(block, content.getString());
         }
-    }
-
-    @Override
-    public boolean canContain(Block block) {
-        return false;
     }
 
     @Override

@@ -15,12 +15,12 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean canContain(Block block) {
+    public boolean isContainer() {
         return true;
     }
 
     @Override
-    public boolean shouldTryBlockStarts() {
+    public boolean canContain(Block block) {
         return true;
     }
 

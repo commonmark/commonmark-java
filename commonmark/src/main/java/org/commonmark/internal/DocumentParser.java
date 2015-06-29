@@ -157,8 +157,8 @@ public class DocumentParser implements ParserState {
 
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
-        boolean blockStartsDone = !(blockParser.getBlock() instanceof Paragraph) && blockParser.acceptsLine();
-        while (!blockStartsDone) {
+        boolean tryBlockStarts = blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
+        while (tryBlockStarts) {
             findNextNonSpace();
             int indent = getNextNonSpaceIndex() - getIndex();
             boolean codeIndent = indent >= IndentedCodeBlockParser.INDENT;
@@ -169,41 +169,30 @@ public class DocumentParser implements ParserState {
                 break;
             }
 
-            blockStartsDone = true;
-            boolean noStarts = true;
-            MatchedBlockParser matchedBlockParser = new MatchedBlockParserImpl(blockParser);
-
-            for (BlockParserFactory blockParserFactory : blockParserFactories) {
-                BlockStart result = blockParserFactory.tryStart(this, matchedBlockParser);
-                if (result instanceof BlockStartImpl) {
-                    noStarts = false;
-                    BlockStartImpl blockStart = (BlockStartImpl) result;
-                    allClosed = allClosed || finalizeBlocks(unmatchedBlockParsers);
-                    index = blockStart.getNewIndex();
-
-                    if (blockStart.replaceActiveBlockParser()) {
-                        removeActiveBlockParser();
-                    }
-
-                    for (BlockParser newBlockParser : blockStart.getBlockParsers()) {
-                        blockParser = addChild(newBlockParser);
-                        if (newBlockParser.shouldTryBlockStarts()) {
-                            blockStartsDone = false;
-                        }
-                    }
-
-                    break;
-                }
-            }
-            // TODO: ugh...
-            if (noStarts) {
+            BlockStartImpl blockStart = findBlockStart(blockParser);
+            if (blockStart == null) {
                 index = nextNonSpace;
                 break;
+            }
+
+            if (!allClosed) {
+                finalizeBlocks(unmatchedBlockParsers);
+                allClosed = true;
+            }
+            index = blockStart.getNewIndex();
+
+            if (blockStart.replaceActiveBlockParser()) {
+                removeActiveBlockParser();
+            }
+
+            for (BlockParser newBlockParser : blockStart.getBlockParsers()) {
+                blockParser = addChild(newBlockParser);
+                tryBlockStarts = newBlockParser.isContainer();
             }
         }
 
         // What remains at the offset is a text line. Add the text to the
-        // appropriate container.
+        // appropriate block.
 
         // First check for a lazy paragraph continuation:
         if (!allClosed && !isBlank() &&
@@ -211,7 +200,7 @@ public class DocumentParser implements ParserState {
             // lazy paragraph continuation
             addLine(index);
 
-        } else { // not a lazy continuation
+        } else {
 
             // finalize any blocks not matched
             if (!allClosed) {
@@ -219,7 +208,7 @@ public class DocumentParser implements ParserState {
             }
             propagateLastLineBlank(blockParser, isBlank());
 
-            if (blockParser.acceptsLine()) {
+            if (!blockParser.isContainer()) {
                 addLine(index);
                 // TODO: !isBlank enough?
             } else if (index < ln.length() && !isBlank()) {
@@ -229,6 +218,17 @@ public class DocumentParser implements ParserState {
             }
         }
         this.lastLineLength = ln.length() - 1; // -1 for newline
+    }
+
+    private BlockStartImpl findBlockStart(BlockParser blockParser) {
+        MatchedBlockParser matchedBlockParser = new MatchedBlockParserImpl(blockParser);
+        for (BlockParserFactory blockParserFactory : blockParserFactories) {
+            BlockStart result = blockParserFactory.tryStart(this, matchedBlockParser);
+            if (result instanceof BlockStartImpl) {
+                return (BlockStartImpl) result;
+            }
+        }
+        return null;
     }
 
     /**

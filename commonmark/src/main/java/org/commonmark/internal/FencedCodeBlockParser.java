@@ -53,11 +53,6 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean acceptsLine() {
-        return true;
-    }
-
-    @Override
     public void addLine(CharSequence line) {
         content.add(line);
     }

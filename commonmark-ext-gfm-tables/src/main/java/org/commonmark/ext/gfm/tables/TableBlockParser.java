@@ -36,11 +36,6 @@ public class TableBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean acceptsLine() {
-        return true;
-    }
-
-    @Override
     public void addLine(CharSequence line) {
         if (nextIsSeparatorLine) {
             nextIsSeparatorLine = false;

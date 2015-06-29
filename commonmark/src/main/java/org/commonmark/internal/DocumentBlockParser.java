@@ -18,6 +18,11 @@ public class DocumentBlockParser extends AbstractBlockParser {
     }
 
     @Override
+    public boolean isContainer() {
+        return true;
+    }
+
+    @Override
     public boolean canContain(Block block) {
         return true;
     }
