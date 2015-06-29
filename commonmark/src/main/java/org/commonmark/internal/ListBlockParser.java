@@ -23,13 +23,6 @@ public class ListBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public BlockContinue tryContinue(ParserState state) {
-        // List blocks themselves don't have any markers, only list items. So try to stay in the list.
-        // If there is a block start other than list item, canContain makes sure that this list is closed.
-        return BlockContinue.of(state.getIndex());
-    }
-
-    @Override
     public boolean isContainer() {
         return true;
     }
@@ -42,6 +35,13 @@ public class ListBlockParser extends AbstractBlockParser {
     @Override
     public Block getBlock() {
         return block;
+    }
+
+    @Override
+    public BlockContinue tryContinue(ParserState state) {
+        // List blocks themselves don't have any markers, only list items. So try to stay in the list.
+        // If there is a block start other than list item, canContain makes sure that this list is closed.
+        return BlockContinue.of(state.getIndex());
     }
 
     public void setTight(boolean tight) {
@@ -95,18 +95,6 @@ public class ListBlockParser extends AbstractBlockParser {
         return false;
     }
 
-    private static class ListData {
-        final ListBlock listBlock;
-        final int indent;
-        final int padding;
-
-        public ListData(ListBlock listBlock, int indent, int padding) {
-            this.listBlock = listBlock;
-            this.indent = indent;
-            this.padding = padding;
-        }
-    }
-
     public static class Factory extends AbstractBlockParserFactory {
 
         @Override
@@ -141,4 +129,17 @@ public class ListBlockParser extends AbstractBlockParser {
             return BlockStart.of(blockParsers, newOffset, false);
         }
     }
+
+    private static class ListData {
+        final ListBlock listBlock;
+        final int indent;
+        final int padding;
+
+        public ListData(ListBlock listBlock, int indent, int padding) {
+            this.listBlock = listBlock;
+            this.indent = indent;
+            this.padding = padding;
+        }
+    }
+
 }

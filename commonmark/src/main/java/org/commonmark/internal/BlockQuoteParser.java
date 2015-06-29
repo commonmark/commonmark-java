@@ -25,6 +25,11 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     @Override
+    public BlockQuote getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
         CharSequence line = state.getLine();
@@ -38,11 +43,6 @@ public class BlockQuoteParser extends AbstractBlockParser {
         } else {
             return BlockContinue.none();
         }
-    }
-
-    @Override
-    public BlockQuote getBlock() {
-        return block;
     }
 
     public static class Factory extends AbstractBlockParserFactory {

@@ -19,19 +19,14 @@ public class HorizontalRuleParser extends AbstractBlockParser {
     }
 
     @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState state) {
         // a horizontal rule can never container > 1 line, so fail to match
         return BlockContinue.none();
-    }
-
-    @Override
-    public void addLine(CharSequence line) {
-
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     public static class Factory extends AbstractBlockParserFactory {

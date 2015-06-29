@@ -9,15 +9,6 @@ public class DocumentBlockParser extends AbstractBlockParser {
     private final Document document = new Document();
 
     @Override
-    public BlockContinue tryContinue(ParserState state) {
-        return BlockContinue.of(state.getIndex());
-    }
-
-    @Override
-    public void addLine(CharSequence line) {
-    }
-
-    @Override
     public boolean isContainer() {
         return true;
     }
@@ -31,4 +22,14 @@ public class DocumentBlockParser extends AbstractBlockParser {
     public Document getBlock() {
         return document;
     }
+
+    @Override
+    public BlockContinue tryContinue(ParserState state) {
+        return BlockContinue.of(state.getIndex());
+    }
+
+    @Override
+    public void addLine(CharSequence line) {
+    }
+
 }

@@ -17,21 +17,6 @@ public class ListItemParser extends AbstractBlockParser {
     }
 
     @Override
-    public BlockContinue tryContinue(ParserState state) {
-        if (state.isBlank()) {
-            return BlockContinue.of(state.getNextNonSpaceIndex());
-        }
-
-        int indent = state.getNextNonSpaceIndex() - state.getIndex();
-        if (indent >= itemOffset) {
-            int newIndex = state.getIndex() + itemOffset;
-            return BlockContinue.of(newIndex);
-        } else {
-            return BlockContinue.none();
-        }
-    }
-
-    @Override
     public boolean isContainer() {
         return true;
     }
@@ -44,6 +29,21 @@ public class ListItemParser extends AbstractBlockParser {
     @Override
     public Block getBlock() {
         return block;
+    }
+
+    @Override
+    public BlockContinue tryContinue(ParserState state) {
+        if (state.isBlank()) {
+            return BlockContinue.of(state.getNextNonSpaceIndex());
+        }
+
+        int indent = state.getNextNonSpaceIndex() - state.getIndex();
+        if (indent >= itemOffset) {
+            int newIndex = state.getIndex() + itemOffset;
+            return BlockContinue.of(newIndex);
+        } else {
+            return BlockContinue.none();
+        }
     }
 
 }

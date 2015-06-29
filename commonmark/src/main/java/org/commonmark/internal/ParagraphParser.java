@@ -17,6 +17,11 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState state) {
         if (!state.isBlank()) {
             return BlockContinue.of(state.getIndex());
@@ -55,11 +60,6 @@ public class ParagraphParser extends AbstractBlockParser {
         if (content != null) {
             inlineParser.parse(block, content.getString());
         }
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     public boolean hasSingleLine() {

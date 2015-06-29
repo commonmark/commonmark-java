@@ -27,6 +27,11 @@ public class TableBlockParser extends AbstractBlockParser {
     }
 
     @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState state) {
         if (state.getLine().toString().contains("|")) {
             return BlockContinue.of(state.getIndex());
@@ -82,11 +87,6 @@ public class TableBlockParser extends AbstractBlockParser {
                 block.appendChild(section);
             }
         }
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     private static List<TableCell.Alignment> parseAlignment(String separatorLine) {

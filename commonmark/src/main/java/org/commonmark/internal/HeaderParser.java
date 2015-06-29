@@ -25,6 +25,11 @@ public class HeaderParser extends AbstractBlockParser {
     }
 
     @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState parserState) {
         // a header can never container > 1 line, so fail to match
         return BlockContinue.none();
@@ -33,11 +38,6 @@ public class HeaderParser extends AbstractBlockParser {
     @Override
     public void processInlines(InlineParser inlineParser) {
         inlineParser.parse(block, content);
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     public static class Factory extends AbstractBlockParserFactory {

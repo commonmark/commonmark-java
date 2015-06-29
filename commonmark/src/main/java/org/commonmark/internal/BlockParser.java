@@ -5,8 +5,6 @@ import org.commonmark.parser.BlockContinue;
 
 public interface BlockParser {
 
-    BlockContinue tryContinue(ParserState parserState);
-
     /**
      * Return true if the block that is parsed is a container (contains other blocks), or false if it's a leaf.
      */
@@ -14,12 +12,14 @@ public interface BlockParser {
 
     boolean canContain(Block block);
 
+    Block getBlock();
+
+    BlockContinue tryContinue(ParserState parserState);
+
     void addLine(CharSequence line);
 
     void finalizeBlock(InlineParser inlineParser);
 
     void processInlines(InlineParser inlineParser);
-
-    Block getBlock();
 
 }

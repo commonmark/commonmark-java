@@ -20,6 +20,11 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState state) {
         int indent = state.getNextNonSpaceIndex() - state.getIndex();
         int newIndex = state.getIndex();
@@ -47,11 +52,6 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
 
         String literal = TRAILING_BLANK_LINES.matcher(contentString).replaceFirst("\n");
         block.setLiteral(literal);
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     public static class Factory extends AbstractBlockParserFactory {

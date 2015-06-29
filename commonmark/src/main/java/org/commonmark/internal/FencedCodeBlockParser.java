@@ -27,6 +27,11 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
         int indent = nextNonSpace - state.getIndex();
@@ -75,11 +80,6 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
             String literal = contentString.substring(firstNewline + 1);
             block.setLiteral(literal);
         }
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     public static class Factory extends AbstractBlockParserFactory {

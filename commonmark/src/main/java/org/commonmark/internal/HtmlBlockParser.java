@@ -26,6 +26,11 @@ public class HtmlBlockParser extends AbstractBlockParser {
     }
 
     @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
     public BlockContinue tryContinue(ParserState state) {
         if (!state.isBlank()) {
             return BlockContinue.of(state.getIndex());
@@ -43,11 +48,6 @@ public class HtmlBlockParser extends AbstractBlockParser {
     public void finalizeBlock(InlineParser inlineParser) {
         block.setLiteral(content.getString());
         content = null;
-    }
-
-    @Override
-    public Block getBlock() {
-        return block;
     }
 
     public static class Factory extends AbstractBlockParserFactory {
