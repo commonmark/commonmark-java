@@ -210,8 +210,7 @@ public class DocumentParser implements ParserState {
 
             if (!blockParser.isContainer()) {
                 addLine(index);
-                // TODO: !isBlank enough?
-            } else if (index < ln.length() && !isBlank()) {
+            } else if (!isBlank()) {
                 // create paragraph container for line
                 addChild(new ParagraphParser(new SourcePosition(this.lineNumber, nextNonSpace + 1)));
                 addLine(nextNonSpace);
