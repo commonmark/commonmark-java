@@ -5,6 +5,7 @@ import org.commonmark.node.Header;
 import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.BlockContinue;
 import org.commonmark.parser.BlockStart;
+import org.commonmark.parser.InlineParser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,8 +37,8 @@ public class HeaderParser extends AbstractBlockParser {
     }
 
     @Override
-    public void processInlines(InlineParser inlineParser) {
-        inlineParser.parse(block, content);
+    public void parseInlines(InlineParser inlineParser) {
+        inlineParser.parse(content, block);
     }
 
     public static class Factory extends AbstractBlockParserFactory {

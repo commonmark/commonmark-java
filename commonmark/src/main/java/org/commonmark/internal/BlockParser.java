@@ -2,6 +2,7 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.InlineParser;
 
 public interface BlockParser {
 
@@ -18,8 +19,8 @@ public interface BlockParser {
 
     void addLine(CharSequence line);
 
-    void finalizeBlock(InlineParser inlineParser);
+    void closeBlock();
 
-    void processInlines(InlineParser inlineParser);
+    void parseInlines(InlineParser inlineParser);
 
 }

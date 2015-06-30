@@ -5,6 +5,7 @@ import org.commonmark.node.Block;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.InlineParser;
 
 public class ParagraphParser extends AbstractBlockParser {
 
@@ -36,7 +37,10 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
-    public void finalizeBlock(InlineParser inlineParser) {
+    public void closeBlock() {
+    }
+
+    public void closeBlock(InlineParserImpl inlineParser) {
         String contentString = content.getString();
         boolean hasReferenceDefs = false;
 
@@ -56,9 +60,9 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
-    public void processInlines(InlineParser inlineParser) {
+    public void parseInlines(InlineParser inlineParser) {
         if (content != null) {
-            inlineParser.parse(block, content.getString());
+            inlineParser.parse(content.getString(), block);
         }
     }
 

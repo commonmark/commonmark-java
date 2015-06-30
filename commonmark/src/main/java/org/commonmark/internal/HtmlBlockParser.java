@@ -45,7 +45,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void finalizeBlock(InlineParser inlineParser) {
+    public void closeBlock() {
         block.setLiteral(content.getString());
         content = null;
     }

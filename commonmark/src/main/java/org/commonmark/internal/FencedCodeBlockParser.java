@@ -63,7 +63,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void finalizeBlock(InlineParser inlineParser) {
+    public void closeBlock() {
         boolean singleLine = content.hasSingleLine();
         // add trailing newline
         content.add("");

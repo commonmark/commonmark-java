@@ -6,12 +6,13 @@ import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.node.*;
+import org.commonmark.parser.InlineParser;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InlineParser {
+public class InlineParserImpl implements InlineParser {
 
     private static final char C_NEWLINE = '\n';
     private static final char C_UNDERSCORE = '_';
@@ -117,7 +118,7 @@ public class InlineParser {
 
     private StringBuilder currentText;
 
-    public InlineParser(List<DelimiterProcessor> customDelimiterProcessors) {
+    public InlineParserImpl(List<DelimiterProcessor> customDelimiterProcessors) {
         addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()));
         addDelimiterProcessors(customDelimiterProcessors);
         mainPattern = calculateMainPattern(delimiterProcessors.keySet());
@@ -147,7 +148,8 @@ public class InlineParser {
     /**
      * Parse content in block into inline children, using reference map to resolve references.
      */
-    public void parse(Node block, String content) {
+    @Override
+    public void parse(String content, Node block) {
         this.block = block;
         this.subject = content.trim();
         this.pos = 0;

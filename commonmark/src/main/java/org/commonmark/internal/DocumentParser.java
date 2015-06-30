@@ -30,7 +30,7 @@ public class DocumentParser implements ParserState {
 
     private int lastLineLength = 0;
 
-    private final InlineParser inlineParser;
+    private final InlineParserImpl inlineParser;
     private final List<BlockParserFactory> blockParserFactories;
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
@@ -40,7 +40,7 @@ public class DocumentParser implements ParserState {
     public DocumentParser(List<BlockParserFactory> customBlockParserFactories, List<DelimiterProcessor> delimiterProcessors) {
         blockParserFactories = new ArrayList<>(CORE_FACTORIES);
         blockParserFactories.addAll(customBlockParserFactories);
-        inlineParser = new InlineParser(delimiterProcessors);
+        inlineParser = new InlineParserImpl(delimiterProcessors);
     }
 
     /**
@@ -246,9 +246,12 @@ public class DocumentParser implements ParserState {
         block.setSourcePosition(new SourcePosition(pos.getStartLine(), pos.getStartColumn(),
                 lineNumber, this.lastLineLength + 1));
 
-        blockParser.finalizeBlock(inlineParser);
+        blockParser.closeBlock();
 
-        if (blockParser instanceof ListBlockParser) {
+        if (blockParser instanceof ParagraphParser) {
+            ParagraphParser paragraphParser = (ParagraphParser) blockParser;
+            paragraphParser.closeBlock(inlineParser);
+        } else if (blockParser instanceof ListBlockParser) {
             ListBlockParser listBlockParser = (ListBlockParser) blockParser;
             finalizeListTight(listBlockParser);
         }
@@ -259,7 +262,7 @@ public class DocumentParser implements ParserState {
      */
     private void processInlines() {
         for (BlockParser blockParser : allBlockParsers) {
-            blockParser.processInlines(inlineParser);
+            blockParser.parseInlines(inlineParser);
         }
     }
 

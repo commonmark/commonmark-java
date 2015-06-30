@@ -6,6 +6,7 @@ import org.commonmark.node.Node;
 import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.BlockContinue;
 import org.commonmark.parser.BlockStart;
+import org.commonmark.parser.InlineParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public class TableBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void processInlines(InlineParser inlineParser) {
+    public void parseInlines(InlineParser inlineParser) {
         Node section = new TableHead();
         block.appendChild(section);
 
@@ -74,7 +75,7 @@ public class TableBlockParser extends AbstractBlockParser {
                 TableCell tableCell = new TableCell();
                 tableCell.setHeader(header);
                 tableCell.setAlignment(alignment);
-                inlineParser.parse(tableCell, cell.trim());
+                inlineParser.parse(cell.trim(), tableCell);
                 tableRow.appendChild(tableCell);
             }
 

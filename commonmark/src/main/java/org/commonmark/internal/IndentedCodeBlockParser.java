@@ -44,7 +44,7 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void finalizeBlock(InlineParser inlineParser) {
+    public void closeBlock() {
         // add trailing newline
         content.add("");
         String contentString = content.getString();

@@ -1,6 +1,7 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Block;
+import org.commonmark.parser.InlineParser;
 
 public abstract class AbstractBlockParser implements BlockParser {
 
@@ -19,11 +20,11 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     @Override
-    public void finalizeBlock(InlineParser inlineParser) {
+    public void closeBlock() {
     }
 
     @Override
-    public void processInlines(InlineParser inlineParser) {
+    public void parseInlines(InlineParser inlineParser) {
     }
 
 }
