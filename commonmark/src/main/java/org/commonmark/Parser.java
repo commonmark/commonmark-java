@@ -1,8 +1,7 @@
 package org.commonmark;
 
-import org.commonmark.internal.BlockParserFactory;
+import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.internal.DocumentParser;
-import org.commonmark.node.Document;
 import org.commonmark.node.Node;
 import org.commonmark.parser.DelimiterProcessor;
 import org.commonmark.parser.PostProcessor;

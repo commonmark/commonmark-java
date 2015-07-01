@@ -1,4 +1,4 @@
-package org.commonmark.internal;
+package org.commonmark.parser.block;
 
 import org.commonmark.node.Block;
 import org.commonmark.parser.InlineParser;

@@ -1,6 +1,6 @@
 package org.commonmark.internal;
 
-import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.block.BlockContinue;
 
 public class BlockContinueImpl extends BlockContinue {
 

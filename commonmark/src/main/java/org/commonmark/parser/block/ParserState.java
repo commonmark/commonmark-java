@@ -1,5 +1,9 @@
-package org.commonmark.internal;
+package org.commonmark.parser.block;
 
+/**
+ * State of the parser that is used in block parsers.
+ * <p><em>This interface is not intended to be implemented by clients.</em></p>
+ */
 public interface ParserState {
 
     /**

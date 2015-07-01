@@ -1,6 +1,7 @@
 package org.commonmark.internal;
 
-import org.commonmark.parser.BlockStart;
+import org.commonmark.parser.block.BlockParser;
+import org.commonmark.parser.block.BlockStart;
 
 public class BlockStartImpl extends BlockStart {
 

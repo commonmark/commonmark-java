@@ -1,11 +1,10 @@
 package org.commonmark.internal;
 
-import org.commonmark.parser.BlockContinue;
-import org.commonmark.parser.BlockStart;
-import org.commonmark.parser.DelimiterProcessor;
+import org.commonmark.parser.*;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
+import org.commonmark.parser.block.*;
 
 import java.util.*;
 

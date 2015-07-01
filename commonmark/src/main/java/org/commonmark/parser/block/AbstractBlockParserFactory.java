@@ -1,8 +1,6 @@
-package org.commonmark.internal;
+package org.commonmark.parser.block;
 
 import org.commonmark.node.SourcePosition;
-
-import java.util.Collections;
 
 public abstract class AbstractBlockParserFactory implements BlockParserFactory {
 

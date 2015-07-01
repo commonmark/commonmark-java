@@ -4,8 +4,10 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.SourcePosition;
-import org.commonmark.parser.BlockContinue;
+import org.commonmark.parser.block.AbstractBlockParser;
+import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.block.ParserState;
 
 public class ParagraphParser extends AbstractBlockParser {
 

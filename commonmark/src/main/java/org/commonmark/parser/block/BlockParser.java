@@ -1,9 +1,13 @@
-package org.commonmark.internal;
+package org.commonmark.parser.block;
 
 import org.commonmark.node.Block;
-import org.commonmark.parser.BlockContinue;
 import org.commonmark.parser.InlineParser;
 
+/**
+ * Parser for a specific block node.
+ * <p>
+ * Implementations should subclass {@link AbstractBlockParser} instead of implementing this directly.
+ */
 public interface BlockParser {
 
     /**

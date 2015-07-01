@@ -3,8 +3,7 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.HorizontalRule;
 import org.commonmark.node.SourcePosition;
-import org.commonmark.parser.BlockContinue;
-import org.commonmark.parser.BlockStart;
+import org.commonmark.parser.block.*;
 
 import java.util.regex.Pattern;
 

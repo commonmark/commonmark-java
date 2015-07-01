@@ -1,6 +1,5 @@
-package org.commonmark.parser;
+package org.commonmark.parser.block;
 
-import org.commonmark.internal.BlockParser;
 import org.commonmark.internal.BlockStartImpl;
 
 import java.util.Collections;
