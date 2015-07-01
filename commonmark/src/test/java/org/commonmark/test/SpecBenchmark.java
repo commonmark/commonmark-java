@@ -1,6 +1,6 @@
 package org.commonmark.test;
 
-import org.commonmark.Parser;
+import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.spec.SpecExample;
 import org.commonmark.spec.SpecReader;

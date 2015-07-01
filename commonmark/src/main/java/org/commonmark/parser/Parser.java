@@ -1,10 +1,9 @@
-package org.commonmark;
+package org.commonmark.parser;
 
+import org.commonmark.Extension;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.node.Node;
-import org.commonmark.parser.DelimiterProcessor;
-import org.commonmark.parser.PostProcessor;
 
 import java.util.ArrayList;
 import java.util.List;

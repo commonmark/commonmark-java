@@ -1,6 +1,6 @@
 package org.commonmark.ext.gfm.tables;
 
-import org.commonmark.Parser;
+import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 
 public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {

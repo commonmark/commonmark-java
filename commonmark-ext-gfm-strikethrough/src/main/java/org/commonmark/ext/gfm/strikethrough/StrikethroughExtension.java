@@ -1,6 +1,6 @@
 package org.commonmark.ext.gfm.strikethrough;
 
-import org.commonmark.Parser;
+import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 
 public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
