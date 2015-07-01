@@ -12,7 +12,6 @@ import org.commonmark.parser.block.ParserState;
 public class ParagraphParser extends AbstractBlockParser {
 
     private final Paragraph block = new Paragraph();
-    // TODO: Can this be inlined?
     private BlockContent content = new BlockContent();
 
     public ParagraphParser(SourcePosition pos) {
