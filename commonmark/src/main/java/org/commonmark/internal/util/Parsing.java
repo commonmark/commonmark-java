@@ -12,8 +12,11 @@ public class Parsing {
         for (int i = startIndex; i < s.length(); i++) {
             switch (s.charAt(i)) {
                 case ' ':
-                    break;
+                case '\t':
                 case '\n':
+                case '\u000B':
+                case '\f':
+                case '\r':
                     break;
                 default:
                     return i;
