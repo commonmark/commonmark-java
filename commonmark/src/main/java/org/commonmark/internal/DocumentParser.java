@@ -197,7 +197,7 @@ public class DocumentParser implements ParserState {
         if (!allClosed && !isBlank() &&
                 getActiveBlockParser() instanceof ParagraphParser) {
             // lazy paragraph continuation
-            addLine(index);
+            addLine();
 
         } else {
 
@@ -208,11 +208,11 @@ public class DocumentParser implements ParserState {
             propagateLastLineBlank(blockParser, isBlank());
 
             if (!blockParser.isContainer()) {
-                addLine(index);
+                addLine();
             } else if (!isBlank()) {
                 // create paragraph container for line
                 addChild(new ParagraphParser(new SourcePosition(this.lineNumber, nextNonSpace + 1)));
-                addLine(nextNonSpace);
+                addLine();
             }
         }
         this.lastLineLength = ln.length() - 1; // -1 for newline
@@ -323,7 +323,7 @@ public class DocumentParser implements ParserState {
      * Add a line to the block at the tip. We assume the tip can accept lines -- that check should be done before
      * calling this.
      */
-    private void addLine(int index) {
+    private void addLine() {
         getActiveBlockParser().addLine(line.subSequence(index, line.length()));
     }
 
