@@ -14,19 +14,6 @@ import java.util.regex.Pattern;
 
 public class InlineParserImpl implements InlineParser {
 
-    private static final char C_NEWLINE = '\n';
-    private static final char C_UNDERSCORE = '_';
-    private static final char C_BACKTICK = '`';
-    private static final char C_OPEN_BRACKET = '[';
-    private static final char C_CLOSE_BRACKET = ']';
-    private static final char C_LESSTHAN = '<';
-    private static final char C_BANG = '!';
-    private static final char C_BACKSLASH = '\\';
-    private static final char C_AMPERSAND = '&';
-    private static final char C_OPEN_PAREN = '(';
-    private static final char C_CLOSE_PAREN = ')';
-    private static final char C_COLON = ':';
-
     private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
     private static final String REG_CHAR = "[^\\\\()\\x00-\\x20]";
     private static final String IN_PARENS_NOSP = "\\((" + REG_CHAR + '|' + ESCAPED_CHAR + ")*\\)";
@@ -187,7 +174,7 @@ public class InlineParserImpl implements InlineParser {
         }
 
         // colon:
-        if (this.peek() == C_COLON) {
+        if (this.peek() == ':') {
             this.pos++;
         } else {
             this.pos = startPos;
@@ -265,28 +252,28 @@ public class InlineParserImpl implements InlineParser {
             return false;
         }
         switch (c) {
-            case C_NEWLINE:
+            case '\n':
                 res = this.parseNewline();
                 break;
-            case C_BACKSLASH:
+            case '\\':
                 res = this.parseBackslash();
                 break;
-            case C_BACKTICK:
+            case '`':
                 res = this.parseBackticks();
                 break;
-            case C_OPEN_BRACKET:
+            case '[':
                 res = this.parseOpenBracket();
                 break;
-            case C_BANG:
+            case '!':
                 res = this.parseBang();
                 break;
-            case C_CLOSE_BRACKET:
+            case ']':
                 res = this.parseCloseBracket();
                 break;
-            case C_LESSTHAN:
+            case '<':
                 res = this.parseAutolink() || this.parseHtmlTag();
                 break;
-            case C_AMPERSAND:
+            case '&':
                 res = this.parseEntity();
                 break;
             default:
@@ -461,7 +448,7 @@ public class InlineParserImpl implements InlineParser {
 
         // Add entry to stack for this opener
         this.delimiter = new Delimiter(node, this.delimiter, startPos);
-        this.delimiter.delimiterChar = C_OPEN_BRACKET;
+        this.delimiter.delimiterChar = '[';
         this.delimiter.numDelims = 1;
         this.delimiter.canOpen = true;
         this.delimiter.canClose = false;
@@ -480,14 +467,14 @@ public class InlineParserImpl implements InlineParser {
     private boolean parseBang() {
         int startPos = this.pos;
         this.pos += 1;
-        if (this.peek() == C_OPEN_BRACKET) {
+        if (this.peek() == '[') {
             this.pos += 1;
 
             Text node = appendSeparateText("![");
 
             // Add entry to stack for this opener
             this.delimiter = new Delimiter(node, this.delimiter, startPos + 1);
-            this.delimiter.delimiterChar = C_BANG;
+            this.delimiter.delimiterChar = '!';
             this.delimiter.numDelims = 1;
             this.delimiter.canOpen = true;
             this.delimiter.canClose = false;
@@ -512,7 +499,7 @@ public class InlineParserImpl implements InlineParser {
         // look through stack of delimiters for a [ or ![
         Delimiter opener = this.delimiter;
         while (opener != null) {
-            if (!opener.matched && (opener.delimiterChar == C_OPEN_BRACKET || opener.delimiterChar == C_BANG)) {
+            if (!opener.matched && (opener.delimiterChar == '[' || opener.delimiterChar == '!')) {
                 break;
             }
             opener = opener.previous;
@@ -539,7 +526,7 @@ public class InlineParserImpl implements InlineParser {
         boolean isLinkOrImage = false;
 
         // Inline link?
-        if (this.peek() == C_OPEN_PAREN) {
+        if (this.peek() == '(') {
             this.pos++;
             this.spnl();
             if ((dest = this.parseLinkDestination()) != null) {
@@ -549,7 +536,7 @@ public class InlineParserImpl implements InlineParser {
                     title = this.parseLinkTitle();
                     this.spnl();
                 }
-                if (this.subject.charAt(this.pos) == C_CLOSE_PAREN) {
+                if (this.subject.charAt(this.pos) == ')') {
                     this.pos += 1;
                     isLinkOrImage = true;
                 }
@@ -583,7 +570,7 @@ public class InlineParserImpl implements InlineParser {
 
         if (isLinkOrImage) {
             // If we got here, open is a potential opener
-            boolean isImage = opener.delimiterChar == C_BANG;
+            boolean isImage = opener.delimiterChar == '!';
             Node linkOrImage = isImage ? new Image(dest, title) : new Link(dest, title);
 
             // Flush text now. We don't need to worry about combining it with adjacent text nodes, as we'll wrap it in a
@@ -606,7 +593,7 @@ public class InlineParserImpl implements InlineParser {
             if (!isImage) {
                 Delimiter delim = this.delimiter;
                 while (delim != null) {
-                    if (delim.delimiterChar == C_OPEN_BRACKET) {
+                    if (delim.delimiterChar == '[') {
                         // Disallow link opener. It will still get matched, but will not result in a link.
                         delim.allowed = false;
                     }
@@ -771,7 +758,7 @@ public class InlineParserImpl implements InlineParser {
                 !(beforeIsPunctuation && !afterIsWhitespace && !afterIsPunctuation);
         boolean canOpen;
         boolean canClose;
-        if (delimiterChar == C_UNDERSCORE) {
+        if (delimiterChar == '_') {
             canOpen = leftFlanking && (!rightFlanking || beforeIsPunctuation);
             canClose = rightFlanking && (!leftFlanking || afterIsPunctuation);
         } else {
