@@ -258,7 +258,7 @@ public class HtmlRenderer {
         public void visit(OrderedList orderedList) {
             int start = orderedList.getStartNumber();
             Map<String, String> attrs = getAttrs(orderedList);
-            if (start > 1) {
+            if (start != 1) {
                 attrs.put("start", String.valueOf(start));
             }
             renderListBlock(orderedList, "ol", attrs);

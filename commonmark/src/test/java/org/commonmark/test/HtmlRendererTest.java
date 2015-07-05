@@ -1,10 +1,9 @@
 package org.commonmark.test;
 
+import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.html.CodeBlockAttributeProvider;
 import org.commonmark.html.HtmlRenderer;
-import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.Node;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -94,6 +93,11 @@ public class HtmlRendererTest {
 
         String rendered2 = renderer.render(parse("```evil\"\ncontent\n```"));
         assertEquals("<pre><code data-custom=\"evil&quot;\">content\n</code></pre>\n", rendered2);
+    }
+
+    @Test
+    public void orderedListStartZero() {
+        assertEquals("<ol start=\"0\">\n<li>Test</li>\n</ol>\n", defaultRenderer().render(parse("0. Test\n")));
     }
 
     private static HtmlRenderer defaultRenderer() {
