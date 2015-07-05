@@ -25,6 +25,11 @@ public class SpecialInputTest extends RenderingTestCase {
     }
 
     @Test
+    public void mixedLineSeparators() {
+        assertRendering("- a\n- b\r- c\r\n- d", "<ul>\n<li>a</li>\n<li>b</li>\n<li>c</li>\n<li>d</li>\n</ul>\n");
+    }
+
+    @Test
     public void surrogatePair() {
         assertRendering("surrogate pair: \uD834\uDD1E", "<p>surrogate pair: \uD834\uDD1E</p>\n");
     }
