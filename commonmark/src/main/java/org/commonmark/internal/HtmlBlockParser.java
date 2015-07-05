@@ -11,8 +11,8 @@ public class HtmlBlockParser extends AbstractBlockParser {
 
     private static String BLOCKTAGNAME = "(?:article|header|aside|hgroup|iframe|blockquote|hr|body|li|map|button|object|canvas|ol|caption|output|col|p|colgroup|pre|dd|progress|div|section|dl|table|td|dt|tbody|embed|textarea|fieldset|tfoot|figcaption|th|figure|thead|footer|footer|tr|form|ul|h1|h2|h3|h4|h5|h6|video|script|style)";
 
-    private static String HTMLBLOCKOPEN = "<(?:" + BLOCKTAGNAME + "[\\s/>]" + "|" +
-            "/" + BLOCKTAGNAME + "[\\s>]" + "|" + "[?!])";
+    private static String HTMLBLOCKOPEN = "<(?:" + BLOCKTAGNAME + "(?:[\\s/>]|$)" + "|" +
+            "/" + BLOCKTAGNAME + "(?:[\\s>]|$)" + "|" + "[?!])";
 
     private static Pattern HTML_BLOCK_OPEN = Pattern.compile('^' + HTMLBLOCKOPEN, Pattern.CASE_INSENSITIVE);
 
