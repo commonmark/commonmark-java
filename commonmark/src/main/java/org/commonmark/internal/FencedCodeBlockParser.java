@@ -86,12 +86,12 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
-            Matcher matcher;
+            int indent = nextNonSpace - state.getIndex();
             CharSequence line = state.getLine();
-            if ((matcher = OPENING_FENCE.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
+            Matcher matcher;
+            if (indent < 4 && (matcher = OPENING_FENCE.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 int fenceLength = matcher.group(0).length();
                 char fenceChar = matcher.group(0).charAt(0);
-                int indent = nextNonSpace - state.getIndex();
                 FencedCodeBlockParser blockParser = new FencedCodeBlockParser(fenceChar, fenceLength, indent, pos(state, nextNonSpace));
                 return BlockStart.of(blockParser, nextNonSpace + fenceLength);
             } else {

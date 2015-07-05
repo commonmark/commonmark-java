@@ -100,6 +100,11 @@ public class ListBlockParser extends AbstractBlockParser {
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
             int indent = nextNonSpace - state.getIndex();
+            BlockParser matched = matchedBlockParser.getMatchedBlockParser();
+
+            if (indent >= 4 && !(matched instanceof ListBlockParser)) {
+                return BlockStart.none();
+            }
             ListData listData = parseListMarker(state.getLine(), nextNonSpace, indent);
             if (listData == null) {
                 return BlockStart.none();
@@ -111,7 +116,6 @@ public class ListBlockParser extends AbstractBlockParser {
             List<BlockParser> blockParsers = new ArrayList<>(2);
 
             // add the list if needed
-            BlockParser matched = matchedBlockParser.getMatchedBlockParser();
             if (!(matched instanceof ListBlockParser) ||
                     !(listsMatch((ListBlock) matched.getBlock(), listData.listBlock))) {
 

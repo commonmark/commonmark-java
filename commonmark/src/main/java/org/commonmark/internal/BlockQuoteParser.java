@@ -48,7 +48,8 @@ public class BlockQuoteParser extends AbstractBlockParser {
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
-            if (line.charAt(nextNonSpace) == '>') {
+            int indent = nextNonSpace - state.getIndex();
+            if (indent < 4 && line.charAt(nextNonSpace) == '>') {
                 int newOffset = nextNonSpace + 1;
                 // optional following space
                 if (newOffset < line.length() && line.charAt(newOffset) == ' ') {

@@ -11,13 +11,13 @@ import java.util.*;
 public class DocumentParser implements ParserState {
 
     private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
-            new IndentedCodeBlockParser.Factory(),
             new BlockQuoteParser.Factory(),
             new HeaderParser.Factory(),
             new FencedCodeBlockParser.Factory(),
             new HtmlBlockParser.Factory(),
             new HorizontalRuleParser.Factory(),
-            new ListBlockParser.Factory());
+            new ListBlockParser.Factory(),
+            new IndentedCodeBlockParser.Factory());
 
     private CharSequence line;
     /**

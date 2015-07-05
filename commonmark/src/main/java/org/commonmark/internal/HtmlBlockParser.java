@@ -54,8 +54,9 @@ public class HtmlBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
+            int indent = nextNonSpace - state.getIndex();
             CharSequence line = state.getLine();
-            if (HTML_BLOCK_OPEN.matcher(line.subSequence(nextNonSpace, line.length())).find()) {
+            if (indent < 4 && HTML_BLOCK_OPEN.matcher(line.subSequence(nextNonSpace, line.length())).find()) {
                 // spaces are part of block, so use offset
                 return BlockStart.of(new HtmlBlockParser(pos(state, nextNonSpace)), state.getIndex());
             } else {
