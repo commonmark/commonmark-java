@@ -22,6 +22,9 @@ public class Html5Entities {
             int base = matcher.end() == 2 ? 10 : 16;
             try {
                 int codePoint = Integer.parseInt(input.substring(matcher.end(), input.length() - 1), base);
+                if (codePoint == 0) {
+                    return "\uFFFD";
+                }
                 return new String(Character.toChars(codePoint));
             } catch (IllegalArgumentException e) {
                 return "\uFFFD";

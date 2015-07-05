@@ -10,6 +10,11 @@ public class SpecialInputTest extends RenderingTestCase {
     }
 
     @Test
+    public void nullCharacterEntityShouldBeReplaced() {
+        assertRendering("foo&#0;bar", "<p>foo\uFFFDbar</p>\n");
+    }
+
+    @Test
     public void crLfAsLineSeparatorShouldBeParsed() {
         assertRendering("foo\r\nbar", "<p>foo\nbar</p>\n");
     }
