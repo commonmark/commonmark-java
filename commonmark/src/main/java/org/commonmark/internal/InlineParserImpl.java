@@ -205,6 +205,10 @@ public class InlineParserImpl implements InlineParser {
         }
 
         String normalizedLabel = Escaping.normalizeReference(rawLabel);
+        if (normalizedLabel.isEmpty()) {
+            this.pos = startPos;
+            return 0;
+        }
 
         if (!referenceMap.containsKey(normalizedLabel)) {
             Link link = new Link(dest, title);
