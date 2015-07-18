@@ -61,7 +61,7 @@ public class DocumentParser implements ParserState {
                 lineStart = lineBreak + 1;
             }
         }
-        if (lineStart == 0 || lineStart < input.length()) {
+        if (input.length() > 0 && (lineStart == 0 || lineStart < input.length())) {
             incorporateLine(Substring.of(input, lineStart, input.length()));
         }
 

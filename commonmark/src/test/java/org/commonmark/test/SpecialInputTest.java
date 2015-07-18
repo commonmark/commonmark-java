@@ -5,6 +5,11 @@ import org.junit.Test;
 public class SpecialInputTest extends RenderingTestCase {
 
     @Test
+    public void empty() {
+        assertRendering("", "");
+    }
+
+    @Test
     public void nullCharacterShouldBeReplaced() {
         assertRendering("foo\0bar", "<p>foo\uFFFDbar</p>\n");
     }
