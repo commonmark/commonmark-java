@@ -6,7 +6,6 @@ import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 import org.commonmark.spec.SpecExample;
 import org.commonmark.spec.SpecReader;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
