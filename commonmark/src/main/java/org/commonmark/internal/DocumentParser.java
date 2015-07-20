@@ -143,7 +143,6 @@ public class DocumentParser implements ParserState {
             }
         }
 
-        // TODO: Can we remove the closeUnmatchedBlocks calls?
         List<BlockParser> unmatchedBlockParsers = new ArrayList<>(activeBlockParsers.subList(matches, activeBlockParsers.size()));
         BlockParser blockParser = activeBlockParsers.get(matches - 1);
         boolean allClosed = unmatchedBlockParsers.isEmpty();
