@@ -192,8 +192,23 @@ public class InlineParserImpl implements InlineParser {
             this.pos = beforeTitle;
         }
 
-        // make sure we're at line end:
+        boolean atLineEnd = true;
         if (this.pos != this.subject.length() && this.match(LINE_END) == null) {
+            if (title == null) {
+                atLineEnd = false;
+            } else {
+                // the potential title we found is not at the line end,
+                // but it could still be a legal link reference if we
+                // discard the title
+                title = null;
+                // rewind before spaces
+                this.pos = beforeTitle;
+                // and instead check if the link URL is at the line end
+                atLineEnd = this.match(LINE_END) != null;
+            }
+        }
+
+        if (!atLineEnd) {
             this.pos = startPos;
             return 0;
         }
