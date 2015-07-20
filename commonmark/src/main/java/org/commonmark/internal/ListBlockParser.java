@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class ListBlockParser extends AbstractBlockParser {
 
     private static Pattern BULLET_LIST_MARKER = Pattern.compile("^[*+-]( +|$)");
-    private static Pattern ORDERED_LIST_MARKER = Pattern.compile("^(\\d+)([.)])( +|$)");
+    private static Pattern ORDERED_LIST_MARKER = Pattern.compile("^(\\d{1,9})([.)])( +|$)");
 
     private final ListBlock block;
 
