@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.internal.util.Parsing;
 import org.commonmark.parser.DelimiterProcessor;
 import org.commonmark.internal.inline.AsteriskDelimiterProcessor;
 import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
@@ -17,24 +18,11 @@ public class InlineParserImpl implements InlineParser {
     private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
     private static final String REG_CHAR = "[^\\\\()\\x00-\\x20]";
     private static final String IN_PARENS_NOSP = "\\((" + REG_CHAR + '|' + ESCAPED_CHAR + ")*\\)";
-    private static final String TAGNAME = "[A-Za-z][A-Za-z0-9]*";
-    private static final String ATTRIBUTENAME = "[a-zA-Z_:][a-zA-Z0-9:._-]*";
-    private static final String UNQUOTEDVALUE = "[^\"'=<>`\\x00-\\x20]+";
-    private static final String SINGLEQUOTEDVALUE = "'[^']*'";
-    private static final String DOUBLEQUOTEDVALUE = "\"[^\"]*\"";
-    private static final String ATTRIBUTEVALUE = "(?:" + UNQUOTEDVALUE + "|" + SINGLEQUOTEDVALUE
-            + "|" + DOUBLEQUOTEDVALUE + ")";
-    private static final String ATTRIBUTEVALUESPEC = "(?:" + "\\s*=" + "\\s*" + ATTRIBUTEVALUE
-            + ")";
-    private static final String ATTRIBUTE = "(?:" + "\\s+" + ATTRIBUTENAME + ATTRIBUTEVALUESPEC
-            + "?)";
-    private static final String OPENTAG = "<" + TAGNAME + ATTRIBUTE + "*" + "\\s*/?>";
-    private static final String CLOSETAG = "</" + TAGNAME + "\\s*[>]";
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
     private static final String DECLARATION = "<![A-Z]+" + "\\s+[^>]*>";
     private static final String CDATA = "<!\\[CDATA\\[[\\s\\S]*?\\]\\]>";
-    private static final String HTMLTAG = "(?:" + OPENTAG + "|" + CLOSETAG + "|" + HTMLCOMMENT
+    private static final String HTMLTAG = "(?:" + Parsing.OPENTAG + "|" + Parsing.CLOSETAG + "|" + HTMLCOMMENT
             + "|" + PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
     private static final String ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
 
