@@ -84,7 +84,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
         if (state.isBlank() && closingPattern == null) {
             return BlockContinue.none();
         } else {
-            return BlockContinue.of(state.getIndex());
+            return BlockContinue.atIndex(state.getIndex());
         }
     }
 
@@ -108,10 +108,9 @@ public class HtmlBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
-            int indent = nextNonSpace - state.getIndex();
             CharSequence line = state.getLine();
 
-            if (indent < 4 && line.charAt(nextNonSpace) == '<') {
+            if (state.getIndent() < 4 && line.charAt(nextNonSpace) == '<') {
                 for (int blockType = 1; blockType <= 7; blockType++) {
                     // Type 7 can not interrupt a paragraph
                     if (blockType == 7 && matchedBlockParser.getMatchedBlockParser().getBlock() instanceof Paragraph) {
@@ -121,7 +120,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
                     Pattern closer = BLOCK_PATTERNS[blockType][1];
                     boolean matches = opener.matcher(line.subSequence(nextNonSpace, line.length())).find();
                     if (matches) {
-                        return BlockStart.of(new HtmlBlockParser(pos(state, nextNonSpace), closer), state.getIndex());
+                        return BlockStart.of(new HtmlBlockParser(pos(state, nextNonSpace), closer)).atIndex(state.getIndex());
                     }
                 }
             }

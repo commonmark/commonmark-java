@@ -11,10 +11,10 @@ public class ListItemParser extends AbstractBlockParser {
 
     private final ListItem block = new ListItem();
 
-    private int itemOffset;
+    private int itemIndent;
 
-    public ListItemParser(int itemOffset, SourcePosition pos) {
-        this.itemOffset = itemOffset;
+    public ListItemParser(int itemIndent, SourcePosition pos) {
+        this.itemIndent = itemIndent;
         block.setSourcePosition(pos);
     }
 
@@ -36,13 +36,11 @@ public class ListItemParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         if (state.isBlank()) {
-            return BlockContinue.of(state.getNextNonSpaceIndex());
+            return BlockContinue.atIndex(state.getNextNonSpaceIndex());
         }
 
-        int indent = state.getNextNonSpaceIndex() - state.getIndex();
-        if (indent >= itemOffset) {
-            int newIndex = state.getIndex() + itemOffset;
-            return BlockContinue.of(newIndex);
+        if (state.getIndent() >= itemIndent) {
+            return BlockContinue.atColumn(state.getColumn() + itemIndent);
         } else {
             return BlockContinue.none();
         }

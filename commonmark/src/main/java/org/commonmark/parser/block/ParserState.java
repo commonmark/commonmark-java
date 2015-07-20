@@ -22,6 +22,16 @@ public interface ParserState {
     int getNextNonSpaceIndex();
 
     /**
+     * @return the current column within the line
+     */
+    int getColumn();
+
+    /**
+     * @return the indentation (either by spaces or tab stop of 4), starting from {@link #getColumn()}
+     */
+    int getIndent();
+
+    /**
      * @return true if the current line is blank starting from the index
      */
     boolean isBlank();

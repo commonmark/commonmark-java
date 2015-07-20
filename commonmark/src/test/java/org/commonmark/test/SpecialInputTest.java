@@ -44,4 +44,9 @@ public class SpecialInputTest extends RenderingTestCase {
         assertRendering("[title](\uD834\uDD1E)", "<p><a href=\"\uD834\uDD1E\">title</a></p>\n");
     }
 
+    @Test
+    public void indentedCodeBlockWithMixedTabsAndSpaces() {
+        assertRendering("    foo\n\tbar", "<pre><code>foo\nbar\n</code></pre>\n");
+    }
+
 }

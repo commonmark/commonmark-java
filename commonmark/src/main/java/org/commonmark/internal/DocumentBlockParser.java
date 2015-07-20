@@ -27,7 +27,7 @@ public class DocumentBlockParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState state) {
-        return BlockContinue.of(state.getIndex());
+        return BlockContinue.atIndex(state.getIndex());
     }
 
     @Override

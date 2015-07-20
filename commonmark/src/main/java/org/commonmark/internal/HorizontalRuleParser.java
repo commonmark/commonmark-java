@@ -32,14 +32,13 @@ public class HorizontalRuleParser extends AbstractBlockParser {
 
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            int offset = state.getIndex();
-            int nextNonSpace = state.getNextNonSpaceIndex();
-            if (nextNonSpace - offset >= 4) {
+            if (state.getIndent() >= 4) {
                 return BlockStart.none();
             }
+            int nextNonSpace = state.getNextNonSpaceIndex();
             CharSequence line = state.getLine();
             if (H_RULE.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
-                return BlockStart.of(new HorizontalRuleParser(pos(state, nextNonSpace)), line.length());
+                return BlockStart.of(new HorizontalRuleParser(pos(state, nextNonSpace))).atIndex(line.length());
             } else {
                 return BlockStart.none();
             }

@@ -24,8 +24,21 @@ public class DocumentParser implements ParserState {
      * 1-based line number
      */
     private int lineNumber = 0;
+
+    /**
+     * current index (offset) in input line
+     */
     private int index = 0;
+
+    /**
+     * current column of input line (tab causes column to go to next 4-space tab stop)
+     */
+    private int column = 0;
+
     private int nextNonSpace = 0;
+    private int nextNonSpaceColumn = 0;
+
+    private int indent = 0;
 
     private int lastLineLength = 0;
 
@@ -86,8 +99,23 @@ public class DocumentParser implements ParserState {
     }
 
     @Override
+    public int getColumn() {
+        return column;
+    }
+
+    @Override
+    public int getIndent() {
+        return indent;
+    }
+
+    @Override
     public boolean isBlank() {
-        return nextNonSpace == line.length();
+        if (nextNonSpace == line.length()) {
+            return true;
+        }
+
+        char c = line.charAt(nextNonSpace);
+        return c == '\n' || c == '\r';
     }
 
     @Override
@@ -100,15 +128,6 @@ public class DocumentParser implements ParserState {
         return activeBlockParsers.get(activeBlockParsers.size() - 1);
     }
 
-    private void findNextNonSpace() {
-        int match = Parsing.findNonSpace(line, index);
-        if (match == -1) {
-            nextNonSpace = line.length();
-        } else {
-            nextNonSpace = match;
-        }
-    }
-
     /**
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
@@ -116,7 +135,9 @@ public class DocumentParser implements ParserState {
     private void incorporateLine(CharSequence ln) {
         line = Parsing.prepareLine(ln);
         index = 0;
+        column = 0;
         nextNonSpace = 0;
+        nextNonSpaceColumn = 0;
         lineNumber += 1;
 
         // For each containing block, try to parse the associated line start.
@@ -135,7 +156,11 @@ public class DocumentParser implements ParserState {
                     lastLineLength = line.length() - 1; // -1 for newline
                     return;
                 } else {
-                    index = blockContinue.getNewIndex();
+                    if (blockContinue.getNewIndex() != -1) {
+                        setNewIndex(blockContinue.getNewIndex());
+                    } else if (blockContinue.getNewColumn() != -1) {
+                        setNewColumn(blockContinue.getNewColumn());
+                    }
                     matches++;
                 }
             } else {
@@ -158,18 +183,17 @@ public class DocumentParser implements ParserState {
         boolean tryBlockStarts = blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
         while (tryBlockStarts) {
             findNextNonSpace();
-            int indent = getNextNonSpaceIndex() - getIndex();
             boolean codeIndent = indent >= IndentedCodeBlockParser.INDENT;
 
             // this is a little performance optimization:
             if (!codeIndent && Parsing.isLetter(line, nextNonSpace)) {
-                index = nextNonSpace;
+                setNewIndex(nextNonSpace);
                 break;
             }
 
             BlockStartImpl blockStart = findBlockStart(blockParser);
             if (blockStart == null) {
-                index = nextNonSpace;
+                setNewIndex(nextNonSpace);
                 break;
             }
 
@@ -177,9 +201,14 @@ public class DocumentParser implements ParserState {
                 finalizeBlocks(unmatchedBlockParsers);
                 allClosed = true;
             }
-            index = blockStart.getNewIndex();
 
-            if (blockStart.replaceActiveBlockParser()) {
+            if (blockStart.getNewIndex() != -1) {
+                setNewIndex(blockStart.getNewIndex());
+            } else if (blockStart.getNewColumn() != -1) {
+                setNewColumn(blockStart.getNewColumn());
+            }
+
+            if (blockStart.isReplaceActiveBlockParser()) {
                 removeActiveBlockParser();
             }
 
@@ -215,6 +244,63 @@ public class DocumentParser implements ParserState {
             }
         }
         this.lastLineLength = ln.length() - 1; // -1 for newline
+    }
+
+    private void findNextNonSpace() {
+        int i = this.index;
+        int cols = this.column;
+
+        while (i < line.length()) {
+            char c = line.charAt(i);
+            switch (c) {
+                case ' ':
+                    i++;
+                    cols++;
+                    continue;
+                case '\t':
+                    i++;
+                    cols += (4 - (cols % 4));
+                    continue;
+            }
+            break;
+        }
+
+        nextNonSpace = i;
+        nextNonSpaceColumn = cols;
+        indent = nextNonSpaceColumn - this.column;
+    }
+
+    private void setNewIndex(int newIndex) {
+        if (newIndex >= nextNonSpace) {
+            // We can start from here, no need to calculate tab stops again
+            index = nextNonSpace;
+            column = nextNonSpaceColumn;
+        }
+        while (index < newIndex && index != line.length()) {
+            advance();
+        }
+    }
+
+    private void setNewColumn(int newColumn) {
+        if (newColumn >= nextNonSpaceColumn) {
+            // We can start from here, no need to calculate tab stops again
+            index = nextNonSpace;
+            column = nextNonSpaceColumn;
+        }
+        while (column < newColumn && index != line.length()) {
+            advance();
+        }
+    }
+
+    private void advance() {
+        char c = line.charAt(index);
+        if (c == '\t') {
+            index++;
+            column += (4 - (column % 4));
+        } else {
+            index++;
+            column++;
+        }
     }
 
     private BlockStartImpl findBlockStart(BlockParser blockParser) {

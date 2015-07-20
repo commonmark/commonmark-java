@@ -5,18 +5,16 @@ import org.commonmark.parser.block.BlockStart;
 
 public class BlockStartImpl extends BlockStart {
 
-    private final Iterable<BlockParser> blockParsers;
-    private final int newIndex;
-    private final boolean replaceActiveBlockParser;
+    private final BlockParser[] blockParsers;
+    private int newIndex = -1;
+    private int newColumn = -1;
+    private boolean replaceActiveBlockParser = false;
 
-    public BlockStartImpl(Iterable<BlockParser> blockParsers, int newIndex,
-                                    boolean replaceActiveBlockParser) {
+    public BlockStartImpl(BlockParser... blockParsers) {
         this.blockParsers = blockParsers;
-        this.newIndex = newIndex;
-        this.replaceActiveBlockParser = replaceActiveBlockParser;
     }
 
-    public Iterable<BlockParser> getBlockParsers() {
+    public BlockParser[] getBlockParsers() {
         return blockParsers;
     }
 
@@ -24,8 +22,30 @@ public class BlockStartImpl extends BlockStart {
         return newIndex;
     }
 
-    public boolean replaceActiveBlockParser() {
+    public int getNewColumn() {
+        return newColumn;
+    }
+
+    public boolean isReplaceActiveBlockParser() {
         return replaceActiveBlockParser;
+    }
+
+    @Override
+    public BlockStart atIndex(int newIndex) {
+        this.newIndex = newIndex;
+        return this;
+    }
+
+    @Override
+    public BlockStart atColumn(int newColumn) {
+        this.newColumn = newColumn;
+        return this;
+    }
+
+    @Override
+    public BlockStart replaceActiveBlockParser() {
+        this.replaceActiveBlockParser = true;
+        return this;
     }
 
 }

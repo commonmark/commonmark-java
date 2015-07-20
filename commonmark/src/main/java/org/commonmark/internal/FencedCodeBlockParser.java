@@ -33,11 +33,10 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
-        int indent = nextNonSpace - state.getIndex();
         int newIndex = state.getIndex();
         CharSequence line = state.getLine();
         Matcher matcher = null;
-        boolean matches = (indent <= 3 &&
+        boolean matches = (state.getIndent() <= 3 &&
                 nextNonSpace < line.length() &&
                 line.charAt(nextNonSpace) == block.getFenceChar() &&
                 (matcher = CLOSING_FENCE.matcher(line.subSequence(nextNonSpace, line.length())))
@@ -53,7 +52,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
                 i--;
             }
         }
-        return BlockContinue.of(newIndex);
+        return BlockContinue.atIndex(newIndex);
     }
 
     @Override
@@ -86,14 +85,13 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
-            int indent = nextNonSpace - state.getIndex();
             CharSequence line = state.getLine();
             Matcher matcher;
-            if (indent < 4 && (matcher = OPENING_FENCE.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
+            if (state.getIndent() < 4 && (matcher = OPENING_FENCE.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 int fenceLength = matcher.group(0).length();
                 char fenceChar = matcher.group(0).charAt(0);
-                FencedCodeBlockParser blockParser = new FencedCodeBlockParser(fenceChar, fenceLength, indent, pos(state, nextNonSpace));
-                return BlockStart.of(blockParser, nextNonSpace + fenceLength);
+                FencedCodeBlockParser blockParser = new FencedCodeBlockParser(fenceChar, fenceLength, state.getIndent(), pos(state, nextNonSpace));
+                return BlockStart.of(blockParser).atIndex(nextNonSpace + fenceLength);
             } else {
                 return BlockStart.none();
             }

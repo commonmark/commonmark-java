@@ -14,12 +14,16 @@ public class BlockContinue {
         return null;
     }
 
-    public static BlockContinue of(int newIndex) {
-        return new BlockContinueImpl(newIndex, false);
+    public static BlockContinue atIndex(int newIndex) {
+        return new BlockContinueImpl(newIndex, -1, false);
+    }
+
+    public static BlockContinue atColumn(int newColumn) {
+        return new BlockContinueImpl(-1, newColumn, false);
     }
 
     public static BlockContinue finished() {
-        return new BlockContinueImpl(0, true);
+        return new BlockContinueImpl(-1, -1, true);
     }
 
 }

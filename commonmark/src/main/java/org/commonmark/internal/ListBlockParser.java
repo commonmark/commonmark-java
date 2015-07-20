@@ -3,8 +3,6 @@ package org.commonmark.internal;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +38,7 @@ public class ListBlockParser extends AbstractBlockParser {
     public BlockContinue tryContinue(ParserState state) {
         // List blocks themselves don't have any markers, only list items. So try to stay in the list.
         // If there is a block start other than list item, canContain makes sure that this list is closed.
-        return BlockContinue.of(state.getIndex());
+        return BlockContinue.atIndex(state.getIndex());
     }
 
     public void setTight(boolean tight) {
@@ -50,7 +48,7 @@ public class ListBlockParser extends AbstractBlockParser {
     /**
      * Parse a list marker and return data on the marker or null.
      */
-    private static ListData parseListMarker(CharSequence ln, int offset, int indent) {
+    private static ListData parseListMarker(CharSequence ln, int offset) {
         CharSequence rest = ln.subSequence(offset, ln.length());
         int spacesAfterMarker;
         ListBlock listBlock;
@@ -77,7 +75,7 @@ public class ListBlockParser extends AbstractBlockParser {
         } else {
             padding = match.group(0).length();
         }
-        return new ListData(listBlock, indent, padding);
+        return new ListData(listBlock, padding);
     }
 
     /**
@@ -98,49 +96,43 @@ public class ListBlockParser extends AbstractBlockParser {
 
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            int nextNonSpace = state.getNextNonSpaceIndex();
-            int indent = nextNonSpace - state.getIndex();
             BlockParser matched = matchedBlockParser.getMatchedBlockParser();
 
-            if (indent >= 4 && !(matched instanceof ListBlockParser)) {
+            if (state.getIndent() >= 4 && !(matched instanceof ListBlockParser)) {
                 return BlockStart.none();
             }
-            ListData listData = parseListMarker(state.getLine(), nextNonSpace, indent);
+            int nextNonSpace = state.getNextNonSpaceIndex();
+            ListData listData = parseListMarker(state.getLine(), nextNonSpace);
             if (listData == null) {
                 return BlockStart.none();
             }
 
             // list item
-            int newOffset = nextNonSpace + listData.padding;
+            int newIndex = nextNonSpace + listData.padding;
 
-            List<BlockParser> blockParsers = new ArrayList<>(2);
+            int itemIndent = state.getIndent() + listData.padding;
+            ListItemParser listItemParser = new ListItemParser(itemIndent, pos(state, nextNonSpace));
 
-            // add the list if needed
+            // prepend the list block if needed
             if (!(matched instanceof ListBlockParser) ||
                     !(listsMatch((ListBlock) matched.getBlock(), listData.listBlock))) {
 
                 ListBlockParser listBlockParser = new ListBlockParser(listData.listBlock, pos(state, nextNonSpace));
                 listBlockParser.setTight(true);
 
-                blockParsers.add(listBlockParser);
+                return BlockStart.of(listBlockParser, listItemParser).atIndex(newIndex);
+            } else {
+                return BlockStart.of(listItemParser).atIndex(newIndex);
             }
-
-            // add the list item
-            int itemOffset = listData.indent + listData.padding;
-            blockParsers.add(new ListItemParser(itemOffset, pos(state, nextNonSpace)));
-
-            return BlockStart.of(blockParsers, newOffset, false);
         }
     }
 
     private static class ListData {
         final ListBlock listBlock;
-        final int indent;
         final int padding;
 
-        public ListData(ListBlock listBlock, int indent, int padding) {
+        public ListData(ListBlock listBlock, int padding) {
             this.listBlock = listBlock;
-            this.indent = indent;
             this.padding = padding;
         }
     }

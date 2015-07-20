@@ -1,9 +1,9 @@
 package org.commonmark.test;
 
 import org.commonmark.Extension;
-import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 import org.junit.Before;
 
 import java.util.Collections;
@@ -43,9 +43,13 @@ public abstract class RenderingTestCase {
         String html = renderer.render(node);
 
         // include source for better assertion errors
-        String expected = expectedHtml + "\n\n" + source;
-        String actual = html + "\n\n" + source;
+        String expected = showTabs(expectedHtml + "\n\n" + source);
+        String actual = showTabs(html + "\n\n" + source);
         assertEquals(expected, actual);
     }
 
+    private static String showTabs(String s) {
+        // Tabs are shown as "rightwards arrow" for easier comparison
+        return s.replace("\t", "\u2192");
+    }
 }

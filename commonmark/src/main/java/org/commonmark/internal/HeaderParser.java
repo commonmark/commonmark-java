@@ -44,7 +44,7 @@ public class HeaderParser extends AbstractBlockParser {
 
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            if (state.getNextNonSpaceIndex() - state.getIndex() >= 4) {
+            if (state.getIndent() >= 4) {
                 return BlockStart.none();
             }
             CharSequence line = state.getLine();
@@ -57,7 +57,8 @@ public class HeaderParser extends AbstractBlockParser {
                 int level = matcher.group(0).trim().length(); // number of #s
                 // remove trailing ###s:
                 String content = ATX_TRAILING.matcher(line.subSequence(newOffset, line.length())).replaceAll("");
-                return BlockStart.of(new HeaderParser(level, content, pos(state, nextNonSpace)), line.length());
+                return BlockStart.of(new HeaderParser(level, content, pos(state, nextNonSpace)))
+                        .atIndex(line.length());
 
             } else if (paragraphStartLine != null &&
                     ((matcher = SETEXT_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find())) {
@@ -65,7 +66,9 @@ public class HeaderParser extends AbstractBlockParser {
 
                 int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
                 String content = paragraphStartLine.toString();
-                return BlockStart.of(new HeaderParser(level, content, state.getActiveBlockParser().getBlock().getSourcePosition()), line.length(), true);
+                return BlockStart.of(new HeaderParser(level, content, state.getActiveBlockParser().getBlock().getSourcePosition()))
+                        .atIndex(line.length())
+                        .replaceActiveBlockParser();
             } else {
                 return BlockStart.none();
             }

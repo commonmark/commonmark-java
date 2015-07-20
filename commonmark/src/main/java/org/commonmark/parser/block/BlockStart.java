@@ -7,7 +7,7 @@ import java.util.Collections;
 /**
  * Result object for starting parsing of a block, see static methods for constructors.
  */
-public class BlockStart {
+public abstract class BlockStart {
 
     protected BlockStart() {
     }
@@ -16,16 +16,14 @@ public class BlockStart {
         return null;
     }
 
-    public static BlockStart of(BlockParser blockParser, int newIndex) {
-        return new BlockStartImpl(Collections.singleton(blockParser), newIndex, false);
+    public static BlockStart of(BlockParser... blockParsers) {
+        return new BlockStartImpl(blockParsers);
     }
 
-    public static BlockStart of(BlockParser blockParser, int newIndex, boolean replaceActiveBlockParser) {
-        return new BlockStartImpl(Collections.singleton(blockParser), newIndex, replaceActiveBlockParser);
-    }
+    public abstract BlockStart atIndex(int newIndex);
 
-    public static BlockStart of(Iterable<BlockParser> blockParsers, int newIndex, boolean replaceActiveBlockParser) {
-        return new BlockStartImpl(blockParsers, newIndex, replaceActiveBlockParser);
-    }
+    public abstract BlockStart atColumn(int newColumn);
+
+    public abstract BlockStart replaceActiveBlockParser();
 
 }

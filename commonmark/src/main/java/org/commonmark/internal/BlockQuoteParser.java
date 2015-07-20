@@ -32,13 +32,12 @@ public class BlockQuoteParser extends AbstractBlockParser {
     public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
         CharSequence line = state.getLine();
-        int indent = nextNonSpace - state.getIndex();
-        if (indent <= 3 && nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
+        if (state.getIndent() <= 3 && nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
             int newIndex = nextNonSpace + 1;
             if (newIndex < line.length() && line.charAt(newIndex) == ' ') {
                 newIndex++;
             }
-            return BlockContinue.of(newIndex);
+            return BlockContinue.atIndex(newIndex);
         } else {
             return BlockContinue.none();
         }
@@ -48,14 +47,13 @@ public class BlockQuoteParser extends AbstractBlockParser {
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
-            int indent = nextNonSpace - state.getIndex();
-            if (indent < 4 && line.charAt(nextNonSpace) == '>') {
+            if (state.getIndent() < 4 && line.charAt(nextNonSpace) == '>') {
                 int newOffset = nextNonSpace + 1;
                 // optional following space
                 if (newOffset < line.length() && line.charAt(newOffset) == ' ') {
                     newOffset++;
                 }
-                return BlockStart.of(new BlockQuoteParser(pos(state, nextNonSpace)), newOffset);
+                return BlockStart.of(new BlockQuoteParser(pos(state, nextNonSpace))).atIndex(newOffset);
             } else {
                 return BlockStart.none();
             }

@@ -33,7 +33,7 @@ public class TableBlockParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         if (state.getLine().toString().contains("|")) {
-            return BlockContinue.of(state.getIndex());
+            return BlockContinue.atIndex(state.getIndex());
         } else {
             return BlockContinue.none();
         }
@@ -161,7 +161,9 @@ public class TableBlockParser extends AbstractBlockParser {
                     List<String> separatorParts = split(separatorLine);
                     if (separatorParts.size() >= headParts.size()) {
                         SourcePosition sourcePosition = state.getActiveBlockParser().getBlock().getSourcePosition();
-                        return BlockStart.of(new TableBlockParser(paragraphStartLine, sourcePosition), state.getIndex(), true);
+                        return BlockStart.of(new TableBlockParser(paragraphStartLine, sourcePosition))
+                                .atIndex(state.getIndex())
+                                .replaceActiveBlockParser();
                     }
                 }
             }
