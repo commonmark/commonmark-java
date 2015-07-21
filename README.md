@@ -9,10 +9,15 @@ library with a nice Java API and some optional extensions.
 
 Design goals:
 
-* Small with minimal dependencies (the core has no external dependencies)
+* Small with minimal dependencies
 * Extensible (see below)
 
-Requires Java 7 or above. Dependency information for core library:
+Requirements:
+
+* Java 7 or above
+* The core has no dependencies; for extensions, see below
+
+Coordinates for core library:
 
 ```xml
 <dependency>
@@ -48,7 +53,7 @@ HTML tags and blocks. For all the available options, see other methods on the
 builder objects.
 
 Note that this library doesn't try to sanitize HTML; that is the responsibility
-of the user.
+of the caller.
 
 
 Extensions
