@@ -2,7 +2,7 @@ package org.commonmark.node;
 
 /**
  * Abstract visitor that visits all children by default.
- * <p/>
+ * <p>
  * Can be used to only process certain nodes. If you override a method and want visiting to descend into children,
  * call {@link #visitChildren}.
  */

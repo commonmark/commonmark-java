@@ -33,7 +33,7 @@ public class Parser {
 
     /**
      * Parse the specified input text into a AST (tree of nodes).
-     * <p/>
+     * <p>
      * Note that this method is thread-safe (a new parser state is used for each invocation).
      *
      * @param input the text to parse

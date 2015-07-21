@@ -32,7 +32,7 @@ public interface DelimiterProcessor {
     /**
      * Process the matched delimiters, e.g. by wrapping the nodes between opener and closer in a new node, or appending
      * a new node after the opener.
-     * <p/>
+     * <p>
      * Note that removal of the delimiter from the delimiter nodes and unlinking them is done by the caller.
      *
      * @param opener the text node that contained the opening delimiter

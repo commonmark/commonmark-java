@@ -2,7 +2,7 @@ package org.commonmark.node;
 
 /**
  * Node visitor.
- * <p/>
+ * <p>
  * See {@link AbstractVisitor} for a base class that can be extended.
  */
 public interface Visitor {

@@ -74,7 +74,7 @@ public class HtmlRenderer {
 
         /**
          * Whether {@link HtmlTag} and {@link HtmlBlock} should be escaped.
-         * <p/>
+         * <p>
          * Note that {@link HtmlTag} is only a tag itself, not the text between an opening tag and a closing tag. So markup
          * in the text will be parsed as normal and is not affected by this option.
          *
