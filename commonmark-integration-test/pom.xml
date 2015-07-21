@@ -9,6 +9,7 @@
     </parent>
 
     <artifactId>commonmark-integration-test</artifactId>
+    <name>commonmark-java integration tests</name>
     <description>Tests integration of all extensions</description>
 
     <dependencies>

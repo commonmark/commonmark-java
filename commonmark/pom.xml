@@ -9,7 +9,8 @@
     </parent>
 
     <artifactId>commonmark</artifactId>
-    <description>Java implementation of CommonMark specification</description>
+    <name>commonmark-java core</name>
+    <description>Core of commonmark-java</description>
 
     <dependencies>
         <dependency>
