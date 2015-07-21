@@ -314,13 +314,14 @@ public class InlineParserImpl implements InlineParser {
      * return null.
      */
     private String match(Pattern re) {
-        if (this.pos >= this.subject.length()) {
+        if (pos >= subject.length()) {
             return null;
         }
-        Matcher matcher = re.matcher(this.subject.substring(this.pos));
+        Matcher matcher = re.matcher(subject);
+        matcher.region(pos, subject.length());
         boolean m = matcher.find();
         if (m) {
-            this.pos += matcher.end();
+            pos = matcher.end();
             return matcher.group();
         } else {
             return null;
