@@ -1,12 +1,13 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.util.Parsing;
-import org.commonmark.parser.DelimiterProcessor;
 import org.commonmark.internal.inline.AsteriskDelimiterProcessor;
 import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
+import org.commonmark.internal.util.Parsing;
+import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
+import org.commonmark.parser.DelimiterProcessor;
 import org.commonmark.parser.InlineParser;
 
 import java.util.*;
@@ -72,11 +73,10 @@ public class InlineParserImpl implements InlineParser {
 
     private static final Pattern LINE_END = Pattern.compile("^ *(?:\n|$)");
 
-    /**
-     * Matches a string of non-special characters.
-     */
-    private final Pattern mainPattern;
     private final Map<Character, DelimiterProcessor> delimiterProcessors = new HashMap<>();
+
+    private final BitSet specialCharacters;
+    private final BitSet delimiterCharacters;
 
     /**
      * Link references by ID, needs to be built up using parseReference before calling parse.
@@ -101,7 +101,8 @@ public class InlineParserImpl implements InlineParser {
     public InlineParserImpl(List<DelimiterProcessor> customDelimiterProcessors) {
         addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()));
         addDelimiterProcessors(customDelimiterProcessors);
-        mainPattern = calculateMainPattern(delimiterProcessors.keySet());
+        delimiterCharacters = calculateDelimiterCharacters(delimiterProcessors.keySet());
+        specialCharacters = calculateSpecialCharacters(delimiterCharacters);
     }
 
     private void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors) {
@@ -114,15 +115,26 @@ public class InlineParserImpl implements InlineParser {
         }
     }
 
-    private static Pattern calculateMainPattern(Iterable<Character> delimiterSet) {
-        StringBuilder sb = new StringBuilder();
-        for (Character delimiterCharacter : delimiterSet) {
-            sb.append('\\');
-            sb.append(delimiterCharacter);
+    private static BitSet calculateDelimiterCharacters(Set<Character> characters) {
+        BitSet bitSet = new BitSet();
+        for (Character character : characters) {
+            bitSet.set(character);
         }
-        // Don't skip delimiter characters, they need special processing
-        String delimiterCharacters = sb.toString();
-        return Pattern.compile("^[^\n`\\[\\]\\\\!<&" + delimiterCharacters + "]+");
+        return bitSet;
+    }
+
+    private static BitSet calculateSpecialCharacters(BitSet delimiterCharacters) {
+        BitSet bitSet = new BitSet();
+        bitSet.or(delimiterCharacters);
+        bitSet.set('\n');
+        bitSet.set('`');
+        bitSet.set('[');
+        bitSet.set(']');
+        bitSet.set('\\');
+        bitSet.set('!');
+        bitSet.set('<');
+        bitSet.set('&');
+        return bitSet;
     }
 
     /**
@@ -227,11 +239,14 @@ public class InlineParserImpl implements InlineParser {
     }
 
     private void appendText(CharSequence text) {
-        if (currentText != null) {
-            currentText.append(text);
-        } else {
-            currentText = new StringBuilder(text);
+        appendText(text, 0, text.length());
+    }
+
+    private void appendText(CharSequence text, int beginIndex, int endIndex) {
+        if (currentText == null) {
+            currentText = new StringBuilder(endIndex - beginIndex + 16);
         }
+        currentText.append(text, beginIndex, endIndex);
     }
 
     private void appendNode(Node node) {
@@ -290,8 +305,9 @@ public class InlineParserImpl implements InlineParser {
                 res = this.parseEntity();
                 break;
             default:
-                DelimiterProcessor inlineDelimiter = delimiterProcessors.get(c);
-                if (inlineDelimiter != null) {
+                boolean isDelimiter = delimiterCharacters.get(c);
+                if (isDelimiter) {
+                    DelimiterProcessor inlineDelimiter = delimiterProcessors.get(c);
                     res = parseDelimiters(inlineDelimiter);
                 } else {
                     res = this.parseString();
@@ -390,7 +406,7 @@ public class InlineParserImpl implements InlineParser {
             appendNode(new HardLineBreak());
             pos++;
         } else if (pos < subj.length() && ESCAPABLE.matcher(subj.substring(pos, pos + 1)).matches()) {
-            appendText(subj.substring(pos, pos + 1));
+            appendText(subj, pos, pos + 1);
             pos++;
         } else {
             appendText("\\");
@@ -732,9 +748,16 @@ public class InlineParserImpl implements InlineParser {
      * Parse a run of ordinary characters, or a single character with a special meaning in markdown, as a plain string.
      */
     private boolean parseString() {
-        String m;
-        if ((m = this.match(mainPattern)) != null) {
-            appendText(m);
+        int begin = pos;
+        int length = subject.length();
+        while (pos != length) {
+            if (specialCharacters.get(subject.charAt(pos))) {
+                break;
+            }
+            pos++;
+        }
+        if (begin != pos) {
+            appendText(subject, begin, pos);
             return true;
         } else {
             return false;
