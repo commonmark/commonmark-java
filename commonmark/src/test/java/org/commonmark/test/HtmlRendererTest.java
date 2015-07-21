@@ -1,12 +1,12 @@
 package org.commonmark.test;
 
-import org.commonmark.node.*;
-import org.commonmark.parser.Parser;
-import org.commonmark.html.CodeBlockAttributeProvider;
+import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -77,17 +77,21 @@ public class HtmlRendererTest {
     }
 
     @Test
-    public void codeBlockAttributeProvider() {
-        CodeBlockAttributeProvider custom = new CodeBlockAttributeProvider() {
+    public void attributeProvider() {
+        AttributeProvider custom = new AttributeProvider() {
             @Override
-            public Map<String, String> getAttributes(FencedCodeBlock codeBlock) {
-                Map<String, String> attributes = new HashMap<>();
-                attributes.put("data-custom", codeBlock.getInfo());
-                return attributes;
+            public void setAttributes(Node node, Map<String, String> attributes) {
+                if (node instanceof FencedCodeBlock) {
+                    FencedCodeBlock fencedCodeBlock = (FencedCodeBlock) node;
+                    // Remove the default attribute for info
+                    attributes.remove("class");
+                    // Put info in custom attribute instead
+                    attributes.put("data-custom", fencedCodeBlock.getInfo());
+                }
             }
         };
 
-        HtmlRenderer renderer = HtmlRenderer.builder().codeBlockAttributeProvider(custom).build();
+        HtmlRenderer renderer = HtmlRenderer.builder().attributeProvider(custom).build();
         String rendered = renderer.render(parse("```info\ncontent\n```"));
         assertEquals("<pre><code data-custom=\"info\">content\n</code></pre>\n", rendered);
 

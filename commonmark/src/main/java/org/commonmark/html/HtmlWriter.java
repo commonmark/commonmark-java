@@ -1,5 +1,7 @@
 package org.commonmark.html;
 
+import org.commonmark.internal.util.Escaping;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -57,9 +59,9 @@ public class HtmlWriter {
         if (attrs != null && !attrs.isEmpty()) {
             for (Map.Entry<String, String> attrib : attrs.entrySet()) {
                 append(" ");
-                append(attrib.getKey());
+                append(Escaping.escapeHtml(attrib.getKey(), true));
                 append("=\"");
-                append(attrib.getValue());
+                append(Escaping.escapeHtml(attrib.getValue(), true));
                 append("\"");
             }
         }

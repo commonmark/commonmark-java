@@ -30,7 +30,7 @@ public class TableHtmlRenderer implements CustomHtmlRenderer {
 
     private void renderBlock(TableBlock tableBlock, HtmlWriter htmlWriter, Visitor visitor) {
         htmlWriter.line();
-        // TODO: default attributes (sourcePos)
+        // TODO: What about attributes? If we got the renderer instead of the visitor, we could call getAttributes.
         htmlWriter.tag("table");
         visitChildren(tableBlock, visitor);
         htmlWriter.tag("/table");

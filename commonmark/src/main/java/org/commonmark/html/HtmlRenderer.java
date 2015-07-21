@@ -14,16 +14,16 @@ public class HtmlRenderer {
     private final boolean escapeHtml;
     private final boolean sourcepos;
     private final boolean percentEncodeUrls;
-    private final CodeBlockAttributeProvider codeBlockAttributeProvider;
     private final List<CustomHtmlRenderer> customHtmlRenderers;
+    private final List<AttributeProvider> attributeProviders;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
         this.sourcepos = builder.sourcepos;
         this.percentEncodeUrls = builder.percentEncodeUrls;
-        this.codeBlockAttributeProvider = builder.codeBlockAttributeProvider;
         this.customHtmlRenderers = builder.customHtmlRenderers;
+        this.attributeProviders = builder.attributeProviders;
     }
 
     public static Builder builder() {
@@ -63,9 +63,9 @@ public class HtmlRenderer {
         private String softbreak = "\n";
         private boolean sourcepos = false;
         private boolean escapeHtml = false;
-        private CodeBlockAttributeProvider codeBlockAttributeProvider = new CodeBlockAttributeProvider();
-        private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
         private boolean percentEncodeUrls = false;
+        private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
+        private List<AttributeProvider> attributeProviders = new ArrayList<>();
 
         public Builder softbreak(String softbreak) {
             this.softbreak = softbreak;
@@ -89,11 +89,12 @@ public class HtmlRenderer {
         /**
          * Whether URLs of link or images should be percent-encoded. If enabled, the following is done:
          * <ul>
-         *     <li>Existing percent-encoded parts are preserved (e.g. "%20" is kept as "%20")</li>
-         *     <li>Reserved characters such as "/" are preserved, except for "[" and "]" (see encodeURI in JS)</li>
-         *     <li>Unreserved characters such as "a" are preserved</li>
-         *     <li>Other characters such umlauts are percent-encoded</li>
+         * <li>Existing percent-encoded parts are preserved (e.g. "%20" is kept as "%20")</li>
+         * <li>Reserved characters such as "/" are preserved, except for "[" and "]" (see encodeURI in JS)</li>
+         * <li>Unreserved characters such as "a" are preserved</li>
+         * <li>Other characters such umlauts are percent-encoded</li>
          * </ul>
+         *
          * @param percentEncodeUrls true to percent-encode, false for leaving as-is; default is false
          * @return {@code this}
          */
@@ -107,8 +108,8 @@ public class HtmlRenderer {
             return this;
         }
 
-        public Builder codeBlockAttributeProvider(CodeBlockAttributeProvider codeBlockAttributeProvider) {
-            this.codeBlockAttributeProvider = codeBlockAttributeProvider;
+        public Builder attributeProvider(AttributeProvider attributeProvider) {
+            this.attributeProviders.add(attributeProvider);
             return this;
         }
 
@@ -200,14 +201,20 @@ public class HtmlRenderer {
 
         @Override
         public void visit(FencedCodeBlock fencedCodeBlock) {
-            Map<String, String> providerAttributes = codeBlockAttributeProvider.getAttributes(fencedCodeBlock);
-            Map<String, String> attrs = new LinkedHashMap<>();
-            for (Map.Entry<String, String> attribute : providerAttributes.entrySet()) {
-                String escaped = escape(attribute.getValue(), true);
-                attrs.put(attribute.getKey(), escaped);
-            }
             String literal = fencedCodeBlock.getLiteral();
-            renderCodeBlock(literal, attrs);
+            Map<String, String> attributes = new LinkedHashMap<>();
+            String info = fencedCodeBlock.getInfo();
+            if (info != null && !info.isEmpty()) {
+                int space = info.indexOf(" ");
+                String language;
+                if (space == -1) {
+                    language = info;
+                } else {
+                    language = info.substring(0, space);
+                }
+                attributes.put("class", "language-" + language);
+            }
+            renderCodeBlock(literal, getAttrs(fencedCodeBlock, attributes));
         }
 
         @Override
@@ -230,18 +237,18 @@ public class HtmlRenderer {
 
         @Override
         public void visit(IndentedCodeBlock indentedCodeBlock) {
-            renderCodeBlock(indentedCodeBlock.getLiteral(), NO_ATTRIBUTES);
+            renderCodeBlock(indentedCodeBlock.getLiteral(), getAttrs(indentedCodeBlock));
         }
 
         @Override
         public void visit(Link link) {
-            Map<String, String> attrs = getAttrs(link);
+            Map<String, String> attrs = new LinkedHashMap<>();
             String url = optionallyPercentEncodeUrl(link.getDestination());
-            attrs.put("href", escape(url, true));
+            attrs.put("href", url);
             if (link.getTitle() != null) {
-                attrs.put("title", escape(link.getTitle(), true));
+                attrs.put("title", link.getTitle());
             }
-            html.tag("a", attrs);
+            html.tag("a", getAttrs(link, attrs));
             visitChildren(link);
             html.tag("/a");
         }
@@ -257,11 +264,11 @@ public class HtmlRenderer {
         @Override
         public void visit(OrderedList orderedList) {
             int start = orderedList.getStartNumber();
-            Map<String, String> attrs = getAttrs(orderedList);
+            Map<String, String> attrs = new LinkedHashMap<>();
             if (start != 1) {
                 attrs.put("start", String.valueOf(start));
             }
-            renderListBlock(orderedList, "ol", attrs);
+            renderListBlock(orderedList, "ol", getAttrs(orderedList, attrs));
         }
 
         @Override
@@ -340,6 +347,7 @@ public class HtmlRenderer {
 
         private void renderCustom(Node node) {
             for (CustomHtmlRenderer customHtmlRenderer : customHtmlRenderers) {
+                // TODO: Should we pass attributes here?
                 boolean handled = customHtmlRenderer.render(node, html, this);
                 if (handled) {
                     break;
@@ -380,7 +388,11 @@ public class HtmlRenderer {
         }
 
         private Map<String, String> getAttrs(Node node) {
-            Map<String, String> attrs = new LinkedHashMap<>();
+            return getAttrs(node, Collections.<String, String>emptyMap());
+        }
+
+        private Map<String, String> getAttrs(Node node, Map<String, String> defaultAttributes) {
+            Map<String, String> attrs = new LinkedHashMap<>(defaultAttributes);
             if (sourcepos && node instanceof Block) {
                 Block block = (Block) node;
                 SourcePosition pos = block.getSourcePosition();
@@ -391,7 +403,14 @@ public class HtmlRenderer {
                                     pos.getEndColumn());
                 }
             }
+            setCustomAttributes(node, attrs);
             return attrs;
+        }
+
+        private void setCustomAttributes(Node node, Map<String, String> attrs) {
+            for (AttributeProvider attributeProvider : attributeProviders) {
+                attributeProvider.setAttributes(node, attrs);
+            }
         }
     }
 }
