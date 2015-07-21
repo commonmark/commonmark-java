@@ -1,5 +1,6 @@
 package org.commonmark.ext.autolink;
 
+import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 
 public class AutolinkExtension implements Parser.ParserExtension {
@@ -7,7 +8,7 @@ public class AutolinkExtension implements Parser.ParserExtension {
     private AutolinkExtension() {
     }
 
-    public static AutolinkExtension create() {
+    public static Extension create() {
         return new AutolinkExtension();
     }
 
