@@ -2,6 +2,11 @@ package org.commonmark.parser;
 
 import org.commonmark.node.Text;
 
+/**
+ * Custom delimiter processor for additional delimiters besides {@code _} and {@code *}.
+ * <p>
+ * Note that implementations of this need to be thread-safe, the same instance may be used by multiple parsers.
+ */
 public interface DelimiterProcessor {
 
     /**

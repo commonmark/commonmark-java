@@ -10,19 +10,30 @@ import java.util.List;
 
 public class Parser {
 
-    private final DocumentParser documentParser;
+    private final List<BlockParserFactory> blockParserFactories;
+    private final List<DelimiterProcessor> delimiterProcessors;
     private final List<PostProcessor> postProcessors;
 
-    private Parser(DocumentParser documentParser, List<PostProcessor> postProcessors) {
-        this.documentParser = documentParser;
-        this.postProcessors = postProcessors;
+    private Parser(Builder builder) {
+        this.blockParserFactories = builder.blockParserFactories;
+        this.delimiterProcessors = builder.delimiterProcessors;
+        this.postProcessors = builder.postProcessors;
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Parse the specified input text into a AST (tree of nodes).
+     * <p>
+     * Note that this method is thread-safe (a new parser state is used for each invocation).
+     *
+     * @param input the text to parse
+     * @return the root node
+     */
     public Node parse(String input) {
+        DocumentParser documentParser = new DocumentParser(blockParserFactories, delimiterProcessors);
         Node document = documentParser.parse(input);
         for (PostProcessor postProcessor : postProcessors) {
             document = postProcessor.process(document);
@@ -36,7 +47,7 @@ public class Parser {
         private final List<PostProcessor> postProcessors = new ArrayList<>();
 
         public Parser build() {
-            return new Parser(new DocumentParser(blockParserFactories, delimiterProcessors), postProcessors);
+            return new Parser(this);
         }
 
         /**
