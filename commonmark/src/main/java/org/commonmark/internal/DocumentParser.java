@@ -1,6 +1,5 @@
 package org.commonmark.internal;
 
-import org.commonmark.parser.*;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
@@ -42,17 +41,23 @@ public class DocumentParser implements ParserState {
 
     private int lastLineLength = 0;
 
-    private final InlineParserImpl inlineParser;
     private final List<BlockParserFactory> blockParserFactories;
+    private final InlineParserImpl inlineParser;
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
     private Set<BlockParser> allBlockParsers = new HashSet<>();
     private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
-    public DocumentParser(List<BlockParserFactory> customBlockParserFactories, List<DelimiterProcessor> delimiterProcessors) {
-        blockParserFactories = new ArrayList<>(CORE_FACTORIES);
-        blockParserFactories.addAll(customBlockParserFactories);
-        inlineParser = new InlineParserImpl(delimiterProcessors);
+    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserImpl inlineParser) {
+        this.blockParserFactories = blockParserFactories;
+        this.inlineParser = inlineParser;
+    }
+
+    public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories) {
+        List<BlockParserFactory> list = new ArrayList<>();
+        list.addAll(DocumentParser.CORE_FACTORIES);
+        list.addAll(customBlockParserFactories);
+        return list;
     }
 
     /**

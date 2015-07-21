@@ -1,22 +1,29 @@
 package org.commonmark.parser;
 
 import org.commonmark.Extension;
-import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.internal.DocumentParser;
+import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.node.Node;
+import org.commonmark.parser.block.BlockParserFactory;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
 
 public class Parser {
 
     private final List<BlockParserFactory> blockParserFactories;
-    private final List<DelimiterProcessor> delimiterProcessors;
+    private final Map<Character, DelimiterProcessor> delimiterProcessors;
+    private final BitSet delimiterCharacters;
+    private final BitSet specialCharacters;
     private final List<PostProcessor> postProcessors;
 
     private Parser(Builder builder) {
-        this.blockParserFactories = builder.blockParserFactories;
-        this.delimiterProcessors = builder.delimiterProcessors;
+        this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories);
+        this.delimiterProcessors = InlineParserImpl.calculateDelimiterProcessors(builder.delimiterProcessors);
+        this.delimiterCharacters = InlineParserImpl.calculateDelimiterCharacters(delimiterProcessors.keySet());
+        this.specialCharacters = InlineParserImpl.calculateSpecialCharacters(delimiterCharacters);
         this.postProcessors = builder.postProcessors;
     }
 
@@ -26,14 +33,15 @@ public class Parser {
 
     /**
      * Parse the specified input text into a AST (tree of nodes).
-     * <p>
+     * <p/>
      * Note that this method is thread-safe (a new parser state is used for each invocation).
      *
      * @param input the text to parse
      * @return the root node
      */
     public Node parse(String input) {
-        DocumentParser documentParser = new DocumentParser(blockParserFactories, delimiterProcessors);
+        InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
+        DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
         Node document = documentParser.parse(input);
         for (PostProcessor postProcessor : postProcessors) {
             document = postProcessor.process(document);

@@ -1,7 +1,7 @@
 package org.commonmark.test;
 
-import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.parser.Parser;
 import org.commonmark.spec.SpecExample;
 import org.commonmark.spec.SpecReader;
 import org.openjdk.jmh.Main;
@@ -18,6 +18,8 @@ public class SpecBenchmark {
 
     private static final String SPEC = SpecReader.readSpec();
     private static final List<String> SPEC_EXAMPLES = getSpecExamples();
+    private static final Parser PARSER = Parser.builder().build();
+    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
 
     public static void main(String[] args) throws Exception {
         Main.main(args);
@@ -45,8 +47,7 @@ public class SpecBenchmark {
     private static long parseAndRender(List<String> examples) {
         long length = 0;
         for (String example : examples) {
-            String result = HtmlRenderer.builder().build()
-                    .render(Parser.builder().build().parse(example));
+            String result = RENDERER.render(PARSER.parse(example));
             length += result.length();
         }
         return length;

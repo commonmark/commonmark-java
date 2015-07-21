@@ -5,7 +5,6 @@ import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
 import org.commonmark.parser.DelimiterProcessor;
 import org.commonmark.parser.InlineParser;
@@ -73,10 +72,9 @@ public class InlineParserImpl implements InlineParser {
 
     private static final Pattern LINE_END = Pattern.compile("^ *(?:\n|$)");
 
-    private final Map<Character, DelimiterProcessor> delimiterProcessors = new HashMap<>();
-
     private final BitSet specialCharacters;
     private final BitSet delimiterCharacters;
+    private final Map<Character, DelimiterProcessor> delimiterProcessors;
 
     /**
      * Link references by ID, needs to be built up using parseReference before calling parse.
@@ -98,24 +96,13 @@ public class InlineParserImpl implements InlineParser {
 
     private StringBuilder currentText;
 
-    public InlineParserImpl(List<DelimiterProcessor> customDelimiterProcessors) {
-        addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()));
-        addDelimiterProcessors(customDelimiterProcessors);
-        delimiterCharacters = calculateDelimiterCharacters(delimiterProcessors.keySet());
-        specialCharacters = calculateSpecialCharacters(delimiterCharacters);
+    public InlineParserImpl(BitSet specialCharacters, BitSet delimiterCharacters, Map<Character, DelimiterProcessor> delimiterProcessors) {
+        this.delimiterProcessors = delimiterProcessors;
+        this.delimiterCharacters = delimiterCharacters;
+        this.specialCharacters = specialCharacters;
     }
 
-    private void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors) {
-        for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
-            char c = delimiterProcessor.getDelimiterChar();
-            DelimiterProcessor existing = this.delimiterProcessors.put(c, delimiterProcessor);
-            if (existing != null) {
-                throw new IllegalArgumentException("Inline delimiter parser can not be registered more than once, delimiter character: " + c);
-            }
-        }
-    }
-
-    private static BitSet calculateDelimiterCharacters(Set<Character> characters) {
+    public static BitSet calculateDelimiterCharacters(Set<Character> characters) {
         BitSet bitSet = new BitSet();
         for (Character character : characters) {
             bitSet.set(character);
@@ -123,7 +110,7 @@ public class InlineParserImpl implements InlineParser {
         return bitSet;
     }
 
-    private static BitSet calculateSpecialCharacters(BitSet delimiterCharacters) {
+    public static BitSet calculateSpecialCharacters(BitSet delimiterCharacters) {
         BitSet bitSet = new BitSet();
         bitSet.or(delimiterCharacters);
         bitSet.set('\n');
@@ -135,6 +122,23 @@ public class InlineParserImpl implements InlineParser {
         bitSet.set('<');
         bitSet.set('&');
         return bitSet;
+    }
+
+    public static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors) {
+        Map<Character, DelimiterProcessor> map = new HashMap<>();
+        addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()), map);
+        addDelimiterProcessors(delimiterProcessors, map);
+        return map;
+    }
+
+    private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
+        for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
+            char c = delimiterProcessor.getDelimiterChar();
+            DelimiterProcessor existing = map.put(c, delimiterProcessor);
+            if (existing != null) {
+                throw new IllegalArgumentException("Inline delimiter parser can not be registered more than once, delimiter character: " + c);
+            }
+        }
     }
 
     /**
