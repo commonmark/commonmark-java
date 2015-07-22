@@ -140,4 +140,11 @@
         </developer>
     </developers>
 
+    <scm>
+        <connection>scm:git:git@github.com:atlassian/commonmark-java.git</connection>
+        <developerConnection>scm:git:git@github.com:atlassian/commonmark-java.git</developerConnection>
+        <url>https://github.com/atlassian/commonmark-java</url>
+        <tag>HEAD</tag>
+    </scm>
+
 </project>
