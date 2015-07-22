@@ -38,6 +38,15 @@ public class SpecReader {
         }
     }
 
+    public static List<String> readExamplesAsString() {
+        List<SpecExample> examples = SpecReader.readExamples();
+        List<String> result = new ArrayList<>();
+        for (SpecExample example : examples) {
+            result.add(example.getSource());
+        }
+        return result;
+    }
+
     public static String readSpec() {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(getStream(), StandardCharsets.UTF_8))) {

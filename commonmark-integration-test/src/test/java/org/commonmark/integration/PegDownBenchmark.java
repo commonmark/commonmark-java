@@ -1,7 +1,5 @@
-package org.commonmark.test;
+package org.commonmark.integration;
 
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.parser.Parser;
 import org.commonmark.spec.SpecReader;
 import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -10,20 +8,21 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.pegdown.Extensions;
+import org.pegdown.PegDownProcessor;
 
 import java.util.Collections;
 import java.util.List;
 
 @State(Scope.Benchmark)
-public class SpecBenchmark {
+public class PegDownBenchmark {
 
     private static final String SPEC = SpecReader.readSpec();
     private static final List<String> SPEC_EXAMPLES = SpecReader.readExamplesAsString();
-    private static final Parser PARSER = Parser.builder().build();
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
+    private static final PegDownProcessor PROCESSOR = new PegDownProcessor(Extensions.FENCED_CODE_BLOCKS);
 
     public static void main(String[] args) throws Exception {
-        Options options = new OptionsBuilder().include(SpecBenchmark.class.getName() + ".*").build();
+        Options options = new OptionsBuilder().include(PegDownBenchmark.class.getName() + ".*").build();
         new Runner(options).run();
     }
 
@@ -40,7 +39,7 @@ public class SpecBenchmark {
     private static long parseAndRender(List<String> examples) {
         long length = 0;
         for (String example : examples) {
-            String result = RENDERER.render(PARSER.parse(example));
+            String result = PROCESSOR.markdownToHtml(example);
             length += result.length();
         }
         return length;
