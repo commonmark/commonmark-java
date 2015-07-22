@@ -31,6 +31,8 @@ Note that for 0.x releases of this library, the API is not considered stable
 yet and may break between minor releases. After 1.0, [Semantic Versioning] will
 be followed.
 
+[![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
+
 
 Usage
 -----
