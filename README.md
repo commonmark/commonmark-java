@@ -17,7 +17,7 @@ Requirements:
 * Java 7 or above
 * The core has no dependencies; for extensions, see below
 
-Coordinates for core library:
+Coordinates for core library (see all on [Maven Central]):
 
 ```xml
 <dependency>
@@ -120,6 +120,7 @@ BSD (2-clause) licensed, see LICENSE.txt file.
 [CommonMark]: http://commonmark.org/
 [Markdown]: https://daringfireball.net/projects/markdown/
 [commonmark.js]: https://github.com/jgm/commonmark.js
+[Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22com.atlassian.commonmark%22
 [Semantic Versioning]: http://semver.org/
 [autolink-java]: https://github.com/robinst/autolink-java
 [gfm-tables]: https://help.github.com/articles/github-flavored-markdown/#tables
