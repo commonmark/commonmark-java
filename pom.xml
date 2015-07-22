@@ -41,6 +41,7 @@
                 <configuration>
                     <source>7</source>
                     <target>7</target>
+                    <testCompilerArgument>-proc:none</testCompilerArgument>
                 </configuration>
             </plugin>
         </plugins>
