@@ -103,13 +103,13 @@ public class HtmlRenderer {
             return this;
         }
 
-        public Builder sourcepos(boolean sourcepos) {
-            this.sourcepos = sourcepos;
+        public Builder attributeProvider(AttributeProvider attributeProvider) {
+            this.attributeProviders.add(attributeProvider);
             return this;
         }
 
-        public Builder attributeProvider(AttributeProvider attributeProvider) {
-            this.attributeProviders.add(attributeProvider);
+        public Builder customHtmlRenderer(CustomHtmlRenderer customHtmlRenderer) {
+            this.customHtmlRenderers.add(customHtmlRenderer);
             return this;
         }
 
@@ -124,11 +124,6 @@ public class HtmlRenderer {
                     htmlRendererExtension.extend(this);
                 }
             }
-            return this;
-        }
-
-        public Builder customHtmlRenderer(CustomHtmlRenderer customHtmlRenderer) {
-            this.customHtmlRenderers.add(customHtmlRenderer);
             return this;
         }
 
