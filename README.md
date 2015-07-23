@@ -107,8 +107,10 @@ Pull requests, issues and comments welcome ☺. For pull requests:
 * Follow the existing style (always use braces, 4 space indent)
 * Separate unrelated changes into multiple pull requests
 
-For bigger changes, make sure you start a discussion first by creating an issue
-and explaining the intended change.
+See the existing "help wanted" issues for things to start contributing.
+
+For bigger changes, make sure you start a discussion first by creating
+an issue and explaining the intended change.
 
 
 License
