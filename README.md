@@ -5,12 +5,11 @@ Java implementation of [CommonMark], a specification of the [Markdown] format fo
 Parses input to an AST (tree of nodes) and then renders to HTML.
 
 This started out as a port of [commonmark.js] and has evolved into a full
-library with a nice Java API and some optional extensions.
-
-Design goals:
+library with a nice Java API and some optional extensions. Features:
 
 * Small with minimal dependencies
 * Extensible (see below)
+* Fast (10-20 times faster than pegdown, see benchmarks in repo)
 
 Requirements:
 
