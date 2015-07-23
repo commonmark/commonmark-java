@@ -19,7 +19,7 @@ public class PathologicalTest extends RenderingTestCase {
     private static final int X = 10_000;
 
     @Rule
-    public Timeout timeout = new Timeout(1, TimeUnit.SECONDS);
+    public Timeout timeout = new Timeout(2, TimeUnit.SECONDS);
 
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
