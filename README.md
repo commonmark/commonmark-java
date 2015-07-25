@@ -61,8 +61,22 @@ Extensions
 ----------
 
 Extensions need to extend the parser, or the HTML renderer, or both. To
-configure an extension, the builder objects have a method for passing a list of
-extensions. Let's look at how to enable tables (from GitHub Flavored Markdown):
+use an extension, the builder objects can be configured with a list of
+extensions. Because extensions are optional, they live in separate
+artifacts, so additional dependencies need to be added as well.
+
+Let's look at how to enable tables from GitHub Flavored Markdown.
+First, add an additional dependency (see [Maven Central] for others):
+
+```xml
+<dependency>
+    <groupId>com.atlassian.commonmark</groupId>
+    <artifactId>commonmark-ext-gfm-tables</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
+Then, configure the extension on the builders:
 
 ```java
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -74,9 +88,8 @@ HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
 
 To configure another extension in the above example, just add it to the list.
 
-The following extensions are developed with this library. Note that they are not
-in the same artifact as the core library, so you will need to add additional
-dependencies.
+The following extensions are developed with this library, each in their
+own artifact.
 
 ### Autolink
 
