@@ -1,5 +1,7 @@
 package org.commonmark.parser;
 
+import java.io.IOException;
+import java.io.Reader;
 import org.commonmark.Extension;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserImpl;
@@ -40,6 +42,16 @@ public class Parser {
      * @return the root node
      */
     public Node parse(String input) {
+        InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
+        DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
+        Node document = documentParser.parse(input);
+        for (PostProcessor postProcessor : postProcessors) {
+            document = postProcessor.process(document);
+        }
+        return document;
+    }
+    
+    public Node parse(Reader input) throws IOException {
         InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
         Node document = documentParser.parse(input);

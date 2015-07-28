@@ -1,5 +1,8 @@
 package org.commonmark.internal;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
@@ -75,6 +78,27 @@ public class DocumentParser implements ParserState {
         }
         if (input.length() > 0 && (lineStart == 0 || lineStart < input.length())) {
             incorporateLine(Substring.of(input, lineStart, input.length()));
+        }
+
+        finalizeBlocks(activeBlockParsers);
+        this.processInlines();
+        return documentBlockParser.getBlock();
+    }
+    
+    public Document parse(Reader input) throws IOException {
+        DocumentBlockParser documentBlockParser = new DocumentBlockParser();
+        activateBlockParser(documentBlockParser);
+
+        BufferedReader bufferedReader;
+        if (input instanceof BufferedReader) {
+            bufferedReader = (BufferedReader) input;
+        } else {
+            bufferedReader = new BufferedReader(input);
+        }
+        
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            incorporateLine(line);
         }
 
         finalizeBlocks(activeBlockParsers);
