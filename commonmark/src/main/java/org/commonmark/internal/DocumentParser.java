@@ -170,7 +170,8 @@ public class DocumentParser implements ParserState {
         }
 
         List<BlockParser> unmatchedBlockParsers = new ArrayList<>(activeBlockParsers.subList(matches, activeBlockParsers.size()));
-        BlockParser blockParser = activeBlockParsers.get(matches - 1);
+        BlockParser lastMatchedBlockParser = activeBlockParsers.get(matches - 1);
+        BlockParser blockParser = lastMatchedBlockParser;
         boolean allClosed = unmatchedBlockParsers.isEmpty();
 
         // Check to see if we've hit 2nd blank line; if so break out of list:
@@ -233,7 +234,7 @@ public class DocumentParser implements ParserState {
             if (!allClosed) {
                 finalizeBlocks(unmatchedBlockParsers);
             }
-            propagateLastLineBlank(blockParser, isBlank());
+            propagateLastLineBlank(blockParser, lastMatchedBlockParser);
 
             if (!blockParser.isContainer()) {
                 addLine();
@@ -446,8 +447,8 @@ public class DocumentParser implements ParserState {
         old.getBlock().unlink();
     }
 
-    private void propagateLastLineBlank(BlockParser blockParser, boolean blank) {
-        if (blank && blockParser.getBlock().getLastChild() != null) {
+    private void propagateLastLineBlank(BlockParser blockParser, BlockParser lastMatchedBlockParser) {
+        if (isBlank() && blockParser.getBlock().getLastChild() != null) {
             setLastLineBlank(blockParser.getBlock().getLastChild(), true);
         }
 
@@ -455,15 +456,16 @@ public class DocumentParser implements ParserState {
 
         // Block quote lines are never blank as they start with >
         // and we don't count blanks in fenced code for purposes of tight/loose
-        // lists or breaking out of lists. We also don't set last_line_blank
-        // on an empty list item, or if we just closed a fenced block.
-        boolean lastLineBlank = blank &&
-                !(block instanceof BlockQuote || block instanceof FencedCodeBlock ||
+        // lists or breaking out of lists. We also don't set lastLineBlank
+        // on an empty list item.
+        boolean lastLineBlank = isBlank() &&
+                !(block instanceof BlockQuote ||
+                        block instanceof FencedCodeBlock ||
                         (block instanceof ListItem &&
                                 block.getFirstChild() == null &&
-                                block.getSourcePosition().getStartLine() == this.lineNumber));
+                                blockParser != lastMatchedBlockParser));
 
-        // propagate lastLineBlank up through parents:
+        // Propagate lastLineBlank up through parents
         Node node = blockParser.getBlock();
         while (node != null) {
             setLastLineBlank(node, lastLineBlank);

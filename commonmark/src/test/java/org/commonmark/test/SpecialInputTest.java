@@ -49,4 +49,15 @@ public class SpecialInputTest extends RenderingTestCase {
         assertRendering("    foo\n\tbar", "<pre><code>foo\nbar\n</code></pre>\n");
     }
 
+    @Test
+    public void tightListInBlockQuote() {
+        assertRendering("> *\n> * a", "<blockquote>\n<ul>\n<li></li>\n<li>a</li>\n</ul>\n</blockquote>\n");
+    }
+
+    @Test
+    public void looseListInBlockQuote() {
+        // Second line in block quote is considered blank for purpose of loose list
+        assertRendering("> *\n>\n> * a", "<blockquote>\n<ul>\n<li></li>\n<li>\n<p>a</p>\n</li>\n</ul>\n</blockquote>\n");
+    }
+
 }
