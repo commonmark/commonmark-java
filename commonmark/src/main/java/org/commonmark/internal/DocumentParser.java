@@ -36,6 +36,7 @@ public class DocumentParser implements ParserState {
 
     private int nextNonSpace = 0;
     private int nextNonSpaceColumn = 0;
+    private boolean blank;
 
     private int indent = 0;
 
@@ -115,12 +116,7 @@ public class DocumentParser implements ParserState {
 
     @Override
     public boolean isBlank() {
-        if (nextNonSpace == line.length()) {
-            return true;
-        }
-
-        char c = line.charAt(nextNonSpace);
-        return c == '\n' || c == '\r';
+        return blank;
     }
 
     @Override
@@ -188,10 +184,9 @@ public class DocumentParser implements ParserState {
         boolean tryBlockStarts = blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
         while (tryBlockStarts) {
             findNextNonSpace();
-            boolean codeIndent = indent >= IndentedCodeBlockParser.INDENT;
 
             // this is a little performance optimization:
-            if (!codeIndent && Parsing.isLetter(line, nextNonSpace)) {
+            if (isBlank() || (indent < IndentedCodeBlockParser.INDENT && Parsing.isLetter(line, nextNonSpace))) {
                 setNewIndex(nextNonSpace);
                 break;
             }
@@ -252,9 +247,10 @@ public class DocumentParser implements ParserState {
     }
 
     private void findNextNonSpace() {
-        int i = this.index;
-        int cols = this.column;
+        int i = index;
+        int cols = column;
 
+        blank = true;
         while (i < line.length()) {
             char c = line.charAt(i);
             switch (c) {
@@ -267,12 +263,13 @@ public class DocumentParser implements ParserState {
                     cols += (4 - (cols % 4));
                     continue;
             }
+            blank = false;
             break;
         }
 
         nextNonSpace = i;
         nextNonSpaceColumn = cols;
-        indent = nextNonSpaceColumn - this.column;
+        indent = nextNonSpaceColumn - column;
     }
 
     private void setNewIndex(int newIndex) {
