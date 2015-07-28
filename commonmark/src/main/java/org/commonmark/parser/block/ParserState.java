@@ -41,6 +41,4 @@ public interface ParserState {
      */
     BlockParser getActiveBlockParser();
 
-    int getLineNumber();
-
 }

@@ -14,10 +14,6 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     private final IndentedCodeBlock block = new IndentedCodeBlock();
     private BlockContent content = new BlockContent();
 
-    public IndentedCodeBlockParser(SourcePosition pos) {
-        block.setSourcePosition(pos);
-    }
-
     @Override
     public Block getBlock() {
         return block;
@@ -57,7 +53,7 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
             // An indented code block cannot interrupt a paragraph.
             if (state.getIndent() >= INDENT && !state.isBlank() && !(state.getActiveBlockParser().getBlock() instanceof Paragraph)) {
                 int nextNonSpace = state.getNextNonSpaceIndex();
-                return BlockStart.of(new IndentedCodeBlockParser(pos(state, nextNonSpace))).atColumn(state.getColumn() + INDENT);
+                return BlockStart.of(new IndentedCodeBlockParser()).atColumn(state.getColumn() + INDENT);
             } else {
                 return BlockStart.none();
             }

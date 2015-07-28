@@ -2,16 +2,6 @@ package org.commonmark.node;
 
 public abstract class Block extends Node {
 
-    private SourcePosition sourcePosition;
-
-    public SourcePosition getSourcePosition() {
-        return this.sourcePosition;
-    }
-
-    public void setSourcePosition(SourcePosition sourcePosition) {
-        this.sourcePosition = sourcePosition;
-    }
-
     public Block getParent() {
         return (Block) super.getParent();
     }

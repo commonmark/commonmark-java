@@ -2,7 +2,6 @@ package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
 
@@ -20,9 +19,8 @@ public class TableBlockParser extends AbstractBlockParser {
     private boolean nextIsSeparatorLine = true;
     private String separatorLine = "";
 
-    private TableBlockParser(CharSequence headerLine, SourcePosition sourcePosition) {
+    private TableBlockParser(CharSequence headerLine) {
         rowLines.add(headerLine);
-        block.setSourcePosition(sourcePosition);
     }
 
     @Override
@@ -160,8 +158,7 @@ public class TableBlockParser extends AbstractBlockParser {
                     List<String> headParts = split(paragraphStartLine);
                     List<String> separatorParts = split(separatorLine);
                     if (separatorParts.size() >= headParts.size()) {
-                        SourcePosition sourcePosition = state.getActiveBlockParser().getBlock().getSourcePosition();
-                        return BlockStart.of(new TableBlockParser(paragraphStartLine, sourcePosition))
+                        return BlockStart.of(new TableBlockParser(paragraphStartLine))
                                 .atIndex(state.getIndex())
                                 .replaceActiveBlockParser();
                     }

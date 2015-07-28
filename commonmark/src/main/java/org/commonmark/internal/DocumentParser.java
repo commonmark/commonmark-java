@@ -19,10 +19,6 @@ public class DocumentParser implements ParserState {
             new IndentedCodeBlockParser.Factory());
 
     private CharSequence line;
-    /**
-     * 1-based line number
-     */
-    private int lineNumber = 0;
 
     /**
      * current index (offset) in input line
@@ -39,8 +35,6 @@ public class DocumentParser implements ParserState {
     private boolean blank;
 
     private int indent = 0;
-
-    private int lastLineLength = 0;
 
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserImpl inlineParser;
@@ -66,7 +60,6 @@ public class DocumentParser implements ParserState {
      */
     public Document parse(String input) {
         DocumentBlockParser documentBlockParser = new DocumentBlockParser();
-        documentBlockParser.getBlock().setSourcePosition(new SourcePosition(1, 1));
         activateBlockParser(documentBlockParser);
 
         int lineStart = 0;
@@ -84,7 +77,7 @@ public class DocumentParser implements ParserState {
             incorporateLine(Substring.of(input, lineStart, input.length()));
         }
 
-        finalizeBlocks(activeBlockParsers, lineNumber);
+        finalizeBlocks(activeBlockParsers);
         this.processInlines();
         return documentBlockParser.getBlock();
     }
@@ -120,11 +113,6 @@ public class DocumentParser implements ParserState {
     }
 
     @Override
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    @Override
     public BlockParser getActiveBlockParser() {
         return activeBlockParsers.get(activeBlockParsers.size() - 1);
     }
@@ -139,7 +127,6 @@ public class DocumentParser implements ParserState {
         column = 0;
         nextNonSpace = 0;
         nextNonSpaceColumn = 0;
-        lineNumber += 1;
 
         // For each containing block, try to parse the associated line start.
         // Bail out on failure: container will point to the last matching block.
@@ -153,8 +140,7 @@ public class DocumentParser implements ParserState {
             if (result instanceof BlockContinueImpl) {
                 BlockContinueImpl blockContinue = (BlockContinueImpl) result;
                 if (blockContinue.isFinalize()) {
-                    finalize(blockParser, this.lineNumber);
-                    lastLineLength = line.length() - 1; // -1 for newline
+                    finalize(blockParser);
                     return;
                 } else {
                     if (blockContinue.getNewIndex() != -1) {
@@ -240,11 +226,10 @@ public class DocumentParser implements ParserState {
                 addLine();
             } else if (!isBlank()) {
                 // create paragraph container for line
-                addChild(new ParagraphParser(new SourcePosition(this.lineNumber, nextNonSpace + 1)));
+                addChild(new ParagraphParser());
                 addLine();
             }
         }
-        this.lastLineLength = ln.length() - 1; // -1 for newline
     }
 
     private void findNextNonSpace() {
@@ -322,16 +307,10 @@ public class DocumentParser implements ParserState {
      * setting the 'tight' or 'loose' status of a list, and parsing the beginnings of paragraphs for reference
      * definitions.
      */
-    private void finalize(BlockParser blockParser, int lineNumber) {
+    private void finalize(BlockParser blockParser) {
         if (getActiveBlockParser() == blockParser) {
             deactivateBlockParser();
         }
-
-        // TODO: Maybe this should be done in the block parser instead?
-        Block block = blockParser.getBlock();
-        SourcePosition pos = block.getSourcePosition();
-        block.setSourcePosition(new SourcePosition(pos.getStartLine(), pos.getStartColumn(),
-                lineNumber, this.lastLineLength + 1));
 
         blockParser.closeBlock();
 
@@ -421,7 +400,7 @@ public class DocumentParser implements ParserState {
      */
     private <T extends BlockParser> T addChild(T blockParser) {
         while (!getActiveBlockParser().canContain(blockParser.getBlock())) {
-            this.finalize(getActiveBlockParser(), this.lineNumber - 1);
+            finalize(getActiveBlockParser());
         }
 
         getActiveBlockParser().getBlock().appendChild(blockParser.getBlock());
@@ -486,15 +465,11 @@ public class DocumentParser implements ParserState {
      * Finalize blocks of previous line. Returns true.
      */
     private boolean finalizeBlocks(List<BlockParser> blockParsers) {
-        finalizeBlocks(blockParsers, lineNumber - 1);
-        return true;
-    }
-
-    private void finalizeBlocks(List<BlockParser> blockParsers, int lineNumber) {
         for (int i = blockParsers.size() - 1; i >= 0; i--) {
             BlockParser blockParser = blockParsers.get(i);
-            finalize(blockParser, lineNumber);
+            finalize(blockParser);
         }
+        return true;
     }
 
     private static class MatchedBlockParserImpl implements MatchedBlockParser {

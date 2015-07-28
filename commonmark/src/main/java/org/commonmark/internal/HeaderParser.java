@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.Header;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
 
@@ -18,9 +17,8 @@ public class HeaderParser extends AbstractBlockParser {
     private final Header block = new Header();
     private final String content;
 
-    public HeaderParser(int level, String content, SourcePosition pos) {
+    public HeaderParser(int level, String content) {
         block.setLevel(level);
-        block.setSourcePosition(pos);
         this.content = content;
     }
 
@@ -57,7 +55,7 @@ public class HeaderParser extends AbstractBlockParser {
                 int level = matcher.group(0).trim().length(); // number of #s
                 // remove trailing ###s:
                 String content = ATX_TRAILING.matcher(line.subSequence(newOffset, line.length())).replaceAll("");
-                return BlockStart.of(new HeaderParser(level, content, pos(state, nextNonSpace)))
+                return BlockStart.of(new HeaderParser(level, content))
                         .atIndex(line.length());
 
             } else if (paragraphStartLine != null &&
@@ -66,7 +64,7 @@ public class HeaderParser extends AbstractBlockParser {
 
                 int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
                 String content = paragraphStartLine.toString();
-                return BlockStart.of(new HeaderParser(level, content, state.getActiveBlockParser().getBlock().getSourcePosition()))
+                return BlockStart.of(new HeaderParser(level, content))
                         .atIndex(line.length())
                         .replaceActiveBlockParser();
             } else {

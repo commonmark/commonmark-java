@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.ListItem;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
@@ -13,9 +12,8 @@ public class ListItemParser extends AbstractBlockParser {
 
     private int itemIndent;
 
-    public ListItemParser(int itemIndent, SourcePosition pos) {
+    public ListItemParser(int itemIndent) {
         this.itemIndent = itemIndent;
-        block.setSourcePosition(pos);
     }
 
     @Override

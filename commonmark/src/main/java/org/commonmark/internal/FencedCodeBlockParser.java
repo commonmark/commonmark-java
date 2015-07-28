@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.block.*;
 
 import java.util.regex.Matcher;
@@ -18,11 +17,10 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     private final FencedCodeBlock block = new FencedCodeBlock();
     private BlockContent content = new BlockContent();
 
-    public FencedCodeBlockParser(char fenceChar, int fenceLength, int fenceIndent, SourcePosition pos) {
+    public FencedCodeBlockParser(char fenceChar, int fenceLength, int fenceIndent) {
         block.setFenceChar(fenceChar);
         block.setFenceLength(fenceLength);
         block.setFenceIndent(fenceIndent);
-        block.setSourcePosition(pos);
     }
 
     @Override
@@ -90,7 +88,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
             if (state.getIndent() < 4 && (matcher = OPENING_FENCE.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 int fenceLength = matcher.group(0).length();
                 char fenceChar = matcher.group(0).charAt(0);
-                FencedCodeBlockParser blockParser = new FencedCodeBlockParser(fenceChar, fenceLength, state.getIndent(), pos(state, nextNonSpace));
+                FencedCodeBlockParser blockParser = new FencedCodeBlockParser(fenceChar, fenceLength, state.getIndent());
                 return BlockStart.of(blockParser).atIndex(nextNonSpace + fenceLength);
             } else {
                 return BlockStart.none();

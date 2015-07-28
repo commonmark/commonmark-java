@@ -3,7 +3,6 @@ package org.commonmark.internal;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.Paragraph;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.InlineParser;
@@ -13,10 +12,6 @@ public class ParagraphParser extends AbstractBlockParser {
 
     private final Paragraph block = new Paragraph();
     private BlockContent content = new BlockContent();
-
-    public ParagraphParser(SourcePosition pos) {
-        block.setSourcePosition(pos);
-    }
 
     @Override
     public Block getBlock() {

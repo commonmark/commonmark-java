@@ -14,9 +14,8 @@ public class ListBlockParser extends AbstractBlockParser {
 
     private final ListBlock block;
 
-    public ListBlockParser(ListBlock block, SourcePosition pos) {
+    public ListBlockParser(ListBlock block) {
         this.block = block;
-        block.setSourcePosition(pos);
     }
 
     @Override
@@ -111,13 +110,13 @@ public class ListBlockParser extends AbstractBlockParser {
             int newIndex = nextNonSpace + listData.padding;
 
             int itemIndent = state.getIndent() + listData.padding;
-            ListItemParser listItemParser = new ListItemParser(itemIndent, pos(state, nextNonSpace));
+            ListItemParser listItemParser = new ListItemParser(itemIndent);
 
             // prepend the list block if needed
             if (!(matched instanceof ListBlockParser) ||
                     !(listsMatch((ListBlock) matched.getBlock(), listData.listBlock))) {
 
-                ListBlockParser listBlockParser = new ListBlockParser(listData.listBlock, pos(state, nextNonSpace));
+                ListBlockParser listBlockParser = new ListBlockParser(listData.listBlock);
                 listBlockParser.setTight(true);
 
                 return BlockStart.of(listBlockParser, listItemParser).atIndex(newIndex);

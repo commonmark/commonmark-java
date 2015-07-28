@@ -4,7 +4,6 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.Paragraph;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.block.*;
 
 import java.util.regex.Pattern;
@@ -64,9 +63,8 @@ public class HtmlBlockParser extends AbstractBlockParser {
     private boolean finished = false;
     private BlockContent content = new BlockContent();
 
-    private HtmlBlockParser(SourcePosition pos, Pattern closingPattern) {
+    private HtmlBlockParser(Pattern closingPattern) {
         this.closingPattern = closingPattern;
-        block.setSourcePosition(pos);
     }
 
     @Override
@@ -120,7 +118,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
                     Pattern closer = BLOCK_PATTERNS[blockType][1];
                     boolean matches = opener.matcher(line.subSequence(nextNonSpace, line.length())).find();
                     if (matches) {
-                        return BlockStart.of(new HtmlBlockParser(pos(state, nextNonSpace), closer)).atIndex(state.getIndex());
+                        return BlockStart.of(new HtmlBlockParser(closer)).atIndex(state.getIndex());
                     }
                 }
             }

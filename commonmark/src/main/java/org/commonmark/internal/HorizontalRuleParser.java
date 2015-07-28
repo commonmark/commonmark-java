@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.HorizontalRule;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.block.*;
 
 import java.util.regex.Pattern;
@@ -12,10 +11,6 @@ public class HorizontalRuleParser extends AbstractBlockParser {
     private static Pattern H_RULE = Pattern.compile("^(?:(?:\\* *){3,}|(?:_ *){3,}|(?:- *){3,}) *$");
 
     private final HorizontalRule block = new HorizontalRule();
-
-    public HorizontalRuleParser(SourcePosition pos) {
-        block.setSourcePosition(pos);
-    }
 
     @Override
     public Block getBlock() {
@@ -38,7 +33,7 @@ public class HorizontalRuleParser extends AbstractBlockParser {
             int nextNonSpace = state.getNextNonSpaceIndex();
             CharSequence line = state.getLine();
             if (H_RULE.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
-                return BlockStart.of(new HorizontalRuleParser(pos(state, nextNonSpace))).atIndex(line.length());
+                return BlockStart.of(new HorizontalRuleParser()).atIndex(line.length());
             } else {
                 return BlockStart.none();
             }

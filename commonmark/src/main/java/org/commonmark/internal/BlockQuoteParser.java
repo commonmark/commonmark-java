@@ -2,16 +2,11 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.BlockQuote;
-import org.commonmark.node.SourcePosition;
 import org.commonmark.parser.block.*;
 
 public class BlockQuoteParser extends AbstractBlockParser {
 
     private final BlockQuote block = new BlockQuote();
-
-    public BlockQuoteParser(SourcePosition pos) {
-        block.setSourcePosition(pos);
-    }
 
     @Override
     public boolean isContainer() {
@@ -53,7 +48,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
                 if (newOffset < line.length() && line.charAt(newOffset) == ' ') {
                     newOffset++;
                 }
-                return BlockStart.of(new BlockQuoteParser(pos(state, nextNonSpace))).atIndex(newOffset);
+                return BlockStart.of(new BlockQuoteParser()).atIndex(newOffset);
             } else {
                 return BlockStart.none();
             }

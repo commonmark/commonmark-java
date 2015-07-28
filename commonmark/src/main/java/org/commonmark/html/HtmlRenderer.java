@@ -12,7 +12,6 @@ public class HtmlRenderer {
 
     private final String softbreak;
     private final boolean escapeHtml;
-    private final boolean sourcepos;
     private final boolean percentEncodeUrls;
     private final List<CustomHtmlRenderer> customHtmlRenderers;
     private final List<AttributeProvider> attributeProviders;
@@ -20,7 +19,6 @@ public class HtmlRenderer {
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
-        this.sourcepos = builder.sourcepos;
         this.percentEncodeUrls = builder.percentEncodeUrls;
         this.customHtmlRenderers = builder.customHtmlRenderers;
         this.attributeProviders = builder.attributeProviders;
@@ -61,7 +59,6 @@ public class HtmlRenderer {
     public static class Builder {
 
         private String softbreak = "\n";
-        private boolean sourcepos = false;
         private boolean escapeHtml = false;
         private boolean percentEncodeUrls = false;
         private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
@@ -388,16 +385,6 @@ public class HtmlRenderer {
 
         private Map<String, String> getAttrs(Node node, Map<String, String> defaultAttributes) {
             Map<String, String> attrs = new LinkedHashMap<>(defaultAttributes);
-            if (sourcepos && node instanceof Block) {
-                Block block = (Block) node;
-                SourcePosition pos = block.getSourcePosition();
-                if (pos != null) {
-                    attrs.put("data-sourcepos",
-                            "" + pos.getStartLine() + ':' +
-                                    pos.getStartColumn() + '-' + pos.getEndLine() + ':' +
-                                    pos.getEndColumn());
-                }
-            }
             setCustomAttributes(node, attrs);
             return attrs;
         }
