@@ -21,12 +21,12 @@ public class DocumentParser implements ParserState {
     private CharSequence line;
 
     /**
-     * current index (offset) in input line
+     * current index (offset) in input line (0-based)
      */
     private int index = 0;
 
     /**
-     * current column of input line (tab causes column to go to next 4-space tab stop)
+     * current column of input line (tab causes column to go to next 4-space tab stop) (0-based)
      */
     private int column = 0;
 
