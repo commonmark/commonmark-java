@@ -17,7 +17,7 @@ public class ParserTest {
         InputStream input1 = ParserTest.class.getResourceAsStream("/spec.txt");
         Node document1;
         try (InputStreamReader reader = new InputStreamReader(input1)) {
-            document1 = parser.parse(reader);
+            document1 = parser.parseReader(reader);
         }
         
         InputStream input2 = ParserTest.class.getResourceAsStream("/spec.txt");
