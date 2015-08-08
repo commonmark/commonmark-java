@@ -1,5 +1,7 @@
 package org.commonmark.parser;
 
+import java.io.IOException;
+import java.io.Reader;
 import org.commonmark.Extension;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserImpl;
@@ -43,12 +45,23 @@ public class Parser {
         InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
         Node document = documentParser.parse(input);
+        return postProcess(document);
+    }
+    
+    public Node parseReader(Reader input) throws IOException {
+        InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
+        DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
+        Node document = documentParser.parse(input);
+        return postProcess(document);
+    }
+
+    private Node postProcess(Node document) {
         for (PostProcessor postProcessor : postProcessors) {
             document = postProcessor.process(document);
         }
         return document;
     }
-
+    
     public static class Builder {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();

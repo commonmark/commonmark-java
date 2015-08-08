@@ -1,5 +1,8 @@
 package org.commonmark.internal;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
@@ -38,6 +41,7 @@ public class DocumentParser implements ParserState {
 
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserImpl inlineParser;
+    private final DocumentBlockParser documentBlockParser;
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
     private Set<BlockParser> allBlockParsers = new HashSet<>();
@@ -46,6 +50,9 @@ public class DocumentParser implements ParserState {
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserImpl inlineParser) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParser = inlineParser;
+        
+        this.documentBlockParser = new DocumentBlockParser();
+        activateBlockParser(this.documentBlockParser);
     }
 
     public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories) {
@@ -59,9 +66,6 @@ public class DocumentParser implements ParserState {
      * The main parsing function. Returns a parsed document AST.
      */
     public Document parse(String input) {
-        DocumentBlockParser documentBlockParser = new DocumentBlockParser();
-        activateBlockParser(documentBlockParser);
-
         int lineStart = 0;
         int lineBreak;
         while ((lineBreak = Parsing.findLineBreak(input, lineStart)) != -1) {
@@ -77,9 +81,23 @@ public class DocumentParser implements ParserState {
             incorporateLine(Substring.of(input, lineStart, input.length()));
         }
 
-        finalizeBlocks(activeBlockParsers);
-        this.processInlines();
-        return documentBlockParser.getBlock();
+        return finalizeAndProcess();
+    }
+    
+    public Document parse(Reader input) throws IOException {
+        BufferedReader bufferedReader;
+        if (input instanceof BufferedReader) {
+            bufferedReader = (BufferedReader) input;
+        } else {
+            bufferedReader = new BufferedReader(input);
+        }
+        
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            incorporateLine(line);
+        }
+
+        return finalizeAndProcess();
     }
 
     @Override
@@ -472,6 +490,12 @@ public class DocumentParser implements ParserState {
         return true;
     }
 
+    private Document finalizeAndProcess() {
+        finalizeBlocks(this.activeBlockParsers);
+        this.processInlines();
+        return this.documentBlockParser.getBlock();
+    }
+    
     private static class MatchedBlockParserImpl implements MatchedBlockParser {
 
         private final BlockParser matchedBlockParser;
