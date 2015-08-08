@@ -36,6 +36,51 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void oneColumnOneHeadNoBody() {
+        String expected = "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody></tbody>\n" +
+                "</table>\n";
+        assertRendering("|Abc\n|---\n", expected);
+        assertRendering("|Abc|\n|---|\n", expected);
+        assertRendering("Abc|\n---|\n", expected);
+
+        // Pipe required on separator
+        assertRendering("|Abc\n---\n", "<h2>|Abc</h2>\n");
+        // Pipe required on head
+        assertRendering("Abc\n|---\n", "<p>Abc\n|---</p>\n");
+    }
+
+    @Test
+    public void oneColumnOneHeadOneBody() {
+        String expected = "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td>1</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n";
+        assertRendering("|Abc\n|---\n|1", expected);
+        assertRendering("|Abc|\n|---|\n|1|", expected);
+        assertRendering("Abc|\n---|\n1|", expected);
+
+        // Pipe required on separator
+        assertRendering("|Abc\n---\n|1", "<h2>|Abc</h2>\n<p>|1</p>\n");
+
+        // Pipe required on body
+        assertRendering("|Abc\n|---\n1\n", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody></tbody>\n" +
+                "</table>\n" +
+                "<p>1</p>\n");
+    }
+
+    @Test
     public void oneHeadOneBody() {
         assertRendering("Abc|Def\n---|---\n1|2", "<table>\n" +
                 "<thead>\n" +

@@ -11,7 +11,12 @@ import java.util.regex.Pattern;
 
 public class TableBlockParser extends AbstractBlockParser {
 
-    private static Pattern TABLE_HEADER_SEPARATOR = Pattern.compile("^\\|?(?:\\s*:?-{3,}:?\\s*\\|)+\\s*:?-{3,}:?\\s*\\|?\\s*$");
+    private static String COL = "\\s*:?-{3,}:?\\s*";
+    private static Pattern TABLE_HEADER_SEPARATOR = Pattern.compile(
+            // For single column, require at least one pipe, otherwise it's ambiguous with setext headers
+            "\\|" + COL + "\\|?\\s*" + "|" +
+            COL + "\\|\\s*" + "|" +
+            "\\|?" + "(?:" + COL + "\\|)+" + COL + "\\|?\\s*");
 
     private final TableBlock block = new TableBlock();
     private final List<CharSequence> rowLines = new ArrayList<>();
@@ -154,7 +159,7 @@ public class TableBlockParser extends AbstractBlockParser {
             CharSequence paragraphStartLine = matchedBlockParser.getParagraphStartLine();
             if (paragraphStartLine != null && paragraphStartLine.toString().contains("|")) {
                 CharSequence separatorLine = line.subSequence(state.getIndex(), line.length());
-                if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).find()) {
+                if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).matches()) {
                     List<String> headParts = split(paragraphStartLine);
                     List<String> separatorParts = split(separatorLine);
                     if (separatorParts.size() >= headParts.size()) {
