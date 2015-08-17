@@ -13,6 +13,15 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Parses input text to a tree of nodes.
+ * <p>
+ * Start with the {@link #builder} method, configure the parser and build it. Example:
+ * <pre><code>
+ * Parser parser = Parser.builder().build();
+ * Node document = parser.parse("input text");
+ * </code></pre>
+ */
 public class Parser {
 
     private final List<BlockParserFactory> blockParserFactories;
@@ -29,12 +38,17 @@ public class Parser {
         this.postProcessors = builder.postProcessors;
     }
 
+    /**
+     * Create a new builder for configuring a {@link Parser}.
+     *
+     * @return a builder
+     */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Parse the specified input text into a AST (tree of nodes).
+     * Parse the specified input text into a tree of nodes.
      * <p>
      * Note that this method is thread-safe (a new parser state is used for each invocation).
      *
@@ -47,7 +61,16 @@ public class Parser {
         Node document = documentParser.parse(input);
         return postProcess(document);
     }
-    
+
+    /**
+     * Parse the specified reader into a tree of nodes. The caller is responsible for closing the reader.
+     * <p>
+     * Note that this method is thread-safe (a new parser state is used for each invocation).
+     *
+     * @param input the reader to parse
+     * @return the root node
+     * @throws IOException when reading throws an exception
+     */
     public Node parseReader(Reader input) throws IOException {
         InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
@@ -61,19 +84,25 @@ public class Parser {
         }
         return document;
     }
-    
+
+    /**
+     * Builder for configuring a {@link Parser}.
+     */
     public static class Builder {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
 
+        /**
+         * @return the configured {@link Parser}
+         */
         public Parser build() {
             return new Parser(this);
         }
 
         /**
          * @param extensions extensions to use on this parser
-         * @return this
+         * @return {@code this}
          */
         public Builder extensions(Iterable<? extends Extension> extensions) {
             for (Extension extension : extensions) {
@@ -102,7 +131,7 @@ public class Parser {
     }
 
     /**
-     * Extension for parser.
+     * Extension for {@link Parser}.
      */
     public interface ParserExtension extends Extension {
         void extend(Builder parserBuilder);

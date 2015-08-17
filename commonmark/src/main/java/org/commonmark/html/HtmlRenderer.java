@@ -6,6 +6,15 @@ import org.commonmark.node.*;
 
 import java.util.*;
 
+/**
+ * Renders a tree of nodes to HTML.
+ * <p>
+ * Start with the {@link #builder} method to configure the renderer. Example:
+ * <pre><code>
+ * HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
+ * renderer.render(node);
+ * </code></pre>
+ */
 public class HtmlRenderer {
 
     private static final Map<String, String> NO_ATTRIBUTES = Collections.emptyMap();
@@ -24,6 +33,11 @@ public class HtmlRenderer {
         this.attributeProviders = builder.attributeProviders;
     }
 
+    /**
+     * Create a new builder for configuring an {@link HtmlRenderer}.
+     *
+     * @return a builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -33,6 +47,11 @@ public class HtmlRenderer {
         node.accept(rendererVisitor);
     }
 
+    /**
+     * Render the tree of nodes to HTML.
+     * @param node the root node
+     * @return the rendered HTML
+     */
     public String render(Node node) {
         StringBuilder sb = new StringBuilder();
         render(node, sb);
@@ -51,26 +70,45 @@ public class HtmlRenderer {
         }
     }
 
-    // default options:
-    // softbreak: '\n', // by default, soft breaks are rendered as newlines in
-    // HTML
-    // set to "<br />" to make them hard breaks
-    // set to " " if you want to ignore line wrapping in source
+    /**
+     * Builder for configuring an {@link HtmlRenderer}. See methods for default configuration.
+     */
     public static class Builder {
 
+        private static final boolean ESCAPE_HTML_DEFAULT = false;
+        private static final boolean PERCENT_ENCODE_URLS_DEFAULT = false;
+
         private String softbreak = "\n";
-        private boolean escapeHtml = false;
-        private boolean percentEncodeUrls = false;
+        private boolean escapeHtml = ESCAPE_HTML_DEFAULT;
+        private boolean percentEncodeUrls = PERCENT_ENCODE_URLS_DEFAULT;
         private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
         private List<AttributeProvider> attributeProviders = new ArrayList<>();
 
+        /**
+         * @return the configured {@link HtmlRenderer}
+         */
+        public HtmlRenderer build() {
+            return new HtmlRenderer(this);
+        }
+
+        /**
+         * The HTML to use for rendering a softbreak, defaults to {@code "\n"} (meaning the rendered result doesn't have
+         * a line break).
+         * <p>
+         * Set it to {@code "<br>"} (or {@code "<br />"} to make them hard breaks.
+         * <p>
+         * Set it to {@code " "} to ignore line wrapping in the source.
+         *
+         * @param softbreak HTML for softbreak
+         * @return {@code this}
+         */
         public Builder softbreak(String softbreak) {
             this.softbreak = softbreak;
             return this;
         }
 
         /**
-         * Whether {@link HtmlTag} and {@link HtmlBlock} should be escaped.
+         * Whether {@link HtmlTag} and {@link HtmlBlock} should be escaped, defaults to {@value #ESCAPE_HTML_DEFAULT}.
          * <p>
          * Note that {@link HtmlTag} is only a tag itself, not the text between an opening tag and a closing tag. So markup
          * in the text will be parsed as normal and is not affected by this option.
@@ -84,7 +122,9 @@ public class HtmlRenderer {
         }
 
         /**
-         * Whether URLs of link or images should be percent-encoded. If enabled, the following is done:
+         * Whether URLs of link or images should be percent-encoded, defaults to {@value #PERCENT_ENCODE_URLS_DEFAULT}.
+         * <p>
+         * If enabled, the following is done:
          * <ul>
          * <li>Existing percent-encoded parts are preserved (e.g. "%20" is kept as "%20")</li>
          * <li>Reserved characters such as "/" are preserved, except for "[" and "]" (see encodeURI in JS)</li>
@@ -92,7 +132,7 @@ public class HtmlRenderer {
          * <li>Other characters such umlauts are percent-encoded</li>
          * </ul>
          *
-         * @param percentEncodeUrls true to percent-encode, false for leaving as-is; default is false
+         * @param percentEncodeUrls true to percent-encode, false for leaving as-is
          * @return {@code this}
          */
         public Builder percentEncodeUrls(boolean percentEncodeUrls) {
@@ -100,6 +140,12 @@ public class HtmlRenderer {
             return this;
         }
 
+        /**
+         * Add an attribute provider for adding/changing HTML attributes to the rendered tags.
+         *
+         * @param attributeProvider the attribute provider to add
+         * @return {@code this}
+         */
         public Builder attributeProvider(AttributeProvider attributeProvider) {
             this.attributeProviders.add(attributeProvider);
             return this;
@@ -112,7 +158,7 @@ public class HtmlRenderer {
 
         /**
          * @param extensions extensions to use on this HTML renderer
-         * @return this
+         * @return {@code this}
          */
         public Builder extensions(Iterable<? extends Extension> extensions) {
             for (Extension extension : extensions) {
@@ -123,14 +169,10 @@ public class HtmlRenderer {
             }
             return this;
         }
-
-        public HtmlRenderer build() {
-            return new HtmlRenderer(this);
-        }
     }
 
     /**
-     * Extension for HTML renderer.
+     * Extension for {@link HtmlRenderer}.
      */
     public interface HtmlRendererExtension extends Extension {
         void extend(Builder rendererBuilder);
