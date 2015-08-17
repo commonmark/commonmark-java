@@ -36,11 +36,11 @@ be followed.
 Usage
 -----
 
-Basic example:
+#### Parse and render to HTML
 
 ```java
 import org.commonmark.html.HtmlRenderer;
-import org.commonmark.node.Node;
+import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 
 Parser parser = Parser.builder().build();
@@ -55,6 +55,24 @@ builder objects.
 
 Note that this library doesn't try to sanitize HTML; that is the responsibility
 of the caller.
+
+#### Use a visitor to process parsed nodes
+
+```java
+Node node = parser.parse("...");
+MyVisitor visitor = new MyVisitor();
+node.accept(visitor);
+
+class MyVisitor extends AbstractVisitor {
+    @Override
+    public void visit(Paragraph paragraph) {
+        // Do something with paragraph (override other methods for other nodes):
+        System.out.println(paragraph);
+        // Descend into children:
+        visitChildren(paragraph);
+    }
+}
+```
 
 
 Extensions
