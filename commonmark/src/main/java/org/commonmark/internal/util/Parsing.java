@@ -2,8 +2,6 @@ package org.commonmark.internal.util;
 
 public class Parsing {
 
-    private static final String[] TAB_SPACES = new String[]{"    ", "   ", "  ", " "};
-
     private static final String TAGNAME = "[A-Za-z][A-Za-z0-9-]*";
     private static final String ATTRIBUTENAME = "[a-zA-Z_:][a-zA-Z0-9:._-]*";
     private static final String UNQUOTEDVALUE = "[^\"'=<>`\\x00-\\x20]+";

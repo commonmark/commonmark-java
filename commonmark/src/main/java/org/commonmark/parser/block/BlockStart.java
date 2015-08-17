@@ -2,8 +2,6 @@ package org.commonmark.parser.block;
 
 import org.commonmark.internal.BlockStartImpl;
 
-import java.util.Collections;
-
 /**
  * Result object for starting parsing of a block, see static methods for constructors.
  */
