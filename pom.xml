@@ -40,7 +40,8 @@
                 <configuration>
                     <source>7</source>
                     <target>7</target>
-                    <testCompilerArgument>-proc:none</testCompilerArgument>
+                    <!-- Workaround for MCOMPILER-236: Error from JMH's annprocess in `mvn install && mvn test` -->
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
                 </configuration>
             </plugin>
         </plugins>
@@ -85,12 +86,12 @@
             <dependency>
                 <groupId>org.openjdk.jmh</groupId>
                 <artifactId>jmh-core</artifactId>
-                <version>1.10.3</version>
+                <version>1.10.4</version>
             </dependency>
             <dependency>
                 <groupId>org.openjdk.jmh</groupId>
                 <artifactId>jmh-generator-annprocess</artifactId>
-                <version>1.10.3</version>
+                <version>1.10.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -3,10 +3,12 @@ package org.commonmark.test;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.spec.SpecReader;
+import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
@@ -22,7 +24,10 @@ public class SpecBenchmark {
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
 
     public static void main(String[] args) throws Exception {
-        Options options = new OptionsBuilder().include(SpecBenchmark.class.getName() + ".*").build();
+        Options options = new OptionsBuilder()
+                .parent(new CommandLineOptions(args))
+                .include(SpecBenchmark.class.getName() + ".*")
+                .build();
         new Runner(options).run();
     }
 

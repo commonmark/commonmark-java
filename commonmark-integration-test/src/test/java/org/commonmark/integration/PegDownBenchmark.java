@@ -5,6 +5,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.pegdown.Extensions;
@@ -21,7 +22,10 @@ public class PegDownBenchmark {
     private static final PegDownProcessor PROCESSOR = new PegDownProcessor(Extensions.FENCED_CODE_BLOCKS);
 
     public static void main(String[] args) throws Exception {
-        Options options = new OptionsBuilder().include(PegDownBenchmark.class.getName() + ".*").build();
+        Options options = new OptionsBuilder()
+                .parent(new CommandLineOptions(args))
+                .include(PegDownBenchmark.class.getName() + ".*")
+                .build();
         new Runner(options).run();
     }
 
