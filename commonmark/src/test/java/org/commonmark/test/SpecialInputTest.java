@@ -60,4 +60,9 @@ public class SpecialInputTest extends RenderingTestCase {
         assertRendering("> *\n>\n> * a", "<blockquote>\n<ul>\n<li></li>\n<li>\n<p>a</p>\n</li>\n</ul>\n</blockquote>\n");
     }
 
+    @Test
+    public void orderedListMarkerOnly() {
+        assertRendering("2.", "<ol start=\"2\">\n<li></li>\n</ol>\n");
+    }
+
 }
