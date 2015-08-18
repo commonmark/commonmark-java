@@ -145,7 +145,17 @@
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
                         <configuration>
+                            <!-- Don't automatically publish artifacts to Central, we might want to inspect them first. -->
                             <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <configuration>
+                            <!-- There's lots of potential for things to go wrong when publishing to Central, so
+                                 don't push the tag and master automatically (which happens before publishing). -->
+                            <pushChanges>false</pushChanges>
                         </configuration>
                     </plugin>
                 </plugins>
