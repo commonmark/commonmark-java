@@ -1,6 +1,8 @@
 package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
+import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughDelimiterProcessor;
+import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughHtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 
@@ -10,6 +12,9 @@ import org.commonmark.html.HtmlRenderer;
  * Create it with {@link #create()} and then configure it on the builders
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
  * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * </p>
+ * <p>
+ * The parsed strikethrough text regions are turned into {@link Strikethrough} nodes.
  * </p>
  */
 public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {

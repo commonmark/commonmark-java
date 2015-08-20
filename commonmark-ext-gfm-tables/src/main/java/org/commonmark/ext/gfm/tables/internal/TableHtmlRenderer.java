@@ -1,5 +1,6 @@
-package org.commonmark.ext.gfm.tables;
+package org.commonmark.ext.gfm.tables.internal;
 
+import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.html.CustomHtmlRenderer;
 import org.commonmark.html.HtmlWriter;
 import org.commonmark.node.Node;

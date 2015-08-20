@@ -1,5 +1,6 @@
-package org.commonmark.ext.gfm.tables;
+package org.commonmark.ext.gfm.tables.internal;
 
+import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
 import org.commonmark.parser.InlineParser;

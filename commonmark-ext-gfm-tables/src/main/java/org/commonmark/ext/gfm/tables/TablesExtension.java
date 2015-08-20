@@ -1,6 +1,8 @@
 package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
+import org.commonmark.ext.gfm.tables.internal.TableHtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 
@@ -10,6 +12,9 @@ import org.commonmark.html.HtmlRenderer;
  * Create it with {@link #create()} and then configure it on the builders
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
  * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * </p>
+ * <p>
+ * The parsed tables are turned into {@link TableBlock} blocks.
  * </p>
  */
 public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {

@@ -1,4 +1,4 @@
-package org.commonmark.ext.autolink;
+package org.commonmark.ext.autolink.internal;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.PostProcessor;

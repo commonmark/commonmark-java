@@ -1,5 +1,6 @@
-package org.commonmark.ext.gfm.strikethrough;
+package org.commonmark.ext.gfm.strikethrough.internal;
 
+import org.commonmark.ext.gfm.strikethrough.Strikethrough;
 import org.commonmark.html.CustomHtmlRenderer;
 import org.commonmark.html.HtmlWriter;
 import org.commonmark.node.Node;

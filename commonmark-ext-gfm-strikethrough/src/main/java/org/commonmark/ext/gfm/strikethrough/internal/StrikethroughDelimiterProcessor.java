@@ -1,5 +1,6 @@
-package org.commonmark.ext.gfm.strikethrough;
+package org.commonmark.ext.gfm.strikethrough.internal;
 
+import org.commonmark.ext.gfm.strikethrough.Strikethrough;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 import org.commonmark.parser.DelimiterProcessor;
