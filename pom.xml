@@ -50,6 +50,14 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
                         <excludePackageNames>*.internal,*.internal.*</excludePackageNames>
+                        <!-- The offline links make links from extensions to core work. -->
+                        <detectOfflineLinks>false</detectOfflineLinks>
+                        <offlineLinks>
+                            <offlineLink>
+                                <url>http://static.javadoc.io/com.atlassian.commonmark/commonmark/${project.version}/</url>
+                                <location>${project.basedir}/../commonmark/target/site/apidocs/</location>
+                            </offlineLink>
+                        </offlineLinks>
                     </configuration>
                 </plugin>
                 <plugin>
