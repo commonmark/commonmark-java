@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.atlassian.pom</groupId>
@@ -12,7 +11,7 @@
 
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-parent</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.2.0</version>
     <name>commonmark-java parent</name>
     <description>
         Java implementation of CommonMark, a specification of the Markdown format for turning plain text into formatted
@@ -92,27 +91,27 @@
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark</artifactId>
-                <version>0.1.1-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-autolink</artifactId>
-                <version>0.1.1-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
-                <version>0.1.1-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-tables</artifactId>
-                <version>0.1.1-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark</artifactId>
-                <version>0.1.1-SNAPSHOT</version>
+                <version>0.2.0</version>
                 <type>test-jar</type>
             </dependency>
 
@@ -156,7 +155,7 @@
         <connection>scm:git:git@github.com:atlassian/commonmark-java.git</connection>
         <developerConnection>scm:git:git@github.com:atlassian/commonmark-java.git</developerConnection>
         <url>https://github.com/atlassian/commonmark-java</url>
-        <tag>HEAD</tag>
+        <tag>commonmark-parent-0.2.0</tag>
     </scm>
 
 </project>
