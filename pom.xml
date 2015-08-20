@@ -30,6 +30,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <commonmark.javadoc.location>${project.basedir}/../commonmark/target/apidocs/</commonmark.javadoc.location>
     </properties>
 
     <build>
@@ -55,7 +56,7 @@
                         <offlineLinks>
                             <offlineLink>
                                 <url>http://static.javadoc.io/com.atlassian.commonmark/commonmark/${project.version}/</url>
-                                <location>${project.basedir}/../commonmark/target/site/apidocs/</location>
+                                <location>${commonmark.javadoc.location}</location>
                             </offlineLink>
                         </offlineLinks>
                     </configuration>
