@@ -75,12 +75,9 @@ public class HtmlRenderer {
      */
     public static class Builder {
 
-        private static final boolean ESCAPE_HTML_DEFAULT = false;
-        private static final boolean PERCENT_ENCODE_URLS_DEFAULT = false;
-
         private String softbreak = "\n";
-        private boolean escapeHtml = ESCAPE_HTML_DEFAULT;
-        private boolean percentEncodeUrls = PERCENT_ENCODE_URLS_DEFAULT;
+        private boolean escapeHtml = false;
+        private boolean percentEncodeUrls = false;
         private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
         private List<AttributeProvider> attributeProviders = new ArrayList<>();
 
@@ -108,7 +105,7 @@ public class HtmlRenderer {
         }
 
         /**
-         * Whether {@link HtmlTag} and {@link HtmlBlock} should be escaped, defaults to {@value #ESCAPE_HTML_DEFAULT}.
+         * Whether {@link HtmlTag} and {@link HtmlBlock} should be escaped, defaults to {@code false}.
          * <p>
          * Note that {@link HtmlTag} is only a tag itself, not the text between an opening tag and a closing tag. So markup
          * in the text will be parsed as normal and is not affected by this option.
@@ -122,7 +119,7 @@ public class HtmlRenderer {
         }
 
         /**
-         * Whether URLs of link or images should be percent-encoded, defaults to {@value #PERCENT_ENCODE_URLS_DEFAULT}.
+         * Whether URLs of link or images should be percent-encoded, defaults to {@code false}.
          * <p>
          * If enabled, the following is done:
          * <ul>
