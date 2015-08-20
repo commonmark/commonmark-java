@@ -30,6 +30,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <commonmark.javadoc.location>${project.basedir}/../commonmark/target/apidocs/</commonmark.javadoc.location>
+        <!-- Don't automatically publish artifacts to Central, we might want to inspect them first. -->
+        <nexus.staging.autoRelease>false</nexus.staging.autoRelease>
     </properties>
 
     <build>
@@ -76,10 +78,6 @@
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <!-- Workaround for parent pom pulling in a forked version that's not on Central. -->
                     <version>1.6.6</version>
-                    <configuration>
-                        <!-- Don't automatically publish artifacts to Central, we might want to inspect them first. -->
-                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
