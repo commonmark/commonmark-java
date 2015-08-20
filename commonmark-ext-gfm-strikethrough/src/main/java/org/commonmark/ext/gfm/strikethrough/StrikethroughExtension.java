@@ -4,6 +4,14 @@ import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 
+/**
+ * Extension for GFM strikethrough using ~~ (GitHub Flavored Markdown).
+ * <p>
+ * Create it with {@link #create()} and then configure it on the builders
+ * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
+ * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * </p>
+ */
 public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
 
     private StrikethroughExtension() {

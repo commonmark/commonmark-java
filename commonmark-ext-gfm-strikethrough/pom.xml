@@ -9,7 +9,7 @@
 
     <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
     <name>commonmark-java extension for strikethrough</name>
-    <description>commonmark-java extension for GFM strikethrough using ~~~ (GitHub Flavored Markdown)</description>
+    <description>commonmark-java extension for GFM strikethrough using ~~ (GitHub Flavored Markdown)</description>
 
     <dependencies>
         <dependency>

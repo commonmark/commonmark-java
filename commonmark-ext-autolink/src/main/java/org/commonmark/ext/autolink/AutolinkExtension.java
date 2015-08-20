@@ -3,6 +3,14 @@ package org.commonmark.ext.autolink;
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 
+/**
+ * Extension for automatically turning plain URLs and email addresses into links.
+ * <p>
+ * Create it with {@link #create()} and then configure it on the builders
+ * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
+ * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * </p>
+ */
 public class AutolinkExtension implements Parser.ParserExtension {
 
     private AutolinkExtension() {

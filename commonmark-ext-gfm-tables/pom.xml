@@ -9,7 +9,7 @@
 
     <artifactId>commonmark-ext-gfm-tables</artifactId>
     <name>commonmark-java extension for tables</name>
-    <description>commonmark-java extension for GFM tables using | (GitHub Flavored Markdown)</description>
+    <description>commonmark-java extension for GFM tables using "|" pipes (GitHub Flavored Markdown)</description>
 
     <dependencies>
         <dependency>
