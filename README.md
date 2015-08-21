@@ -22,7 +22,7 @@ Coordinates for core library (see all on [Maven Central]):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
@@ -95,7 +95,7 @@ First, add an additional dependency (see [Maven Central] for others):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-ext-gfm-tables</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
