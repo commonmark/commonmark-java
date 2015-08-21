@@ -74,6 +74,11 @@ class MyVisitor extends AbstractVisitor {
 }
 ```
 
+### API documentation
+
+Javadocs are available online on
+[javadoc.io](http://www.javadoc.io/doc/com.atlassian.commonmark/commonmark).
+
 
 Extensions
 ----------
