@@ -53,8 +53,7 @@ public class HtmlRenderer {
     
     public void render(Node node, OutputStream output) throws IOException {
         Writer writer = new OutputStreamWriter(output);
-        RendererVisitor rendererVisitor = new RendererVisitor(new HtmlWriter(writer), customHtmlRenderers);
-        node.accept(rendererVisitor);
+        render(node, writer);
         writer.flush();
     }
 
