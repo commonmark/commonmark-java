@@ -1,5 +1,6 @@
 package org.commonmark.test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,5 +34,23 @@ public class ParserTest {
         
         HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
         assertEquals(renderer.render(document2), renderer.render(document1));
+    }
+    
+    @Test
+    public void outputStreamTest() throws IOException {
+        Parser parser = Parser.builder().build();
+
+        InputStream input = ParserTest.class.getResourceAsStream("/spec.txt");
+        Node document;
+        try (InputStreamReader reader = new InputStreamReader(input)) {
+            document = parser.parseReader(reader);
+        }
+        
+        HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        renderer.render(document, baos);
+        
+        assertEquals(renderer.render(document), baos.toString());
     }
 }

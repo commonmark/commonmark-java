@@ -1,5 +1,9 @@
 package org.commonmark.html;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import org.commonmark.Extension;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.*;
@@ -45,6 +49,13 @@ public class HtmlRenderer {
     public void render(Node node, Appendable output) {
         RendererVisitor rendererVisitor = new RendererVisitor(new HtmlWriter(output), customHtmlRenderers);
         node.accept(rendererVisitor);
+    }
+    
+    public void render(Node node, OutputStream output) throws IOException {
+        Writer writer = new OutputStreamWriter(output);
+        RendererVisitor rendererVisitor = new RendererVisitor(new HtmlWriter(writer), customHtmlRenderers);
+        node.accept(rendererVisitor);
+        writer.flush();
     }
 
     /**
