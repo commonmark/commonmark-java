@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="commonmark_code_block_color">#eaeaea</color>
+    <color name="commonmark_quote_stripe_color">#4d4d4d</color>
+
+</resources>

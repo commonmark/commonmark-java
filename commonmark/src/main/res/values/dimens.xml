@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="commonmark_list_item_marker_left_margin">16dp</dimen>
+    <dimen name="commonmark_list_item_extra_height">4dp</dimen>
+    <dimen name="commonmark_list_item_leading">32dp</dimen>
+    <dimen name="commonmark_list_item_bullet_radius">3dp</dimen>
+
+    <dimen name="commonmark_header_text_size">15sp</dimen>
+    <dimen name="commonmark_code_text_size">12sp</dimen>
+
+    <dimen name="commonmark_code_block_padding">4dp</dimen>
+    <dimen name="commonmark_paragraph_padding">8dp</dimen>
+    <dimen name="commonmark_quote_padding">4dp</dimen>
+    <dimen name="commonmark_quote_stripe_width">2dp</dimen>
+
+</resources>
