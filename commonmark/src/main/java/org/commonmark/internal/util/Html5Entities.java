@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +44,9 @@ public class Html5Entities {
     private static Map<String, String> readEntities() {
         Map<String, String> entities = new HashMap<>();
         InputStream stream = Html5Entities.class.getResourceAsStream("entities.properties");
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new InputStreamReader(stream, Charset.forName("UTF-8")));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.length() == 0) {
@@ -56,6 +59,14 @@ public class Html5Entities {
             }
         } catch (IOException e) {
             throw new IllegalStateException("Failed reading data for HTML named character references", e);
+        } finally {
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         entities.put("NewLine", "\n");
         return entities;

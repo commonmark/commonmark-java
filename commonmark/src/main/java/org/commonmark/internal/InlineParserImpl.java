@@ -64,7 +64,7 @@ public class InlineParserImpl implements InlineParser {
 
     private static final Pattern SPNL = Pattern.compile("^ *(?:\n *)?");
 
-    private static final Pattern WHITESPACE_CHAR = Pattern.compile("^\\p{IsWhite_Space}");
+    private static final Pattern WHITESPACE_CHAR = Pattern.compile("^\\p{javaWhitespace}");
 
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 

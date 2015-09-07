@@ -1,0 +1,22 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.0"
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 23
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-annotations:23.0.0'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.openjdk.jmh:jmh-core-benchmarks:1.10.5'
+}
+
+
+
+

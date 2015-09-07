@@ -1,53 +1,60 @@
-commonmark-java
+commonmark-android
 ===============
 
-Java implementation of [CommonMark], a specification of the [Markdown] format for turning plain text into formatted text.
-Parses input to an AST (tree of nodes) and then renders to HTML.
-
-This started out as a port of [commonmark.js] and has evolved into a full
-library with a nice Java API and some optional extensions. Features:
-
-* Small with minimal dependencies
-* Extensible (see below)
-* Fast (10-20 times faster than pegdown, see benchmarks in repo)
+This library is forked from [commonmark.js](https://github.com/atlassian/commonmark-java).
+Java implementation of [CommonMark] optimized for Android, a specification of the [Markdown] format for turning plain text into formatted text.
+Added support for rendering String as Spannable and adapted regular expressions for Android.
 
 Requirements:
 
 * Java 7 or above
-* The core has no dependencies; for extensions, see below
-
-Coordinates for core library (see all on [Maven Central]):
-
-```xml
-<dependency>
-    <groupId>com.atlassian.commonmark</groupId>
-    <artifactId>commonmark</artifactId>
-    <version>0.2.0</version>
-</dependency>
-```
-
-Note that for 0.x releases of this library, the API is not considered stable
-yet and may break between minor releases. After 1.0, [Semantic Versioning] will
-be followed.
-
-[![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
-
-
+* Android SDK 9 or above
 Usage
 -----
 
-#### Parse and render to HTML
+#### Parse and set Spannable to the string
 
-```java
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.node.*;
-import org.commonmark.parser.Parser;
-
-Parser parser = Parser.builder().build();
-Node document = parser.parse("This is *Sparta*");
-HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
-renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
 ```
+Parser parser = Parser.builder().extensions(extensions).build();
+Node document = parser.parse("I'm a **bold string**");
+
+Resources res = TeamCom.getContext().getResources();
+SpannableRenderer renderer = SpannableRenderer.builder().quoteStripeColorResId(R.color.primary).build();
+CharSequence formattedString = renderer.render(res, document);
+```
+
+This example set the specified in this library spannables for each markdown.
+It's possible to implement org.commonmark.spannable.SpannableFactory with custom spannables.
+
+```
+Parser parser = Parser.builder().build();
+        SpannableRenderer renderer = SpannableRenderer.builder().factory(new SpannableFactory() {
+            @Nullable
+            @Override
+            public Object getSpan(int type) {
+                 switch (type) {
+                                    case TYPE_BOLD:
+                                }
+            }
+
+            @Nullable
+            @Override
+            public Object getLinkSpan(String url) {
+                return null;
+            }
+        }).build();
+```
+
+#### Parse and remove tokens of markdown from the text
+
+```
+Parser parser = Parser.builder().extensions(extensions).build();
+Node document = parser.parse("I'm a **clean** string");
+
+CleanRenderer renderer = new CleanRenderer();
+CharSequence cleanedString = renderer.render(document);
+```
+
 
 This uses the parser and renderer with default options, except for escaping raw
 HTML tags and blocks. For all the available options, see other methods on the

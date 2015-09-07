@@ -84,11 +84,15 @@ public class ListBlockParser extends AbstractBlockParser {
      */
     private static boolean listsMatch(ListBlock a, ListBlock b) {
         if (a instanceof BulletList && b instanceof BulletList) {
-            return Objects.equals(((BulletList) a).getBulletMarker(), ((BulletList) b).getBulletMarker());
+            return equals(((BulletList) a).getBulletMarker(), ((BulletList) b).getBulletMarker());
         } else if (a instanceof OrderedList && b instanceof OrderedList) {
-            return Objects.equals(((OrderedList) a).getDelimiter(), ((OrderedList) b).getDelimiter());
+            return equals(((OrderedList) a).getDelimiter(), ((OrderedList) b).getDelimiter());
         }
         return false;
+    }
+
+    private static boolean equals(Object a, Object b) {
+        return (a == null) ? (b == null) : a.equals(b);
     }
 
     public static class Factory extends AbstractBlockParserFactory {

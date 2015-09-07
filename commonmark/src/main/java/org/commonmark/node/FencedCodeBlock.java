@@ -56,4 +56,15 @@ public class FencedCodeBlock extends Block {
     public void setLiteral(String literal) {
         this.literal = literal;
     }
+
+    @Override
+    public String toString() {
+        return "FencedCodeBlock{" +
+                "fenceChar=" + fenceChar +
+                ", fenceLength=" + fenceLength +
+                ", fenceIndent=" + fenceIndent +
+                ", info='" + info + '\'' +
+                ", literal='" + literal + '\'' +
+                "} " + super.toString();
+    }
 }

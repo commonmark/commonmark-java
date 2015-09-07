@@ -1,0 +1,30 @@
+package org.commonmark.ext.autolink;
+
+import org.commonmark.Extension;
+import org.commonmark.ext.autolink.internal.AutolinkPostProcessor;
+import org.commonmark.parser.Parser;
+
+/**
+ * Extension for automatically turning plain URLs into links.
+ * <p>
+ * Create it with {@link #create()} and then configure it on the builder
+ * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)}).
+ * </p>
+ * <p>
+ * The parsed links are turned into normal {@link org.commonmark.node.Link} nodes.
+ * </p>
+ */
+public class AutolinkExtension implements Parser.ParserExtension {
+    private AutolinkExtension() {
+    }
+
+    public static Extension create() {
+        return new AutolinkExtension();
+    }
+
+    @Override
+    public void extend(Parser.Builder parserBuilder) {
+        parserBuilder.postProcessor(new AutolinkPostProcessor());
+    }
+
+}
