@@ -1,0 +1,18 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.0"
+
+    defaultConfig {
+        minSdkVersion 9
+    }
+}
+
+dependencies {
+    compile(project(':commonmark')) {
+        transitive = false
+    }
+
+    testCompile 'junit:junit:4.12'
+}
