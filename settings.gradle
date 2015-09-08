@@ -1,0 +1,3 @@
+include ':commonmark',
+        ':commonmark-ext-autolink-android',
+        ':commonmark-ext-replacement'
