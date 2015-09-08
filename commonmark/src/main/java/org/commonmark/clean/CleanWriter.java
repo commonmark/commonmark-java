@@ -17,7 +17,7 @@ public class CleanWriter {
     }
 
     public void write(String text) {
-        StringBuilder ssb = new StringBuilder(text.trim().replace("\n+", " "));
+        StringBuilder ssb = new StringBuilder(text.replace("\n+", " "));
 
         if (ssb.length() != 0) {
             mLastChar = ssb.charAt(ssb.length() - 1);
