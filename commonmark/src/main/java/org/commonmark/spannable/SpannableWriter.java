@@ -193,7 +193,7 @@ public class SpannableWriter {
         mBuffer.append(ssb);
     }
 
-    private Object getSpan(@SpannableFactory.SpannableType int type) {
+    private Object getSpan(int type) {
         if (mFactory != null) {
             Object span = mFactory.getSpan(type);
             if (span != null) {
