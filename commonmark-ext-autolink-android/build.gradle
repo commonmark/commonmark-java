@@ -10,7 +10,9 @@ android {
 }
 
 dependencies {
-    compile project(':libs:commonmark-android:commonmark')
+    compile(project(':commonmark')) {
+        transitive = false
+    }
 
     testCompile 'junit:junit:4.12'
 }
