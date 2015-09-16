@@ -17,7 +17,7 @@ Usage
 
 Render document to `SpannableString`.
 
-```
+```java
 Parser parser = Parser.builder().extensions(extensions).build();
 Node document = parser.parse("I'm a **bold string**");
 
@@ -29,7 +29,7 @@ CharSequence formattedString = renderer.render(res, document);
 The example above set the specified in this library spannables for each type of markdown.
 It's possible to implement `org.commonmark.spannable.SpannableFactory` with custom spannables.
 
-```
+```java
 Parser parser = Parser.builder().build();
 SpannableRenderer renderer = SpannableRenderer.builder().factory(new SpannableFactory() {
     @Override
@@ -50,12 +50,30 @@ SpannableRenderer renderer = SpannableRenderer.builder().factory(new SpannableFa
 
 Render document without any formatting.
 
-```
+```java
 Parser parser = Parser.builder().extensions(extensions).build();
 Node document = parser.parse("I'm a **clean** string");
 
 CleanRenderer renderer = new CleanRenderer();
 CharSequence cleanedString = renderer.render(document);
+```
+
+
+#### Extensions
+
+There were added 2 extensions:
+
+- `AutolinkExtension` supports parsing links
+- `ReplacementExtension` takes the map and use it to replace keys by values
+
+```java
+List<Extension> extensions = new ArrayList<>();
+
+extensions.add(ReplacementExtension.create(replacementMap));
+extensions.add(AutolinkExtension.create());
+
+Parser parser = Parser.builder().extensions(extensions).build();
+Node document = parser.parse(string);
 ```
 
 License
