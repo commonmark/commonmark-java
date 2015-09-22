@@ -4,19 +4,26 @@ import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.html.HtmlRenderer;
+import org.commonmark.parser.Parser;
 import org.commonmark.spec.SpecExample;
-import org.commonmark.test.SpecTest;
+import org.commonmark.test.SpecTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Tests that the spec examples still render the same with all extensions enabled.
  */
-public class SpecIntegrationTest extends SpecTest {
+public class SpecIntegrationTest extends SpecTestCase {
 
+    private static final List<Extension> EXTENSIONS = Arrays.asList(
+            AutolinkExtension.create(),
+            StrikethroughExtension.create(),
+            TablesExtension.create());
+    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
+    // The spec says URL-escaping is optional, but the examples assume that it's enabled.
+    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).percentEncodeUrls(true).build();
     private static final Map<String, String> OVERRIDDEN_EXAMPLES = getOverriddenExamples();
 
     public SpecIntegrationTest(SpecExample example) {
@@ -35,10 +42,8 @@ public class SpecIntegrationTest extends SpecTest {
     }
 
     @Override
-    protected Iterable<? extends Extension> getExtensions() {
-        return Arrays.asList(AutolinkExtension.create(),
-                StrikethroughExtension.create(),
-                TablesExtension.create());
+    protected String render(String source) {
+        return RENDERER.render(PARSER.parse(source));
     }
 
     private static Map<String, String> getOverriddenExamples() {

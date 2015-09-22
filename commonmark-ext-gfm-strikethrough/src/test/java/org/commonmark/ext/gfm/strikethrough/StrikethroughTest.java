@@ -1,12 +1,19 @@
 package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
+import org.commonmark.html.HtmlRenderer;
+import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Set;
 
 public class StrikethroughTest extends RenderingTestCase {
+
+    private static final Set<Extension> EXTENSIONS = Collections.singleton(StrikethroughExtension.create());
+    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
+    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void oneTildeIsNotEnough() {
@@ -57,7 +64,7 @@ public class StrikethroughTest extends RenderingTestCase {
     }
 
     @Override
-    protected Iterable<? extends Extension> getExtensions() {
-        return Collections.singleton(StrikethroughExtension.create());
+    protected String render(String source) {
+        return RENDERER.render(PARSER.parse(source));
     }
 }

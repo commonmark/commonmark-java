@@ -1,7 +1,5 @@
 package org.commonmark.spec;
 
-import org.commonmark.test.SpecTest;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +29,7 @@ public class SpecReader {
     }
 
     public static List<SpecExample> readExamples() {
-        try (InputStream stream = getStream()) {
+        try (InputStream stream = getSpecInputStream()) {
             return new SpecReader(stream).read();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -49,7 +47,7 @@ public class SpecReader {
 
     public static String readSpec() {
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getSpecInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
@@ -61,8 +59,8 @@ public class SpecReader {
         }
     }
 
-    private static InputStream getStream() {
-        InputStream stream = SpecTest.class.getResourceAsStream("/spec.txt");
+    public static InputStream getSpecInputStream() {
+        InputStream stream = SpecReader.class.getResourceAsStream("/spec.txt");
         if (stream == null) {
             throw new IllegalStateException("Could not load spec.txt classpath resource");
         }

@@ -1,6 +1,7 @@
 package org.commonmark.spec;
 
 public class SpecExample {
+
     private final String section;
     private final int exampleNumber;
     private final String source;

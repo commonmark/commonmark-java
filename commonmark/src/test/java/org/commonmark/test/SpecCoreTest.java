@@ -4,46 +4,26 @@ import org.commonmark.html.HtmlRenderer;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
+import org.commonmark.parser.Parser;
 import org.commonmark.spec.SpecExample;
-import org.commonmark.spec.SpecReader;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.fail;
 
-@RunWith(Parameterized.class)
-public class SpecTest extends RenderingTestCase {
+public class SpecCoreTest extends SpecTestCase {
 
-    protected final SpecExample example;
+    private static final Parser PARSER = Parser.builder().build();
+    // The spec says URL-escaping is optional, but the examples assume that it's enabled.
+    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().percentEncodeUrls(true).build();
 
-    public SpecTest(SpecExample example) {
-        this.example = example;
-    }
-
-    @Parameters(name = "{0}")
-    public static List<Object[]> data() {
-        List<SpecExample> examples = SpecReader.readExamples();
-        List<Object[]> data = new ArrayList<>();
-        for (SpecExample example : examples) {
-            data.add(new Object[]{example});
-        }
-        return data;
-    }
-
-    @Test
-    public void testHtmlRendering() {
-        assertRendering(example.getSource(), example.getHtml());
+    public SpecCoreTest(SpecExample example) {
+        super(example);
     }
 
     @Test
     public void testTextNodesContiguous() {
         final String source = example.getSource();
-        Node node = parser.parse(source);
+        Node node = PARSER.parse(source);
         node.accept(new AbstractVisitor() {
             @Override
             protected void visitChildren(Node parent) {
@@ -69,8 +49,7 @@ public class SpecTest extends RenderingTestCase {
     }
 
     @Override
-    protected void configureRenderer(HtmlRenderer.Builder rendererBuilder) {
-        // The spec says URL-escaping is optional, but the examples assume that it's enabled.
-        rendererBuilder.percentEncodeUrls(true);
+    protected String render(String source) {
+        return RENDERER.render(PARSER.parse(source));
     }
 }

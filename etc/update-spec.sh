@@ -6,4 +6,4 @@ if [ "$#" -ne 1 ]; then
 fi
 
 version=$1
-curl -L "https://raw.githubusercontent.com/jgm/CommonMark/$version/spec.txt" -o commonmark/src/test/resources/spec.txt
+curl -L "https://raw.githubusercontent.com/jgm/CommonMark/$version/spec.txt" -o commonmark-test-util/src/main/resources/spec.txt

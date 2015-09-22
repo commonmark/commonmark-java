@@ -23,14 +23,8 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.atlassian.commonmark</groupId>
-            <artifactId>commonmark</artifactId>
-            <type>test-jar</type>
+            <artifactId>commonmark-test-util</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

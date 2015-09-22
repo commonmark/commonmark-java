@@ -25,6 +25,7 @@
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
         <module>commonmark-integration-test</module>
+        <module>commonmark-test-util</module>
     </modules>
 
     <properties>
@@ -108,9 +109,8 @@
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
-                <artifactId>commonmark</artifactId>
+                <artifactId>commonmark-test-util</artifactId>
                 <version>0.2.1-SNAPSHOT</version>
-                <type>test-jar</type>
             </dependency>
 
             <!-- Common test dependencies -->

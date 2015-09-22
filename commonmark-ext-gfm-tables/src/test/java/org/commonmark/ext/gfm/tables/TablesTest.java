@@ -1,12 +1,19 @@
 package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
+import org.commonmark.html.HtmlRenderer;
+import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Set;
 
 public class TablesTest extends RenderingTestCase {
+
+    private static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
+    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void mustHaveHeaderAndSeparator() {
@@ -289,8 +296,7 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Override
-    protected Iterable<? extends Extension> getExtensions() {
-        return Collections.singleton(TablesExtension.create());
+    protected String render(String source) {
+        return RENDERER.render(PARSER.parse(source));
     }
-
 }

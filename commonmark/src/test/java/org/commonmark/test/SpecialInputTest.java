@@ -2,7 +2,7 @@ package org.commonmark.test;
 
 import org.junit.Test;
 
-public class SpecialInputTest extends RenderingTestCase {
+public class SpecialInputTest extends CoreRenderingTestCase {
 
     @Test
     public void empty() {
