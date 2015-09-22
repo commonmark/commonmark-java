@@ -62,6 +62,11 @@ public class AutolinkPostProcessor implements PostProcessor {
         int inLink = 0;
 
         @Override
+        public void visit(AutoLink link) {
+            visit((Link)link);
+        }
+
+        @Override
         public void visit(Link link) {
             inLink++;
             super.visit(link);

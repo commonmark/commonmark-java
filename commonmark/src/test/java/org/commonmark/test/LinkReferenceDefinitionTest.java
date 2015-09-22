@@ -6,12 +6,11 @@ import org.commonmark.node.AutoLink;
 import org.commonmark.node.Visitor;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.parser.Parser;
-import org.commonmark.util.Debugging;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.commonmark.util.Debugging.log;
-import static org.commonmark.util.Debugging.toStringTree;
+import static org.commonmark.internal.util.Debugging.log;
+import static org.commonmark.internal.util.Debugging.toStringTree;
 
 public class LinkReferenceDefinitionTest {
 

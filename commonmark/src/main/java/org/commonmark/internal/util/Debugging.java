@@ -1,4 +1,4 @@
-package org.commonmark.util;
+package org.commonmark.internal.util;
 
 import java.util.Stack;
 import org.commonmark.node.Node;
