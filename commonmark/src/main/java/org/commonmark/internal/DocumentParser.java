@@ -57,8 +57,9 @@ public class DocumentParser implements ParserState {
 
     public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories) {
         List<BlockParserFactory> list = new ArrayList<>();
-        list.addAll(DocumentParser.CORE_FACTORIES);
+        // By having the custom factories come first, extensions are able to change behavior of core syntax.
         list.addAll(customBlockParserFactories);
+        list.addAll(DocumentParser.CORE_FACTORIES);
         return list;
     }
 

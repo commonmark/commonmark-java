@@ -41,4 +41,14 @@ public class Substring implements CharSequence {
     public String toString() {
         return base.substring(beginIndex, endIndex);
     }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this || (obj instanceof CharSequence && toString().equals(obj));
+    }
 }

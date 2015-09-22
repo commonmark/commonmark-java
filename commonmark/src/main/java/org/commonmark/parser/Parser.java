@@ -114,6 +114,16 @@ public class Parser {
             return this;
         }
 
+        /**
+         * Adds a custom block parser factory.
+         * <p>
+         * Note that custom factories are applied <em>before</em> the built-in factories. This is so that
+         * extensions can change how some syntax is parsed that would otherwise be handled by built-in factories.
+         * "With great power comes great responsibility."
+         *
+         * @param blockParserFactory a block parser factory implementation
+         * @return {@code this}
+         */
         public Builder customBlockParserFactory(BlockParserFactory blockParserFactory) {
             blockParserFactories.add(blockParserFactory);
             return this;
