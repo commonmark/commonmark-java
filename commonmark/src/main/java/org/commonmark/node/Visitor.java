@@ -35,6 +35,8 @@ public interface Visitor {
 
     void visit(Link link);
 
+    void visit(AutoLink link);
+
     void visit(ListItem listItem);
 
     void visit(OrderedList orderedList);

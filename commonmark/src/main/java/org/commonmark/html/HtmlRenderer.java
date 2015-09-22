@@ -272,6 +272,11 @@ public class HtmlRenderer {
         }
 
         @Override
+        public void visit(AutoLink link) {
+            visit((Link)link);
+        }
+
+        @Override
         public void visit(Link link) {
             Map<String, String> attrs = new LinkedHashMap<>();
             String url = optionallyPercentEncodeUrl(link.getDestination());

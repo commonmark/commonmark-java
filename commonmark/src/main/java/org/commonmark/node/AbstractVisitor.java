@@ -79,6 +79,11 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
+    public void visit(AutoLink link) {
+        visitChildren(link);
+    }
+
+    @Override
     public void visit(ListItem listItem) {
         visitChildren(listItem);
     }
