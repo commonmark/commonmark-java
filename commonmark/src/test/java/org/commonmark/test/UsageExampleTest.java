@@ -3,7 +3,7 @@ package org.commonmark.test;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
-import org.commonmark.node.Paragraph;
+import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
@@ -22,18 +22,25 @@ public class UsageExampleTest {
     @Test
     public void visitor() {
         Parser parser = Parser.builder().build();
-        Node node = parser.parse("...");
-        MyVisitor visitor = new MyVisitor();
+        Node node = parser.parse("Example\n=======\n\nSome more text");
+        WordCountVisitor visitor = new WordCountVisitor();
         node.accept(visitor);
+        assertEquals(4, visitor.wordCount);
     }
 
-    class MyVisitor extends AbstractVisitor {
+    class WordCountVisitor extends AbstractVisitor {
+
+        int wordCount = 0;
+
         @Override
-        public void visit(Paragraph paragraph) {
-            // Do something with paragraph (override other methods for other nodes):
-            System.out.println(paragraph);
-            // Descend into children:
-            visitChildren(paragraph);
+        public void visit(Text text) {
+            // This is called for all Text nodes. Override other visit methods for other node types.
+
+            // Count words (this is just an example, don't actually do it this way for various reasons).
+            wordCount += text.getLiteral().split("\\W+").length;
+
+            // Descend into children (could be omitted in this case because Text nodes don't have children).
+            visitChildren(text);
         }
     }
 
