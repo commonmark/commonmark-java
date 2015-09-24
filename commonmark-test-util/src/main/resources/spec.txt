@@ -1,8 +1,8 @@
 ---
 title: CommonMark Spec
 author: John MacFarlane
-version: 0.21
-date:
+version: 0.22
+date: 2015-08-23
 license: '[CC-BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)'
 ...
 
@@ -204,16 +204,22 @@ In the examples, the `→` character is used to represent tabs.
 Any sequence of [character]s is a valid CommonMark
 document.
 
-A [character](@character) is a unicode code point.
+A [character](@character) is a Unicode code point.  Although some
+code points (for example, combining accents) do not correspond to
+characters in an intuitive sense, all code points count as characters
+for purposes of this spec.
+
 This spec does not specify an encoding; it thinks of lines as composed
-of characters rather than bytes.  A conforming parser may be limited
+of [character]s rather than bytes.  A conforming parser may be limited
 to a certain encoding.
 
 A [line](@line) is a sequence of zero or more [character]s
+other than newline (`U+000A`) or carriage return (`U+000D`),
 followed by a [line ending] or by the end of file.
 
-A [line ending](@line-ending) is a newline (`U+000A`), carriage return
-(`U+000D`), or carriage return + newline.
+A [line ending](@line-ending) is a newline (`U+000A`), a carriage return
+(`U+000D`) not followed by a newline, or a carriage return and a
+following newline.
 
 A line containing no characters, or a line containing only spaces
 (`U+0020`) or tabs (`U+0009`), is called a [blank line](@blank-line).
@@ -227,17 +233,17 @@ form feed (`U+000C`), or carriage return (`U+000D`).
 [Whitespace](@whitespace) is a sequence of one or more [whitespace
 character]s.
 
-A [unicode whitespace character](@unicode-whitespace-character) is
-any code point in the unicode `Zs` class, or a tab (`U+0009`),
+A [Unicode whitespace character](@unicode-whitespace-character) is
+any code point in the Unicode `Zs` class, or a tab (`U+0009`),
 carriage return (`U+000D`), newline (`U+000A`), or form feed
 (`U+000C`).
 
 [Unicode whitespace](@unicode-whitespace) is a sequence of one
-or more [unicode whitespace character]s.
+or more [Unicode whitespace character]s.
 
 A [space](@space) is `U+0020`.
 
-A [non-whitespace character](@non-space-character) is any character
+A [non-whitespace character](@non-whitespace-character) is any character
 that is not a [whitespace character].
 
 An [ASCII punctuation character](@ascii-punctuation-character)
@@ -247,7 +253,7 @@ is `!`, `"`, `#`, `$`, `%`, `&`, `'`, `(`, `)`,
 
 A [punctuation character](@punctuation-character) is an [ASCII
 punctuation character] or anything in
-the unicode classes `Pc`, `Pd`, `Pe`, `Pf`, `Pi`, `Po`, or `Ps`.
+the Unicode classes `Pc`, `Pd`, `Pe`, `Pf`, `Pi`, `Po`, or `Ps`.
 
 ## Tabs
 
@@ -298,6 +304,15 @@ by spaces with a tab stop of 4 characters.
 <blockquote>
 <p>foo→bar</p>
 </blockquote>
+.
+
+.
+    foo
+→bar
+.
+<pre><code>foo
+bar
+</code></pre>
 .
 
 
@@ -562,8 +577,8 @@ If you want a horizontal rule in a list item, use a different bullet:
 An [ATX header](@atx-header)
 consists of a string of characters, parsed as inline content, between an
 opening sequence of 1--6 unescaped `#` characters and an optional
-closing sequence of any number of `#` characters.  The opening sequence
-of `#` characters cannot be followed directly by a
+closing sequence of any number of unescaped `#` characters.
+The opening sequence of `#` characters cannot be followed directly by a
 [non-whitespace character]. The optional closing sequence of `#`s must be
 preceded by a [space] and may be followed by spaces only.  The opening
 `#` character may be indented 0-3 spaces.  The raw contents of the
@@ -695,8 +710,7 @@ Spaces are allowed after the closing sequence:
 <h3>foo</h3>
 .
 
-A sequence of `#` characters with a
-[non-whitespace character] following it
+A sequence of `#` characters with anything but [space]s following it
 is not a closing sequence, but counts as part of the contents of the
 header:
 
@@ -1646,22 +1660,23 @@ followed by one of the strings (case-insensitive) `address`,
 `caption`, `center`, `col`, `colgroup`, `dd`, `details`, `dialog`,
 `dir`, `div`, `dl`, `dt`, `fieldset`, `figcaption`, `figure`,
 `footer`, `form`, `frame`, `frameset`, `h1`, `head`, `header`, `hr`,
-`html`, `legend`, `li`, `link`, `main`, `menu`, `menuitem`, `meta`,
-`nav`, `noframes`, `ol`, `optgroup`, `option`, `p`, `param`, `pre`,
-`section`, `source`, `title`, `summary`, `table`, `tbody`, `td`,
+`html`, `iframe`, `legend`, `li`, `link`, `main`, `menu`, `menuitem`,
+`meta`, `nav`, `noframes`, `ol`, `optgroup`, `option`, `p`, `param`,
+`section`, `source`, `summary`, `table`, `tbody`, `td`,
 `tfoot`, `th`, `thead`, `title`, `tr`, `track`, `ul`, followed
 by [whitespace], the end of the line, the string `>`, or
 the string `/>`.\
 **End condition:** line is followed by a [blank line].
 
-7.  **Start condition:**  line begins with an [open tag]
-(with any [tag name]) followed only by [whitespace] or the end
-of the line.\
+7.  **Start condition:**  line begins with a complete [open tag]
+or [closing tag] (with any [tag name] other than `script`,
+`style`, or `pre`) followed only by [whitespace]
+or the end of the line.\
 **End condition:** line is followed by a [blank line].
 
 All types of [HTML blocks] except type 7 may interrupt
 a paragraph.  Blocks of type 7 may not interrupt a paragraph.
-(This restricted is intended to prevent unwanted interpretation
+(This restriction is intended to prevent unwanted interpretation
 of long tags inside a wrapped paragraph as starting HTML blocks.)
 
 Some simple examples follow.  Here are some basic HTML blocks
@@ -1859,6 +1874,14 @@ In type 7 blocks, the [tag name] can be anything:
 <i class="foo">
 *bar*
 </i>
+.
+
+.
+</ins>
+*bar*
+.
+</ins>
+*bar*
 .
 
 These rules are designed to allow us to work with tags that
@@ -2831,8 +2854,8 @@ foo</p>
 .
 
 Laziness only applies to lines that would have been continuations of
-paragraphs had they been prepended with `>`.  For example, the
-`>` cannot be omitted in the second line of
+paragraphs had they been prepended with [block quote marker]s.
+For example, the `> ` cannot be omitted in the second line of
 
 ``` markdown
 > foo
@@ -2851,7 +2874,7 @@ without changing the meaning:
 <hr />
 .
 
-Similarly, if we omit the `>` in the second line of
+Similarly, if we omit the `> ` in the second line of
 
 ``` markdown
 > - foo
@@ -2874,7 +2897,7 @@ then the block quote ends after the first line:
 </ul>
 .
 
-For the same reason, we can't omit the `>` in front of
+For the same reason, we can't omit the `> ` in front of
 subsequent lines of an indented or fenced code block:
 
 .
@@ -2900,6 +2923,30 @@ foo
 <p>foo</p>
 <pre><code></code></pre>
 .
+
+Note that in the following case, we have a paragraph
+continuation line:
+
+.
+> foo
+    - bar
+.
+<blockquote>
+<p>foo
+- bar</p>
+</blockquote>
+.
+
+To see why, note that in
+
+```markdown
+> foo
+>     - bar
+```
+
+the `- bar` is indented too far to start a list, and can't
+be an indented code block because indented code blocks cannot
+interrupt paragraphs, so it is a [paragraph continuation line].
 
 A block quote can be empty:
 
@@ -3603,6 +3650,21 @@ Here are some list items that start with a blank line but are not empty:
 </code></pre>
 </li>
 </ul>
+.
+
+A list item can begin with at most one blank line.
+In the following example, `foo` is not part of the list
+item:
+
+.
+-
+
+  foo
+.
+<ul>
+<li></li>
+</ul>
+<p>foo</p>
 .
 
 Here is an empty bullet list item:
@@ -4849,17 +4911,17 @@ foo
 
 With the goal of making this standard as HTML-agnostic as possible, all
 valid HTML entities (except in code blocks and code spans)
-are recognized as such and converted into unicode characters before
+are recognized as such and converted into Unicode characters before
 they are stored in the AST. This means that renderers to formats other
 than HTML need not be HTML-entity aware.  HTML renderers may either escape
-unicode characters as entities or leave them as they are.  (However,
+Unicode characters as entities or leave them as they are.  (However,
 `"`, `&`, `<`, and `>` must always be rendered as entities.)
 
-[Named entities](@name-entities) consist of `&`
-+ any of the valid HTML5 entity names + `;`. The
+[Named entities](@name-entities) consist of `&` + any of the valid
+HTML5 entity names + `;`. The
 [following document](https://html.spec.whatwg.org/multipage/entities.json)
 is used as an authoritative source of the valid entity names and their
-corresponding codepoints.
+corresponding code points.
 
 .
 &nbsp; &amp; &copy; &AElig; &Dcaron;
@@ -4874,9 +4936,9 @@ corresponding codepoints.
 [Decimal entities](@decimal-entities)
 consist of `&#` + a string of 1--8 arabic digits + `;`. Again, these
 entities need to be recognised and transformed into their corresponding
-unicode codepoints. Invalid unicode codepoints will be replaced by
-the "unknown codepoint" character (`U+FFFD`).  For security reasons,
-the codepoint `U+0000` will also be replaced by `U+FFFD`.
+Unicode code points. Invalid Unicode code points will be replaced by
+the "unknown code point" character (`U+FFFD`).  For security reasons,
+the code point `U+0000` will also be replaced by `U+FFFD`.
 
 .
 &#35; &#1234; &#992; &#98765432; &#0;
@@ -4884,10 +4946,10 @@ the codepoint `U+0000` will also be replaced by `U+FFFD`.
 <p># Ӓ Ϡ � �</p>
 .
 
-[Hexadecimal entities](@hexadecimal-entities)
-consist of `&#` + either `X` or `x` + a string of 1-8 hexadecimal digits
-+ `;`. They will also be parsed and turned into the corresponding
-unicode codepoints in the AST.
+[Hexadecimal entities](@hexadecimal-entities) consist of `&#` + either
+`X` or `x` + a string of 1-8 hexadecimal digits + `;`. They will also
+be parsed and turned into the corresponding Unicode code points in the
+AST.
 
 .
 &#X22; &#XD06; &#xcab;
@@ -5179,18 +5241,18 @@ followed by a `*` character, or a sequence of one or more `_`
 characters that is not preceded or followed by a `_` character.
 
 A [left-flanking delimiter run](@left-flanking-delimiter-run) is
-a [delimiter run] that is (a) not followed by [unicode whitespace],
+a [delimiter run] that is (a) not followed by [Unicode whitespace],
 and (b) either not followed by a [punctuation character], or
-preceded by [unicode whitespace] or a [punctuation character].
+preceded by [Unicode whitespace] or a [punctuation character].
 For purposes of this definition, the beginning and the end of
-the line count as unicode whitespace.
+the line count as Unicode whitespace.
 
 A [right-flanking delimiter run](@right-flanking-delimiter-run) is
-a [delimiter run] that is (a) not preceded by [unicode whitespace],
+a [delimiter run] that is (a) not preceded by [Unicode whitespace],
 and (b) either not preceded by a [punctuation character], or
-followed by [unicode whitespace] or a [punctuation character].
+followed by [Unicode whitespace] or a [punctuation character].
 For purposes of this definition, the beginning and the end of
-the line count as unicode whitespace.
+the line count as Unicode whitespace.
 
 Here are some examples of delimiter runs.
 
@@ -6511,8 +6573,8 @@ just a backslash:
 
 URL-escaping should be left alone inside the destination, as all
 URL-escaped characters are also valid URL characters. HTML entities in
-the destination will be parsed into the corresponding unicode
-codepoints, as usual, and optionally URL-escaped when written as HTML.
+the destination will be parsed into the corresponding Unicode
+code points, as usual, and optionally URL-escaped when written as HTML.
 
 .
 [link](foo%20b&auml;)
@@ -6721,7 +6783,7 @@ characters inside the square brackets.
 
 One label [matches](@matches)
 another just in case their normalized forms are equal.  To normalize a
-label, perform the *unicode case fold* and collapse consecutive internal
+label, perform the *Unicode case fold* and collapse consecutive internal
 [whitespace] to a single space.  If there are multiple
 matching reference link definitions, the one that comes first in the
 document is used.  (It is desirable in such cases to emit a warning.)
