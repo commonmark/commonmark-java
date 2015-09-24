@@ -32,6 +32,7 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     @Test
     public void mixedLineSeparators() {
         assertRendering("- a\n- b\r- c\r\n- d", "<ul>\n<li>a</li>\n<li>b</li>\n<li>c</li>\n<li>d</li>\n</ul>\n");
+        assertRendering("a\n\nb\r\rc\r\n\r\nd\n\re", "<p>a</p>\n<p>b</p>\n<p>c</p>\n<p>d</p>\n<p>e</p>\n");
     }
 
     @Test
