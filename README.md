@@ -30,6 +30,9 @@ Note that for 0.x releases of this library, the API is not considered stable
 yet and may break between minor releases. After 1.0, [Semantic Versioning] will
 be followed.
 
+See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt) file if
+you're wondering which version of the spec is currently implemented.
+
 [![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
 
 
