@@ -33,7 +33,7 @@ public class ListItemParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState state) {
-        if (state.isBlank()) {
+        if (state.isBlank() && block.getFirstChild() != null) {
             return BlockContinue.atIndex(state.getNextNonSpaceIndex());
         }
 
