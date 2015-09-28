@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>central-pom</artifactId>
-        <version>3.0.95</version>
+        <version>3.0.98</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -73,12 +73,6 @@
                         <pushChanges>false</pushChanges>
                         <localCheckout>true</localCheckout>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <!-- Workaround for parent pom pulling in a forked version that's not on Central. -->
-                    <version>1.6.6</version>
                 </plugin>
             </plugins>
         </pluginManagement>
