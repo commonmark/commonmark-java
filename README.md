@@ -143,6 +143,26 @@ Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
+### Metadata
+
+Enables metadata block in YAML format. This extension only supports limited features. The example is following:
+
+```
+---
+key: value
+list:
+  - value 1
+  - value 2
+literal: |
+  this is literal value.
+  
+  literal values 2
+---
+
+document start this
+```
+ 
+Use class `MetadataExtension` in artifact `commonmark-ext-metadata`. To fetch metadata, use `MetadataVisitor`.
 
 Contributing
 ------------

@@ -26,6 +26,7 @@
         <module>commonmark-ext-gfm-tables</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>
+        <module>commonmark-ext-metadata</module>
     </modules>
 
     <properties>
