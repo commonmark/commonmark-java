@@ -1,11 +1,10 @@
 package org.commonmark.clean;
 
-import android.text.TextUtils;
-
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Code;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.HardLineBreak;
+import org.commonmark.node.Header;
 import org.commonmark.node.HorizontalRule;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.IndentedCodeBlock;
@@ -13,6 +12,8 @@ import org.commonmark.node.ListItem;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.SoftLineBreak;
 import org.commonmark.node.Text;
+
+import android.text.TextUtils;
 
 public class CleanVisitor extends AbstractVisitor {
     private final CleanWriter mCleanWriter;
@@ -37,6 +38,12 @@ public class CleanVisitor extends AbstractVisitor {
 
     @Override
     public void visit(HardLineBreak hardLineBreak) {
+        mCleanWriter.divider();
+    }
+
+    @Override
+    public void visit(Header header) {
+        visitChildren(header);
         mCleanWriter.divider();
     }
 
