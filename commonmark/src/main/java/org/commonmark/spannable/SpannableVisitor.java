@@ -111,7 +111,9 @@ public class SpannableVisitor extends AbstractVisitor {
     public void visit(ListItem listItem) {
         mSpannableWriter.listItem();
         visitChildren(listItem);
-        mSpannableWriter.line();
+        if (listItem.getNext() != null) {
+            mSpannableWriter.line();
+        }
     }
 
     @Override
