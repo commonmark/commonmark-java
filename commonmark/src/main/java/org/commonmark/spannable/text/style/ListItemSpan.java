@@ -12,6 +12,9 @@ public abstract class ListItemSpan implements LeadingMarginSpan, LineHeightSpan 
     private final int mLineLeading;
     private final int mMarkerLeftMargin;
 
+    private int mTextDefaultTop;
+    private int mTextDefaultAscent;
+
     public ListItemSpan(int leading, int extraHeight, int leftMargin) {
         mLineLeading = leading;
         mLineExtraSpace = extraHeight;
@@ -37,13 +40,15 @@ public abstract class ListItemSpan implements LeadingMarginSpan, LineHeightSpan 
     }
 
     @Override
-    public void chooseHeight(CharSequence text, int start, int end, int spanstartv, int v,
-                             Paint.FontMetricsInt fm) {
-        if (((Spanned) text).getSpanStart(this) != start) {
-            return;
+    public void chooseHeight(CharSequence text, int start, int end, int spanstartv, int v, Paint.FontMetricsInt fm) {
+        if (spanstartv == v) {
+            mTextDefaultTop = fm.top;
+            mTextDefaultAscent = fm.ascent;
+            fm.top -= mLineExtraSpace;
+            fm.ascent -= mLineExtraSpace;
+        } else {
+            fm.top = mTextDefaultTop;
+            fm.ascent = mTextDefaultAscent;
         }
-
-        fm.top -= mLineExtraSpace;
-        fm.ascent -= mLineExtraSpace;
     }
 }
