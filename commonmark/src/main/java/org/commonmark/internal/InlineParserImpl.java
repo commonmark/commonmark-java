@@ -570,7 +570,7 @@ public class InlineParserImpl implements InlineParser {
                     title = parseLinkTitle();
                     spnl();
                 }
-                if (input.charAt(index) == ')') {
+                if (peek() == ')') {
                     index++;
                     isLinkOrImage = true;
                 }
