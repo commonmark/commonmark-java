@@ -388,7 +388,7 @@ public class InlineParserImpl implements InlineParser {
         }
 
         // gobble leading spaces in next line
-        while (index < input.length() && input.charAt(index) == ' ') {
+        while (peek() == ' ') {
             index++;
         }
         return true;
