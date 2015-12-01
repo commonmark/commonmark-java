@@ -48,16 +48,17 @@ import org.commonmark.parser.Parser;
 
 Parser parser = Parser.builder().build();
 Node document = parser.parse("This is *Sparta*");
-HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
+HtmlRenderer renderer = HtmlRenderer.builder().build();
 renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
 ```
 
-This uses the parser and renderer with default options, except for escaping raw
-HTML tags and blocks. For all the available options, see other methods on the
-builder objects.
+This uses the parser and renderer with default options. Both builders have
+methods for configuring their behavior, e.g. calling `escapeHtml(true)` on
+`HtmlRenderer` will escape raw HTML tags and blocks. For all available
+options, see methods on the builders.
 
-Note that this library doesn't try to sanitize HTML; that is the responsibility
-of the caller.
+Note that this library doesn't try to sanitize the resulting HTML; that is
+the responsibility of the caller.
 
 #### Use a visitor to process parsed nodes
 
