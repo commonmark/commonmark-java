@@ -2,6 +2,7 @@ package org.commonmark.ext.metadata.internal;
 
 import org.commonmark.ext.metadata.MetadataBlock;
 import org.commonmark.ext.metadata.MetadataNode;
+import org.commonmark.internal.DocumentBlockParser;
 import org.commonmark.node.Block;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
@@ -74,10 +75,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
                     values.add(matcher.group(2));
                 }
             } else {
-                matcher = REGEX_METADATA_LIST.matcher(line);
-                if (matcher.matches()) {
-                    values.add(matcher.group(1));
-                } else if (literal) {
+                if (literal) {
                     matcher = REGEX_METADATA_LITERAL.matcher(line);
                     if (matcher.matches()) {
                         if (values.size() == 1) {
@@ -85,6 +83,11 @@ public class MetadataBlockParser extends AbstractBlockParser {
                         } else {
                             values.add(matcher.group(1).trim());
                         }
+                    }
+                } else {
+                    matcher = REGEX_METADATA_LIST.matcher(line);
+                    if (matcher.matches()) {
+                        values.add(matcher.group(1));
                     }
                 }
             }
@@ -101,12 +104,44 @@ public class MetadataBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            String line = state.getLine().toString();
-            if (matchedBlockParser.getParagraphStartLine() == null && REGEX_BOUNDARY.matcher(line).matches()) {
-                return BlockStart.of(new MetadataBlockParser()).atIndex(state.getNextNonSpaceIndex());
+            CharSequence line = state.getLine();
+            BlockParser parentParser = matchedBlockParser.getMatchedBlockParser();
+            // check whether this line is the first line of whole document or not
+            if (parentParser instanceof DocumentBlockParser && parentParser.getBlock().getFirstChild() == null &&
+                    REGEX_BOUNDARY.matcher(line).matches()) {
+                // count valid metadata line in metadata block
+                int prevIndex;
+                int index = nextLineEnd(line, 0);
+                int validLineCount = 0;
+                CharSequence subseq;
+                do {
+                    prevIndex = index + 1;
+                    index = nextLineEnd(line, prevIndex);
+                    subseq = line.subSequence(prevIndex, index);
+                    if (REGEX_METADATA.matcher(subseq).matches()) {
+                        validLineCount++;
+                    }
+                } while (!REGEX_BOUNDARY.matcher(subseq).matches() && prevIndex != index);
+
+                if (validLineCount > 0) {
+                    return BlockStart.of(new MetadataBlockParser()).atIndex(state.getNextNonSpaceIndex());
+                }
             }
 
             return BlockStart.none();
+        }
+
+        private int nextLineEnd(CharSequence seq, int startIndex) {
+            int index = startIndex;
+            try {
+                while (seq.charAt(index) != '\n') {
+                    index++;
+                }
+            } catch (IndexOutOfBoundsException ignored) {
+                index--;
+            }
+
+            return index;
         }
     }
 }

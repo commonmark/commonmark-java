@@ -44,6 +44,28 @@ public class MetadataTest extends RenderingTestCase {
     }
 
     @Test
+    public void emptyValue() {
+        final String input = "---" +
+                "\nkey:" +
+                "\n---" +
+                "\n" +
+                "\ngreat";
+        final String rendered = "<p>great</p>\n";
+
+        MetadataVisitor visitor = new MetadataVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertEquals(1, data.size());
+        assertEquals("key", data.keySet().iterator().next());
+        assertEquals(0, data.get("key").size());
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
     public void listValues() {
         final String input = "---" +
                 "\nlist:" +
@@ -70,7 +92,7 @@ public class MetadataTest extends RenderingTestCase {
     }
 
     @Test
-    public void literalValue() {
+    public void literalValue1() {
         final String input = "---" +
                 "\nliteral: |" +
                 "\n  hello markdown!" +
@@ -90,6 +112,30 @@ public class MetadataTest extends RenderingTestCase {
         assertTrue(data.containsKey("literal"));
         assertEquals(1, data.get("literal").size());
         assertEquals("hello markdown!\nliteral thing...", data.get("literal").get(0));
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
+    public void literalValue2() {
+        final String input = "---" +
+                "\nliteral: |" +
+                "\n  - hello markdown!" +
+                "\n---" +
+                "\n" +
+                "\ngreat";
+        final String rendered = "<p>great</p>\n";
+
+        MetadataVisitor visitor = new MetadataVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertEquals(1, data.size());
+        assertTrue(data.containsKey("literal"));
+        assertEquals(1, data.get("literal").size());
+        assertEquals("- hello markdown!", data.get("literal").get(0));
 
         assertRendering(input, rendered);
     }

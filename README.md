@@ -145,7 +145,7 @@ Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
 ### Metadata
 
-Enables metadata block in YAML format. This extension only supports limited features. The example is following:
+Enables metadata block in YAML format. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
 
 ```
 ---
@@ -159,7 +159,7 @@ literal: |
   literal values 2
 ---
 
-document start this
+document start here
 ```
  
 Use class `MetadataExtension` in artifact `commonmark-ext-metadata`. To fetch metadata, use `MetadataVisitor`.

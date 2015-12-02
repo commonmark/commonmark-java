@@ -24,9 +24,9 @@
         <module>commonmark-ext-autolink</module>
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
+        <module>commonmark-ext-metadata</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>
-        <module>commonmark-ext-metadata</module>
     </modules>
 
     <properties>
@@ -100,6 +100,11 @@
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-tables</artifactId>
                 <version>0.4.2-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-metadata</artifactId>
+                <version>0.3.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
