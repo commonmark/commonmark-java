@@ -20,12 +20,10 @@ public class MetadataBlockParser extends AbstractBlockParser {
 
     private List<String> lines;
     private MetadataBlock block;
-    private boolean literal;
 
     public MetadataBlockParser() {
         lines = new ArrayList<>();
         block = new MetadataBlock();
-        literal = false;
     }
 
     @Override
@@ -50,6 +48,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
     public void parseInlines(InlineParser inlineParser) {
         String key = null;
         List<String> values = new ArrayList<>();
+        boolean literal = false;
 
         for (String line : lines) {
             Matcher matcher = REGEX_BOUNDARY.matcher(line);
@@ -60,10 +59,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
             matcher = REGEX_METADATA.matcher(line);
             if (matcher.matches()) {
                 if (key != null) {
-                    MetadataNode node = new MetadataNode();
-                    node.setKey(key);
-                    node.setValues(values);
-                    block.appendChild(node);
+                    block.appendChild(new MetadataNode(key, values));
                 }
 
                 literal = false;
@@ -94,10 +90,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
         }
 
         if (key != null) {
-            MetadataNode node = new MetadataNode();
-            node.setKey(key);
-            node.setValues(values);
-            block.appendChild(node);
+            block.appendChild(new MetadataNode(key, values));
         }
     }
 
@@ -121,7 +114,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
                     if (REGEX_METADATA.matcher(subseq).matches()) {
                         validLineCount++;
                     }
-                } while (!REGEX_BOUNDARY.matcher(subseq).matches() && prevIndex != index);
+                } while (!REGEX_BOUNDARY.matcher(subseq).matches() && prevIndex < index);
 
                 if (validLineCount > 0) {
                     return BlockStart.of(new MetadataBlockParser()).atIndex(state.getNextNonSpaceIndex());

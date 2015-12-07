@@ -199,6 +199,23 @@ public class MetadataTest extends RenderingTestCase {
         assertRendering(input, rendered);
     }
 
+    @Test
+    public void unclosedMetadata() {
+        final String input = "---\n" +
+                "test";
+        final String rendered = "<hr />\n<p>test</p>\n";
+
+        MetadataVisitor visitor = new MetadataVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertTrue(data.isEmpty());
+
+        assertRendering(input, rendered);
+    }
+
     @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));

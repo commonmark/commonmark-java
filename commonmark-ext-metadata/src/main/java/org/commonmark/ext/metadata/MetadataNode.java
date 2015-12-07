@@ -8,6 +8,11 @@ public class MetadataNode extends CustomNode {
     private String key;
     private List<String> values;
 
+    public MetadataNode(String key, List<String> values) {
+        this.key = key;
+        this.values = values;
+    }
+
     public String getKey() {
         return key;
     }
