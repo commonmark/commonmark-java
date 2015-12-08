@@ -14,12 +14,21 @@ public class Substring implements CharSequence {
     }
 
     private Substring(String base, int beginIndex, int endIndex) {
+        if (beginIndex < 0) {
+            throw new StringIndexOutOfBoundsException("beginIndex must be at least 0");
+        }
+        if (endIndex < 0) {
+            throw new StringIndexOutOfBoundsException("endIndex must be at least 0");
+        }
+        if (endIndex < beginIndex) {
+            throw new StringIndexOutOfBoundsException("endIndex must not be less than beginIndex");
+        }
+        if (endIndex > base.length()) {
+            throw new StringIndexOutOfBoundsException("endIndex must not be greater than length");
+        }
         this.base = base;
         this.beginIndex = beginIndex;
         this.endIndex = endIndex;
-        if (endIndex > base.length()) {
-            throw new IndexOutOfBoundsException("endIndex must not be greater than length");
-        }
     }
 
     @Override
@@ -29,11 +38,20 @@ public class Substring implements CharSequence {
 
     @Override
     public char charAt(int index) {
+        if (index < 0 || beginIndex + index >= endIndex) {
+            throw new StringIndexOutOfBoundsException("String index out of range: " + index);
+        }
         return base.charAt(index + beginIndex);
     }
 
     @Override
     public CharSequence subSequence(int start, int end) {
+        if (start < 0 || beginIndex + start > endIndex) {
+            throw new StringIndexOutOfBoundsException("String index out of range: " + start);
+        }
+        if (end < 0 || beginIndex + end > endIndex) {
+            throw new StringIndexOutOfBoundsException("String index out of range: " + end);
+        }
         return new Substring(base, beginIndex + start, beginIndex + end);
     }
 
@@ -49,6 +67,6 @@ public class Substring implements CharSequence {
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof CharSequence && toString().equals(obj));
+        return obj == this || (obj instanceof CharSequence && toString().equals(obj.toString()));
     }
 }
