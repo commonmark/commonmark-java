@@ -16,7 +16,8 @@ public class MetadataBlockParser extends AbstractBlockParser {
     private static final Pattern REGEX_METADATA = Pattern.compile("^[ ]{0,3}([A-Za-z0-9_-]+):\\s*(.*)");
     private static final Pattern REGEX_METADATA_LIST = Pattern.compile("^[ ]+-\\s*(.*)");
     private static final Pattern REGEX_METADATA_LITERAL = Pattern.compile("^\\s*(.*)");
-    private static final Pattern REGEX_BOUNDARY = Pattern.compile("^(-{3,}|\\.{3,})(\\s*)?");
+    private static final Pattern REGEX_BEGIN = Pattern.compile("^-{3}(\\s.*)?");
+    private static final Pattern REGEX_END = Pattern.compile("^(-{3}|\\.{3})(\\s.*)?");
 
     private List<String> lines;
     private MetadataBlock block;
@@ -38,7 +39,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        if (REGEX_BOUNDARY.matcher(parserState.getLine()).matches()) {
+        if (REGEX_END.matcher(parserState.getLine()).matches()) {
             return BlockContinue.finished();
         }
         return BlockContinue.atIndex(parserState.getIndex());
@@ -51,7 +52,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
         boolean literal = false;
 
         for (String line : lines) {
-            Matcher matcher = REGEX_BOUNDARY.matcher(line);
+            Matcher matcher = REGEX_END.matcher(line);
             if (matcher.matches()) {
                 continue;
             }
@@ -101,40 +102,11 @@ public class MetadataBlockParser extends AbstractBlockParser {
             BlockParser parentParser = matchedBlockParser.getMatchedBlockParser();
             // check whether this line is the first line of whole document or not
             if (parentParser instanceof DocumentBlockParser && parentParser.getBlock().getFirstChild() == null &&
-                    REGEX_BOUNDARY.matcher(line).matches()) {
-                // count valid metadata line in metadata block
-                int prevIndex;
-                int index = nextLineEnd(line, 0);
-                int validLineCount = 0;
-                CharSequence subseq;
-                do {
-                    prevIndex = index + 1;
-                    index = nextLineEnd(line, prevIndex);
-                    subseq = line.subSequence(prevIndex, index);
-                    if (REGEX_METADATA.matcher(subseq).matches()) {
-                        validLineCount++;
-                    }
-                } while (!REGEX_BOUNDARY.matcher(subseq).matches() && prevIndex < index);
-
-                if (validLineCount > 0) {
-                    return BlockStart.of(new MetadataBlockParser()).atIndex(state.getNextNonSpaceIndex());
-                }
+                    REGEX_BEGIN.matcher(line).matches()) {
+                return BlockStart.of(new MetadataBlockParser()).atIndex(state.getNextNonSpaceIndex());
             }
 
             return BlockStart.none();
-        }
-
-        private int nextLineEnd(CharSequence seq, int startIndex) {
-            int index = startIndex;
-            try {
-                while (seq.charAt(index) != '\n') {
-                    index++;
-                }
-            } catch (IndexOutOfBoundsException ignored) {
-                index--;
-            }
-
-            return index;
         }
     }
 }
