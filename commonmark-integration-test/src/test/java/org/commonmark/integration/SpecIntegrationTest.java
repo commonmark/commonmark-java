@@ -69,6 +69,10 @@ public class SpecIntegrationTest extends SpecTestCase {
         // Plain autolink
         m.put("foo@bar.example.com\n", "<p><a href=\"mailto:foo@bar.example.com\">foo@bar.example.com</a></p>\n");
 
+        // Metadata block
+        m.put("---\nFoo\n---\nBar\n---\nBaz\n", "<h2>Bar</h2>\n<p>Baz</p>\n");
+        m.put("---\n---\n", "");
+
         return m;
     }
 

@@ -39,9 +39,18 @@ public class MetadataBlockParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        if (REGEX_END.matcher(parserState.getLine()).matches()) {
+        final CharSequence line = parserState.getLine();
+
+        if (REGEX_END.matcher(line).matches()) {
+            // if this line is `---` or `...` which means end of metadata block
             return BlockContinue.finished();
+        } else if (!REGEX_METADATA.matcher(line).matches() && !REGEX_METADATA_LIST.matcher(line).matches() &&
+                !REGEX_METADATA_LITERAL.matcher(line).matches()) {
+            // if this line isn't matched with any metadata contents, then exit this block
+            return BlockContinue.none();
         }
+
+        // this line is matched with one of metadata contents
         return BlockContinue.atIndex(parserState.getIndex());
     }
 
