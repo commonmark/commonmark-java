@@ -299,7 +299,7 @@ public class InlineParserImpl implements InlineParser {
                 res = parseCloseBracket();
                 break;
             case '<':
-                res = parseAutolink() || parseHtmlTag();
+                res = parseAutolink() || parseHtmlInline();
                 break;
             case '&':
                 res = parseEntity();
@@ -709,12 +709,12 @@ public class InlineParserImpl implements InlineParser {
     }
 
     /**
-     * Attempt to parse a raw HTML tag.
+     * Attempt to parse inline HTML.
      */
-    private boolean parseHtmlTag() {
+    private boolean parseHtmlInline() {
         String m = match(HTML_TAG);
         if (m != null) {
-            HtmlTag node = new HtmlTag();
+            HtmlInline node = new HtmlInline();
             node.setLiteral(m);
             appendNode(node);
             return true;

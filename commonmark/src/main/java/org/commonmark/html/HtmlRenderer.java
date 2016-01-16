@@ -105,10 +105,10 @@ public class HtmlRenderer {
         }
 
         /**
-         * Whether {@link HtmlTag} and {@link HtmlBlock} should be escaped, defaults to {@code false}.
+         * Whether {@link HtmlInline} and {@link HtmlBlock} should be escaped, defaults to {@code false}.
          * <p>
-         * Note that {@link HtmlTag} is only a tag itself, not the text between an opening tag and a closing tag. So markup
-         * in the text will be parsed as normal and is not affected by this option.
+         * Note that {@link HtmlInline} is only a tag itself, not the text between an opening tag and a closing tag. So
+         * markup in the text will be parsed as normal and is not affected by this option.
          *
          * @param escapeHtml true for escaping, false for preserving raw HTML
          * @return {@code this}
@@ -347,11 +347,11 @@ public class HtmlRenderer {
         }
 
         @Override
-        public void visit(HtmlTag htmlTag) {
+        public void visit(HtmlInline htmlInline) {
             if (escapeHtml) {
-                html.raw(escape(htmlTag.getLiteral(), false));
+                html.raw(escape(htmlInline.getLiteral(), false));
             } else {
-                html.raw(htmlTag.getLiteral());
+                html.raw(htmlInline.getLiteral());
             }
         }
 
