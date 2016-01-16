@@ -47,7 +47,7 @@ public class HeadingParser extends AbstractBlockParser {
             }
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
-            CharSequence paragraphStartLine = matchedBlockParser.getParagraphStartLine();
+            CharSequence paragraph = matchedBlockParser.getParagraphContent();
             Matcher matcher;
             if ((matcher = ATX_HEADING.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
                 // ATX heading
@@ -58,12 +58,12 @@ public class HeadingParser extends AbstractBlockParser {
                 return BlockStart.of(new HeadingParser(level, content))
                         .atIndex(line.length());
 
-            } else if (paragraphStartLine != null &&
+            } else if (paragraph != null &&
                     ((matcher = SETEXT_HEADING.matcher(line.subSequence(nextNonSpace, line.length()))).find())) {
                 // setext heading line
 
                 int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
-                String content = paragraphStartLine.toString();
+                String content = paragraph.toString();
                 return BlockStart.of(new HeadingParser(level, content))
                         .atIndex(line.length())
                         .replaceActiveBlockParser();

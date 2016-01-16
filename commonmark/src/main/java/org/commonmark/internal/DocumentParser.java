@@ -511,12 +511,10 @@ public class DocumentParser implements ParserState {
         }
 
         @Override
-        public CharSequence getParagraphStartLine() {
+        public CharSequence getParagraphContent() {
             if (matchedBlockParser instanceof ParagraphParser) {
                 ParagraphParser paragraphParser = (ParagraphParser) matchedBlockParser;
-                if (paragraphParser.hasSingleLine()) {
-                    return paragraphParser.getContentString();
-                }
+                return paragraphParser.getContentString();
             }
             return null;
         }
