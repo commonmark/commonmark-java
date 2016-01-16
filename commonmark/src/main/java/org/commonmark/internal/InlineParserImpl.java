@@ -578,8 +578,6 @@ public class InlineParserImpl implements InlineParser {
         } else { // maybe reference link
 
             // See if there's a link label
-            spnl();
-
             int beforeLabel = index;
             int labelLength = parseLinkLabel();
             String ref = null;
@@ -588,10 +586,6 @@ public class InlineParserImpl implements InlineParser {
             } else if (!containsBracket) {
                 // Empty or missing second label can only be a reference if there's no unescaped bracket in it.
                 ref = input.substring(opener.index, startIndex);
-            }
-            if (labelLength == 0) {
-                // If shortcut reference link, rewind before spaces we skipped.
-                index = startIndex;
             }
 
             if (ref != null) {
