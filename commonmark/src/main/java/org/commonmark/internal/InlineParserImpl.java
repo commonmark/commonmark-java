@@ -40,7 +40,7 @@ public class InlineParserImpl implements InlineParser {
                     "\\((" + ESCAPED_CHAR + "|[^)\\x00])*\\))");
 
     private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile(
-            "^(?:[<](?:[^<>\\n\\\\\\x00]" + '|' + ESCAPED_CHAR + '|' + "\\\\)*[>])");
+            "^(?:[<](?:[^<> \\t\\n\\\\\\x00]" + '|' + ESCAPED_CHAR + '|' + "\\\\)*[>])");
 
     private static final Pattern LINK_DESTINATION = Pattern.compile(
             "^(?:" + REG_CHAR + "+|" + ESCAPED_CHAR + "|\\\\|" + IN_PARENS_NOSP + ")*");
