@@ -82,7 +82,6 @@ public class SpecReader {
     }
 
     private void processLine(String line) {
-        boolean dot = line.equals(".");
         switch (state) {
             case BEFORE:
                 Matcher matcher = SECTION_PATTERN.matcher(line);
@@ -90,13 +89,13 @@ public class SpecReader {
                     section = matcher.group(1);
                     exampleNumber = 0;
                 }
-                if (dot) {
+                if (line.equals("```````````````````````````````` example")) {
                     state = State.SOURCE;
                     exampleNumber++;
                 }
                 break;
             case SOURCE:
-                if (dot) {
+                if (line.equals(".")) {
                     state = State.HTML;
                 } else {
                     // examples use "rightwards arrow" to show tab
@@ -105,7 +104,7 @@ public class SpecReader {
                 }
                 break;
             case HTML:
-                if (dot) {
+                if (line.equals("````````````````````````````````")) {
                     state = State.BEFORE;
                     examples.add(new SpecExample(section, exampleNumber,
                             source.toString(), html.toString()));
