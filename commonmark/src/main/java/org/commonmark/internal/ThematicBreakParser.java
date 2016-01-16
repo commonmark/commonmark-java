@@ -1,16 +1,16 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Block;
-import org.commonmark.node.HorizontalRule;
+import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.block.*;
 
 import java.util.regex.Pattern;
 
-public class HorizontalRuleParser extends AbstractBlockParser {
+public class ThematicBreakParser extends AbstractBlockParser {
 
-    private static Pattern H_RULE = Pattern.compile("^(?:(?:\\* *){3,}|(?:_ *){3,}|(?:- *){3,}) *$");
+    private static Pattern PATTERN = Pattern.compile("^(?:(?:\\* *){3,}|(?:_ *){3,}|(?:- *){3,}) *$");
 
-    private final HorizontalRule block = new HorizontalRule();
+    private final ThematicBreak block = new ThematicBreak();
 
     @Override
     public Block getBlock() {
@@ -32,8 +32,8 @@ public class HorizontalRuleParser extends AbstractBlockParser {
             }
             int nextNonSpace = state.getNextNonSpaceIndex();
             CharSequence line = state.getLine();
-            if (H_RULE.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
-                return BlockStart.of(new HorizontalRuleParser()).atIndex(line.length());
+            if (PATTERN.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
+                return BlockStart.of(new ThematicBreakParser()).atIndex(line.length());
             } else {
                 return BlockStart.none();
             }

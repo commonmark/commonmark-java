@@ -23,7 +23,7 @@ public interface Visitor {
 
     void visit(Heading heading);
 
-    void visit(HorizontalRule horizontalRule);
+    void visit(ThematicBreak thematicBreak);
 
     void visit(HtmlInline htmlInline);
 

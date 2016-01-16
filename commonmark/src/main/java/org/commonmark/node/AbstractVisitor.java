@@ -49,8 +49,8 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(HorizontalRule horizontalRule) {
-        visitChildren(horizontalRule);
+    public void visit(ThematicBreak thematicBreak) {
+        visitChildren(thematicBreak);
     }
 
     @Override

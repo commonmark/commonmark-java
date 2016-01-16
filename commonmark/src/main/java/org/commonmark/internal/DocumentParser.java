@@ -17,7 +17,7 @@ public class DocumentParser implements ParserState {
             new HeadingParser.Factory(),
             new FencedCodeBlockParser.Factory(),
             new HtmlBlockParser.Factory(),
-            new HorizontalRuleParser.Factory(),
+            new ThematicBreakParser.Factory(),
             new ListBlockParser.Factory(),
             new IndentedCodeBlockParser.Factory());
 

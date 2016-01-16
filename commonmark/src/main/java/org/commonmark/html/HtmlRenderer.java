@@ -260,9 +260,9 @@ public class HtmlRenderer {
         }
 
         @Override
-        public void visit(HorizontalRule horizontalRule) {
+        public void visit(ThematicBreak thematicBreak) {
             html.line();
-            html.tag("hr", getAttrs(horizontalRule), true);
+            html.tag("hr", getAttrs(thematicBreak), true);
             html.line();
         }
 
