@@ -1,8 +1,8 @@
 ---
 title: CommonMark Spec
 author: John MacFarlane
-version: 0.22
-date: 2015-08-23
+version: 0.23
+date: 2015-12-29
 license: '[CC-BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)'
 ...
 
@@ -36,11 +36,11 @@ questions it does not answer:
     users in real documents. (See [this comment by John
     Gruber](http://article.gmane.org/gmane.text.markdown.general/1997).)
 
-2.  Is a blank line needed before a block quote or header?
+2.  Is a blank line needed before a block quote or heading?
     Most implementations do not require the blank line.  However,
     this can lead to unexpected results in hard-wrapped text, and
     also to ambiguities in parsing (note that some implementations
-    put the header inside the blockquote, while others do not).
+    put the heading inside the blockquote, while others do not).
     (John Gruber has also spoken [in favor of requiring the blank
     lines](http://article.gmane.org/gmane.text.markdown.general/2146).)
 
@@ -85,8 +85,8 @@ questions it does not answer:
     10. item 2a
     ```
 
-6.  Is this one list with a horizontal rule in its second item,
-    or two lists separated by a horizontal rule?
+6.  Is this one list with a thematic break in its second item,
+    or two lists separated by a thematic break?
 
     ``` markdown
     * a
@@ -128,8 +128,8 @@ questions it does not answer:
       - and it can screw things up`
     ```
 
-11. Can list items include section headers?  (`Markdown.pl` does not
-    allow this, but does allow blockquotes to include headers.)
+11. Can list items include section headings?  (`Markdown.pl` does not
+    allow this, but does allow blockquotes to include headings.)
 
     ``` markdown
     - # Heading
@@ -325,9 +325,9 @@ with the replacement character (`U+FFFD`).
 
 We can think of a document as a sequence of
 [blocks](@block)---structural elements like paragraphs, block
-quotations, lists, headers, rules, and code blocks.  Some blocks (like
+quotations, lists, headings, rules, and code blocks.  Some blocks (like
 block quotes and list items) contain other blocks; others (like
-headers and paragraphs) contain [inline](@inline) content---text,
+headings and paragraphs) contain [inline](@inline) content---text,
 links, emphasized text, images, code, and so on.
 
 ## Precedence
@@ -348,7 +348,7 @@ two items, not a list with one item containing a code span:
 
 This means that parsing can proceed in two steps:  first, the block
 structure of the document can be discerned; second, text lines inside
-paragraphs, headers, and other block constructs can be parsed for inline
+paragraphs, headings, and other block constructs can be parsed for inline
 structure.  The second step requires information about link reference
 definitions that will be available only at the end of the first
 step.  Note that the first step requires processing lines in sequence,
@@ -367,12 +367,12 @@ which cannot.
 This section describes the different kinds of leaf block that make up a
 Markdown document.
 
-## Horizontal rules
+## Thematic breaks
 
 A line consisting of 0-3 spaces of indentation, followed by a sequence
 of three or more matching `-`, `_`, or `*` characters, each followed
 optionally by any number of spaces, forms a
-[horizontal rule](@horizontal-rule).
+[thematic break](@thematic-break).
 
 .
 ***
@@ -490,7 +490,7 @@ a------
 .
 
 It is required that all of the [non-whitespace character]s be the same.
-So, this is not a horizontal rule:
+So, this is not a thematic break:
 
 .
  *-*
@@ -498,7 +498,7 @@ So, this is not a horizontal rule:
 <p><em>-</em></p>
 .
 
-Horizontal rules do not need blank lines before or after:
+Thematic breaks do not need blank lines before or after:
 
 .
 - foo
@@ -514,7 +514,7 @@ Horizontal rules do not need blank lines before or after:
 </ul>
 .
 
-Horizontal rules can interrupt a paragraph:
+Thematic breaks can interrupt a paragraph:
 
 .
 Foo
@@ -527,10 +527,10 @@ bar
 .
 
 If a line of dashes that meets the above conditions for being a
-horizontal rule could also be interpreted as the underline of a [setext
-header], the interpretation as a
-[setext header] takes precedence. Thus, for example,
-this is a setext header, not a paragraph followed by a horizontal rule:
+thematic break could also be interpreted as the underline of a [setext
+heading], the interpretation as a
+[setext heading] takes precedence. Thus, for example,
+this is a setext heading, not a paragraph followed by a thematic break:
 
 .
 Foo
@@ -541,8 +541,8 @@ bar
 <p>bar</p>
 .
 
-When both a horizontal rule and a list item are possible
-interpretations of a line, the horizontal rule takes precedence:
+When both a thematic break and a list item are possible
+interpretations of a line, the thematic break takes precedence:
 
 .
 * Foo
@@ -558,7 +558,7 @@ interpretations of a line, the horizontal rule takes precedence:
 </ul>
 .
 
-If you want a horizontal rule in a list item, use a different bullet:
+If you want a thematic break in a list item, use a different bullet:
 
 .
 - Foo
@@ -572,21 +572,21 @@ If you want a horizontal rule in a list item, use a different bullet:
 </ul>
 .
 
-## ATX headers
+## ATX headings
 
-An [ATX header](@atx-header)
+An [ATX heading](@atx-heading)
 consists of a string of characters, parsed as inline content, between an
 opening sequence of 1--6 unescaped `#` characters and an optional
 closing sequence of any number of unescaped `#` characters.
-The opening sequence of `#` characters cannot be followed directly by a
-[non-whitespace character]. The optional closing sequence of `#`s must be
+The opening sequence of `#` characters must be followed by a
+[space] or by the end of line. The optional closing sequence of `#`s must be
 preceded by a [space] and may be followed by spaces only.  The opening
 `#` character may be indented 0-3 spaces.  The raw contents of the
-header are stripped of leading and trailing spaces before being parsed
-as inline content.  The header level is equal to the number of `#`
+heading are stripped of leading and trailing spaces before being parsed
+as inline content.  The heading level is equal to the number of `#`
 characters in the opening sequence.
 
-Simple headers:
+Simple headings:
 
 .
 # foo
@@ -604,7 +604,7 @@ Simple headers:
 <h6>foo</h6>
 .
 
-More than six `#` characters is not a header:
+More than six `#` characters is not a heading:
 
 .
 ####### foo
@@ -613,23 +613,31 @@ More than six `#` characters is not a header:
 .
 
 At least one space is required between the `#` characters and the
-header's contents, unless the header is empty.  Note that many
+heading's contents, unless the heading is empty.  Note that many
 implementations currently do not require the space.  However, the
 space was required by the
 [original ATX implementation](http://www.aaronsw.com/2002/atx/atx.py),
 and it helps prevent things like the following from being parsed as
-headers:
+headings:
 
 .
 #5 bolt
 
-#foobar
+#hashtag
 .
 <p>#5 bolt</p>
-<p>#foobar</p>
+<p>#hashtag</p>
 .
 
-This is not a header, because the first `#` is escaped:
+A tab will not work:
+
+.
+#→foo
+.
+<p>#→foo</p>
+.
+
+This is not a heading, because the first `#` is escaped:
 
 .
 \## foo
@@ -712,7 +720,7 @@ Spaces are allowed after the closing sequence:
 
 A sequence of `#` characters with anything but [space]s following it
 is not a closing sequence, but counts as part of the contents of the
-header:
+heading:
 
 .
 ### foo ### b
@@ -741,7 +749,7 @@ of the closing sequence:
 <h1>foo #</h1>
 .
 
-ATX headers need not be separated from surrounding content by blank
+ATX headings need not be separated from surrounding content by blank
 lines, and they can interrupt paragraphs:
 
 .
@@ -764,7 +772,7 @@ Bar foo
 <p>Bar foo</p>
 .
 
-ATX headers can be empty:
+ATX headings can be empty:
 
 .
 ## 
@@ -776,33 +784,33 @@ ATX headers can be empty:
 <h3></h3>
 .
 
-## Setext headers
+## Setext headings
 
-A [setext header](@setext-header)
+A [setext heading](@setext-heading)
 consists of a line of text, containing at least one [non-whitespace character],
-with no more than 3 spaces indentation, followed by a [setext header
+with no more than 3 spaces indentation, followed by a [setext heading
 underline].  The line of text must be
-one that, were it not followed by the setext header underline,
+one that, were it not followed by the setext heading underline,
 would be interpreted as part of a paragraph:  it cannot be
-interpretable as a [code fence], [ATX header][ATX headers],
-[block quote][block quotes], [horizontal rule][horizontal rules],
+interpretable as a [code fence], [ATX heading][ATX headings],
+[block quote][block quotes], [thematic break][thematic breaks],
 [list item][list items], or [HTML block][HTML blocks].
 
-A [setext header underline](@setext-header-underline) is a sequence of
+A [setext heading underline](@setext-heading-underline) is a sequence of
 `=` characters or a sequence of `-` characters, with no more than 3
 spaces indentation and any number of trailing spaces.  If a line
 containing a single `-` can be interpreted as an
 empty [list items], it should be interpreted this way
-and not as a [setext header underline].
+and not as a [setext heading underline].
 
-The header is a level 1 header if `=` characters are used in the
-[setext header underline], and a level 2
-header if `-` characters are used.  The contents of the header are the
+The heading is a level 1 heading if `=` characters are used in the
+[setext heading underline], and a level 2
+heading if `-` characters are used.  The contents of the heading are the
 result of parsing the first line as Markdown inline content.
 
-In general, a setext header need not be preceded or followed by a
+In general, a setext heading need not be preceded or followed by a
 blank line.  However, it cannot interrupt a paragraph, so when a
-setext header comes after a paragraph, a blank line is needed between
+setext heading comes after a paragraph, a blank line is needed between
 them.
 
 Simple examples:
@@ -831,7 +839,7 @@ Foo
 <h1>Foo</h1>
 .
 
-The header content can be indented up to three spaces, and need
+The heading content can be indented up to three spaces, and need
 not line up with the underlining:
 
 .
@@ -866,7 +874,7 @@ Foo
 <hr />
 .
 
-The setext header underline can be indented up to three spaces, and
+The setext heading underline can be indented up to three spaces, and
 may have trailing spaces:
 
 .
@@ -886,7 +894,7 @@ Foo
 ---</p>
 .
 
-The setext header underline cannot contain internal spaces:
+The setext heading underline cannot contain internal spaces:
 
 .
 Foo
@@ -920,7 +928,7 @@ Foo\
 .
 
 Since indicators of block structure take precedence over
-indicators of inline structure, the following are setext headers:
+indicators of inline structure, the following are setext headings:
 
 .
 `Foo
@@ -937,7 +945,7 @@ of dashes"/>
 <p>of dashes&quot;/&gt;</p>
 .
 
-The setext header underline cannot be a [lazy continuation
+The setext heading underline cannot be a [lazy continuation
 line] in a list item or block quote:
 
 .
@@ -960,7 +968,7 @@ line] in a list item or block quote:
 <hr />
 .
 
-A setext header cannot interrupt a paragraph:
+A setext heading cannot interrupt a paragraph:
 
 .
 Foo
@@ -995,7 +1003,7 @@ Baz
 <p>Baz</p>
 .
 
-Setext headers cannot be empty:
+Setext headings cannot be empty:
 
 .
 
@@ -1004,9 +1012,9 @@ Setext headers cannot be empty:
 <p>====</p>
 .
 
-Setext header text lines must not be interpretable as block
+Setext heading text lines must not be interpretable as block
 constructs other than paragraphs.  So, the line of dashes
-in these examples gets interpreted as a horizontal rule:
+in these examples gets interpreted as a thematic break:
 
 .
 ---
@@ -1045,7 +1053,7 @@ in these examples gets interpreted as a horizontal rule:
 <hr />
 .
 
-If you want a header with `> foo` as its literal text, you can
+If you want a heading with `> foo` as its literal text, you can
 use backslash escapes:
 
 .
@@ -1192,17 +1200,17 @@ And indented code can occur immediately before and after other kinds of
 blocks:
 
 .
-# Header
+# Heading
     foo
-Header
+Heading
 ------
     foo
 ----
 .
-<h1>Header</h1>
+<h1>Heading</h1>
 <pre><code>foo
 </code></pre>
-<h2>Header</h2>
+<h2>Heading</h2>
 <pre><code>foo
 </code></pre>
 <hr />
@@ -1363,7 +1371,7 @@ aaa
 .
 
 Unclosed code blocks are closed by the end of the document
-(or the enclosing [block quote] or [list item]):
+(or the enclosing [block quote][block quotes] or [list item][list items]):
 
 .
 ```
@@ -1987,8 +1995,8 @@ p {color:blue;}
 .
 
 If there is no matching end tag, the block will end at the
-end of the document (or the enclosing [block quote] or
-[list item]):
+end of the document (or the enclosing [block quote][block quotes]
+or [list item][list items]):
 
 .
 <style
@@ -2547,8 +2555,8 @@ Foo
 <p>[bar]</p>
 .
 
-However, it can directly follow other block elements, such as headers
-and horizontal rules, and it need not be followed by a blank line.
+However, it can directly follow other block elements, such as headings
+and thematic breaks, and it need not be followed by a blank line.
 
 .
 # [Foo]
@@ -3423,6 +3431,48 @@ A list item may contain any kind of block:
 </ol>
 .
 
+A list item that contains an indented code block will preserve
+empty lines within the code block verbatim, unless there are two
+or more empty lines in a row (since as described above, two
+blank lines end the list):
+
+.
+- Foo
+
+      bar
+
+      baz
+.
+<ul>
+<li>
+<p>Foo</p>
+<pre><code>bar
+
+baz
+</code></pre>
+</li>
+</ul>
+.
+
+.
+- Foo
+
+      bar
+
+
+      baz
+.
+<ul>
+<li>
+<p>Foo</p>
+<pre><code>bar
+</code></pre>
+</li>
+</ul>
+<pre><code>  baz
+</code></pre>
+.
+
 Note that ordered list start numbers must be nine digits or less:
 
 .
@@ -3994,7 +4044,7 @@ A list may be the first block in a list item:
 </ol>
 .
 
-A list item can contain a header:
+A list item can contain a heading:
 
 .
 - # Foo
@@ -4812,7 +4862,7 @@ not have their usual Markdown meanings:
 \`not code`
 1\. not a list
 \* not a list
-\# not a header
+\# not a heading
 \[foo]: /url "not a reference"
 .
 <p>*not emphasized*
@@ -4821,7 +4871,7 @@ not have their usual Markdown meanings:
 `not code`
 1. not a list
 * not a list
-# not a header
+# not a heading
 [foo]: /url &quot;not a reference&quot;</p>
 .
 
@@ -4907,21 +4957,21 @@ foo
 .
 
 
-## Entities
+## Entity and numeric character references
 
-With the goal of making this standard as HTML-agnostic as possible, all
-valid HTML entities (except in code blocks and code spans)
-are recognized as such and converted into Unicode characters before
-they are stored in the AST. This means that renderers to formats other
-than HTML need not be HTML-entity aware.  HTML renderers may either escape
-Unicode characters as entities or leave them as they are.  (However,
-`"`, `&`, `<`, and `>` must always be rendered as entities.)
+All valid HTML entity references and numeric character
+references, except those occuring in code blocks, code spans,
+and raw HTML, are recognized as such and treated as equivalent to the
+corresponding Unicode characters.  Conforming CommonMark parsers
+need not store information about whether a particular character
+was represented in the source using a Unicode character or
+an entity reference.
 
-[Named entities](@name-entities) consist of `&` + any of the valid
+[Entity references](@entity-references) consist of `&` + any of the valid
 HTML5 entity names + `;`. The
-[following document](https://html.spec.whatwg.org/multipage/entities.json)
-is used as an authoritative source of the valid entity names and their
-corresponding code points.
+document <https://html.spec.whatwg.org/multipage/entities.json>
+is used as an authoritative source for the valid entity
+references and their corresponding code points.
 
 .
 &nbsp; &amp; &copy; &AElig; &Dcaron;
@@ -4933,10 +4983,11 @@ corresponding code points.
 ∲ ≧̸</p>
 .
 
-[Decimal entities](@decimal-entities)
-consist of `&#` + a string of 1--8 arabic digits + `;`. Again, these
-entities need to be recognised and transformed into their corresponding
-Unicode code points. Invalid Unicode code points will be replaced by
+[Decimal numeric character
+references](@decimal-numeric-character-references)
+consist of `&#` + a string of 1--8 arabic digits + `;`. A
+numeric character reference is parsed as the corresponding
+Unicode character. Invalid Unicode code points will be replaced by
 the "unknown code point" character (`U+FFFD`).  For security reasons,
 the code point `U+0000` will also be replaced by `U+FFFD`.
 
@@ -4946,10 +4997,11 @@ the code point `U+0000` will also be replaced by `U+FFFD`.
 <p># Ӓ Ϡ � �</p>
 .
 
-[Hexadecimal entities](@hexadecimal-entities) consist of `&#` + either
-`X` or `x` + a string of 1-8 hexadecimal digits + `;`. They will also
-be parsed and turned into the corresponding Unicode code points in the
-AST.
+[Hexadecimal numeric character
+references](@hexadecimal-numeric-character-references) consist of `&#` +
+either `X` or `x` + a string of 1-8 hexadecimal digits + `;`.
+They too are parsed as the corresponding Unicode character (this
+time specified with a hexadecimal numeral instead of decimal).
 
 .
 &#X22; &#XD06; &#xcab;
@@ -4960,14 +5012,16 @@ AST.
 Here are some nonentities:
 
 .
-&nbsp &x; &#; &#x; &ThisIsWayTooLongToBeAnEntityIsntIt; &hi?;
+&nbsp &x; &#; &#x;
+&ThisIsWayTooLongToBeAnEntityIsntIt; &hi?;
 .
-<p>&amp;nbsp &amp;x; &amp;#; &amp;#x; &amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;hi?;</p>
+<p>&amp;nbsp &amp;x; &amp;#; &amp;#x;
+&amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;hi?;</p>
 .
 
-Although HTML5 does accept some entities without a trailing semicolon
-(such as `&copy`), these are not recognized as entities here, because it
-makes the grammar too ambiguous:
+Although HTML5 does accept some entity references
+without a trailing semicolon (such as `&copy`), these are not
+recognized here, because it makes the grammar too ambiguous:
 
 .
 &copy
@@ -4976,7 +5030,7 @@ makes the grammar too ambiguous:
 .
 
 Strings that are not on the list of HTML5 named entities are not
-recognized as entities either:
+recognized as entity references either:
 
 .
 &MadeUpEntity;
@@ -4984,9 +5038,9 @@ recognized as entities either:
 <p>&amp;MadeUpEntity;</p>
 .
 
-Entities are recognized in any context besides code spans or
-code blocks, including raw HTML, URLs, [link title]s, and
-[fenced code block] [info string]s:
+Entity and numeric character references are recognized in any
+context besides code spans or code blocks or raw HTML, including
+URLs, [link title]s, and [fenced code block][] [info string]s:
 
 .
 <a href="&ouml;&ouml;.html">
@@ -5017,7 +5071,8 @@ foo
 </code></pre>
 .
 
-Entities are treated as literal text in code spans and code blocks:
+Entity and numeric character references are treated as literal
+text in code spans and code blocks, and in raw HTML:
 
 .
 `f&ouml;&ouml;`
@@ -5030,6 +5085,12 @@ Entities are treated as literal text in code spans and code blocks:
 .
 <pre><code>f&amp;ouml;f&amp;ouml;
 </code></pre>
+.
+
+.
+<a href="f&ouml;f&ouml;"/>
+.
+<a href="f&ouml;f&ouml;"/>
 .
 
 ## Code spans
@@ -5304,7 +5365,7 @@ The following rules define emphasis and strong emphasis:
 2.  A single `_` character [can open emphasis] iff
     it is part of a [left-flanking delimiter run]
     and either (a) not part of a [right-flanking delimiter run]
-    or (b) part of a [right-flanking delimeter run]
+    or (b) part of a [right-flanking delimiter run]
     preceded by punctuation.
 
 3.  A single `*` character [can close emphasis](@can-close-emphasis)
@@ -5313,7 +5374,7 @@ The following rules define emphasis and strong emphasis:
 4.  A single `_` character [can close emphasis] iff
     it is part of a [right-flanking delimiter run]
     and either (a) not part of a [left-flanking delimiter run]
-    or (b) part of a [left-flanking delimeter run]
+    or (b) part of a [left-flanking delimiter run]
     followed by punctuation.
 
 5.  A double `**` [can open strong emphasis](@can-open-strong-emphasis)
@@ -5322,7 +5383,7 @@ The following rules define emphasis and strong emphasis:
 6.  A double `__` [can open strong emphasis] iff
     it is part of a [left-flanking delimiter run]
     and either (a) not part of a [right-flanking delimiter run]
-    or (b) part of a [right-flanking delimeter run]
+    or (b) part of a [right-flanking delimiter run]
     preceded by punctuation.
 
 7.  A double `**` [can close strong emphasis](@can-close-strong-emphasis)
@@ -5331,7 +5392,7 @@ The following rules define emphasis and strong emphasis:
 8.  A double `__` [can close strong emphasis]
     it is part of a [right-flanking delimiter run]
     and either (a) not part of a [left-flanking delimiter run]
-    or (b) part of a [left-flanking delimeter run]
+    or (b) part of a [left-flanking delimiter run]
     followed by punctuation.
 
 9.  Emphasis begins with a delimiter that [can open emphasis] and ends
@@ -6555,11 +6616,11 @@ A link can contain fragment identifiers and queries:
 
 [link](http://example.com#fragment)
 
-[link](http://example.com?foo=bar&baz#fragment)
+[link](http://example.com?foo=3#frag)
 .
 <p><a href="#fragment">link</a></p>
 <p><a href="http://example.com#fragment">link</a></p>
-<p><a href="http://example.com?foo=bar&amp;baz#fragment">link</a></p>
+<p><a href="http://example.com?foo=3#frag">link</a></p>
 .
 
 Note that a backslash before a non-escapable character is
@@ -6572,9 +6633,13 @@ just a backslash:
 .
 
 URL-escaping should be left alone inside the destination, as all
-URL-escaped characters are also valid URL characters. HTML entities in
-the destination will be parsed into the corresponding Unicode
-code points, as usual, and optionally URL-escaped when written as HTML.
+URL-escaped characters are also valid URL characters. Entity and
+numerical character references in the destination will be parsed
+into the corresponding Unicode code points, as usual.  These may
+be optionally URL-escaped when written as HTML, but this spec
+does not enforce any particular policy for rendering URLs in
+HTML or other formats.  Renderers may make different decisions
+about how to escape or normalize URLs in the output.
 
 .
 [link](foo%20b&auml;)
@@ -6604,7 +6669,8 @@ Titles may be in single quotes, double quotes, or parentheses:
 <a href="/url" title="title">link</a></p>
 .
 
-Backslash escapes and entities may be used in titles:
+Backslash escapes and entity and numeric character references
+may be used in titles:
 
 .
 [link](/url "title \"&quot;")
@@ -6632,15 +6698,16 @@ But it is easy to work around this by using a different quote type:
 title, and its test suite included a test demonstrating this.
 But it is hard to see a good rationale for the extra complexity this
 brings, since there are already many ways---backslash escaping,
-entities, or using a different quote type for the enclosing title---to
-write titles containing double quotes.  `Markdown.pl`'s handling of
-titles has a number of other strange features.  For example, it allows
-single-quoted titles in inline links, but not reference links.  And, in
-reference links but not inline links, it allows a title to begin with
-`"` and end with `)`.  `Markdown.pl` 1.0.1 even allows titles with no closing
-quotation mark, though 1.0.2b8 does not.  It seems preferable to adopt
-a simple, rational rule that works the same way in inline links and
-link reference definitions.)
+entity and numeric character references, or using a different
+quote type for the enclosing title---to write titles containing
+double quotes.  `Markdown.pl`'s handling of titles has a number
+of other strange features.  For example, it allows single-quoted
+titles in inline links, but not reference links.  And, in
+reference links but not inline links, it allows a title to begin
+with `"` and end with `)`.  `Markdown.pl` 1.0.1 even allows
+titles with no closing quotation mark, though 1.0.2b8 does not.
+It seems preferable to adopt a simple, rational rule that works
+the same way in inline links and link reference definitions.)
 
 [Whitespace] is allowed around the destination and title:
 
@@ -6771,7 +6838,7 @@ There are three kinds of [reference link](@reference-link)s:
 and [shortcut](#shortcut-reference-link).
 
 A [full reference link](@full-reference-link)
-consists of a [link text], optional [whitespace], and a [link label]
+consists of a [link text] immediately followed by a [link label]
 that [matches] a [link reference definition] elsewhere in the document.
 
 A [link label](@link-label)  begins with a left bracket (`[`) and ends
@@ -6941,14 +7008,15 @@ purposes of determining matching:
 <p><a href="/url">Baz</a></p>
 .
 
-There can be [whitespace] between the [link text] and the [link label]:
+No [whitespace] is allowed between the [link text] and the
+[link label]:
 
 .
 [foo] [bar]
 
 [bar]: /url "title"
 .
-<p><a href="/url" title="title">foo</a></p>
+<p>[foo] <a href="/url" title="title">bar</a></p>
 .
 
 .
@@ -6957,8 +7025,36 @@ There can be [whitespace] between the [link text] and the [link label]:
 
 [bar]: /url "title"
 .
-<p><a href="/url" title="title">foo</a></p>
+<p>[foo]
+<a href="/url" title="title">bar</a></p>
 .
+
+This is a departure from John Gruber's original Markdown syntax
+description, which explicitly allows whitespace between the link
+text and the link label.  It brings reference links in line with
+[inline link]s, which (according to both original Markdown and
+this spec) cannot have whitespace after the link text.  More
+importantly, it prevents inadvertent capture of consecutive
+[shortcut reference link]s. If whitespace is allowed between the
+link text and the link label, then in the following we will have
+a single reference link, not two shortcut reference links, as
+intended:
+
+``` markdown
+[foo]
+[bar]
+
+[foo]: /url1
+[bar]: /url2
+```
+
+(Note that [shortcut reference link]s were introduced by Gruber
+himself in a beta version of `Markdown.pl`, but never included
+in the official syntax description.  Without shortcut reference
+links, it is harmless to allow space between the link text and
+link label; but once shortcut references are introduced, it is
+too dangerous to allow this, as it frequently leads to
+unintended results.)
 
 When there are multiple matching [link reference definition]s,
 the first is used:
@@ -7023,6 +7119,16 @@ backslash-escaped:
 <p><a href="/uri">foo</a></p>
 .
 
+Note that in this example `]` is not backslash-escaped:
+
+.
+[bar\\]: /uri
+
+[bar\\]
+.
+<p><a href="/uri">bar\</a></p>
+.
+
 A [link label] must contain at least one [non-whitespace character]:
 
 .
@@ -7050,7 +7156,7 @@ A [link label] must contain at least one [non-whitespace character]:
 A [collapsed reference link](@collapsed-reference-link)
 consists of a [link label] that [matches] a
 [link reference definition] elsewhere in the
-document, optional [whitespace], and the string `[]`.
+document, followed by the string `[]`.
 The contents of the first link label are parsed as inlines,
 which are used as the link's text.  The link's URI and title are
 provided by the matching reference link definition.  Thus,
@@ -7083,8 +7189,8 @@ The link labels are case-insensitive:
 .
 
 
-As with full reference links, [whitespace] is allowed
-between the two sets of brackets:
+As with full reference links, [whitespace] is not
+allowed between the two sets of brackets:
 
 .
 [foo] 
@@ -7092,7 +7198,8 @@ between the two sets of brackets:
 
 [foo]: /url "title"
 .
-<p><a href="/url" title="title">foo</a></p>
+<p><a href="/url" title="title">foo</a>
+[]</p>
 .
 
 A [shortcut reference link](@shortcut-reference-link)
@@ -7313,7 +7420,7 @@ My ![foo bar](/path/to/train.jpg  "title"   )
 Reference-style:
 
 .
-![foo] [bar]
+![foo][bar]
 
 [bar]: /url
 .
@@ -7321,7 +7428,7 @@ Reference-style:
 .
 
 .
-![foo] [bar]
+![foo][bar]
 
 [BAR]: /url
 .
@@ -7356,7 +7463,7 @@ The labels are case-insensitive:
 <p><img src="/url" alt="Foo" title="title" /></p>
 .
 
-As with full reference links, [whitespace] is allowed
+As with reference links, [whitespace] is not allowed
 between the two sets of brackets:
 
 .
@@ -7365,7 +7472,8 @@ between the two sets of brackets:
 
 [foo]: /url "title"
 .
-<p><img src="/url" alt="foo" title="title" /></p>
+<p><img src="/url" alt="foo" title="title" />
+[]</p>
 .
 
 Shortcut:
@@ -7639,7 +7747,7 @@ consists of `"`, zero or more
 characters not including `"`, and a final `"`.
 
 An [open tag](@open-tag) consists of a `<` character, a [tag name],
-zero or more [attributes](@attribute], optional [whitespace], an optional `/`
+zero or more [attribute]s, optional [whitespace], an optional `/`
 character, and a `>` character.
 
 A [closing tag](@closing-tag) consists of the string `</`, a
@@ -7707,16 +7815,9 @@ _boolean zoop:33=zoop:33 /></p>
 Custom tag names can be used:
 
 .
-<responsive-image src="foo.jpg" />
-
-<My-Tag>
-foo
-</My-Tag>
+Foo <responsive-image src="foo.jpg" />
 .
-<responsive-image src="foo.jpg" />
-<My-Tag>
-foo
-</My-Tag>
+<p>Foo <responsive-image src="foo.jpg" /></p>
 .
 
 Illegal tag names, not parsed as HTML:
@@ -7764,11 +7865,9 @@ Missing [whitespace]:
 Closing tags:
 
 .
-</a>
-</foo >
+</a></foo >
 .
-</a>
-</foo >
+<p></a></foo ></p>
 .
 
 Illegal attributes in closing tag:
@@ -7830,20 +7929,21 @@ foo <![CDATA[>&<]]>
 <p>foo <![CDATA[>&<]]></p>
 .
 
-Entities are preserved in HTML attributes:
+Entity and numeric character references are preserved in HTML
+attributes:
 
 .
-<a href="&ouml;">
+foo <a href="&ouml;">
 .
-<a href="&ouml;">
+<p>foo <a href="&ouml;"></p>
 .
 
 Backslash escapes do not work in HTML attributes:
 
 .
-<a href="\*">
+foo <a href="\*">
 .
-<a href="\*">
+<p>foo <a href="\*"></p>
 .
 
 .
@@ -8062,7 +8162,7 @@ list items, and so on---is constructed.  Text is assigned to these
 blocks but not parsed. Link reference definitions are parsed and a
 map of links is constructed.
 
-2. In the second phase, the raw text contents of paragraphs and headers
+2. In the second phase, the raw text contents of paragraphs and headings
 are parsed into sequences of Markdown inline elements (strings,
 code spans, links, emphasis, and so on), using the map of link
 references constructed in phase 1.
@@ -8125,10 +8225,10 @@ matched block.
 3.  Finally, we look at the remainder of the line (after block
 markers like `>`, list markers, and indentation have been consumed).
 This is text that can be incorporated into the last open
-block (a paragraph, code block, header, or raw HTML).
+block (a paragraph, code block, heading, or raw HTML).
 
-Setext headers are formed when we detect that the second line of
-a paragraph is a setext header line.
+Setext headings are formed when we detect that the second line of
+a paragraph is a setext heading line.
 
 Reference link definitions are detected when a paragraph is closed;
 the accumulated text lines are parsed to see if they begin with
@@ -8237,7 +8337,7 @@ We thus obtain the final tree:
 Once all of the input has been parsed, all open blocks are closed.
 
 We then "walk the tree," visiting every node, and parse raw
-string contents of paragraphs and headers as inlines.  At this
+string contents of paragraphs and headings as inlines.  At this
 point we have seen all the link reference definitions, so we can
 resolve reference links as we go.
 
