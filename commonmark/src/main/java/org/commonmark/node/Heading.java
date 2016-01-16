@@ -1,6 +1,6 @@
 package org.commonmark.node;
 
-public class Header extends Block {
+public class Heading extends Block {
 
     private int level;
 

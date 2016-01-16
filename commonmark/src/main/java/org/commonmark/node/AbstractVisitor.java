@@ -44,8 +44,8 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(Header header) {
-        visitChildren(header);
+    public void visit(Heading heading) {
+        visitChildren(heading);
     }
 
     @Override

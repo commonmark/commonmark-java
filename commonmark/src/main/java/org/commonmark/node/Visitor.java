@@ -21,7 +21,7 @@ public interface Visitor {
 
     void visit(HardLineBreak hardLineBreak);
 
-    void visit(Header header);
+    void visit(Heading heading);
 
     void visit(HorizontalRule horizontalRule);
 

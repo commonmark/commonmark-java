@@ -191,11 +191,11 @@ public class HtmlRenderer {
         }
 
         @Override
-        public void visit(Header header) {
-            String htag = "h" + header.getLevel();
+        public void visit(Heading heading) {
+            String htag = "h" + heading.getLevel();
             html.line();
-            html.tag(htag, getAttrs(header));
-            visitChildren(header);
+            html.tag(htag, getAttrs(heading));
+            visitChildren(heading);
             html.tag('/' + htag);
             html.line();
         }

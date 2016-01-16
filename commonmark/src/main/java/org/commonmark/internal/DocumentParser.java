@@ -14,7 +14,7 @@ public class DocumentParser implements ParserState {
 
     private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
             new BlockQuoteParser.Factory(),
-            new HeaderParser.Factory(),
+            new HeadingParser.Factory(),
             new FencedCodeBlockParser.Factory(),
             new HtmlBlockParser.Factory(),
             new HorizontalRuleParser.Factory(),
