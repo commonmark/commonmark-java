@@ -10,9 +10,11 @@ public interface MatchedBlockParser {
     BlockParser getMatchedBlockParser();
 
     /**
-     * @return the first line of the paragraph if the matched block is a paragraph and we're on the second line,
-     * null otherwise
+     * Returns the current content of the paragraph if the matched block is a paragraph. The content can be multiple
+     * lines separated by {@code '\n'}.
+     *
+     * @return paragraph content or {@code null}
      */
-    CharSequence getParagraphStartLine();
+    CharSequence getParagraphContent();
 
 }

@@ -44,18 +44,18 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(Header header) {
-        visitChildren(header);
+    public void visit(Heading heading) {
+        visitChildren(heading);
     }
 
     @Override
-    public void visit(HorizontalRule horizontalRule) {
-        visitChildren(horizontalRule);
+    public void visit(ThematicBreak thematicBreak) {
+        visitChildren(thematicBreak);
     }
 
     @Override
-    public void visit(HtmlTag htmlTag) {
-        visitChildren(htmlTag);
+    public void visit(HtmlInline htmlInline) {
+        visitChildren(htmlInline);
     }
 
     @Override

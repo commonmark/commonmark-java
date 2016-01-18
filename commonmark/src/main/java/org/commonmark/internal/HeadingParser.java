@@ -1,23 +1,23 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Block;
-import org.commonmark.node.Header;
+import org.commonmark.node.Heading;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HeaderParser extends AbstractBlockParser {
+public class HeadingParser extends AbstractBlockParser {
 
-    private static Pattern ATX_HEADER = Pattern.compile("^#{1,6}(?: +|$)");
+    private static Pattern ATX_HEADING = Pattern.compile("^#{1,6}(?: +|$)");
     private static Pattern ATX_TRAILING = Pattern.compile("(^| ) *#+ *$");
-    private static Pattern SETEXT_HEADER = Pattern.compile("^(?:=+|-+) *$");
+    private static Pattern SETEXT_HEADING = Pattern.compile("^(?:=+|-+) *$");
 
-    private final Header block = new Header();
+    private final Heading block = new Heading();
     private final String content;
 
-    public HeaderParser(int level, String content) {
+    public HeadingParser(int level, String content) {
         block.setLevel(level);
         this.content = content;
     }
@@ -29,7 +29,7 @@ public class HeaderParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        // a header can never container > 1 line, so fail to match
+        // In both ATX and Setext headings, once we have the heading markup, there's nothing more to parse.
         return BlockContinue.none();
     }
 
@@ -47,24 +47,24 @@ public class HeaderParser extends AbstractBlockParser {
             }
             CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
-            CharSequence paragraphStartLine = matchedBlockParser.getParagraphStartLine();
+            CharSequence paragraph = matchedBlockParser.getParagraphContent();
             Matcher matcher;
-            if ((matcher = ATX_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
-                // ATX header
+            if ((matcher = ATX_HEADING.matcher(line.subSequence(nextNonSpace, line.length()))).find()) {
+                // ATX heading
                 int newOffset = nextNonSpace + matcher.group(0).length();
                 int level = matcher.group(0).trim().length(); // number of #s
                 // remove trailing ###s:
                 String content = ATX_TRAILING.matcher(line.subSequence(newOffset, line.length())).replaceAll("");
-                return BlockStart.of(new HeaderParser(level, content))
+                return BlockStart.of(new HeadingParser(level, content))
                         .atIndex(line.length());
 
-            } else if (paragraphStartLine != null &&
-                    ((matcher = SETEXT_HEADER.matcher(line.subSequence(nextNonSpace, line.length()))).find())) {
-                // setext header line
+            } else if (paragraph != null &&
+                    ((matcher = SETEXT_HEADING.matcher(line.subSequence(nextNonSpace, line.length()))).find())) {
+                // setext heading line
 
                 int level = matcher.group(0).charAt(0) == '=' ? 1 : 2;
-                String content = paragraphStartLine.toString();
-                return BlockStart.of(new HeaderParser(level, content))
+                String content = paragraph.toString();
+                return BlockStart.of(new HeadingParser(level, content))
                         .atIndex(line.length())
                         .replaceActiveBlockParser();
             } else {

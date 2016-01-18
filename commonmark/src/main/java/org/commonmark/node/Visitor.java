@@ -21,11 +21,11 @@ public interface Visitor {
 
     void visit(HardLineBreak hardLineBreak);
 
-    void visit(Header header);
+    void visit(Heading heading);
 
-    void visit(HorizontalRule horizontalRule);
+    void visit(ThematicBreak thematicBreak);
 
-    void visit(HtmlTag htmlTag);
+    void visit(HtmlInline htmlInline);
 
     void visit(HtmlBlock htmlBlock);
 

@@ -33,6 +33,11 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void headerMustBeOneLine() {
+        assertRendering("No\nAbc|Def\n---|---", "<p>No\nAbc|Def\n---|---</p>\n");
+    }
+
+    @Test
     public void oneHeadNoBody() {
         assertRendering("Abc|Def\n---|---", "<table>\n" +
                 "<thead>\n" +

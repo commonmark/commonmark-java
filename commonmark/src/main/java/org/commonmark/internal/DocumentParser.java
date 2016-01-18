@@ -14,10 +14,10 @@ public class DocumentParser implements ParserState {
 
     private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
             new BlockQuoteParser.Factory(),
-            new HeaderParser.Factory(),
+            new HeadingParser.Factory(),
             new FencedCodeBlockParser.Factory(),
             new HtmlBlockParser.Factory(),
-            new HorizontalRuleParser.Factory(),
+            new ThematicBreakParser.Factory(),
             new ListBlockParser.Factory(),
             new IndentedCodeBlockParser.Factory());
 
@@ -511,12 +511,10 @@ public class DocumentParser implements ParserState {
         }
 
         @Override
-        public CharSequence getParagraphStartLine() {
+        public CharSequence getParagraphContent() {
             if (matchedBlockParser instanceof ParagraphParser) {
                 ParagraphParser paragraphParser = (ParagraphParser) matchedBlockParser;
-                if (paragraphParser.hasSingleLine()) {
-                    return paragraphParser.getContentString();
-                }
+                return paragraphParser.getContentString();
             }
             return null;
         }

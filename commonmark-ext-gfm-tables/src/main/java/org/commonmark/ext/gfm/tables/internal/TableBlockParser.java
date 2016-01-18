@@ -157,14 +157,14 @@ public class TableBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
-            CharSequence paragraphStartLine = matchedBlockParser.getParagraphStartLine();
-            if (paragraphStartLine != null && paragraphStartLine.toString().contains("|")) {
+            CharSequence paragraph = matchedBlockParser.getParagraphContent();
+            if (paragraph != null && paragraph.toString().contains("|") && !paragraph.toString().contains("\n")) {
                 CharSequence separatorLine = line.subSequence(state.getIndex(), line.length());
                 if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).matches()) {
-                    List<String> headParts = split(paragraphStartLine);
+                    List<String> headParts = split(paragraph);
                     List<String> separatorParts = split(separatorLine);
                     if (separatorParts.size() >= headParts.size()) {
-                        return BlockStart.of(new TableBlockParser(paragraphStartLine))
+                        return BlockStart.of(new TableBlockParser(paragraph))
                                 .atIndex(state.getIndex())
                                 .replaceActiveBlockParser();
                     }

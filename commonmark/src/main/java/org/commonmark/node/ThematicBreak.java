@@ -1,6 +1,6 @@
 package org.commonmark.node;
 
-public class HorizontalRule extends Block {
+public class ThematicBreak extends Block {
 
     @Override
     public void accept(Visitor visitor) {
