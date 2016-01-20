@@ -64,7 +64,7 @@ public class InlineParserImpl implements InlineParser {
 
     private static final Pattern SPNL = Pattern.compile("^ *(?:\n *)?");
 
-    private static final Pattern WHITESPACE_CHAR = Pattern.compile("^\\p{IsWhite_Space}");
+    private static final Pattern UNICODE_WHITESPACE_CHAR = Pattern.compile("^[\\p{Zs}\t\r\n\f]");
 
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
@@ -566,7 +566,7 @@ public class InlineParserImpl implements InlineParser {
             if ((dest = parseLinkDestination()) != null) {
                 spnl();
                 // title needs a whitespace before
-                if (WHITESPACE_CHAR.matcher(input.substring(index - 1, index)).matches()) {
+                if (WHITESPACE.matcher(input.substring(index - 1, index)).matches()) {
                     title = parseLinkTitle();
                     spnl();
                 }
@@ -785,8 +785,8 @@ public class InlineParserImpl implements InlineParser {
                 String.valueOf(charAfter);
 
         boolean beforeIsPunctuation = PUNCTUATION.matcher(before).matches();
-        boolean beforeIsWhitespace = WHITESPACE_CHAR.matcher(before).matches();
-        boolean afterIsWhitespace = WHITESPACE_CHAR.matcher(after).matches();
+        boolean beforeIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(before).matches();
+        boolean afterIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(after).matches();
         boolean afterIsPunctuation = PUNCTUATION.matcher(after).matches();
 
         boolean leftFlanking = !afterIsWhitespace &&
