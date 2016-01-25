@@ -14,6 +14,7 @@ public class Html5Entities {
 
     private static final Map<String, String> NAMED_CHARACTER_REFERENCES = readEntities();
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("^&#[Xx]?");
+    private static final String ENTITY_PATH = "/org/commonmark/internal/util/entities.properties";
 
     public static String entityToString(String input) {
         Matcher matcher = NUMERIC_PATTERN.matcher(input);
@@ -42,7 +43,7 @@ public class Html5Entities {
 
     private static Map<String, String> readEntities() {
         Map<String, String> entities = new HashMap<>();
-        InputStream stream = Html5Entities.class.getResourceAsStream("entities.properties");
+        InputStream stream = Html5Entities.class.getResourceAsStream(ENTITY_PATH);
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
