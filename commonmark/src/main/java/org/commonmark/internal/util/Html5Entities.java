@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -44,7 +44,8 @@ public class Html5Entities {
     private static Map<String, String> readEntities() {
         Map<String, String> entities = new HashMap<>();
         InputStream stream = Html5Entities.class.getResourceAsStream(ENTITY_PATH);
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+        Charset charset = Charset.forName("UTF-8");
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, charset))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.length() == 0) {
