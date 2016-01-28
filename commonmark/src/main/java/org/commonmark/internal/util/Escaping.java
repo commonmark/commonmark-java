@@ -1,6 +1,6 @@
 package org.commonmark.internal.util;
 
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,7 +78,7 @@ public class Escaping {
                     sb.append(input, 1, input.length());
                 }
             } else {
-                byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+                byte[] bytes = input.getBytes(Charset.forName("UTF-8"));
                 for (byte b : bytes) {
                     sb.append('%');
                     sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
