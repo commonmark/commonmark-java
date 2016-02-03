@@ -233,6 +233,7 @@ public class InlineParserImpl implements InlineParser {
 
         if (!referenceMap.containsKey(normalizedLabel)) {
             Link link = new Link(dest, title);
+            link.setLabel(normalizedLabel);
             referenceMap.put(normalizedLabel, link);
         }
         return index - startIndex;
@@ -559,6 +560,11 @@ public class InlineParserImpl implements InlineParser {
         String title = null;
         boolean isLinkOrImage = false;
 
+        // If we are parsing a collapsed or shortcut link/image, this
+        // definition reference will be populated from the cached
+        // referenceMap.
+        Reference definition = null;
+
         // Inline link?
         if (peek() == '(') {
             index++;
@@ -591,6 +597,7 @@ public class InlineParserImpl implements InlineParser {
             if (ref != null) {
                 Link link = referenceMap.get(Escaping.normalizeReference(ref));
                 if (link != null) {
+                    definition = link;
                     dest = link.getDestination();
                     title = link.getTitle();
                     isLinkOrImage = true;
@@ -601,7 +608,11 @@ public class InlineParserImpl implements InlineParser {
         if (isLinkOrImage) {
             // If we got here, open is a potential opener
             boolean isImage = opener.delimiterChar == '!';
-            Node linkOrImage = isImage ? new Image(dest, title) : new Link(dest, title);
+            Reference linkOrImage = isImage ? new Image(dest, title) : new Link(dest, title);
+            if (definition != null) {
+                linkOrImage.setLabel(definition.getLabel());
+                linkOrImage.setDefinition(definition);
+            }
 
             // Flush text now. We don't need to worry about combining it with adjacent text nodes, as we'll wrap it in a
             // link or image node.
@@ -693,13 +704,13 @@ public class InlineParserImpl implements InlineParser {
         String m;
         if ((m = match(EMAIL_AUTOLINK)) != null) {
             String dest = m.substring(1, m.length() - 1);
-            Link node = new Link("mailto:" + dest, null);
+            Link node = new AutoLink("mailto:" + dest, null);
             node.appendChild(new Text(dest));
             appendNode(node);
             return true;
         } else if ((m = match(AUTOLINK)) != null) {
             String dest = m.substring(1, m.length() - 1);
-            Link node = new Link(dest, null);
+            Link node = new AutoLink(dest, null);
             node.appendChild(new Text(dest));
             appendNode(node);
             return true;

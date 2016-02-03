@@ -1,6 +1,7 @@
 package org.commonmark.internal.inline;
 
 import org.commonmark.parser.DelimiterProcessor;
+import org.commonmark.node.Delimited;
 import org.commonmark.node.Emphasis;
 import org.commonmark.node.Node;
 import org.commonmark.node.StrongEmphasis;
@@ -26,7 +27,9 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
 
     @Override
     public void process(Text opener, Text closer, int delimiterUse) {
-        Node emphasis = delimiterUse == 1 ? new Emphasis() : new StrongEmphasis();
+        Node emphasis = delimiterUse == 1
+            ? new Emphasis(getDelimiterChar(), delimiterUse)
+            : new StrongEmphasis(getDelimiterChar(), delimiterUse);
 
         Node tmp = opener.getNext();
         while (tmp != null && tmp != closer) {
