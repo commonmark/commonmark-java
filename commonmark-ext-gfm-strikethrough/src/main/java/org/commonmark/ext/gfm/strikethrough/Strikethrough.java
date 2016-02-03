@@ -8,22 +8,15 @@ import org.commonmark.node.Delimited;
  */
 public class Strikethrough extends CustomNode implements Delimited {
 
-    private final char delimiterChar;
-    private final int delimiterCount;
+    private static final String DELIMITER = "~~";
 
-    public Strikethrough(char delimiterChar, int delimiterCount) {
-        this.delimiterChar = delimiterChar;
-        this.delimiterCount = delimiterCount;
+    @Override
+    public String getOpeningDelimiter() {
+        return DELIMITER;
     }
 
     @Override
-    public char getDelimiterChar() {
-        return delimiterChar;
+    public String getClosingDelimiter() {
+        return DELIMITER;
     }
-
-    @Override
-    public int getDelimiterCount() {
-        return delimiterCount;
-    }
-
 }

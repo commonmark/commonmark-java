@@ -39,7 +39,7 @@ public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
         }
 
         // Normal case, wrap nodes between delimiters in strikethrough.
-        Node strikethrough = new Strikethrough(getDelimiterChar(), delimiterCount);
+        Node strikethrough = new Strikethrough();
 
         Node tmp = opener.getNext();
         while (tmp != null && tmp != closer) {

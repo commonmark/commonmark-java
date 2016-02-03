@@ -2,12 +2,15 @@ package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 public class StrikethroughTest extends RenderingTestCase {
 
@@ -61,6 +64,14 @@ public class StrikethroughTest extends RenderingTestCase {
     public void insideBlockQuote() {
         assertRendering("> strike ~~that~~",
                 "<blockquote>\n<p>strike <del>that</del></p>\n</blockquote>\n");
+    }
+
+    @Test
+    public void delimited() {
+        Node document = PARSER.parse("~~foo~~");
+        Strikethrough strikethrough = (Strikethrough) document.getFirstChild().getFirstChild();
+        assertEquals("~~", strikethrough.getOpeningDelimiter());
+        assertEquals("~~", strikethrough.getClosingDelimiter());
     }
 
     @Override

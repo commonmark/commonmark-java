@@ -1,9 +1,17 @@
 package org.commonmark.node;
 
+/**
+ * A node that uses delimiters in the source form (e.g. <code>*bold*</code>).
+ */
 public interface Delimited {
 
-    char getDelimiterChar();
+    /**
+     * @return the opening (beginning) delimiter, e.g. <code>*</code>
+     */
+    String getOpeningDelimiter();
 
-    int getDelimiterCount();
-
+    /**
+     * @return the closing (ending) delimiter, e.g. <code>*</code>
+     */
+    String getClosingDelimiter();
 }

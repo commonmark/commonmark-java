@@ -1,41 +1,38 @@
 package org.commonmark.test;
 
-import org.commonmark.node.Node;
-import org.commonmark.node.Delimited;
-import org.commonmark.node.Emphasis;
-import org.commonmark.node.StrongEmphasis;
-import org.commonmark.node.Visitor;
-import org.commonmark.node.AbstractVisitor;
+import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
-import static org.commonmark.internal.util.Debugging.log;
-import static org.commonmark.internal.util.Debugging.toStringTree;
 
 public class DelimitedTest {
 
     @Test
-    public void one() {
+    public void emphasisDelimiters() {
+        String input = "* *emphasis* \n"
+                + "* **strong** \n"
+                + "* _important_ \n"
+                + "* __CRITICAL__ \n";
 
-        final Parser.Builder builder = Parser.builder();
-        final Parser parser = builder.build();
-        final Node document = parser.parse(getText());
-        final java.util.List<Delimited> list = new java.util.ArrayList();
+        Parser parser = Parser.builder().build();
+        Node document = parser.parse(input);
 
-        final Visitor visitor = new AbstractVisitor() {
-                @Override
-                public void visit(Emphasis node) {
-                    list.add(node);
-                }
+        final List<Delimited> list = new ArrayList<>();
+        Visitor visitor = new AbstractVisitor() {
+            @Override
+            public void visit(Emphasis node) {
+                list.add(node);
+            }
 
-                @Override
-                public void visit(StrongEmphasis node) {
-                    list.add(node);
-                }
-            };
-
-        //log(toStringTree(document));
+            @Override
+            public void visit(StrongEmphasis node) {
+                list.add(node);
+            }
+        };
         document.accept(visitor);
 
         assertEquals(4, list.size());
@@ -45,25 +42,13 @@ public class DelimitedTest {
         Delimited important = list.get(2);
         Delimited critical = list.get(3);
 
-        assertEquals('*', emphasis.getDelimiterChar());
-        assertEquals('*', strong.getDelimiterChar());
-        assertEquals('_', important.getDelimiterChar());
-        assertEquals('_', critical.getDelimiterChar());
-
-        assertEquals(1, emphasis.getDelimiterCount());
-        assertEquals(2, strong.getDelimiterCount());
-        assertEquals(1, important.getDelimiterCount());
-        assertEquals(2, critical.getDelimiterCount());
-
-   }
-
-    String getText() {
-        String s = "";
-        s += "* *emphasis* \n";
-        s += "* **strong** \n";
-        s += "* _important_ \n";
-        s += "* __CRITICAL__ \n";
-        return s;
+        assertEquals("*", emphasis.getOpeningDelimiter());
+        assertEquals("*", emphasis.getClosingDelimiter());
+        assertEquals("**", strong.getOpeningDelimiter());
+        assertEquals("**", strong.getClosingDelimiter());
+        assertEquals("_", important.getOpeningDelimiter());
+        assertEquals("_", important.getClosingDelimiter());
+        assertEquals("__", critical.getOpeningDelimiter());
+        assertEquals("__", critical.getClosingDelimiter());
     }
-
 }
