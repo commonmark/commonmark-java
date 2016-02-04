@@ -135,11 +135,19 @@ public class InlineParserImpl implements InlineParser {
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
         for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
-            char c = delimiterProcessor.getDelimiterChar();
-            DelimiterProcessor existing = map.put(c, delimiterProcessor);
-            if (existing != null) {
-                throw new IllegalArgumentException("Inline delimiter parser can not be registered more than once, delimiter character: " + c);
+            char opening = delimiterProcessor.getOpeningDelimiterChar();
+            addDelimiterProcessorForChar(opening, delimiterProcessor, map);
+            char closing = delimiterProcessor.getClosingDelimiterChar();
+            if (opening != closing) {
+                addDelimiterProcessorForChar(closing, delimiterProcessor, map);
             }
+        }
+    }
+
+    private static void addDelimiterProcessorForChar(char delimiterChar, DelimiterProcessor toAdd, Map<Character, DelimiterProcessor> delimiterProcessors) {
+        DelimiterProcessor existing = delimiterProcessors.put(delimiterChar, toAdd);
+        if (existing != null) {
+            throw new IllegalArgumentException("Delimiter processor conflict with delimiter char '" + delimiterChar + "'");
         }
     }
 
@@ -307,8 +315,8 @@ public class InlineParserImpl implements InlineParser {
             default:
                 boolean isDelimiter = delimiterCharacters.get(c);
                 if (isDelimiter) {
-                    DelimiterProcessor inlineDelimiter = delimiterProcessors.get(c);
-                    res = parseDelimiters(inlineDelimiter);
+                    DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
+                    res = parseDelimiters(delimiterProcessor, c);
                 } else {
                     res = parseString();
                 }
@@ -441,8 +449,8 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
-    private boolean parseDelimiters(DelimiterProcessor inlineDelimiter) {
-        DelimiterRun res = scanDelims(inlineDelimiter);
+    private boolean parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
+        DelimiterRun res = scanDelimiters(delimiterProcessor, delimiterChar);
         if (res == null) {
             return false;
         }
@@ -454,7 +462,7 @@ public class InlineParserImpl implements InlineParser {
 
         // Add entry to stack for this opener
         this.delimiter = new Delimiter(node, this.delimiter, startIndex);
-        this.delimiter.delimiterChar = inlineDelimiter.getDelimiterChar();
+        this.delimiter.delimiterChar = delimiterChar;
         this.delimiter.numDelims = numDelims;
         this.delimiter.canOpen = res.canOpen;
         this.delimiter.canClose = res.canClose;
@@ -762,17 +770,16 @@ public class InlineParserImpl implements InlineParser {
      *
      * @return information about delimiter run, or {@code null}
      */
-    private DelimiterRun scanDelims(DelimiterProcessor inlineDelimiter) {
+    private DelimiterRun scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
         int startIndex = index;
 
         int delimiterCount = 0;
-        char delimiterChar = inlineDelimiter.getDelimiterChar();
         while (peek() == delimiterChar) {
             delimiterCount++;
             index++;
         }
 
-        if (delimiterCount < inlineDelimiter.getMinDelimiterCount()) {
+        if (delimiterCount < delimiterProcessor.getMinDelimiterCount()) {
             index = startIndex;
             return null;
         }
@@ -784,10 +791,11 @@ public class InlineParserImpl implements InlineParser {
         String after = charAfter == '\0' ? "\n" :
                 String.valueOf(charAfter);
 
+        // We could be more lazy here, in most cases we don't need to do every match case.
         boolean beforeIsPunctuation = PUNCTUATION.matcher(before).matches();
         boolean beforeIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(before).matches();
-        boolean afterIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(after).matches();
         boolean afterIsPunctuation = PUNCTUATION.matcher(after).matches();
+        boolean afterIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(after).matches();
 
         boolean leftFlanking = !afterIsWhitespace &&
                 !(afterIsPunctuation && !beforeIsWhitespace && !beforeIsPunctuation);
@@ -799,8 +807,8 @@ public class InlineParserImpl implements InlineParser {
             canOpen = leftFlanking && (!rightFlanking || beforeIsPunctuation);
             canClose = rightFlanking && (!leftFlanking || afterIsPunctuation);
         } else {
-            canOpen = leftFlanking;
-            canClose = rightFlanking;
+            canOpen = leftFlanking && delimiterChar == delimiterProcessor.getOpeningDelimiterChar();
+            canClose = rightFlanking && delimiterChar == delimiterProcessor.getClosingDelimiterChar();
         }
 
         index = startIndex;
@@ -820,16 +828,19 @@ public class InlineParserImpl implements InlineParser {
         while (closer != null) {
             char delimiterChar = closer.delimiterChar;
 
-            if (!closer.canClose || !delimiterProcessors.containsKey(delimiterChar)) {
+            DelimiterProcessor delimiterProcessor = delimiterProcessors.get(delimiterChar);
+            if (!closer.canClose || delimiterProcessor == null) {
                 closer = closer.next;
                 continue;
             }
+
+            char openingDelimiterChar = delimiterProcessor.getOpeningDelimiterChar();
 
             // found delimiter closer. now look back for first matching opener:
             boolean openerFound = false;
             Delimiter opener = closer.previous;
             while (opener != null && opener != stackBottom && opener != openersBottom.get(delimiterChar)) {
-                if (opener.delimiterChar == delimiterChar && opener.canOpen) {
+                if (opener.delimiterChar == openingDelimiterChar && opener.canOpen) {
                     openerFound = true;
                     break;
                 }
@@ -847,8 +858,6 @@ public class InlineParserImpl implements InlineParser {
                 closer = closer.next;
                 continue;
             }
-
-            DelimiterProcessor delimiterProcessor = delimiterProcessors.get(closer.delimiterChar);
 
             int useDelims = delimiterProcessor.getDelimiterUse(opener.numDelims, closer.numDelims);
             if (useDelims <= 0) {

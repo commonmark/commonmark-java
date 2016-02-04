@@ -8,6 +8,22 @@ import org.commonmark.parser.DelimiterProcessor;
 
 public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
 
+    private final char delimiterChar;
+
+    protected EmphasisDelimiterProcessor(char delimiterChar) {
+        this.delimiterChar = delimiterChar;
+    }
+
+    @Override
+    public char getOpeningDelimiterChar() {
+        return delimiterChar;
+    }
+
+    @Override
+    public char getClosingDelimiterChar() {
+        return delimiterChar;
+    }
+
     @Override
     public int getMinDelimiterCount() {
         return 1;
@@ -26,7 +42,7 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
 
     @Override
     public void process(Text opener, Text closer, int delimiterUse) {
-        String singleDelimiter = String.valueOf(getDelimiterChar());
+        String singleDelimiter = String.valueOf(getOpeningDelimiterChar());
         Node emphasis = delimiterUse == 1
                 ? new Emphasis(singleDelimiter)
                 : new StrongEmphasis(singleDelimiter + singleDelimiter);

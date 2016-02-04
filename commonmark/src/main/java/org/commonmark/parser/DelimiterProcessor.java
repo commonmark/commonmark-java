@@ -10,9 +10,16 @@ import org.commonmark.node.Text;
 public interface DelimiterProcessor {
 
     /**
-     * @return the character that activates this, must not clash with any built-in special characters
+     * @return the character that marks the beginning of a delimited node, must not clash with any built-in special
+     * characters
      */
-    char getDelimiterChar();
+    char getOpeningDelimiterChar();
+
+    /**
+     * @return the character that marks the the ending of a delimited node, must not clash with any built-in special
+     * characters. Note that for a symmetric delimiter such as "*", this is the same as the opening.
+     */
+    char getClosingDelimiterChar();
 
     /**
      * Minimum number of delimiter characters that are needed to activate this. Must be at least 1.
