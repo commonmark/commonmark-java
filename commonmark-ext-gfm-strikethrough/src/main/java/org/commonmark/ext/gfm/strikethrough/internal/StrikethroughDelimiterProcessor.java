@@ -8,7 +8,12 @@ import org.commonmark.parser.DelimiterProcessor;
 public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
 
     @Override
-    public char getDelimiterChar() {
+    public char getOpeningDelimiterChar() {
+        return '~';
+    }
+
+    @Override
+    public char getClosingDelimiterChar() {
         return '~';
     }
 
@@ -50,5 +55,4 @@ public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
 
         opener.insertAfter(strikethrough);
     }
-
 }
