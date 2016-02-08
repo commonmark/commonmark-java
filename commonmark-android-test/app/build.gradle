@@ -1,0 +1,74 @@
+apply plugin: 'com.android.application'
+
+def testProperties
+def testPropertiesFile = file('../test.properties')
+if (testPropertiesFile.canRead()) {
+    testProperties = new Properties()
+    testPropertiesFile.withInputStream {
+        stream -> testProperties.load(stream)
+    }
+}
+
+android {
+    compileSdkVersion 15
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "com.atlassian.commonmark.android.test"
+        minSdkVersion 15
+        targetSdkVersion 15
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    productFlavors {
+        maven
+        snapshot
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+    }
+
+    testOptions {
+        resultsDir = testProperties['path.report']
+    }
+}
+
+repositories {
+    flatDir {
+        dirs '../../commonmark/target',
+                '../../commonmark-ext-autolink/target',
+                '../../commonmark-ext-gfm-strikethrough/target',
+                '../../commonmark-ext-gfm-tables/target',
+                '../../commonmark-test-util/target'
+    }
+}
+
+dependencies {
+    androidTestCompile 'com.android.support.test:runner:0.4.1'
+    androidTestCompile 'com.android.support.test:rules:0.4.1'
+
+    androidTestCompile ':commonmark-test-util-' + testProperties['version.snapshot']
+
+    androidTestMavenCompile 'com.atlassian.commonmark:commonmark:' + testProperties['version.maven']
+    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-autolink:' + testProperties['version.maven']
+    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:' + testProperties['version.maven']
+    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-gfm-tables:' + testProperties['version.maven']
+
+    androidTestSnapshotCompile 'org.nibor.autolink:autolink:' + testProperties['version.snapshot_autolink']
+    androidTestSnapshotCompile ':commonmark-' + testProperties['version.snapshot']
+    androidTestSnapshotCompile ':commonmark-ext-autolink-' + testProperties['version.snapshot']
+    androidTestSnapshotCompile ':commonmark-ext-gfm-strikethrough-' + testProperties['version.snapshot']
+    androidTestSnapshotCompile ':commonmark-ext-gfm-tables-' + testProperties['version.snapshot']
+}
