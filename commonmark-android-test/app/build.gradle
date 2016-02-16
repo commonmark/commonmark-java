@@ -11,7 +11,7 @@ if (testPropertiesFile.canRead()) {
 
 android {
     compileSdkVersion 15
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "21.1.1"
 
     defaultConfig {
         applicationId "com.atlassian.commonmark.android.test"
@@ -61,6 +61,7 @@ dependencies {
 
     androidTestCompile ':commonmark-test-util-' + testProperties['version.snapshot']
 
+    androidTestMavenCompile 'org.nibor.autolink:autolink:' + testProperties['version.maven_autolink']
     androidTestMavenCompile 'com.atlassian.commonmark:commonmark:' + testProperties['version.maven']
     androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-autolink:' + testProperties['version.maven']
     androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:' + testProperties['version.maven']
