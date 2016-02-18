@@ -297,6 +297,11 @@ public class DocumentParser implements ParserState {
         while (column < newColumn && index != line.length()) {
             advance();
         }
+        if (column > newColumn) {
+            // Last character was a tab and we overshot our target
+            index--;
+            column = newColumn;
+        }
     }
 
     private void advance() {
