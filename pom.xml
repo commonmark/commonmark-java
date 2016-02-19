@@ -24,6 +24,7 @@
         <module>commonmark-ext-autolink</module>
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
+        <module>commonmark-ext-header-ids</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>
     </modules>
