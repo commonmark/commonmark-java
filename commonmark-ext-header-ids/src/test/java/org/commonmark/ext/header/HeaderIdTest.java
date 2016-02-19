@@ -54,7 +54,7 @@ public class HeaderIdTest extends RenderingTestCase {
     @Test
     public void testNestedBlocks() {
         assertRendering("## `h` `e` **l** *l* o",
-                "<h2 id=\"h-e-l-l-o\"><code>h</code> <code>e</code> <strong>l</strong> <em>l</em> o</h2>");
+                "<h2 id=\"h-e-l-l-o\"><code>h</code> <code>e</code> <strong>l</strong> <em>l</em> o</h2>\n");
     }
 
     @Override
