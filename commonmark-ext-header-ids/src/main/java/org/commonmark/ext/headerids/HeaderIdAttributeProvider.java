@@ -6,15 +6,10 @@ import org.commonmark.node.*;
 import java.util.*;
 
 /**
- * Extension for automatically turning plain URLs and email addresses into links.
- * <p>
- * Create it with {@link #create()} and then configure it on the builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
- * </p>
- * <p>
- * The parsed links are turned into normal {@link org.commonmark.node.Link} nodes.
- * </p>
+ * Extension for automatically adding ids to every h tag
+ * <p/>
+ * Create via {@link #create()} and add it to your {@link org.commonmark.html.HtmlRenderer}
+ * ({@link org.commonmark.html.HtmlRenderer.Builder#attributeProvider(AttributeProvider)}
  */
 public class HeaderIdAttributeProvider implements AttributeProvider {
 
