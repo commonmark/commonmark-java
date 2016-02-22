@@ -14,15 +14,28 @@ import java.util.*;
 public class HeaderIdAttributeProvider implements AttributeProvider {
 
     private final Map<String, Integer> headingMap;
+    private String defaultHeading;
 
     private HeaderIdAttributeProvider() {
+        this("heading");
+    }
+
+    private HeaderIdAttributeProvider(String defaultHeading) {
         headingMap = new HashMap<>();
+        this.defaultHeading = defaultHeading;
     }
 
     public static HeaderIdAttributeProvider create() {
         return new HeaderIdAttributeProvider();
     }
 
+    public String getDefaultHeading() {
+        return defaultHeading;
+    }
+
+    public void setDefaultHeading(String defaultHeading) {
+        this.defaultHeading = defaultHeading;
+    }
 
     @Override
     public void setAttributes(Node node, final Map<String, String> attributes) {
@@ -69,7 +82,11 @@ public class HeaderIdAttributeProvider implements AttributeProvider {
 
         public String getUniqueHeader(Map<String, Integer> headingMap) {
             String currentValue = toString();
-            if(!headingMap.containsKey(currentValue)) {
+            if (currentValue.length() == 0) {
+                currentValue = defaultHeading;
+            }
+
+            if (!headingMap.containsKey(currentValue)) {
                 headingMap.put(currentValue, 1);
                 return currentValue;
             } else {

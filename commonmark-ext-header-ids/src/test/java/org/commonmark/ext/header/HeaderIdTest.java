@@ -1,5 +1,6 @@
 package org.commonmark.ext.headerids;
 
+import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
@@ -9,7 +10,8 @@ import org.junit.Test;
 public class HeaderIdTest extends RenderingTestCase {
 
     private static final Parser PARSER = Parser.builder().build();
-    private static HtmlRenderer RENDERER = HtmlRenderer.builder().attributeProvider(HeaderIdAttributeProvider.create()).build();
+    private static final HeaderIdAttributeProvider attributeProvider = HeaderIdAttributeProvider.create();
+    private static HtmlRenderer RENDERER = HtmlRenderer.builder().attributeProvider(attributeProvider).build();
 
     @Before
     public void resetHeader() {
@@ -55,6 +57,22 @@ public class HeaderIdTest extends RenderingTestCase {
     public void testNestedBlocks() {
         assertRendering("## `h` `e` **l** *l* o",
                 "<h2 id=\"h-e-l-l-o\"><code>h</code> <code>e</code> <strong>l</strong> <em>l</em> o</h2>\n");
+    }
+
+    @Test
+    public void noPrintableCharacters() {
+        assertRendering("# ∂∂ƒƒ",
+                "<h1 id=\""+ attributeProvider.getDefaultHeading() +"\">∂∂ƒƒ</h1>\n");
+    }
+
+    @Test
+    public void boldEmphasisCharacters() {
+        assertRendering("# _hello_ **there**", "<h1 id=\"hello-there\"><em>hello</em> <strong>there</strong></h1>\n");
+    }
+
+    @Test
+    public void testStrongEmphasis() {
+        assertRendering("# _**Hi there**_", "<h1 id=\"hi-there\"><em><strong>Hi there</strong></em></h1>\n");
     }
 
     @Override
