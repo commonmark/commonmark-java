@@ -172,4 +172,4 @@ BSD (2-clause) licensed, see LICENSE.txt file.
 [Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22com.atlassian.commonmark%22
 [Semantic Versioning]: http://semver.org/
 [autolink-java]: https://github.com/robinst/autolink-java
-[gfm-tables]: https://help.github.com/articles/github-flavored-markdown/#tables
+[gfm-tables]: https://help.github.com/articles/organizing-information-with-tables/
