@@ -27,13 +27,15 @@ sdk.dir=/path_to_android_sdk
 # Absolute or relative (./ == /app) path to test reports.
 path.report=../report
 
-# Version number of commonmark and extensions in maven central. 
-version.maven=0.4.0
+# Version number of commonmark and extensions in maven central.
+version.maven=0.4.1
+# Version number of autolink in maven central (not bundled with extension jar).
+version.maven_autolink=0.4.0
 
-# Version number of commonmark and extensions in project. 
-version.snapshot=0.4.1-SNAPSHOT
-# Version number of autolink for snapshots (since it's not contained in extension jar). 
-version.snapshot_autolink=0.3.0
+# Version number of commonmark and extensions in project.
+version.snapshot=0.4.2-SNAPSHOT
+# Version number of autolink for snapshots (not bundled in extension jar).
+version.snapshot_autolink=0.4.0
 ```
 
 If you're going to test on device with Android 15 then you can skip downloading emulator.
@@ -55,7 +57,8 @@ on Windows:
 
 #### Run test with SNAPSHOT version
 
-Before running tests you need to run `maven install`
+Before running tests you need to run `mvn clean install` in the root of
+this repository.
 
 on Mac/Linux:
 ```shell
