@@ -30,7 +30,7 @@ path.report=../report
 # Version number of commonmark and extensions in maven central.
 version.maven=0.4.1
 # Version number of autolink in maven central (not bundled with extension jar).
-version.snapshot_autolink=0.4.0
+version.maven_autolink=0.4.0
 
 # Version number of commonmark and extensions in project.
 version.snapshot=0.4.2-SNAPSHOT
