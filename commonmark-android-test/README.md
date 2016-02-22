@@ -57,7 +57,8 @@ on Windows:
 
 #### Run test with SNAPSHOT version
 
-Before running tests you need to run `maven install`
+Before running tests you need to run `mvn clean install` in the root of
+this repository.
 
 on Mac/Linux:
 ```shell
