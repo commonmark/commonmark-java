@@ -1,7 +1,7 @@
-package org.commonmark.ext.metadata.internal;
+package org.commonmark.ext.yaml.internal;
 
-import org.commonmark.ext.metadata.MetadataBlock;
-import org.commonmark.ext.metadata.MetadataNode;
+import org.commonmark.ext.yaml.YAMLFrontMatterBlock;
+import org.commonmark.ext.yaml.YAMLFrontMatterNode;
 import org.commonmark.internal.DocumentBlockParser;
 import org.commonmark.node.Block;
 import org.commonmark.parser.InlineParser;
@@ -12,19 +12,25 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MetadataBlockParser extends AbstractBlockParser {
+public class YAMLFrontMatterBlockParser extends AbstractBlockParser {
     private static final Pattern REGEX_METADATA = Pattern.compile("^[ ]{0,3}([A-Za-z0-9_-]+):\\s*(.*)");
     private static final Pattern REGEX_METADATA_LIST = Pattern.compile("^[ ]+-\\s*(.*)");
     private static final Pattern REGEX_METADATA_LITERAL = Pattern.compile("^\\s*(.*)");
     private static final Pattern REGEX_BEGIN = Pattern.compile("^-{3}(\\s.*)?");
     private static final Pattern REGEX_END = Pattern.compile("^(-{3}|\\.{3})(\\s.*)?");
 
-    private List<String> lines;
-    private MetadataBlock block;
+    private boolean inYAMLBlock;
+    private boolean inLiteral;
+    private String currentKey;
+    private List<String> currentValues;
+    private YAMLFrontMatterBlock block;
 
-    public MetadataBlockParser() {
-        lines = new ArrayList<>();
-        block = new MetadataBlock();
+    public YAMLFrontMatterBlockParser() {
+        inYAMLBlock = true;
+        inLiteral = false;
+        currentKey = null;
+        currentValues = new ArrayList<>();
+        block = new YAMLFrontMatterBlock();
     }
 
     @Override
@@ -34,74 +40,65 @@ public class MetadataBlockParser extends AbstractBlockParser {
 
     @Override
     public void addLine(CharSequence line) {
-        lines.add(line.toString());
     }
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
         final CharSequence line = parserState.getLine();
 
-        if (REGEX_END.matcher(line).matches()) {
-            // if this line is `---` or `...` which means end of metadata block
-            return BlockContinue.finished();
-        } else if (!REGEX_METADATA.matcher(line).matches() && !REGEX_METADATA_LIST.matcher(line).matches() &&
-                !REGEX_METADATA_LITERAL.matcher(line).matches()) {
-            // if this line isn't matched with any metadata contents, then exit this block
-            return BlockContinue.none();
-        }
-
-        // this line is matched with one of metadata contents
-        return BlockContinue.atIndex(parserState.getIndex());
-    }
-
-    @Override
-    public void parseInlines(InlineParser inlineParser) {
-        String key = null;
-        List<String> values = new ArrayList<>();
-        boolean literal = false;
-
-        for (String line : lines) {
-            Matcher matcher = REGEX_END.matcher(line);
-            if (matcher.matches()) {
-                continue;
+        if (inYAMLBlock) {
+            if (REGEX_END.matcher(line).matches()) {
+                if (currentKey != null) {
+                    block.appendChild(new YAMLFrontMatterNode(currentKey, currentValues));
+                }
+                return BlockContinue.finished();
             }
 
-            matcher = REGEX_METADATA.matcher(line);
+            Matcher matcher = REGEX_METADATA.matcher(line);
             if (matcher.matches()) {
-                if (key != null) {
-                    block.appendChild(new MetadataNode(key, values));
+                if (currentKey != null) {
+                    block.appendChild(new YAMLFrontMatterNode(currentKey, currentValues));
                 }
 
-                literal = false;
-                key = matcher.group(1);
-                values = new ArrayList<>();
+                inLiteral = false;
+                currentKey = matcher.group(1);
+                currentValues = new ArrayList<>();
                 if ("|".equals(matcher.group(2))) {
-                    literal = true;
+                    inLiteral = true;
                 } else if (!"".equals(matcher.group(2))) {
-                    values.add(matcher.group(2));
+                    currentValues.add(matcher.group(2));
                 }
+
+                return BlockContinue.atIndex(parserState.getIndex());
             } else {
-                if (literal) {
+                if (inLiteral) {
                     matcher = REGEX_METADATA_LITERAL.matcher(line);
                     if (matcher.matches()) {
-                        if (values.size() == 1) {
-                            values.set(0, values.get(0) + "\n" + matcher.group(1).trim());
+                        if (currentValues.size() == 1) {
+                            currentValues.set(0, currentValues.get(0) + "\n" + matcher.group(1).trim());
                         } else {
-                            values.add(matcher.group(1).trim());
+                            currentValues.add(matcher.group(1).trim());
                         }
                     }
                 } else {
                     matcher = REGEX_METADATA_LIST.matcher(line);
                     if (matcher.matches()) {
-                        values.add(matcher.group(1));
+                        currentValues.add(matcher.group(1));
                     }
                 }
+
+                return BlockContinue.atIndex(parserState.getIndex());
             }
+        } else if (REGEX_BEGIN.matcher(line).matches()) {
+            inYAMLBlock = true;
+            return BlockContinue.atIndex(parserState.getIndex());
         }
 
-        if (key != null) {
-            block.appendChild(new MetadataNode(key, values));
-        }
+        return BlockContinue.none();
+    }
+
+    @Override
+    public void parseInlines(InlineParser inlineParser) {
     }
 
     public static class Factory extends AbstractBlockParserFactory {
@@ -112,7 +109,7 @@ public class MetadataBlockParser extends AbstractBlockParser {
             // check whether this line is the first line of whole document or not
             if (parentParser instanceof DocumentBlockParser && parentParser.getBlock().getFirstChild() == null &&
                     REGEX_BEGIN.matcher(line).matches()) {
-                return BlockStart.of(new MetadataBlockParser()).atIndex(state.getNextNonSpaceIndex());
+                return BlockStart.of(new YAMLFrontMatterBlockParser()).atIndex(state.getNextNonSpaceIndex());
             }
 
             return BlockStart.none();

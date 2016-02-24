@@ -1,4 +1,4 @@
-package org.commonmark.ext.metadata;
+package org.commonmark.ext.yaml;
 
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.CustomNode;
@@ -7,17 +7,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MetadataVisitor extends AbstractVisitor {
+public class YAMLFrontMatterVisitor extends AbstractVisitor {
     private Map<String, List<String>> data;
 
-    public MetadataVisitor() {
+    public YAMLFrontMatterVisitor() {
         data = new LinkedHashMap<>();
     }
 
     @Override
     public void visit(CustomNode customNode) {
-        if (customNode instanceof MetadataNode) {
-            data.put(((MetadataNode) customNode).getKey(), ((MetadataNode) customNode).getValues());
+        if (customNode instanceof YAMLFrontMatterNode) {
+            data.put(((YAMLFrontMatterNode) customNode).getKey(), ((YAMLFrontMatterNode) customNode).getValues());
         } else {
             super.visit(customNode);
         }

@@ -1,14 +1,14 @@
-package org.commonmark.ext.metadata;
+package org.commonmark.ext.yaml;
 
 import org.commonmark.node.CustomNode;
 
 import java.util.List;
 
-public class MetadataNode extends CustomNode {
+public class YAMLFrontMatterNode extends CustomNode {
     private String key;
     private List<String> values;
 
-    public MetadataNode(String key, List<String> values) {
+    public YAMLFrontMatterNode(String key, List<String> values) {
         this.key = key;
         this.values = values;
     }

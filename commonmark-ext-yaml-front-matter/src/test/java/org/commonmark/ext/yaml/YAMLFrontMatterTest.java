@@ -1,4 +1,4 @@
-package org.commonmark.ext.metadata;
+package org.commonmark.ext.yaml;
 
 import org.commonmark.Extension;
 import org.commonmark.html.HtmlRenderer;
@@ -15,8 +15,8 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MetadataTest extends RenderingTestCase {
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(MetadataExtension.create());
+public class YAMLFrontMatterTest extends RenderingTestCase {
+    private static final Set<Extension> EXTENSIONS = Collections.singleton(YAMLFrontMatterExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
@@ -29,7 +29,7 @@ public class MetadataTest extends RenderingTestCase {
                 "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
@@ -52,7 +52,7 @@ public class MetadataTest extends RenderingTestCase {
                 "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
@@ -76,7 +76,7 @@ public class MetadataTest extends RenderingTestCase {
                 "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
@@ -102,7 +102,7 @@ public class MetadataTest extends RenderingTestCase {
                 "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
@@ -126,7 +126,7 @@ public class MetadataTest extends RenderingTestCase {
                 "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
@@ -155,7 +155,7 @@ public class MetadataTest extends RenderingTestCase {
                 "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
@@ -180,7 +180,7 @@ public class MetadataTest extends RenderingTestCase {
     }
 
     @Test
-    public void metadataInParagraph() {
+    public void yamlInParagraph() {
         final String input = "# hello\n" +
                 "\nhello markdown world!" +
                 "\n---" +
@@ -188,7 +188,7 @@ public class MetadataTest extends RenderingTestCase {
                 "\n---";
         final String rendered = "<h1>hello</h1>\n<h2>hello markdown world!</h2>\n<h2>hello: world</h2>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
@@ -205,7 +205,7 @@ public class MetadataTest extends RenderingTestCase {
                 "test";
         final String rendered = "<hr />\n<p>test</p>\n";
 
-        MetadataVisitor visitor = new MetadataVisitor();
+        YAMLFrontMatterVisitor visitor = new YAMLFrontMatterVisitor();
         Node document = PARSER.parse(input);
         document.accept(visitor);
 

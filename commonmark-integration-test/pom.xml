@@ -34,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
-            <artifactId>commonmark-ext-metadata</artifactId>
+            <artifactId>commonmark-ext-yaml-front-matter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

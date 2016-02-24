@@ -6,12 +6,12 @@
     <parent>
         <artifactId>commonmark-parent</artifactId>
         <groupId>com.atlassian.commonmark</groupId>
-        <version>0.3.2-SNAPSHOT</version>
+        <version>0.4.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>commonmark-ext-metadata</artifactId>
-    <name>commonmark-java extension for metadata</name>
-    <description>commonmark-java extension for metadata</description>
+    <artifactId>commonmark-ext-yaml-front-matter</artifactId>
+    <name>commonmark-java extension for YAML front matter</name>
+    <description>commonmark-java extension for YAML front matter</description>
 
     <dependencies>
         <dependency>
