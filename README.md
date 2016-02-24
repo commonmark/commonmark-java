@@ -143,9 +143,9 @@ Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
-### Metadata
+### YAML front matter
 
-Enables metadata block in YAML format. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
+Enables an YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
 
 ```
 ---
@@ -162,7 +162,7 @@ literal: |
 document start here
 ```
  
-Use class `MetadataExtension` in artifact `commonmark-ext-metadata`. To fetch metadata, use `MetadataVisitor`.
+Use class `YAMLFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YAMLFrontMatterVisitor`.
 
 Contributing
 ------------
