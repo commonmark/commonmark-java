@@ -1,14 +1,14 @@
-package org.commonmark.ext.yaml;
+package org.commonmark.ext.front.matter;
 
 import org.commonmark.node.CustomNode;
 
 import java.util.List;
 
-public class YAMLFrontMatterNode extends CustomNode {
+public class YamlFrontMatterNode extends CustomNode {
     private String key;
     private List<String> values;
 
-    public YAMLFrontMatterNode(String key, List<String> values) {
+    public YamlFrontMatterNode(String key, List<String> values) {
         this.key = key;
         this.values = values;
     }

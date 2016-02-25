@@ -162,7 +162,7 @@ literal: |
 document start here
 ```
  
-Use class `YAMLFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YAMLFrontMatterVisitor`.
+Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`.
 
 Contributing
 ------------

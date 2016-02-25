@@ -1,7 +1,7 @@
-package org.commonmark.ext.yaml.internal;
+package org.commonmark.ext.front.matter.internal;
 
-import org.commonmark.ext.yaml.YAMLFrontMatterBlock;
-import org.commonmark.ext.yaml.YAMLFrontMatterNode;
+import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
+import org.commonmark.ext.front.matter.YamlFrontMatterNode;
 import org.commonmark.internal.DocumentBlockParser;
 import org.commonmark.node.Block;
 import org.commonmark.parser.InlineParser;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class YAMLFrontMatterBlockParser extends AbstractBlockParser {
+public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     private static final Pattern REGEX_METADATA = Pattern.compile("^[ ]{0,3}([A-Za-z0-9_-]+):\\s*(.*)");
     private static final Pattern REGEX_METADATA_LIST = Pattern.compile("^[ ]+-\\s*(.*)");
     private static final Pattern REGEX_METADATA_LITERAL = Pattern.compile("^\\s*(.*)");
@@ -23,14 +23,14 @@ public class YAMLFrontMatterBlockParser extends AbstractBlockParser {
     private boolean inLiteral;
     private String currentKey;
     private List<String> currentValues;
-    private YAMLFrontMatterBlock block;
+    private YamlFrontMatterBlock block;
 
-    public YAMLFrontMatterBlockParser() {
+    public YamlFrontMatterBlockParser() {
         inYAMLBlock = true;
         inLiteral = false;
         currentKey = null;
         currentValues = new ArrayList<>();
-        block = new YAMLFrontMatterBlock();
+        block = new YamlFrontMatterBlock();
     }
 
     @Override
@@ -49,7 +49,7 @@ public class YAMLFrontMatterBlockParser extends AbstractBlockParser {
         if (inYAMLBlock) {
             if (REGEX_END.matcher(line).matches()) {
                 if (currentKey != null) {
-                    block.appendChild(new YAMLFrontMatterNode(currentKey, currentValues));
+                    block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
                 }
                 return BlockContinue.finished();
             }
@@ -57,7 +57,7 @@ public class YAMLFrontMatterBlockParser extends AbstractBlockParser {
             Matcher matcher = REGEX_METADATA.matcher(line);
             if (matcher.matches()) {
                 if (currentKey != null) {
-                    block.appendChild(new YAMLFrontMatterNode(currentKey, currentValues));
+                    block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
                 }
 
                 inLiteral = false;
@@ -109,7 +109,7 @@ public class YAMLFrontMatterBlockParser extends AbstractBlockParser {
             // check whether this line is the first line of whole document or not
             if (parentParser instanceof DocumentBlockParser && parentParser.getBlock().getFirstChild() == null &&
                     REGEX_BEGIN.matcher(line).matches()) {
-                return BlockStart.of(new YAMLFrontMatterBlockParser()).atIndex(state.getNextNonSpaceIndex());
+                return BlockStart.of(new YamlFrontMatterBlockParser()).atIndex(state.getNextNonSpaceIndex());
             }
 
             return BlockStart.none();
