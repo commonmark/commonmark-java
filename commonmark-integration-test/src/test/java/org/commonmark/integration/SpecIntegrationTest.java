@@ -4,6 +4,7 @@ import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.spec.SpecExample;
@@ -20,7 +21,8 @@ public class SpecIntegrationTest extends SpecTestCase {
     private static final List<Extension> EXTENSIONS = Arrays.asList(
             AutolinkExtension.create(),
             StrikethroughExtension.create(),
-            TablesExtension.create());
+            TablesExtension.create(),
+            YamlFrontMatterExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).percentEncodeUrls(true).build();
@@ -66,6 +68,10 @@ public class SpecIntegrationTest extends SpecTestCase {
 
         // Plain autolink
         m.put("foo@bar.example.com\n", "<p><a href=\"mailto:foo@bar.example.com\">foo@bar.example.com</a></p>\n");
+
+        // YAML front matter block
+        m.put("---\nFoo\n---\nBar\n---\nBaz\n", "<h2>Bar</h2>\n<p>Baz</p>\n");
+        m.put("---\n---\n", "");
 
         return m;
     }
