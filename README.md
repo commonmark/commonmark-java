@@ -145,7 +145,7 @@ Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
 ### YAML front matter
 
-Enables an YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
+Adds support for metadata through a YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
 
 ```
 ---
