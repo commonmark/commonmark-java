@@ -1,11 +1,12 @@
 package org.commonmark.node;
 
-public class Link extends Reference {
+public class AutoLink extends Link {
 
-    public Link() {
+    public AutoLink() {
+        super();
     }
 
-    public Link(String destination, String title) {
+    public AutoLink(String destination, String title) {
         super(destination, title);
     }
 
