@@ -62,6 +62,11 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void lineWithOnlySpacesAfterListBullet() {
+        assertRendering("-  \n  \n  foo\n", "<ul>\n<li></li>\n</ul>\n<p>foo</p>\n");
+    }
+
+    @Test
     public void orderedListMarkerOnly() {
         assertRendering("2.", "<ol start=\"2\">\n<li></li>\n</ol>\n");
     }
