@@ -16,10 +16,10 @@ import java.util.concurrent.TimeUnit;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PathologicalTest extends CoreRenderingTestCase {
 
-    private static final int X = 10_000;
+    private int x = 10_000;
 
     @Rule
-    public Timeout timeout = new Timeout(2, TimeUnit.SECONDS);
+    public Timeout timeout = new Timeout(3, TimeUnit.SECONDS);
 
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
@@ -32,7 +32,7 @@ public class PathologicalTest extends CoreRenderingTestCase {
     @Test
     public void nestedStrongEmphasis() {
         // this is limited by the stack size because visitor is recursive
-        int x = 1000;
+        x = 1000;
         assertRendering(
                 repeat("*a **a ", x) + "b" + repeat(" a** a*", x),
                 "<p>" + repeat("<em>a <strong>a ", x) + "b" +
@@ -42,56 +42,56 @@ public class PathologicalTest extends CoreRenderingTestCase {
     @Test
     public void emphasisClosersWithNoOpeners() {
         assertRendering(
-                repeat("a_ ", X),
-                "<p>" + repeat("a_ ", X - 1) + "a_</p>\n");
+                repeat("a_ ", x),
+                "<p>" + repeat("a_ ", x - 1) + "a_</p>\n");
     }
 
     @Test
     public void emphasisOpenersWithNoClosers() {
         assertRendering(
-                repeat("_a ", X),
-                "<p>" + repeat("_a ", X - 1) + "_a</p>\n");
+                repeat("_a ", x),
+                "<p>" + repeat("_a ", x - 1) + "_a</p>\n");
     }
 
     @Test
     public void linkClosersWithNoOpeners() {
         assertRendering(
-                repeat("a] ", X),
-                "<p>" + repeat("a] ", X - 1) + "a]</p>\n");
+                repeat("a] ", x),
+                "<p>" + repeat("a] ", x - 1) + "a]</p>\n");
     }
 
     @Test
     public void linkOpenersWithNoClosers() {
         assertRendering(
-                repeat("[a ", X),
-                "<p>" + repeat("[a ", X - 1) + "[a</p>\n");
+                repeat("[a ", x),
+                "<p>" + repeat("[a ", x - 1) + "[a</p>\n");
     }
 
     @Test
     public void linkOpenersAndEmphasisClosers() {
         assertRendering(
-                repeat("[ a_ ", X),
-                "<p>" + repeat("[ a_ ", X - 1) + "[ a_</p>\n");
+                repeat("[ a_ ", x),
+                "<p>" + repeat("[ a_ ", x - 1) + "[ a_</p>\n");
     }
 
     @Test
     public void mismatchedOpenersAndClosers() {
         assertRendering(
-                repeat("*a_ ", X),
-                "<p>" + repeat("*a_ ", X - 1) + "*a_</p>\n");
+                repeat("*a_ ", x),
+                "<p>" + repeat("*a_ ", x - 1) + "*a_</p>\n");
     }
 
     @Test
     public void nestedBrackets() {
         assertRendering(
-                repeat("[", X) + "a" + repeat("]", X),
-                "<p>" + repeat("[", X) + "a" + repeat("]", X) + "</p>\n");
+                repeat("[", x) + "a" + repeat("]", x),
+                "<p>" + repeat("[", x) + "a" + repeat("]", x) + "</p>\n");
     }
 
     @Test
     public void nestedBlockQuotes() {
         // this is limited by the stack size because visitor is recursive
-        int x = 1000;
+        x = 1000;
         assertRendering(
                 repeat("> ", x) + "a\n",
                 repeat("<blockquote>\n", x) + "<p>a</p>\n" +
@@ -105,5 +105,4 @@ public class PathologicalTest extends CoreRenderingTestCase {
         }
         return sb.toString();
     }
-
 }
