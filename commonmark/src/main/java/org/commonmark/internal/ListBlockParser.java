@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.*;
 
@@ -8,8 +9,9 @@ import java.util.regex.Pattern;
 
 public class ListBlockParser extends AbstractBlockParser {
 
-    private static Pattern BULLET_LIST_MARKER = Pattern.compile("^[*+-]( +|$)");
-    private static Pattern ORDERED_LIST_MARKER = Pattern.compile("^(\\d{1,9})([.)])( +|$)");
+    private static Pattern MARKER = Pattern.compile(
+            "^([*+-])(?= |\t|$)" +
+                    "|^(\\d{1,9})([.)])(?= |\t|$)");
 
     private final ListBlock block;
 
@@ -46,34 +48,58 @@ public class ListBlockParser extends AbstractBlockParser {
     /**
      * Parse a list marker and return data on the marker or null.
      */
-    private static ListData parseListMarker(CharSequence ln, int offset) {
-        CharSequence rest = ln.subSequence(offset, ln.length());
-        int spacesAfterMarker;
-        ListBlock listBlock;
-
-        Matcher match;
-        if ((match = BULLET_LIST_MARKER.matcher(rest)).find()) {
-            BulletList bulletList = new BulletList();
-            bulletList.setBulletMarker(match.group(0).charAt(0));
-            listBlock = bulletList;
-            spacesAfterMarker = match.group(1).length();
-        } else if ((match = ORDERED_LIST_MARKER.matcher(rest)).find()) {
-            OrderedList orderedList = new OrderedList();
-            orderedList.setStartNumber(Integer.parseInt(match.group(1)));
-            orderedList.setDelimiter(match.group(2).charAt(0));
-            listBlock = orderedList;
-            spacesAfterMarker = match.group(3).length();
-        } else {
+    private static ListData parseListMarker(CharSequence line, final int markerIndex, final int markerColumn) {
+        CharSequence rest = line.subSequence(markerIndex, line.length());
+        Matcher matcher = MARKER.matcher(rest);
+        if (!matcher.find()) {
             return null;
         }
-        int padding;
-        boolean blankItem = match.group(0).length() == rest.length();
-        if (spacesAfterMarker >= 5 || spacesAfterMarker < 1 || blankItem) {
-            padding = match.group(0).length() - spacesAfterMarker + 1;
-        } else {
-            padding = match.group(0).length();
+
+        ListBlock listBlock = createListBlock(matcher);
+
+        int markerLength = matcher.end() - matcher.start();
+        int indexAfterMarker = markerIndex + markerLength;
+        // marker doesn't include tabs, so counting them as columns directly is ok
+        int columnAfterMarker = markerColumn + markerLength;
+        // the column within the line where the content starts
+        int contentColumn = columnAfterMarker;
+
+        // See at which column the content starts if there is content
+        boolean hasContent = false;
+        for (int i = indexAfterMarker; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '\t') {
+                contentColumn += Parsing.columnsToNextTabStop(contentColumn);
+            } else if (c == ' ') {
+                contentColumn++;
+            } else {
+                hasContent = true;
+                break;
+            }
         }
-        return new ListData(listBlock, padding);
+
+        if (!hasContent || (contentColumn - columnAfterMarker) > Parsing.CODE_BLOCK_INDENT) {
+            // If this line is blank or has a code block, default to 1 space after marker
+            contentColumn = columnAfterMarker + 1;
+        }
+
+        return new ListData(listBlock, contentColumn);
+    }
+
+    private static ListBlock createListBlock(Matcher matcher) {
+        String bullet = matcher.group(1);
+        if (bullet != null) {
+            BulletList bulletList = new BulletList();
+            bulletList.setBulletMarker(bullet.charAt(0));
+            return bulletList;
+        } else {
+            String digit = matcher.group(2);
+            String delim = matcher.group(3);
+            OrderedList orderedList = new OrderedList();
+            orderedList.setStartNumber(Integer.parseInt(digit));
+            orderedList.setDelimiter(delim.charAt(0));
+            return orderedList;
+        }
     }
 
     /**
@@ -100,20 +126,17 @@ public class ListBlockParser extends AbstractBlockParser {
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             BlockParser matched = matchedBlockParser.getMatchedBlockParser();
 
-            if (state.getIndent() >= 4 && !(matched instanceof ListBlockParser)) {
+            if (state.getIndent() >= Parsing.CODE_BLOCK_INDENT && !(matched instanceof ListBlockParser)) {
                 return BlockStart.none();
             }
             int nextNonSpace = state.getNextNonSpaceIndex();
-            ListData listData = parseListMarker(state.getLine(), nextNonSpace);
+            ListData listData = parseListMarker(state.getLine(), nextNonSpace, state.getColumn() + state.getIndent());
             if (listData == null) {
                 return BlockStart.none();
             }
 
-            // list item
-            int newIndex = nextNonSpace + listData.padding;
-
-            int itemIndent = state.getIndent() + listData.padding;
-            ListItemParser listItemParser = new ListItemParser(itemIndent);
+            int newColumn = listData.contentColumn;
+            ListItemParser listItemParser = new ListItemParser(newColumn - state.getColumn());
 
             // prepend the list block if needed
             if (!(matched instanceof ListBlockParser) ||
@@ -122,21 +145,20 @@ public class ListBlockParser extends AbstractBlockParser {
                 ListBlockParser listBlockParser = new ListBlockParser(listData.listBlock);
                 listBlockParser.setTight(true);
 
-                return BlockStart.of(listBlockParser, listItemParser).atIndex(newIndex);
+                return BlockStart.of(listBlockParser, listItemParser).atColumn(newColumn);
             } else {
-                return BlockStart.of(listItemParser).atIndex(newIndex);
+                return BlockStart.of(listItemParser).atColumn(newColumn);
             }
         }
     }
 
     private static class ListData {
         final ListBlock listBlock;
-        final int padding;
+        final int contentColumn;
 
-        public ListData(ListBlock listBlock, int padding) {
+        ListData(ListBlock listBlock, int contentColumn) {
             this.listBlock = listBlock;
-            this.padding = padding;
+            this.contentColumn = contentColumn;
         }
     }
-
 }

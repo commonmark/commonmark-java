@@ -35,9 +35,9 @@ public class DocumentParser implements ParserState {
 
     private int nextNonSpace = 0;
     private int nextNonSpaceColumn = 0;
-    private boolean blank;
-
     private int indent = 0;
+    private boolean blank;
+    private boolean columnIsInTab;
 
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserImpl inlineParser;
@@ -192,7 +192,7 @@ public class DocumentParser implements ParserState {
             findNextNonSpace();
 
             // this is a little performance optimization:
-            if (isBlank() || (indent < IndentedCodeBlockParser.INDENT && Parsing.isLetter(line, nextNonSpace))) {
+            if (isBlank() || (indent < Parsing.CODE_BLOCK_INDENT && Parsing.isLetter(line, nextNonSpace))) {
                 setNewIndex(nextNonSpace);
                 break;
             }
@@ -301,6 +301,9 @@ public class DocumentParser implements ParserState {
             // Last character was a tab and we overshot our target
             index--;
             column = newColumn;
+            columnIsInTab = true;
+        } else {
+            columnIsInTab = false;
         }
     }
 
@@ -308,11 +311,34 @@ public class DocumentParser implements ParserState {
         char c = line.charAt(index);
         if (c == '\t') {
             index++;
-            column += (4 - (column % 4));
+            column += Parsing.columnsToNextTabStop(column);
         } else {
             index++;
             column++;
         }
+    }
+
+    /**
+     * Add line content to the active block parser. We assume it can accept lines -- that check should be done before
+     * calling this.
+     */
+    private void addLine() {
+        CharSequence content;
+        if (columnIsInTab) {
+            // Our column is in a partially consumed tab. Expand the remaining columns (to the next tab stop) to spaces.
+            int afterTab = index + 1;
+            CharSequence rest = line.subSequence(afterTab, line.length());
+            int spaces = Parsing.columnsToNextTabStop(column);
+            StringBuilder sb = new StringBuilder(spaces + rest.length());
+            for (int i = 0; i < spaces; i++) {
+                sb.append(' ');
+            }
+            sb.append(rest);
+            content = sb.toString();
+        } else {
+            content = line.subSequence(index, line.length());
+        }
+        getActiveBlockParser().addLine(content);
     }
 
     private BlockStartImpl findBlockStart(BlockParser blockParser) {
@@ -408,14 +434,6 @@ public class DocumentParser implements ParserState {
         if (lastList != -1) {
             finalizeBlocks(blockParsers.subList(lastList, blockParsers.size()));
         }
-    }
-
-    /**
-     * Add a line to the block at the tip. We assume the tip can accept lines -- that check should be done before
-     * calling this.
-     */
-    private void addLine() {
-        getActiveBlockParser().addLine(line.subSequence(index, line.length()));
     }
 
     /**
