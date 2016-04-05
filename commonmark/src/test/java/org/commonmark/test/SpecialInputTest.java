@@ -67,6 +67,12 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void listWithTwoSpacesForFirstBullet() {
+        // We have two spaces after the bullet, but no content. With content, the next line would be required
+        assertRendering("*  \n  foo\n", "<ul>\n<li>foo</li>\n</ul>\n");
+    }
+
+    @Test
     public void orderedListMarkerOnly() {
         assertRendering("2.", "<ol start=\"2\">\n<li></li>\n</ol>\n");
     }

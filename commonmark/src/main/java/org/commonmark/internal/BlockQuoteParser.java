@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.parser.block.*;
@@ -26,29 +27,33 @@ public class BlockQuoteParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
-        CharSequence line = state.getLine();
-        if (state.getIndent() <= 3 && nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
-            int newIndex = nextNonSpace + 1;
-            if (newIndex < line.length() && line.charAt(newIndex) == ' ') {
-                newIndex++;
+        if (isMarker(state, nextNonSpace)) {
+            int newColumn = state.getColumn() + state.getIndent() + 1;
+            // optional following space or tab
+            if (Parsing.isSpaceOrTab(state.getLine(), nextNonSpace + 1)) {
+                newColumn++;
             }
-            return BlockContinue.atIndex(newIndex);
+            return BlockContinue.atColumn(newColumn);
         } else {
             return BlockContinue.none();
         }
     }
 
+    private static boolean isMarker(ParserState state, int index) {
+        CharSequence line = state.getLine();
+        return state.getIndent() < Parsing.CODE_BLOCK_INDENT && index < line.length() && line.charAt(index) == '>';
+    }
+
     public static class Factory extends AbstractBlockParserFactory {
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            CharSequence line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
-            if (state.getIndent() < 4 && line.charAt(nextNonSpace) == '>') {
-                int newOffset = nextNonSpace + 1;
-                // optional following space
-                if (newOffset < line.length() && line.charAt(newOffset) == ' ') {
-                    newOffset++;
+            if (isMarker(state, nextNonSpace)) {
+                int newColumn = state.getColumn() + state.getIndent() + 1;
+                // optional following space or tab
+                if (Parsing.isSpaceOrTab(state.getLine(), nextNonSpace + 1)) {
+                    newColumn++;
                 }
-                return BlockStart.of(new BlockQuoteParser()).atIndex(newOffset);
+                return BlockStart.of(new BlockQuoteParser()).atColumn(newColumn);
             } else {
                 return BlockStart.none();
             }
