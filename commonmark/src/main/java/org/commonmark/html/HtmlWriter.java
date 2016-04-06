@@ -5,15 +5,12 @@ import org.commonmark.internal.util.Escaping;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class HtmlWriter {
 
     private static final Map<String, String> NO_ATTRIBUTES = Collections.emptyMap();
-    private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]*>");
 
     private final Appendable buffer;
-    private int nesting = 0;
     private char lastChar = 0;
 
     public HtmlWriter(Appendable out) {
@@ -21,23 +18,7 @@ public class HtmlWriter {
     }
 
     public void raw(String s) {
-        if (isTagAllowed()) {
-            append(s);
-        } else {
-            append(HTML_TAG_PATTERN.matcher(s).replaceAll(""));
-        }
-    }
-
-    public boolean isTagAllowed() {
-        return nesting == 0;
-    }
-
-    public void disableTags() {
-        nesting++;
-    }
-
-    public void enableTags() {
-        nesting--;
+        append(s);
     }
 
     public void tag(String name) {
@@ -50,10 +31,6 @@ public class HtmlWriter {
 
     // Helper function to produce an HTML tag.
     public void tag(String name, Map<String, String> attrs, boolean voidElement) {
-        if (!isTagAllowed()) {
-            return;
-        }
-
         append("<");
         append(name);
         if (attrs != null && !attrs.isEmpty()) {
