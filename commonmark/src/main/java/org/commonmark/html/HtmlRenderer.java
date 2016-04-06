@@ -304,20 +304,20 @@ public class HtmlRenderer {
 
         @Override
         public void visit(Image image) {
-            if (html.isTagAllowed()) {
-                String url = optionallyPercentEncodeUrl(image.getDestination());
-                html.raw("<img src=\"" + escape(url, true) +
-                        "\" alt=\"");
+            String url = optionallyPercentEncodeUrl(image.getDestination());
+
+            AltTextVisitor altTextVisitor = new AltTextVisitor();
+            image.accept(altTextVisitor);
+            String altText = altTextVisitor.getAltText();
+
+            Map<String, String> attrs = new LinkedHashMap<>();
+            attrs.put("src", url);
+            attrs.put("alt", altText);
+            if (image.getTitle() != null) {
+                attrs.put("title", image.getTitle());
             }
-            html.disableTags();
-            visitChildren(image);
-            html.enableTags();
-            if (html.isTagAllowed()) {
-                if (image.getTitle() != null) {
-                    html.raw("\" title=\"" + escape(image.getTitle(), true));
-                }
-                html.raw("\" />");
-            }
+
+            html.tag("img", getAttrs(image, attrs), true);
         }
 
         @Override
@@ -432,6 +432,30 @@ public class HtmlRenderer {
             for (AttributeProvider attributeProvider : attributeProviders) {
                 attributeProvider.setAttributes(node, attrs);
             }
+        }
+    }
+
+    private static class AltTextVisitor extends AbstractVisitor {
+
+        private final StringBuilder sb = new StringBuilder();
+
+        String getAltText() {
+            return sb.toString();
+        }
+
+        @Override
+        public void visit(Text text) {
+            sb.append(text.getLiteral());
+        }
+
+        @Override
+        public void visit(SoftLineBreak softLineBreak) {
+            sb.append('\n');
+        }
+
+        @Override
+        public void visit(HardLineBreak hardLineBreak) {
+            sb.append('\n');
         }
     }
 }
