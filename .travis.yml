@@ -16,5 +16,5 @@ android:
     - extra-android-m2repository
     - sys-img-armeabi-v7a-android-15
 script:
-  - 'if [[ $TEST = java ]]; then mvn test; fi'
+  - 'if [[ $TEST = java ]]; then mvn test -Dsurefire.useFile=false; fi'
   - 'if [[ $TEST = android ]]; then mvn install -DskipTests && cd commonmark-android-test && travis_retry ./.travis.sh; fi'
