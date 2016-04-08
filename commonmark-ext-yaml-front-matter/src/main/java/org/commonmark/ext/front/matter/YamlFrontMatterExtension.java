@@ -2,8 +2,6 @@ package org.commonmark.ext.front.matter;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.front.matter.internal.YamlFrontMatterBlockParser;
-import org.commonmark.ext.front.matter.internal.YamlFrontMatterBlockRenderer;
-import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 
 /**
@@ -17,13 +15,9 @@ import org.commonmark.parser.Parser;
  * The parsed metadata is turned into {@link YamlFrontMatterNode}. You can access the metadata using {@link YamlFrontMatterVisitor}.
  * </p>
  */
-public class YamlFrontMatterExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
-    private YamlFrontMatterExtension() {
-    }
+public class YamlFrontMatterExtension implements Parser.ParserExtension {
 
-    @Override
-    public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.customHtmlRenderer(new YamlFrontMatterBlockRenderer());
+    private YamlFrontMatterExtension() {
     }
 
     @Override
