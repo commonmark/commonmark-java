@@ -2,7 +2,10 @@ package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughDelimiterProcessor;
-import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughHtmlRenderer;
+import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughNodeRenderer;
+import org.commonmark.html.renderer.NodeRenderer;
+import org.commonmark.html.renderer.NodeRendererContext;
+import org.commonmark.html.renderer.NodeRendererFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 
@@ -33,7 +36,11 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.customHtmlRenderer(new StrikethroughHtmlRenderer());
+        rendererBuilder.nodeRendererFactory(new NodeRendererFactory() {
+            @Override
+            public NodeRenderer create(NodeRendererContext context) {
+                return new StrikethroughNodeRenderer(context);
+            }
+        });
     }
-
 }

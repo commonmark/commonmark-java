@@ -2,13 +2,19 @@ package org.commonmark.test;
 
 import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.html.renderer.NodeRenderer;
+import org.commonmark.html.renderer.NodeRendererContext;
+import org.commonmark.html.renderer.NodeRendererFactory;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Image;
+import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -115,6 +121,30 @@ public class HtmlRendererTest {
         HtmlRenderer renderer = HtmlRenderer.builder().attributeProvider(custom).build();
         String rendered = renderer.render(parse("![foo](/url)\n"));
         assertEquals("<p><img src=\"/url\" test=\"hey\" /></p>\n", rendered);
+    }
+
+    @Test
+    public void overrideNodeRender() {
+        NodeRendererFactory nodeRendererFactory = new NodeRendererFactory() {
+            @Override
+            public NodeRenderer create(final NodeRendererContext context) {
+                return new NodeRenderer() {
+                    @Override
+                    public Set<Class<? extends Node>> getNodeTypes() {
+                        return Collections.<Class<? extends Node>>singleton(Link.class);
+                    }
+
+                    @Override
+                    public void render(Node node) {
+                        context.getHtmlWriter().text("test");
+                    }
+                };
+            }
+        };
+
+        HtmlRenderer renderer = HtmlRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
+        String rendered = renderer.render(parse("foo [bar](/url)"));
+        assertEquals("<p>foo test</p>\n", rendered);
     }
 
     @Test

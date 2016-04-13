@@ -1,13 +1,19 @@
 package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
+import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class TablesTest extends RenderingTestCase {
 
@@ -298,6 +304,39 @@ public class TablesTest extends RenderingTestCase {
                 "</tbody>\n" +
                 "</table>\n" +
                 "<p>table, you are over</p>\n");
+    }
+
+    @Test
+    public void attributeProviderIsApplied() {
+        AttributeProvider attributeProvider = new AttributeProvider() {
+            @Override
+            public void setAttributes(Node node, Map<String, String> attributes) {
+                if (node instanceof TableBlock) {
+                    attributes.put("test", "block");
+                } else if (node instanceof TableHead) {
+                    attributes.put("test", "head");
+                } else if (node instanceof TableBody) {
+                    attributes.put("test", "body");
+                } else if (node instanceof TableRow) {
+                    attributes.put("test", "row");
+                } else if (node instanceof TableCell) {
+                    attributes.put("test", "cell");
+                }
+            }
+        };
+        HtmlRenderer renderer = HtmlRenderer.builder()
+                .attributeProvider(attributeProvider)
+                .extensions(EXTENSIONS)
+                .build();
+        String rendered = renderer.render(PARSER.parse("Abc|Def\n---|---\n1|2"));
+        assertThat(rendered, is("<table test=\"block\">\n" +
+                "<thead test=\"head\">\n" +
+                "<tr test=\"row\"><th test=\"cell\">Abc</th><th test=\"cell\">Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody test=\"body\">\n" +
+                "<tr test=\"row\"><td test=\"cell\">1</td><td test=\"cell\">2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n"));
     }
 
     @Override

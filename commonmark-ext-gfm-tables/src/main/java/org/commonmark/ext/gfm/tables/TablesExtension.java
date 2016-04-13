@@ -2,7 +2,10 @@ package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
-import org.commonmark.ext.gfm.tables.internal.TableHtmlRenderer;
+import org.commonmark.ext.gfm.tables.internal.TableNodeRenderer;
+import org.commonmark.html.renderer.NodeRenderer;
+import org.commonmark.html.renderer.NodeRendererContext;
+import org.commonmark.html.renderer.NodeRendererFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
 
@@ -33,7 +36,11 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.customHtmlRenderer(new TableHtmlRenderer());
+        rendererBuilder.nodeRendererFactory(new NodeRendererFactory() {
+            @Override
+            public NodeRenderer create(NodeRendererContext context) {
+                return new TableNodeRenderer(context);
+            }
+        });
     }
-
 }

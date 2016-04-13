@@ -1,8 +1,14 @@
 package org.commonmark.html;
 
 import org.commonmark.Extension;
+import org.commonmark.html.renderer.CoreNodeRenderer;
+import org.commonmark.html.renderer.NodeRenderer;
+import org.commonmark.html.renderer.NodeRendererContext;
+import org.commonmark.html.renderer.NodeRendererFactory;
 import org.commonmark.internal.util.Escaping;
-import org.commonmark.node.*;
+import org.commonmark.node.HtmlBlock;
+import org.commonmark.node.HtmlInline;
+import org.commonmark.node.Node;
 
 import java.util.*;
 
@@ -17,20 +23,27 @@ import java.util.*;
  */
 public class HtmlRenderer {
 
-    private static final Map<String, String> NO_ATTRIBUTES = Collections.emptyMap();
-
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean percentEncodeUrls;
-    private final List<CustomHtmlRenderer> customHtmlRenderers;
     private final List<AttributeProvider> attributeProviders;
+    private final List<NodeRendererFactory> nodeRendererFactories;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
         this.percentEncodeUrls = builder.percentEncodeUrls;
-        this.customHtmlRenderers = builder.customHtmlRenderers;
         this.attributeProviders = builder.attributeProviders;
+
+        this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
+        this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
+        // Add as last. This means clients can override the rendering of core nodes if they want.
+        this.nodeRendererFactories.add(new NodeRendererFactory() {
+            @Override
+            public NodeRenderer create(NodeRendererContext context) {
+                return new CoreNodeRenderer(context);
+            }
+        });
     }
 
     /**
@@ -43,12 +56,13 @@ public class HtmlRenderer {
     }
 
     public void render(Node node, Appendable output) {
-        RendererVisitor rendererVisitor = new RendererVisitor(new HtmlWriter(output), customHtmlRenderers);
-        node.accept(rendererVisitor);
+        MainNodeRenderer renderer = new MainNodeRenderer(new HtmlWriter(output));
+        renderer.render(node);
     }
 
     /**
      * Render the tree of nodes to HTML.
+     *
      * @param node the root node
      * @return the rendered HTML
      */
@@ -56,18 +70,6 @@ public class HtmlRenderer {
         StringBuilder sb = new StringBuilder();
         render(node, sb);
         return sb.toString();
-    }
-
-    private String escape(String input, boolean preserveEntities) {
-        return Escaping.escapeHtml(input, preserveEntities);
-    }
-
-    private String optionallyPercentEncodeUrl(String url) {
-        if (percentEncodeUrls) {
-            return Escaping.percentEncodeUrl(url);
-        } else {
-            return url;
-        }
     }
 
     /**
@@ -78,8 +80,8 @@ public class HtmlRenderer {
         private String softbreak = "\n";
         private boolean escapeHtml = false;
         private boolean percentEncodeUrls = false;
-        private List<CustomHtmlRenderer> customHtmlRenderers = new ArrayList<>();
         private List<AttributeProvider> attributeProviders = new ArrayList<>();
+        private List<NodeRendererFactory> nodeRendererFactories = new ArrayList<>();
 
         /**
          * @return the configured {@link HtmlRenderer}
@@ -148,8 +150,18 @@ public class HtmlRenderer {
             return this;
         }
 
-        public Builder customHtmlRenderer(CustomHtmlRenderer customHtmlRenderer) {
-            this.customHtmlRenderers.add(customHtmlRenderer);
+        /**
+         * Add a factory for instantiating a node renderer (done when rendering). This allows to override the rendering
+         * of node types or define rendering for custom node types.
+         * <p>
+         * If multiple node renderers for the same node type are created, the one from the factory that was added first
+         * "wins". (This is how the rendering for core node types can be overridden; the default rendering comes last.)
+         *
+         * @param nodeRendererFactory the factory for creating a node renderer
+         * @return {@code this}
+         */
+        public Builder nodeRendererFactory(NodeRendererFactory nodeRendererFactory) {
+            this.nodeRendererFactories.add(nodeRendererFactory);
             return this;
         }
 
@@ -175,287 +187,69 @@ public class HtmlRenderer {
         void extend(Builder rendererBuilder);
     }
 
-    private class RendererVisitor extends AbstractVisitor {
+    private class MainNodeRenderer implements NodeRendererContext {
 
-        private final HtmlWriter html;
-        private final List<CustomHtmlRenderer> customHtmlRenderers;
+        private final HtmlWriter htmlWriter;
+        private final Map<Class<? extends Node>, NodeRenderer> renderers;
 
-        public RendererVisitor(HtmlWriter html, List<CustomHtmlRenderer> customHtmlRenderers) {
-            this.html = html;
-            this.customHtmlRenderers = customHtmlRenderers;
-        }
+        private MainNodeRenderer(HtmlWriter htmlWriter) {
+            this.htmlWriter = htmlWriter;
+            this.renderers = new HashMap<>(32);
 
-        @Override
-        public void visit(Document document) {
-            visitChildren(document);
-        }
-
-        @Override
-        public void visit(Heading heading) {
-            String htag = "h" + heading.getLevel();
-            html.line();
-            html.tag(htag, getAttrs(heading));
-            visitChildren(heading);
-            html.tag('/' + htag);
-            html.line();
-        }
-
-        @Override
-        public void visit(Paragraph paragraph) {
-            boolean inTightList = isInTightList(paragraph);
-            if (!inTightList) {
-                html.line();
-                html.tag("p", getAttrs(paragraph));
-            }
-            visitChildren(paragraph);
-            if (!inTightList) {
-                html.tag("/p");
-                html.line();
-            }
-        }
-
-        @Override
-        public void visit(BlockQuote blockQuote) {
-            html.line();
-            html.tag("blockquote", getAttrs(blockQuote));
-            html.line();
-            visitChildren(blockQuote);
-            html.line();
-            html.tag("/blockquote");
-            html.line();
-        }
-
-        @Override
-        public void visit(BulletList bulletList) {
-            renderListBlock(bulletList, "ul", getAttrs(bulletList));
-        }
-
-        @Override
-        public void visit(FencedCodeBlock fencedCodeBlock) {
-            String literal = fencedCodeBlock.getLiteral();
-            Map<String, String> attributes = new LinkedHashMap<>();
-            String info = fencedCodeBlock.getInfo();
-            if (info != null && !info.isEmpty()) {
-                int space = info.indexOf(" ");
-                String language;
-                if (space == -1) {
-                    language = info;
-                } else {
-                    language = info.substring(0, space);
+            // The first node renderer for a node type "wins".
+            for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
+                NodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
+                NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
+                for (Class<? extends Node> nodeType : nodeRenderer.getNodeTypes()) {
+                    // Overwrite existing renderer
+                    renderers.put(nodeType, nodeRenderer);
                 }
-                attributes.put("class", "language-" + language);
             }
-            renderCodeBlock(literal, getAttrs(fencedCodeBlock, attributes));
         }
 
         @Override
-        public void visit(HtmlBlock htmlBlock) {
-            html.line();
-            if (escapeHtml) {
-                html.raw(escape(htmlBlock.getLiteral(), false));
+        public boolean shouldEscapeHtml() {
+            return escapeHtml;
+        }
+
+        @Override
+        public String encodeUrl(String url) {
+            if (percentEncodeUrls) {
+                return Escaping.percentEncodeUrl(url);
             } else {
-                html.raw(htmlBlock.getLiteral());
-            }
-            html.line();
-        }
-
-        @Override
-        public void visit(ThematicBreak thematicBreak) {
-            html.line();
-            html.tag("hr", getAttrs(thematicBreak), true);
-            html.line();
-        }
-
-        @Override
-        public void visit(IndentedCodeBlock indentedCodeBlock) {
-            renderCodeBlock(indentedCodeBlock.getLiteral(), getAttrs(indentedCodeBlock));
-        }
-
-        @Override
-        public void visit(Link link) {
-            Map<String, String> attrs = new LinkedHashMap<>();
-            String url = optionallyPercentEncodeUrl(link.getDestination());
-            attrs.put("href", url);
-            if (link.getTitle() != null) {
-                attrs.put("title", link.getTitle());
-            }
-            html.tag("a", getAttrs(link, attrs));
-            visitChildren(link);
-            html.tag("/a");
-        }
-
-        @Override
-        public void visit(ListItem listItem) {
-            html.tag("li", getAttrs(listItem));
-            visitChildren(listItem);
-            html.tag("/li");
-            html.line();
-        }
-
-        @Override
-        public void visit(OrderedList orderedList) {
-            int start = orderedList.getStartNumber();
-            Map<String, String> attrs = new LinkedHashMap<>();
-            if (start != 1) {
-                attrs.put("start", String.valueOf(start));
-            }
-            renderListBlock(orderedList, "ol", getAttrs(orderedList, attrs));
-        }
-
-        @Override
-        public void visit(Image image) {
-            String url = optionallyPercentEncodeUrl(image.getDestination());
-
-            AltTextVisitor altTextVisitor = new AltTextVisitor();
-            image.accept(altTextVisitor);
-            String altText = altTextVisitor.getAltText();
-
-            Map<String, String> attrs = new LinkedHashMap<>();
-            attrs.put("src", url);
-            attrs.put("alt", altText);
-            if (image.getTitle() != null) {
-                attrs.put("title", image.getTitle());
-            }
-
-            html.tag("img", getAttrs(image, attrs), true);
-        }
-
-        @Override
-        public void visit(Emphasis emphasis) {
-            html.tag("em");
-            visitChildren(emphasis);
-            html.tag("/em");
-        }
-
-        @Override
-        public void visit(StrongEmphasis strongEmphasis) {
-            html.tag("strong");
-            visitChildren(strongEmphasis);
-            html.tag("/strong");
-        }
-
-        @Override
-        public void visit(Text text) {
-            html.raw(escape(text.getLiteral(), false));
-        }
-
-        @Override
-        public void visit(Code code) {
-            html.tag("code");
-            html.raw(escape(code.getLiteral(), false));
-            html.tag("/code");
-        }
-
-        @Override
-        public void visit(HtmlInline htmlInline) {
-            if (escapeHtml) {
-                html.raw(escape(htmlInline.getLiteral(), false));
-            } else {
-                html.raw(htmlInline.getLiteral());
+                return url;
             }
         }
 
         @Override
-        public void visit(SoftLineBreak softLineBreak) {
-            html.raw(softbreak);
-        }
-
-        @Override
-        public void visit(HardLineBreak hardLineBreak) {
-            html.tag("br", NO_ATTRIBUTES, true);
-            html.line();
-        }
-
-        @Override
-        public void visit(CustomBlock customBlock) {
-            renderCustom(customBlock);
-        }
-
-        @Override
-        public void visit(CustomNode customNode) {
-            renderCustom(customNode);
-        }
-
-        private void renderCustom(Node node) {
-            for (CustomHtmlRenderer customHtmlRenderer : customHtmlRenderers) {
-                // TODO: Should we pass attributes here?
-                boolean handled = customHtmlRenderer.render(node, html, this);
-                if (handled) {
-                    break;
-                }
-            }
-        }
-
-        private void renderCodeBlock(String literal, Map<String, String> attributes) {
-            html.line();
-            html.tag("pre");
-            html.tag("code", attributes);
-            html.raw(escape(literal, false));
-            html.tag("/code");
-            html.tag("/pre");
-            html.line();
-        }
-
-        private void renderListBlock(ListBlock listBlock, String tagName, Map<String, String> attributes) {
-            html.line();
-            html.tag(tagName, attributes);
-            html.line();
-            visitChildren(listBlock);
-            html.line();
-            html.tag('/' + tagName);
-            html.line();
-        }
-
-        private boolean isInTightList(Paragraph paragraph) {
-            Node parent = paragraph.getParent();
-            if (parent != null) {
-                Node gramps = parent.getParent();
-                if (gramps != null && gramps instanceof ListBlock) {
-                    ListBlock list = (ListBlock) gramps;
-                    return list.isTight();
-                }
-            }
-            return false;
-        }
-
-        private Map<String, String> getAttrs(Node node) {
-            return getAttrs(node, Collections.<String, String>emptyMap());
-        }
-
-        private Map<String, String> getAttrs(Node node, Map<String, String> defaultAttributes) {
-            Map<String, String> attrs = new LinkedHashMap<>(defaultAttributes);
+        public Map<String, String> extendAttributes(Node node, Map<String, String> attributes) {
+            Map<String, String> attrs = new LinkedHashMap<>(attributes);
             setCustomAttributes(node, attrs);
             return attrs;
+        }
+
+        @Override
+        public HtmlWriter getHtmlWriter() {
+            return htmlWriter;
+        }
+
+        @Override
+        public String getSoftbreak() {
+            return softbreak;
+        }
+
+        @Override
+        public void render(Node node) {
+            NodeRenderer nodeRenderer = renderers.get(node.getClass());
+            if (nodeRenderer != null) {
+                nodeRenderer.render(node);
+            }
         }
 
         private void setCustomAttributes(Node node, Map<String, String> attrs) {
             for (AttributeProvider attributeProvider : attributeProviders) {
                 attributeProvider.setAttributes(node, attrs);
             }
-        }
-    }
-
-    private static class AltTextVisitor extends AbstractVisitor {
-
-        private final StringBuilder sb = new StringBuilder();
-
-        String getAltText() {
-            return sb.toString();
-        }
-
-        @Override
-        public void visit(Text text) {
-            sb.append(text.getLiteral());
-        }
-
-        @Override
-        public void visit(SoftLineBreak softLineBreak) {
-            sb.append('\n');
-        }
-
-        @Override
-        public void visit(HardLineBreak hardLineBreak) {
-            sb.append('\n');
         }
     }
 }

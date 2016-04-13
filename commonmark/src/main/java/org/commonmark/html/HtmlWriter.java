@@ -21,6 +21,10 @@ public class HtmlWriter {
         append(s);
     }
 
+    public void text(String text) {
+        append(Escaping.escapeHtml(text, false));
+    }
+
     public void tag(String name) {
         tag(name, NO_ATTRIBUTES);
     }
@@ -29,7 +33,6 @@ public class HtmlWriter {
         tag(name, attrs, false);
     }
 
-    // Helper function to produce an HTML tag.
     public void tag(String name, Map<String, String> attrs, boolean voidElement) {
         append("<");
         append(name);
