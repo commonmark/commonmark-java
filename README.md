@@ -14,6 +14,7 @@ library with a nice Java API and some optional extensions. Features:
 Requirements:
 
 * Java 7 or above
+* Works on Android; minimum API level 15 (see [commonmark-android-test](commonmark-android-test) directory)
 * The core has no dependencies; for extensions, see below
 
 Coordinates for core library (see all on [Maven Central]):
