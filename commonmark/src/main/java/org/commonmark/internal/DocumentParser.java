@@ -33,11 +33,15 @@ public class DocumentParser implements ParserState {
      */
     private int column = 0;
 
+    /**
+     * if the current column is within a tab character (partially consumed tab)
+     */
+    private boolean columnIsInTab;
+
     private int nextNonSpace = 0;
     private int nextNonSpaceColumn = 0;
     private int indent = 0;
     private boolean blank;
-    private boolean columnIsInTab;
 
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserImpl inlineParser;
@@ -144,8 +148,7 @@ public class DocumentParser implements ParserState {
         line = Parsing.prepareLine(ln);
         index = 0;
         column = 0;
-        nextNonSpace = 0;
-        nextNonSpaceColumn = 0;
+        columnIsInTab = false;
 
         // For each containing block, try to parse the associated line start.
         // Bail out on failure: container will point to the last matching block.
@@ -286,6 +289,8 @@ public class DocumentParser implements ParserState {
         while (index < newIndex && index != line.length()) {
             advance();
         }
+        // If we're going to an index as opposed to a column, we're never within a tab
+        columnIsInTab = false;
     }
 
     private void setNewColumn(int newColumn) {

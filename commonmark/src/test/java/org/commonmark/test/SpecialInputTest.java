@@ -77,4 +77,11 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         assertRendering("2.", "<ol start=\"2\">\n<li></li>\n</ol>\n");
     }
 
+    @Test
+    public void columnIsInTabOnPreviousLine() {
+        assertRendering("- foo\n\n\tbar\n\n# baz\n",
+                "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n<h1>baz</h1>\n");
+        assertRendering("- foo\n\n\tbar\n# baz\n",
+                "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n<h1>baz</h1>\n");
+    }
 }
