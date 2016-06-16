@@ -20,7 +20,7 @@ public class InlineParserImpl implements InlineParser {
     private static final String IN_PARENS_NOSP = "\\((" + REG_CHAR + '|' + ESCAPED_CHAR + ")*\\)";
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
-    private static final String DECLARATION = "<![A-Z]+" + "\\s+[^>]*>";
+    private static final String DECLARATION = "<![A-Z]+\\s+[^>]*>";
     private static final String CDATA = "<!\\[CDATA\\[[\\s\\S]*?\\]\\]>";
     private static final String HTMLTAG = "(?:" + Parsing.OPENTAG + "|" + Parsing.CLOSETAG + "|" + HTMLCOMMENT
             + "|" + PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
@@ -46,7 +46,7 @@ public class InlineParserImpl implements InlineParser {
             "^(?:" + REG_CHAR + "+|" + ESCAPED_CHAR + "|\\\\|" + IN_PARENS_NOSP + ")*");
 
     private static final Pattern LINK_LABEL = Pattern
-            .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "|\\\\){0,1000}\\]");
+            .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "|\\\\){0,999}\\]");
 
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 

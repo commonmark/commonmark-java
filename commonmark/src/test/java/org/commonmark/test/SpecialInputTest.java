@@ -84,4 +84,19 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         assertRendering("- foo\n\n\tbar\n# baz\n",
                 "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n<h1>baz</h1>\n");
     }
+
+    @Test
+    public void linkLabelLength() {
+        String label1 = Strings.repeat("a", 999);
+        assertRendering("[foo][" + label1 + "]\n\n[" + label1 + "]: /", "<p><a href=\"/\">foo</a></p>\n");
+        assertRendering("[foo][x" + label1 + "]\n\n[x" + label1 + "]: /",
+                "<p>[foo][x" + label1 + "]</p>\n<p>[x" + label1 + "]: /</p>\n");
+        assertRendering("[foo][\n" + label1 + "]\n\n[\n" + label1 + "]: /",
+                "<p>[foo][\n" + label1 + "]</p>\n<p>[\n" + label1 + "]: /</p>\n");
+
+        String label2 = Strings.repeat("a\n", 499);
+        assertRendering("[foo][" + label2 + "]\n\n[" + label2 + "]: /", "<p><a href=\"/\">foo</a></p>\n");
+        assertRendering("[foo][12" + label2 + "]\n\n[12" + label2 + "]: /",
+                "<p>[foo][12" + label2 + "]</p>\n<p>[12" + label2 + "]: /</p>\n");
+    }
 }
