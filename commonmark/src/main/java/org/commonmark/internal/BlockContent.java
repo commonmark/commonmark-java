@@ -22,10 +22,6 @@ class BlockContent {
         lineCount++;
     }
 
-    public boolean hasSingleLine() {
-        return lineCount == 1;
-    }
-
     public String getString() {
         return sb.toString();
     }
