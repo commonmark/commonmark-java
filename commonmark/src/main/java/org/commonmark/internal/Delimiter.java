@@ -1,6 +1,5 @@
 package org.commonmark.internal;
 
-import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 
 class Delimiter {
@@ -39,23 +38,4 @@ class Delimiter {
         this.previous = previous;
         this.index = index;
     }
-
-    Text getPreviousNonDelimiterTextNode() {
-        Node previousNode = node.getPrevious();
-        if (previousNode instanceof Text && (this.previous == null || this.previous.node != previousNode)) {
-            return (Text) previousNode;
-        } else {
-            return null;
-        }
-    }
-
-    Text getNextNonDelimiterTextNode() {
-        Node nextNode = node.getNext();
-        if (nextNode instanceof Text && (this.next == null || this.next.node != nextNode)) {
-            return (Text) nextNode;
-        } else {
-            return null;
-        }
-    }
-
 }

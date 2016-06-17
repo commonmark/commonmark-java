@@ -96,8 +96,6 @@ public class InlineParserImpl implements InlineParser {
      */
     private Delimiter bracketDelimiterBottom = null;
 
-    private StringBuilder currentText;
-
     public InlineParserImpl(BitSet specialCharacters, BitSet delimiterCharacters, Map<Character, DelimiterProcessor> delimiterProcessors) {
         this.delimiterProcessors = delimiterProcessors;
         this.delimiterCharacters = delimiterCharacters;
@@ -166,9 +164,9 @@ public class InlineParserImpl implements InlineParser {
         do {
             moreToParse = parseInline();
         } while (moreToParse);
-        flushTextNode();
 
         processDelimiters(null);
+        mergeTextNodes(block.getFirstChild(), block.getLastChild());
     }
 
     /**
@@ -246,34 +244,18 @@ public class InlineParserImpl implements InlineParser {
         return index - startIndex;
     }
 
-    private void appendText(CharSequence text) {
-        appendText(text, 0, text.length());
+    private Text appendText(CharSequence text, int beginIndex, int endIndex) {
+        return appendText(text.subSequence(beginIndex, endIndex));
     }
 
-    private void appendText(CharSequence text, int beginIndex, int endIndex) {
-        if (currentText == null) {
-            currentText = new StringBuilder(endIndex - beginIndex + 16);
-        }
-        currentText.append(text, beginIndex, endIndex);
-    }
-
-    private void appendNode(Node node) {
-        flushTextNode();
-        block.appendChild(node);
-    }
-
-    // In some cases, we don't want the text to be appended to an existing node, we need it separate
-    private Text appendSeparateText(String text) {
-        Text node = new Text(text);
+    private Text appendText(CharSequence text) {
+        Text node = new Text(text.toString());
         appendNode(node);
         return node;
     }
 
-    private void flushTextNode() {
-        if (currentText != null) {
-            block.appendChild(new Text(currentText.toString()));
-            currentText = null;
-        }
+    private void appendNode(Node node) {
+        block.appendChild(node);
     }
 
     /**
@@ -376,9 +358,6 @@ public class InlineParserImpl implements InlineParser {
     private boolean parseNewline() {
         index++; // assume we're at a \n
 
-        // We're gonna add a new node in any case and we need to check the last text node, so flush outstanding text.
-        flushTextNode();
-
         Node lastChild = block.getLastChild();
         // Check previous text for trailing spaces.
         // The "endsWith" is an optimization to avoid an RE match in the common case.
@@ -458,7 +437,7 @@ public class InlineParserImpl implements InlineParser {
         int startIndex = index;
 
         index += numDelims;
-        Text node = appendSeparateText(input.substring(startIndex, index));
+        Text node = appendText(input, startIndex, index);
 
         // Add entry to stack for this opener
         this.delimiter = new Delimiter(node, this.delimiter, startIndex);
@@ -480,7 +459,7 @@ public class InlineParserImpl implements InlineParser {
         int startIndex = index;
         index++;
 
-        Text node = appendSeparateText("[");
+        Text node = appendText("[");
 
         // Add entry to stack for this opener
         this.delimiter = new Delimiter(node, this.delimiter, startIndex);
@@ -506,7 +485,7 @@ public class InlineParserImpl implements InlineParser {
         if (peek() == '[') {
             index++;
 
-            Text node = appendSeparateText("![");
+            Text node = appendText("![");
 
             // Add entry to stack for this opener
             this.delimiter = new Delimiter(node, this.delimiter, startIndex + 1);
@@ -611,10 +590,6 @@ public class InlineParserImpl implements InlineParser {
             boolean isImage = opener.delimiterChar == '!';
             Node linkOrImage = isImage ? new Image(dest, title) : new Link(dest, title);
 
-            // Flush text now. We don't need to worry about combining it with adjacent text nodes, as we'll wrap it in a
-            // link or image node.
-            flushTextNode();
-
             Node node = opener.node.getNext();
             while (node != null) {
                 Node next = node.getNext();
@@ -625,6 +600,7 @@ public class InlineParserImpl implements InlineParser {
 
             // Process delimiters such as emphasis inside link/image
             processDelimiters(opener);
+            mergeTextNodes(linkOrImage.getFirstChild(), linkOrImage.getLastChild());
             removeDelimiterAndNode(opener);
 
             // Links within links are not allowed. We found this link, so there can be no other link around it.
@@ -879,9 +855,12 @@ public class InlineParserImpl implements InlineParser {
                             closerNode.getLiteral().length() - useDelims));
 
             removeDelimitersBetween(opener, closer);
+            // The delimiter processor can re-parent the nodes between opener and closer,
+            // so make sure they're contiguous already.
+            mergeTextNodes(openerNode.getNext(), closerNode.getPrevious());
             delimiterProcessor.process(openerNode, closerNode, useDelims);
 
-            // if opener has 0 delims, remove it and the inline
+            // No delimiter characters left to process, so we can remove delimiter and the now empty node.
             if (opener.numDelims == 0) {
                 removeDelimiterAndNode(opener);
             }
@@ -913,14 +892,6 @@ public class InlineParserImpl implements InlineParser {
      */
     private void removeDelimiterAndNode(Delimiter delim) {
         Text node = delim.node;
-        Text previousText = delim.getPreviousNonDelimiterTextNode();
-        Text nextText = delim.getNextNonDelimiterTextNode();
-        if (previousText != null && nextText != null) {
-            // Merge adjacent text nodes
-            previousText.setLiteral(previousText.getLiteral() + nextText.getLiteral());
-            nextText.unlink();
-        }
-
         node.unlink();
         removeDelimiter(delim);
     }
@@ -929,23 +900,6 @@ public class InlineParserImpl implements InlineParser {
      * Remove the delimiter but keep the corresponding node as text. For unused delimiters such as `_` in `foo_bar`.
      */
     private void removeDelimiterKeepNode(Delimiter delim) {
-        Text node = delim.node;
-        Text previousText = delim.getPreviousNonDelimiterTextNode();
-        Text nextText = delim.getNextNonDelimiterTextNode();
-        if (previousText != null || nextText != null) {
-            // Merge adjacent text nodes into one
-            StringBuilder sb = new StringBuilder(node.getLiteral());
-            if (previousText != null) {
-                sb.insert(0, previousText.getLiteral());
-                previousText.unlink();
-            }
-            if (nextText != null) {
-                sb.append(nextText.getLiteral());
-                nextText.unlink();
-            }
-            node.setLiteral(sb.toString());
-        }
-
         removeDelimiter(delim);
     }
 
@@ -958,6 +912,52 @@ public class InlineParserImpl implements InlineParser {
             this.delimiter = delim.previous;
         } else {
             delim.next.previous = delim.previous;
+        }
+    }
+
+    private void mergeTextNodes(Node fromNode, Node toNode) {
+        Text first = null;
+        Text last = null;
+        int length = 0;
+
+        Node node = fromNode;
+        while (node != null) {
+            if (node instanceof Text) {
+                Text text = (Text) node;
+                if (first == null) {
+                    first = text;
+                }
+                length += text.getLiteral().length();
+                last = text;
+            } else {
+                mergeIfNeeded(first, last, length);
+                first = null;
+                last = null;
+                length = 0;
+            }
+            if (node == toNode) {
+                break;
+            }
+            node = node.getNext();
+        }
+
+        mergeIfNeeded(first, last, length);
+    }
+
+    private void mergeIfNeeded(Text first, Text last, int textLength) {
+        if (first != null && last != null && first != last) {
+            StringBuilder sb = new StringBuilder(textLength);
+            sb.append(first.getLiteral());
+            Node node = first.getNext();
+            Node stop = last.getNext();
+            while (node != stop) {
+                sb.append(((Text) node).getLiteral());
+                Node unlink = node;
+                node = node.getNext();
+                unlink.unlink();
+            }
+            String literal = sb.toString();
+            first.setLiteral(literal);
         }
     }
 }
