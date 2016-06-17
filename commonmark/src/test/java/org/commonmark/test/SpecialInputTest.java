@@ -86,6 +86,13 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void linkLabelWithBracket() {
+        assertRendering("[a[b]\n\n[a[b]: /", "<p>[a[b]</p>\n<p>[a[b]: /</p>\n");
+        assertRendering("[a]b]\n\n[a]b]: /", "<p>[a]b]</p>\n<p>[a]b]: /</p>\n");
+        assertRendering("[a[b]]\n\n[a[b]]: /", "<p>[a[b]]</p>\n<p>[a[b]]: /</p>\n");
+    }
+
+    @Test
     public void linkLabelLength() {
         String label1 = Strings.repeat("a", 999);
         assertRendering("[foo][" + label1 + "]\n\n[" + label1 + "]: /", "<p><a href=\"/\">foo</a></p>\n");

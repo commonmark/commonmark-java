@@ -18,7 +18,7 @@ import static org.commonmark.test.Strings.repeat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PathologicalTest extends CoreRenderingTestCase {
 
-    private int x = 10_000;
+    private int x = 100_000;
 
     @Rule
     public Timeout timeout = new Timeout(3, TimeUnit.SECONDS);

@@ -87,14 +87,15 @@ public class InlineParserImpl implements InlineParser {
     private int index;
 
     /**
-     * Stack of delimiters (emphasis, strong emphasis).
+     * Stack of delimiters (emphasis, strong emphasis or custom emphasis). (Brackets are on a separate stack, different
+     * from the algorithm described in the spec.)
      */
     private Delimiter delimiter;
 
     /**
-     * Earliest possible bracket delimiter to go back to when searching for opener.
+     * Last parsed opening bracket (<code>[</code> or <code>![)</code>).
      */
-    private Delimiter bracketDelimiterBottom = null;
+    private Bracket lastBracket;
 
     public InlineParserImpl(BitSet specialCharacters, BitSet delimiterCharacters, Map<Character, DelimiterProcessor> delimiterProcessors) {
         this.delimiterProcessors = delimiterProcessors;
@@ -158,7 +159,7 @@ public class InlineParserImpl implements InlineParser {
         this.input = content.trim();
         this.index = 0;
         this.delimiter = null;
-        this.bracketDelimiterBottom = null;
+        this.lastBracket = null;
 
         boolean moreToParse;
         do {
@@ -440,7 +441,7 @@ public class InlineParserImpl implements InlineParser {
         Text node = appendText(input, startIndex, index);
 
         // Add entry to stack for this opener
-        this.delimiter = new Delimiter(node, this.delimiter, startIndex);
+        this.delimiter = new Delimiter(node, this.delimiter);
         this.delimiter.delimiterChar = delimiterChar;
         this.delimiter.numDelims = numDelims;
         this.delimiter.canOpen = res.canOpen;
@@ -462,15 +463,7 @@ public class InlineParserImpl implements InlineParser {
         Text node = appendText("[");
 
         // Add entry to stack for this opener
-        this.delimiter = new Delimiter(node, this.delimiter, startIndex);
-        this.delimiter.delimiterChar = '[';
-        this.delimiter.numDelims = 1;
-        this.delimiter.canOpen = true;
-        this.delimiter.canClose = false;
-        this.delimiter.allowed = true;
-        if (this.delimiter.previous != null) {
-            this.delimiter.previous.next = this.delimiter;
-        }
+        lastBracket = Bracket.link(node, startIndex, lastBracket, delimiter);
 
         return true;
     }
@@ -488,15 +481,7 @@ public class InlineParserImpl implements InlineParser {
             Text node = appendText("![");
 
             // Add entry to stack for this opener
-            this.delimiter = new Delimiter(node, this.delimiter, startIndex + 1);
-            this.delimiter.delimiterChar = '!';
-            this.delimiter.numDelims = 1;
-            this.delimiter.canOpen = true;
-            this.delimiter.canClose = false;
-            this.delimiter.allowed = true;
-            if (this.delimiter.previous != null) {
-                this.delimiter.previous.next = this.delimiter;
-            }
+            lastBracket = Bracket.image(node, startIndex + 1, lastBracket, delimiter);
         } else {
             appendText("!");
         }
@@ -511,32 +496,18 @@ public class InlineParserImpl implements InlineParser {
         index++;
         int startIndex = index;
 
-        boolean containsBracket = false;
-        // look through stack of delimiters for a [ or ![
-        Delimiter opener = this.delimiter;
-        while (opener != bracketDelimiterBottom) {
-            if (opener.delimiterChar == '[' || opener.delimiterChar == '!') {
-                if (!opener.matched) {
-                    break;
-                }
-                containsBracket = true;
-            }
-            opener = opener.previous;
-        }
-
-        if (opener == bracketDelimiterBottom) {
-            // No matched opener, just return a literal.
+        // Get previous `[` or `![`
+        Bracket opener = lastBracket;
+        if (opener == null) {
+            // No matching opener, just return a literal.
             appendText("]");
-            // No need to search same delimiters for openers next time.
-            bracketDelimiterBottom = this.delimiter;
             return true;
         }
 
         if (!opener.allowed) {
             // Matching opener but it's not allowed, just return a literal.
             appendText("]");
-            // We could remove the opener now, but that would complicate text node merging. So just skip it next time.
-            opener.matched = true;
+            removeLastBracket();
             return true;
         }
 
@@ -570,8 +541,10 @@ public class InlineParserImpl implements InlineParser {
             String ref = null;
             if (labelLength > 2) {
                 ref = input.substring(beforeLabel, beforeLabel + labelLength);
-            } else if (!containsBracket) {
-                // Empty or missing second label can only be a reference if there's no unescaped bracket in it.
+            } else if (!opener.bracketAfter) {
+                // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
+                // But it can only be a reference when there's no (unescaped) bracket in it.
+                // If there is, we don't even need to try to look up the reference. This is an optimization.
                 ref = input.substring(opener.index, startIndex);
             }
 
@@ -587,8 +560,7 @@ public class InlineParserImpl implements InlineParser {
 
         if (isLinkOrImage) {
             // If we got here, open is a potential opener
-            boolean isImage = opener.delimiterChar == '!';
-            Node linkOrImage = isImage ? new Image(dest, title) : new Link(dest, title);
+            Node linkOrImage = opener.image ? new Image(dest, title) : new Link(dest, title);
 
             Node node = opener.node.getNext();
             while (node != null) {
@@ -599,19 +571,21 @@ public class InlineParserImpl implements InlineParser {
             appendNode(linkOrImage);
 
             // Process delimiters such as emphasis inside link/image
-            processDelimiters(opener);
+            processDelimiters(opener.previousDelimiter);
             mergeTextNodes(linkOrImage.getFirstChild(), linkOrImage.getLastChild());
-            removeDelimiterAndNode(opener);
+            // We don't need the corresponding text node anymore, we turned it into a link/image node
+            opener.node.unlink();
+            removeLastBracket();
 
             // Links within links are not allowed. We found this link, so there can be no other link around it.
-            if (!isImage) {
-                Delimiter delim = this.delimiter;
-                while (delim != null) {
-                    if (delim.delimiterChar == '[') {
+            if (!opener.image) {
+                Bracket bracket = lastBracket;
+                while (bracket != null) {
+                    if (!bracket.image) {
                         // Disallow link opener. It will still get matched, but will not result in a link.
-                        delim.allowed = false;
+                        bracket.allowed = false;
                     }
-                    delim = delim.previous;
+                    bracket = bracket.previous;
                 }
             }
 
@@ -620,9 +594,8 @@ public class InlineParserImpl implements InlineParser {
         } else { // no link or image
 
             appendText("]");
-            // We could remove the opener now, but that would complicate text node merging.
-            // E.g. `[link] (/uri)` isn't a link because of the space, so we want to keep appending text.
-            opener.matched = true;
+            removeLastBracket();
+
             index = startIndex;
             return true;
         }
@@ -912,6 +885,13 @@ public class InlineParserImpl implements InlineParser {
             this.delimiter = delim.previous;
         } else {
             delim.next.previous = delim.previous;
+        }
+    }
+
+    private void removeLastBracket() {
+        lastBracket = lastBracket.previous;
+        if (lastBracket != null) {
+            lastBracket.bracketAfter = true;
         }
     }
 
