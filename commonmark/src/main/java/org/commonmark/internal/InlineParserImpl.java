@@ -87,13 +87,13 @@ public class InlineParserImpl implements InlineParser {
     private int index;
 
     /**
-     * Stack of delimiters (emphasis, strong emphasis or custom emphasis). (Brackets are on a separate stack, different
+     * Top delimiter (emphasis, strong emphasis or custom emphasis). (Brackets are on a separate stack, different
      * from the algorithm described in the spec.)
      */
-    private Delimiter delimiter;
+    private Delimiter lastDelimiter;
 
     /**
-     * Last parsed opening bracket (<code>[</code> or <code>![)</code>).
+     * Top opening bracket (<code>[</code> or <code>![)</code>).
      */
     private Bracket lastBracket;
 
@@ -158,7 +158,7 @@ public class InlineParserImpl implements InlineParser {
         this.block = block;
         this.input = content.trim();
         this.index = 0;
-        this.delimiter = null;
+        this.lastDelimiter = null;
         this.lastBracket = null;
 
         boolean moreToParse;
@@ -441,13 +441,10 @@ public class InlineParserImpl implements InlineParser {
         Text node = appendText(input, startIndex, index);
 
         // Add entry to stack for this opener
-        this.delimiter = new Delimiter(node, this.delimiter);
-        this.delimiter.delimiterChar = delimiterChar;
-        this.delimiter.numDelims = numDelims;
-        this.delimiter.canOpen = res.canOpen;
-        this.delimiter.canClose = res.canClose;
-        if (this.delimiter.previous != null) {
-            this.delimiter.previous.next = this.delimiter;
+        lastDelimiter = new Delimiter(node, delimiterChar, res.canOpen, res.canClose, lastDelimiter);
+        lastDelimiter.numDelims = numDelims;
+        if (lastDelimiter.previous != null) {
+            lastDelimiter.previous.next = lastDelimiter;
         }
 
         return true;
@@ -463,7 +460,7 @@ public class InlineParserImpl implements InlineParser {
         Text node = appendText("[");
 
         // Add entry to stack for this opener
-        lastBracket = Bracket.link(node, startIndex, lastBracket, delimiter);
+        lastBracket = Bracket.link(node, startIndex, lastBracket, lastDelimiter);
 
         return true;
     }
@@ -481,7 +478,7 @@ public class InlineParserImpl implements InlineParser {
             Text node = appendText("![");
 
             // Add entry to stack for this opener
-            lastBracket = Bracket.image(node, startIndex + 1, lastBracket, delimiter);
+            lastBracket = Bracket.image(node, startIndex + 1, lastBracket, lastDelimiter);
         } else {
             appendText("!");
         }
@@ -769,7 +766,7 @@ public class InlineParserImpl implements InlineParser {
         Map<Character, Delimiter> openersBottom = new HashMap<>();
 
         // find first closer above stackBottom:
-        Delimiter closer = this.delimiter;
+        Delimiter closer = lastDelimiter;
         while (closer != null && closer.previous != stackBottom) {
             closer = closer.previous;
         }
@@ -846,8 +843,8 @@ public class InlineParserImpl implements InlineParser {
         }
 
         // remove all delimiters
-        while (delimiter != null && delimiter != stackBottom) {
-            removeDelimiterKeepNode(delimiter);
+        while (lastDelimiter != null && lastDelimiter != stackBottom) {
+            removeDelimiterKeepNode(lastDelimiter);
         }
     }
 
@@ -882,7 +879,7 @@ public class InlineParserImpl implements InlineParser {
         }
         if (delim.next == null) {
             // top of stack
-            this.delimiter = delim.previous;
+            lastDelimiter = delim.previous;
         } else {
             delim.next.previous = delim.previous;
         }

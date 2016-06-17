@@ -8,25 +8,28 @@ import org.commonmark.node.Text;
 class Delimiter {
 
     final Text node;
-
-    Delimiter previous;
-    Delimiter next;
-
-    char delimiterChar;
-    int numDelims = 1;
+    final char delimiterChar;
 
     /**
      * Can open emphasis, see spec.
      */
-    boolean canOpen = true;
+    final boolean canOpen;
 
     /**
      * Can close emphasis, see spec.
      */
-    boolean canClose = false;
+    final boolean canClose;
 
-    Delimiter(Text node, Delimiter previous) {
+    Delimiter previous;
+    Delimiter next;
+
+    int numDelims = 1;
+
+    Delimiter(Text node, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
         this.node = node;
+        this.delimiterChar = delimiterChar;
+        this.canOpen = canOpen;
+        this.canClose = canClose;
         this.previous = previous;
     }
 }
