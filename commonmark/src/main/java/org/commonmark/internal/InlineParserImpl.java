@@ -460,7 +460,7 @@ public class InlineParserImpl implements InlineParser {
         Text node = appendText("[");
 
         // Add entry to stack for this opener
-        lastBracket = Bracket.link(node, startIndex, lastBracket, lastDelimiter);
+        addBracket(Bracket.link(node, startIndex, lastBracket, lastDelimiter));
 
         return true;
     }
@@ -478,7 +478,7 @@ public class InlineParserImpl implements InlineParser {
             Text node = appendText("![");
 
             // Add entry to stack for this opener
-            lastBracket = Bracket.image(node, startIndex + 1, lastBracket, lastDelimiter);
+            addBracket(Bracket.image(node, startIndex + 1, lastBracket, lastDelimiter));
         } else {
             appendText("!");
         }
@@ -596,6 +596,17 @@ public class InlineParserImpl implements InlineParser {
             index = startIndex;
             return true;
         }
+    }
+
+    private void addBracket(Bracket bracket) {
+        if (lastBracket != null) {
+            lastBracket.bracketAfter = true;
+        }
+        lastBracket = bracket;
+    }
+
+    private void removeLastBracket() {
+        lastBracket = lastBracket.previous;
     }
 
     /**
@@ -882,13 +893,6 @@ public class InlineParserImpl implements InlineParser {
             lastDelimiter = delim.previous;
         } else {
             delim.next.previous = delim.previous;
-        }
-    }
-
-    private void removeLastBracket() {
-        lastBracket = lastBracket.previous;
-        if (lastBracket != null) {
-            lastBracket.bracketAfter = true;
         }
     }
 

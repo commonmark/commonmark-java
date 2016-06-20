@@ -14,12 +14,12 @@ class Bracket {
     /**
      * Previous bracket.
      */
-    Bracket previous;
+    final Bracket previous;
 
     /**
      * Previous delimiter (emphasis, etc) before this bracket.
      */
-    Delimiter previousDelimiter;
+    final Delimiter previousDelimiter;
 
     /**
      * Whether this bracket is allowed to form a link/image (also known as "active").
