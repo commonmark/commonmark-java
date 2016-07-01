@@ -38,6 +38,7 @@ See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt) file if
 you're wondering which version of the spec is currently implemented.
 
 [![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
+[![Coverage status](https://coveralls.io/repos/github/atlassian/commonmark-java/badge.svg?branch=master)](https://coveralls.io/github/atlassian/commonmark-java?branch=master)
 
 
 Usage
