@@ -143,8 +143,8 @@
                         <configuration>
                             <excludes>
                                 <!-- Classes from test-util -->
-                                <exclude>org.commonmark.spec.*</exclude>
-                                <exclude>org.commonmark.test.*</exclude>
+                                <exclude>org/commonmark/spec/*</exclude>
+                                <exclude>org/commonmark/test/*</exclude>
                             </excludes>
                         </configuration>
                         <executions>
