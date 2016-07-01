@@ -18,3 +18,9 @@ android:
 script:
   - 'if [[ $TEST = java ]]; then mvn test -Dsurefire.useFile=false; fi'
   - 'if [[ $TEST = android ]]; then mvn install -DskipTests && cd commonmark-android-test && travis_retry ./.travis.sh; fi'
+deploy:
+  provider: script
+  script: mvn clean test jacoco:report coveralls:report -Pcoverage
+  on:
+    jdk: oraclejdk8
+    condition: "$TEST = java"
