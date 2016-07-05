@@ -39,6 +39,7 @@ you're wondering which version of the spec is currently implemented.
 
 [![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
 [![Coverage status](https://coveralls.io/repos/github/atlassian/commonmark-java/badge.svg?branch=master)](https://coveralls.io/github/atlassian/commonmark-java?branch=master)
+[![Maven Central status](https://img.shields.io/maven-central/v/com.atlassian.commonmark/commonmark.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.atlassian.commonmark%22)
 
 
 Usage
