@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class HeadingParser extends AbstractBlockParser {
 
-    private static Pattern ATX_HEADING = Pattern.compile("^#{1,6}(?: +|$)");
+    private static Pattern ATX_HEADING = Pattern.compile("^#{1,6}(?:[ \t]+|$)");
     private static Pattern ATX_TRAILING = Pattern.compile("(^| ) *#+ *$");
     private static Pattern SETEXT_HEADING = Pattern.compile("^(?:=+|-+) *$");
 
