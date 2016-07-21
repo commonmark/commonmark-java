@@ -57,12 +57,6 @@ public class ListBlockParser extends AbstractBlockParser {
         }
 
         ListBlock listBlock = createListBlock(matcher);
-        if (inParagraph && listBlock instanceof OrderedList) {
-            // Ordered lists can only interrupt paragraphs with a start number of 1.
-            if (((OrderedList) listBlock).getStartNumber() != 1) {
-                return null;
-            }
-        }
 
         int markerLength = matcher.end() - matcher.start();
         int indexAfterMarker = markerIndex + markerLength;
@@ -82,6 +76,17 @@ public class ListBlockParser extends AbstractBlockParser {
             } else {
                 hasContent = true;
                 break;
+            }
+        }
+
+        if (inParagraph) {
+            // If the list item is ordered, the start number must be 1 to interrupt a paragraph.
+            if (listBlock instanceof OrderedList && ((OrderedList) listBlock).getStartNumber() != 1) {
+                return null;
+            }
+            // Empty list item can not interrupt a paragraph.
+            if (!hasContent) {
+                return null;
             }
         }
 
@@ -138,8 +143,8 @@ public class ListBlockParser extends AbstractBlockParser {
             }
             int markerIndex = state.getNextNonSpaceIndex();
             int markerColumn = state.getColumn() + state.getIndent();
-            ListData listData = parseListMarker(state.getLine(), markerIndex, markerColumn,
-                    matchedBlockParser.getParagraphContent() != null);
+            boolean inParagraph = matchedBlockParser.getParagraphContent() != null;
+            ListData listData = parseListMarker(state.getLine(), markerIndex, markerColumn, inParagraph);
             if (listData == null) {
                 return BlockStart.none();
             }
