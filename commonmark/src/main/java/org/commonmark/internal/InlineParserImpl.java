@@ -793,24 +793,35 @@ public class InlineParserImpl implements InlineParser {
 
             char openingDelimiterChar = delimiterProcessor.getOpeningDelimiterChar();
 
-            // found delimiter closer. now look back for first matching opener:
+            // Found delimiter closer. Now look back for first matching opener.
             boolean openerFound = false;
+            boolean oddMatch = false;
             Delimiter opener = closer.previous;
             while (opener != null && opener != stackBottom && opener != openersBottom.get(delimiterChar)) {
-                if (opener.delimiterChar == openingDelimiterChar && opener.canOpen) {
-                    openerFound = true;
-                    break;
+                if (opener.delimiterChar == openingDelimiterChar) {
+                    oddMatch = (closer.canOpen || opener.canClose) &&
+                            (opener.numDelims + closer.numDelims) % 3 == 0;
+                    if (opener.canOpen && !oddMatch) {
+                        openerFound = true;
+                        break;
+                    }
                 }
                 opener = opener.previous;
             }
 
             if (!openerFound) {
-                // Set lower bound for future searches for openers:
-                openersBottom.put(delimiterChar, closer.previous);
-                if (!closer.canOpen) {
-                    // We can remove a closer that can't be an opener,
-                    // once we've seen there's no matching opener:
-                    removeDelimiterKeepNode(closer);
+                if (!oddMatch) {
+                    // Set lower bound for future searches for openers.
+                    // We don't do this with odd matches because a **
+                    // that doesn't match an earlier * might turn into
+                    // an opener, and the * might be matched by something
+                    // else.
+                    openersBottom.put(delimiterChar, closer.previous);
+                    if (!closer.canOpen) {
+                        // We can remove a closer that can't be an opener,
+                        // once we've seen there's no matching opener:
+                        removeDelimiterKeepNode(closer);
+                    }
                 }
                 closer = closer.next;
                 continue;
