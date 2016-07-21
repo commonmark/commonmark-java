@@ -182,12 +182,6 @@ public class DocumentParser implements ParserState {
         BlockParser blockParser = lastMatchedBlockParser;
         boolean allClosed = unmatchedBlockParsers.isEmpty();
 
-        // Check to see if we've hit 2nd blank line; if so break out of list:
-        if (isBlank() && isLastLineBlank(blockParser.getBlock())) {
-            List<BlockParser> matchedBlockParsers = new ArrayList<>(activeBlockParsers.subList(0, matches));
-            breakOutOfLists(matchedBlockParsers);
-        }
-
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
         boolean tryBlockStarts = blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
@@ -424,24 +418,6 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Break out of all containing lists, resetting the tip of the document to the parent of the highest list,
-     * and finalizing all the lists. (This is used to implement the "two blank lines break of of all lists" feature.)
-     */
-    private void breakOutOfLists(List<BlockParser> blockParsers) {
-        int lastList = -1;
-        for (int i = blockParsers.size() - 1; i >= 0; i--) {
-            BlockParser blockParser = blockParsers.get(i);
-            if (blockParser instanceof ListBlockParser) {
-                lastList = i;
-            }
-        }
-
-        if (lastList != -1) {
-            finalizeBlocks(blockParsers.subList(lastList, blockParsers.size()));
-        }
-    }
-
-    /**
      * Add block of type tag as a child of the tip. If the tip can't  accept children, close and finalize it and try
      * its parent, and so on til we find a block that can accept children.
      */
@@ -480,10 +456,9 @@ public class DocumentParser implements ParserState {
 
         Block block = blockParser.getBlock();
 
-        // Block quote lines are never blank as they start with >
-        // and we don't count blanks in fenced code for purposes of tight/loose
-        // lists or breaking out of lists. We also don't set lastLineBlank
-        // on an empty list item.
+        // Block quote lines are never blank as they start with `>`.
+        // We don't count blanks in fenced code for purposes of tight/loose lists.
+        // We also don't set lastLineBlank on an empty list item.
         boolean lastLineBlank = isBlank() &&
                 !(block instanceof BlockQuote ||
                         block instanceof FencedCodeBlock ||
