@@ -3,47 +3,39 @@ package org.commonmark.ext.gfm.strikethrough.internal;
 import org.commonmark.ext.gfm.strikethrough.Strikethrough;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
-import org.commonmark.parser.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterRun;
 
 public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
 
     @Override
-    public char getOpeningDelimiterChar() {
+    public char getOpeningCharacter() {
         return '~';
     }
 
     @Override
-    public char getClosingDelimiterChar() {
+    public char getClosingCharacter() {
         return '~';
     }
 
     @Override
-    public int getMinDelimiterCount() {
+    public int getMinLength() {
         return 2;
     }
 
     @Override
-    public int getDelimiterUse(int openerCount, int closerCount) {
-        if (openerCount >= 2 && closerCount >= 2) {
+    public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+        if (opener.length() >= 2 && closer.length() >= 2) {
+            // Use exactly two delimiters even if we have more, and don't care about internal openers/closers.
             return 2;
         } else {
-            // Can happen if a run had 3 delimiters before, and we removed 2 of them in an earlier processing step.
-            // So just use 1 of them, see corresponding handling in process method.
-            return 1;
+            return 0;
         }
     }
 
     @Override
     public void process(Text opener, Text closer, int delimiterCount) {
-        // Can happen if a run had 3 or more delimiters, so 1 is left over. Don't turn that into strikethrough, but
-        // preserve original character.
-        if (delimiterCount == 1) {
-            opener.insertAfter(new Text("~"));
-            closer.insertBefore(new Text("~"));
-            return;
-        }
-
-        // Normal case, wrap nodes between delimiters in strikethrough.
+        // Wrap nodes between delimiters in strikethrough.
         Node strikethrough = new Strikethrough();
 
         Node tmp = opener.getNext();

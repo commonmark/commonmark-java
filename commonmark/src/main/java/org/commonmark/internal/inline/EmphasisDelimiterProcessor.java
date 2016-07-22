@@ -4,7 +4,8 @@ import org.commonmark.node.Emphasis;
 import org.commonmark.node.Node;
 import org.commonmark.node.StrongEmphasis;
 import org.commonmark.node.Text;
-import org.commonmark.parser.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterRun;
 
 public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
 
@@ -15,34 +16,38 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
     }
 
     @Override
-    public char getOpeningDelimiterChar() {
+    public char getOpeningCharacter() {
         return delimiterChar;
     }
 
     @Override
-    public char getClosingDelimiterChar() {
+    public char getClosingCharacter() {
         return delimiterChar;
     }
 
     @Override
-    public int getMinDelimiterCount() {
+    public int getMinLength() {
         return 1;
     }
 
     @Override
-    public int getDelimiterUse(int openerCount, int closerCount) {
+    public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+        // "multiple of 3" rule for internal delimiter runs
+        if ((opener.canClose() || closer.canOpen()) && (opener.length() + closer.length()) % 3 == 0) {
+            return 0;
+        }
         // calculate actual number of delimiters used from this closer
-        if (closerCount < 3 || openerCount < 3) {
-            return closerCount <= openerCount ?
-                    closerCount : openerCount;
+        if (opener.length() < 3 || closer.length() < 3) {
+            return closer.length() <= opener.length() ?
+                    closer.length() : opener.length();
         } else {
-            return closerCount % 2 == 0 ? 2 : 1;
+            return closer.length() % 2 == 0 ? 2 : 1;
         }
     }
 
     @Override
     public void process(Text opener, Text closer, int delimiterUse) {
-        String singleDelimiter = String.valueOf(getOpeningDelimiterChar());
+        String singleDelimiter = String.valueOf(getOpeningCharacter());
         Node emphasis = delimiterUse == 1
                 ? new Emphasis(singleDelimiter)
                 : new StrongEmphasis(singleDelimiter + singleDelimiter);

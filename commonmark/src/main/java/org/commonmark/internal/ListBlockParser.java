@@ -48,7 +48,8 @@ public class ListBlockParser extends AbstractBlockParser {
     /**
      * Parse a list marker and return data on the marker or null.
      */
-    private static ListData parseListMarker(CharSequence line, final int markerIndex, final int markerColumn) {
+    private static ListData parseListMarker(CharSequence line, final int markerIndex, final int markerColumn,
+                                            final boolean inParagraph) {
         CharSequence rest = line.subSequence(markerIndex, line.length());
         Matcher matcher = MARKER.matcher(rest);
         if (!matcher.find()) {
@@ -75,6 +76,17 @@ public class ListBlockParser extends AbstractBlockParser {
             } else {
                 hasContent = true;
                 break;
+            }
+        }
+
+        if (inParagraph) {
+            // If the list item is ordered, the start number must be 1 to interrupt a paragraph.
+            if (listBlock instanceof OrderedList && ((OrderedList) listBlock).getStartNumber() != 1) {
+                return null;
+            }
+            // Empty list item can not interrupt a paragraph.
+            if (!hasContent) {
+                return null;
             }
         }
 
@@ -129,8 +141,10 @@ public class ListBlockParser extends AbstractBlockParser {
             if (state.getIndent() >= Parsing.CODE_BLOCK_INDENT && !(matched instanceof ListBlockParser)) {
                 return BlockStart.none();
             }
-            int nextNonSpace = state.getNextNonSpaceIndex();
-            ListData listData = parseListMarker(state.getLine(), nextNonSpace, state.getColumn() + state.getIndent());
+            int markerIndex = state.getNextNonSpaceIndex();
+            int markerColumn = state.getColumn() + state.getIndent();
+            boolean inParagraph = matchedBlockParser.getParagraphContent() != null;
+            ListData listData = parseListMarker(state.getLine(), markerIndex, markerColumn, inParagraph);
             if (listData == null) {
                 return BlockStart.none();
             }

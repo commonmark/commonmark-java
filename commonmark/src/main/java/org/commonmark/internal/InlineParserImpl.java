@@ -6,7 +6,7 @@ import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
-import org.commonmark.parser.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.InlineParser;
 
 import java.util.*;
@@ -134,9 +134,9 @@ public class InlineParserImpl implements InlineParser {
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
         for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
-            char opening = delimiterProcessor.getOpeningDelimiterChar();
+            char opening = delimiterProcessor.getOpeningCharacter();
             addDelimiterProcessorForChar(opening, delimiterProcessor, map);
-            char closing = delimiterProcessor.getClosingDelimiterChar();
+            char closing = delimiterProcessor.getClosingCharacter();
             if (opening != closing) {
                 addDelimiterProcessorForChar(closing, delimiterProcessor, map);
             }
@@ -430,7 +430,7 @@ public class InlineParserImpl implements InlineParser {
      * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
     private boolean parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
-        DelimiterRun res = scanDelimiters(delimiterProcessor, delimiterChar);
+        DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar);
         if (res == null) {
             return false;
         }
@@ -727,7 +727,7 @@ public class InlineParserImpl implements InlineParser {
      *
      * @return information about delimiter run, or {@code null}
      */
-    private DelimiterRun scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
+    private DelimiterData scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
         int startIndex = index;
 
         int delimiterCount = 0;
@@ -736,7 +736,7 @@ public class InlineParserImpl implements InlineParser {
             index++;
         }
 
-        if (delimiterCount < delimiterProcessor.getMinDelimiterCount()) {
+        if (delimiterCount < delimiterProcessor.getMinLength()) {
             index = startIndex;
             return null;
         }
@@ -764,12 +764,12 @@ public class InlineParserImpl implements InlineParser {
             canOpen = leftFlanking && (!rightFlanking || beforeIsPunctuation);
             canClose = rightFlanking && (!leftFlanking || afterIsPunctuation);
         } else {
-            canOpen = leftFlanking && delimiterChar == delimiterProcessor.getOpeningDelimiterChar();
-            canClose = rightFlanking && delimiterChar == delimiterProcessor.getClosingDelimiterChar();
+            canOpen = leftFlanking && delimiterChar == delimiterProcessor.getOpeningCharacter();
+            canClose = rightFlanking && delimiterChar == delimiterProcessor.getClosingCharacter();
         }
 
         index = startIndex;
-        return new DelimiterRun(delimiterCount, canOpen, canClose);
+        return new DelimiterData(delimiterCount, canOpen, canClose);
     }
 
     private void processDelimiters(Delimiter stackBottom) {
@@ -791,41 +791,49 @@ public class InlineParserImpl implements InlineParser {
                 continue;
             }
 
-            char openingDelimiterChar = delimiterProcessor.getOpeningDelimiterChar();
+            char openingDelimiterChar = delimiterProcessor.getOpeningCharacter();
 
-            // found delimiter closer. now look back for first matching opener:
+            // Found delimiter closer. Now look back for first matching opener.
+            int useDelims = 0;
             boolean openerFound = false;
+            boolean potentialOpenerFound = false;
             Delimiter opener = closer.previous;
             while (opener != null && opener != stackBottom && opener != openersBottom.get(delimiterChar)) {
-                if (opener.delimiterChar == openingDelimiterChar && opener.canOpen) {
-                    openerFound = true;
-                    break;
+                if (opener.canOpen && opener.delimiterChar == openingDelimiterChar) {
+                    potentialOpenerFound = true;
+                    useDelims = delimiterProcessor.getDelimiterUse(opener, closer);
+                    if (useDelims > 0) {
+                        openerFound = true;
+                        break;
+                    }
                 }
                 opener = opener.previous;
             }
 
             if (!openerFound) {
-                // Set lower bound for future searches for openers:
-                openersBottom.put(delimiterChar, closer.previous);
-                if (!closer.canOpen) {
-                    // We can remove a closer that can't be an opener,
-                    // once we've seen there's no matching opener:
-                    removeDelimiterKeepNode(closer);
+                if (!potentialOpenerFound) {
+                    // Set lower bound for future searches for openers.
+                    // Only do this when we didn't even have a potential
+                    // opener (one that matches the character and can open).
+                    // If an opener was rejected because of the number of
+                    // delimiters (e.g. because of the "multiple of 3" rule),
+                    // we want to consider it next time because the number
+                    // of delimiters can change as we continue processing.
+                    openersBottom.put(delimiterChar, closer.previous);
+                    if (!closer.canOpen) {
+                        // We can remove a closer that can't be an opener,
+                        // once we've seen there's no matching opener:
+                        removeDelimiterKeepNode(closer);
+                    }
                 }
                 closer = closer.next;
                 continue;
             }
 
-            int useDelims = delimiterProcessor.getDelimiterUse(opener.numDelims, closer.numDelims);
-            if (useDelims <= 0) {
-                // nope
-                useDelims = 1;
-            }
-
             Text openerNode = opener.node;
             Text closerNode = closer.node;
 
-            // remove used delimiters from stack elts and inlines
+            // Remove number of used delimiters from stack and inline nodes.
             opener.numDelims -= useDelims;
             closer.numDelims -= useDelims;
             openerNode.setLiteral(
@@ -939,6 +947,19 @@ public class InlineParserImpl implements InlineParser {
             }
             String literal = sb.toString();
             first.setLiteral(literal);
+        }
+    }
+
+    private static class DelimiterData {
+
+        final int count;
+        final boolean canClose;
+        final boolean canOpen;
+
+        DelimiterData(int count, boolean canOpen, boolean canClose) {
+            this.count = count;
+            this.canOpen = canOpen;
+            this.canClose = canClose;
         }
     }
 }
