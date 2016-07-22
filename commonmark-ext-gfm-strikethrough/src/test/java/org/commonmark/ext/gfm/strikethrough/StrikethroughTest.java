@@ -50,8 +50,14 @@ public class StrikethroughTest extends RenderingTestCase {
     }
 
     @Test
-    public void twoStrikethroughsWithoutSpacing() {
+    public void tildesInside() {
+        assertRendering("~~foo~bar~~", "<p><del>foo~bar</del></p>\n");
+        assertRendering("~~foo~~bar~~", "<p><del>foo</del>bar~~</p>\n");
+        assertRendering("~~foo~~~bar~~", "<p><del>foo</del>~bar~~</p>\n");
         assertRendering("~~foo~~~~bar~~", "<p><del>foo</del><del>bar</del></p>\n");
+        assertRendering("~~foo~~~~~bar~~", "<p><del>foo</del>~<del>bar</del></p>\n");
+        assertRendering("~~foo~~~~~~bar~~", "<p><del>foo</del>~~<del>bar</del></p>\n");
+        assertRendering("~~foo~~~~~~~bar~~", "<p><del>foo</del>~~~<del>bar</del></p>\n");
     }
 
     @Test

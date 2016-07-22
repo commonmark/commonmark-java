@@ -7,6 +7,7 @@ import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.node.Node;
 import org.commonmark.parser.block.BlockParserFactory;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.ArrayList;
 import java.util.BitSet;

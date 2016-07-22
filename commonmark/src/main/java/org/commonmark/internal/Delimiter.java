@@ -1,11 +1,12 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Text;
+import org.commonmark.parser.delimiter.DelimiterRun;
 
 /**
  * Delimiter (emphasis, strong emphasis or custom emphasis).
  */
-class Delimiter {
+class Delimiter implements DelimiterRun {
 
     final Text node;
     final char delimiterChar;
@@ -31,5 +32,20 @@ class Delimiter {
         this.canOpen = canOpen;
         this.canClose = canClose;
         this.previous = previous;
+    }
+
+    @Override
+    public boolean canOpen() {
+        return canOpen;
+    }
+
+    @Override
+    public boolean canClose() {
+        return canClose;
+    }
+
+    @Override
+    public int length() {
+        return numDelims;
     }
 }
