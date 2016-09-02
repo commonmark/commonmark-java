@@ -1,6 +1,6 @@
 package org.commonmark.ext.headerids;
 
-import org.commonmark.html.AttributeProvider;
+import org.commonmark.ext.headerids.internal.HeaderIdAttributeProvider;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
@@ -35,14 +35,15 @@ public class HeaderIdTest extends RenderingTestCase {
     @Test
     public void duplicateHeadersMakeUniqueIds() {
         assertRendering("# Heading here\n# Heading here",
-                "<h1 id=\"heading-here\">Heading here</h1>\n<h1 id=\"heading-here1\">Heading here</h1>\n");
+                "<h1 id=\"heading-here\">Heading here</h1>\n<h1 id=\"heading-here-1\">Heading here</h1>\n");
     }
 
     @Test
-    public void duplicateHeadersOnceDissalowedCharactersMakeUniqueIds() {
-        assertRendering("# Hi there\n" +
-                "# ∂Hi å∂There˚∂ˆ´¨", "<h1 id=\"hi-there\">Hi there</h1>\n" +
-                "<h1 id=\"hi-there1\">∂Hi å∂There˚∂ˆ´¨</h1>\n");
+    public void testExplicitHeaderCollision() {
+        assertRendering("# Header\n# Header\n# Header-1",
+                "<h1 id=\"header\">Header</h1>\n" +
+                        "<h1 id=\"header-1\">Header</h1>\n" +
+                        "<h1 id=\"header-1\">Header-1</h1>\n");
     }
 
     @Test
@@ -50,19 +51,13 @@ public class HeaderIdTest extends RenderingTestCase {
         assertRendering("# HEADING here\n" +
                         "# heading here",
                 "<h1 id=\"heading-here\">HEADING here</h1>\n" +
-                        "<h1 id=\"heading-here1\">heading here</h1>\n");
+                        "<h1 id=\"heading-here-1\">heading here</h1>\n");
     }
 
     @Test
     public void testNestedBlocks() {
         assertRendering("## `h` `e` **l** *l* o",
                 "<h2 id=\"h-e-l-l-o\"><code>h</code> <code>e</code> <strong>l</strong> <em>l</em> o</h2>\n");
-    }
-
-    @Test
-    public void noPrintableCharacters() {
-        assertRendering("# ∂∂ƒƒ",
-                "<h1 id=\""+ attributeProvider.getDefaultHeading() +"\">∂∂ƒƒ</h1>\n");
     }
 
     @Test
@@ -73,6 +68,16 @@ public class HeaderIdTest extends RenderingTestCase {
     @Test
     public void testStrongEmphasis() {
         assertRendering("# _**Hi there**_", "<h1 id=\"hi-there\"><em><strong>Hi there</strong></em></h1>\n");
+    }
+
+    @Test
+    public void testNonAsciiCharacterHeading() {
+        assertRendering("# bär", "<h1 id=\"bär\">bär</h1>\n");
+    }
+
+    @Test
+    public void testCombiningDiaeresis() {
+        assertRendering("# Product\u036D\u036B", "<h1 id=\"product\u036D\u036B\">Product\u036D\u036B</h1>\n");
     }
 
     @Override
