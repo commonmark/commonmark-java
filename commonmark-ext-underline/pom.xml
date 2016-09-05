@@ -7,9 +7,9 @@
         <version>0.6.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
-    <name>commonmark-java extension for strikethrough &lt;del&gt;</name>
-    <description>commonmark-java extension for GFM strikethrough using ~~ (GitHub Flavored Markdown)</description>
+    <artifactId>commonmark-ext-underline</artifactId>
+    <name>commonmark-java extension for underline &lt;ins&gt;</name>
+    <description>commonmark-java extension for underline using ++</description>
 
     <dependencies>
         <dependency>
