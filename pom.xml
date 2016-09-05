@@ -24,6 +24,7 @@
         <module>commonmark-ext-autolink</module>
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
+        <module>commonmark-ext-underline</module>
         <module>commonmark-ext-yaml-front-matter</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>

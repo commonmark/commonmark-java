@@ -149,6 +149,13 @@ Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
+### Underline
+
+Enables underline of text by enclosing it in `++`. For example, in
+`hey ++you++`, `you` will be rendered as underline text.
+
+Use class `UnderlineExtension` in artifact `commonmark-ext-underline`.
+
 ### YAML front matter
 
 Adds support for metadata through a YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
