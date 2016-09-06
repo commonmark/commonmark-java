@@ -7,7 +7,7 @@
         <version>0.4.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>commonmark-ext-header-ids</artifactId>
+    <artifactId>ext-heading-anchor</artifactId>
     <name>commonmark-java extension for adding id attributes to h tags</name>
     <description>commonmark-java extension for adding unique id attributes to header tags</description>
 
