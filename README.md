@@ -153,7 +153,7 @@ Enables adding auto generated id attributes to header based on their content.
 <h1 id="heading">Heading</h1>
 ```
 
-Use class `HeaderIdExtension` in artifact `commonmark-ext-header-ids`
+Use class `HeaderIdExtension` in artifact `commonmark-ext-heading-anchor`
 
 
 Contributing
