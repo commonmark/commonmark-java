@@ -1,9 +1,9 @@
-package ext.heading.anchor;
+package org.commonmark.ext.heading.anchor;
 
 import org.commonmark.Extension;
 import org.commonmark.html.HtmlRenderer;
 
-import ext.heading.anchor.internal.HeaderIdAttributeProvider;
+import org.commonmark.ext.heading.anchor.internal.HeaderIdAttributeProvider;
 
 /**
  * Extension for adding auto generated ids to headings

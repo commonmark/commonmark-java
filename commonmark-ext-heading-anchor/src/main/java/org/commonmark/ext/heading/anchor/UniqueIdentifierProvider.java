@@ -1,4 +1,4 @@
-package ext.heading.anchor;
+package org.commonmark.ext.heading.anchor;
 
 import java.util.HashMap;
 import java.util.Map;

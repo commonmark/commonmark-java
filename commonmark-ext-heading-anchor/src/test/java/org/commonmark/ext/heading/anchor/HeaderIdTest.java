@@ -1,6 +1,6 @@
-package ext.heading.anchor;
+package org.commonmark.ext.heading.anchor;
 
-import ext.heading.anchor.internal.HeaderIdAttributeProvider;
+import org.commonmark.ext.heading.anchor.internal.HeaderIdAttributeProvider;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;

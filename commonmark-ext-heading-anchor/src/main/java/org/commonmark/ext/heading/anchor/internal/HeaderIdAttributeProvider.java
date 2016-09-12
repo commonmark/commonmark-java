@@ -1,4 +1,4 @@
-package ext.heading.anchor.internal;
+package org.commonmark.ext.heading.anchor.internal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.commonmark.node.Heading;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 
-import ext.heading.anchor.UniqueIdentifierProvider;
+import org.commonmark.ext.heading.anchor.UniqueIdentifierProvider;
 
 public class HeaderIdAttributeProvider implements AttributeProvider {
 
