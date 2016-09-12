@@ -13,16 +13,16 @@ import org.commonmark.node.Text;
 
 import org.commonmark.ext.heading.anchor.UniqueIdentifierProvider;
 
-public class HeaderIdAttributeProvider implements AttributeProvider {
+public class HeadingIdAttributeProvider implements AttributeProvider {
 
     private final UniqueIdentifierProvider idProvider;
 
-    private HeaderIdAttributeProvider() {
+    private HeadingIdAttributeProvider() {
         idProvider = new UniqueIdentifierProvider("heading");
     }
 
-    public static HeaderIdAttributeProvider create() {
-        return new HeaderIdAttributeProvider();
+    public static HeadingIdAttributeProvider create() {
+        return new HeadingIdAttributeProvider();
     }
 
     @Override

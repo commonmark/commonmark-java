@@ -3,7 +3,7 @@ package org.commonmark.ext.heading.anchor;
 import org.commonmark.Extension;
 import org.commonmark.html.HtmlRenderer;
 
-import org.commonmark.ext.heading.anchor.internal.HeaderIdAttributeProvider;
+import org.commonmark.ext.heading.anchor.internal.HeadingIdAttributeProvider;
 
 /**
  * Extension for adding auto generated ids to headings
@@ -29,17 +29,17 @@ import org.commonmark.ext.heading.anchor.internal.HeaderIdAttributeProvider;
  * </pre>
  * </code>
  */
-public class HeaderIdExtension implements HtmlRenderer.HtmlRendererExtension {
+public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtension {
 
-    private HeaderIdExtension() {
+    private HeadingAnchorExtension() {
     }
 
     public static Extension create() {
-        return new HeaderIdExtension();
+        return new HeadingAnchorExtension();
     }
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.attributeProvider(HeaderIdAttributeProvider.create());
+        rendererBuilder.attributeProvider(HeadingIdAttributeProvider.create());
     }
 }

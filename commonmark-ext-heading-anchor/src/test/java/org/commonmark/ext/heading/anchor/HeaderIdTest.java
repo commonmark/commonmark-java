@@ -1,6 +1,6 @@
 package org.commonmark.ext.heading.anchor;
 
-import org.commonmark.ext.heading.anchor.internal.HeaderIdAttributeProvider;
+import org.commonmark.ext.heading.anchor.internal.HeadingIdAttributeProvider;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
@@ -10,13 +10,13 @@ import org.junit.Test;
 public class HeaderIdTest extends RenderingTestCase {
 
     private static final Parser PARSER = Parser.builder().build();
-    private static final HeaderIdAttributeProvider attributeProvider = HeaderIdAttributeProvider.create();
+    private static final HeadingIdAttributeProvider attributeProvider = HeadingIdAttributeProvider.create();
     private static HtmlRenderer RENDERER = HtmlRenderer.builder().attributeProvider(attributeProvider).build();
 
     @Before
     public void resetHeader() {
         RENDERER = HtmlRenderer.builder()
-                .attributeProvider(HeaderIdAttributeProvider.create())
+                .attributeProvider(HeadingIdAttributeProvider.create())
                 .build();
     }
 
