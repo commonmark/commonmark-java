@@ -94,6 +94,11 @@
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-ins</artifactId>
+                <version>0.6.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
                 <version>0.6.1-SNAPSHOT</version>
             </dependency>
