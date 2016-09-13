@@ -2,6 +2,7 @@ package org.commonmark.integration;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
+import org.commonmark.ext.ins.InsExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
@@ -20,6 +21,7 @@ public class SpecIntegrationTest extends SpecTestCase {
 
     private static final List<Extension> EXTENSIONS = Arrays.asList(
             AutolinkExtension.create(),
+            InsExtension.create(),
             StrikethroughExtension.create(),
             TablesExtension.create(),
             YamlFrontMatterExtension.create());
