@@ -3,11 +3,11 @@ package org.commonmark.ext.gfm.tables;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
 import org.commonmark.ext.gfm.tables.internal.TableNodeRenderer;
-import org.commonmark.html.renderer.NodeRenderer;
-import org.commonmark.html.renderer.NodeRendererContext;
-import org.commonmark.html.renderer.NodeRendererFactory;
-import org.commonmark.parser.Parser;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.html.renderer.HtmlNodeRendererContext;
+import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.NodeRenderer;
 
 /**
  * Extension for GFM tables using "|" pipes (GitHub Flavored Markdown).
@@ -36,9 +36,9 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new NodeRendererFactory() {
+        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
             @Override
-            public NodeRenderer create(NodeRendererContext context) {
+            public NodeRenderer create(HtmlNodeRendererContext context) {
                 return new TableNodeRenderer(context);
             }
         });

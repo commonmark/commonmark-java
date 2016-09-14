@@ -2,19 +2,19 @@ package org.commonmark.ext.gfm.tables.internal;
 
 import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.html.HtmlWriter;
-import org.commonmark.html.renderer.NodeRenderer;
-import org.commonmark.html.renderer.NodeRendererContext;
+import org.commonmark.html.renderer.HtmlNodeRendererContext;
 import org.commonmark.node.Node;
+import org.commonmark.renderer.NodeRenderer;
 
 import java.util.*;
 
 public class TableNodeRenderer implements NodeRenderer {
 
     private final HtmlWriter htmlWriter;
-    private final NodeRendererContext context;
+    private final HtmlNodeRendererContext context;
 
-    public TableNodeRenderer(NodeRendererContext context) {
-        this.htmlWriter = context.getHtmlWriter();
+    public TableNodeRenderer(HtmlNodeRendererContext context) {
+        this.htmlWriter = context.getWriter();
         this.context = context;
     }
 
