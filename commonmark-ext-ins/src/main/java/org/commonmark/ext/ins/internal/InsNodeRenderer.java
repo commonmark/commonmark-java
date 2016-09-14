@@ -2,9 +2,9 @@ package org.commonmark.ext.ins.internal;
 
 import org.commonmark.ext.ins.Ins;
 import org.commonmark.html.HtmlWriter;
-import org.commonmark.html.renderer.NodeRenderer;
-import org.commonmark.html.renderer.NodeRendererContext;
+import org.commonmark.html.renderer.HtmlNodeRendererContext;
 import org.commonmark.node.Node;
+import org.commonmark.renderer.NodeRenderer;
 
 import java.util.Collections;
 import java.util.Map;
@@ -12,12 +12,12 @@ import java.util.Set;
 
 public class InsNodeRenderer implements NodeRenderer {
 
-    private final NodeRendererContext context;
+    private final HtmlNodeRendererContext context;
     private final HtmlWriter html;
 
-    public InsNodeRenderer(NodeRendererContext context) {
+    public InsNodeRenderer(HtmlNodeRendererContext context) {
         this.context = context;
-        this.html = context.getHtmlWriter();
+        this.html = context.getWriter();
     }
 
     @Override
