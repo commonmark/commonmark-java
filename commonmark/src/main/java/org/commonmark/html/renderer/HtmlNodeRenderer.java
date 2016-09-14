@@ -2,20 +2,21 @@ package org.commonmark.html.renderer;
 
 import org.commonmark.html.HtmlWriter;
 import org.commonmark.node.*;
+import org.commonmark.renderer.NodeRenderer;
 
 import java.util.*;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
  */
-public class CoreNodeRenderer extends AbstractVisitor implements NodeRenderer {
+public class HtmlNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
-    protected final NodeRendererContext context;
+    protected final HtmlNodeRendererContext context;
     private final HtmlWriter html;
 
-    public CoreNodeRenderer(NodeRendererContext context) {
+    public HtmlNodeRenderer(HtmlNodeRendererContext context) {
         this.context = context;
-        this.html = context.getHtmlWriter();
+        this.html = context.getWriter();
     }
 
     @Override

@@ -1,15 +1,16 @@
 package org.commonmark.test;
 
 import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.renderer.NodeRenderer;
-import org.commonmark.html.renderer.NodeRendererContext;
-import org.commonmark.html.renderer.NodeRendererFactory;
+import org.commonmark.html.renderer.HtmlNodeRendererContext;
+import org.commonmark.html.renderer.HtmlNodeRendererFactory;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
-import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.Parser;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.delimiter.DelimiterRun;
+import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.NodeRendererContext;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -126,10 +127,10 @@ public class DelimiterProcessorTest extends RenderingTestCase {
     private static class UpperCaseNode extends CustomNode {
     }
 
-    private static class UpperCaseNodeRendererFactory implements NodeRendererFactory {
+    private static class UpperCaseNodeRendererFactory implements HtmlNodeRendererFactory {
 
         @Override
-        public NodeRenderer create(NodeRendererContext context) {
+        public NodeRenderer create(HtmlNodeRendererContext context) {
             return new UpperCaseNodeRenderer(context);
         }
     }

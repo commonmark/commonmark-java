@@ -1,12 +1,13 @@
 package org.commonmark.html;
 
 import org.commonmark.internal.util.Escaping;
+import org.commonmark.renderer.Writer;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-public class HtmlWriter {
+public class HtmlWriter implements Writer {
 
     private static final Map<String, String> NO_ATTRIBUTES = Collections.emptyMap();
 

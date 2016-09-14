@@ -2,14 +2,14 @@ package org.commonmark.test;
 
 import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.renderer.NodeRenderer;
-import org.commonmark.html.renderer.NodeRendererContext;
-import org.commonmark.html.renderer.NodeRendererFactory;
+import org.commonmark.html.renderer.HtmlNodeRendererContext;
+import org.commonmark.html.renderer.HtmlNodeRendererFactory;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Image;
 import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.NodeRenderer;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -125,9 +125,9 @@ public class HtmlRendererTest {
 
     @Test
     public void overrideNodeRender() {
-        NodeRendererFactory nodeRendererFactory = new NodeRendererFactory() {
+        HtmlNodeRendererFactory nodeRendererFactory = new HtmlNodeRendererFactory() {
             @Override
-            public NodeRenderer create(final NodeRendererContext context) {
+            public NodeRenderer create(final HtmlNodeRendererContext context) {
                 return new NodeRenderer() {
                     @Override
                     public Set<Class<? extends Node>> getNodeTypes() {
@@ -136,7 +136,7 @@ public class HtmlRendererTest {
 
                     @Override
                     public void render(Node node) {
-                        context.getHtmlWriter().text("test");
+                        context.getWriter().text("test");
                     }
                 };
             }

@@ -1,16 +1,22 @@
 package org.commonmark.html;
 
 import org.commonmark.Extension;
-import org.commonmark.html.renderer.CoreNodeRenderer;
-import org.commonmark.html.renderer.NodeRenderer;
-import org.commonmark.html.renderer.NodeRendererContext;
-import org.commonmark.html.renderer.NodeRendererFactory;
+import org.commonmark.html.renderer.HtmlNodeRenderer;
+import org.commonmark.html.renderer.HtmlNodeRendererContext;
+import org.commonmark.html.renderer.HtmlNodeRendererFactory;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.HtmlInline;
 import org.commonmark.node.Node;
+import org.commonmark.renderer.BaseRenderer;
+import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.NodeRendererContext;
+import org.commonmark.renderer.NodeRendererFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Renders a tree of nodes to HTML.
@@ -21,13 +27,13 @@ import java.util.*;
  * renderer.render(node);
  * </code></pre>
  */
-public class HtmlRenderer {
+public class HtmlRenderer extends BaseRenderer {
 
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean percentEncodeUrls;
     private final List<AttributeProvider> attributeProviders;
-    private final List<NodeRendererFactory> nodeRendererFactories;
+    private final List<NodeRendererFactory<HtmlNodeRendererContext>> nodeRendererFactories;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
@@ -38,10 +44,10 @@ public class HtmlRenderer {
         this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
         this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
         // Add as last. This means clients can override the rendering of core nodes if they want.
-        this.nodeRendererFactories.add(new NodeRendererFactory() {
+        this.nodeRendererFactories.add(new HtmlNodeRendererFactory() {
             @Override
-            public NodeRenderer create(NodeRendererContext context) {
-                return new CoreNodeRenderer(context);
+            public NodeRenderer create(HtmlNodeRendererContext context) {
+                return new HtmlNodeRenderer(context);
             }
         });
     }
@@ -55,21 +61,9 @@ public class HtmlRenderer {
         return new Builder();
     }
 
-    public void render(Node node, Appendable output) {
-        MainNodeRenderer renderer = new MainNodeRenderer(new HtmlWriter(output));
-        renderer.render(node);
-    }
-
-    /**
-     * Render the tree of nodes to HTML.
-     *
-     * @param node the root node
-     * @return the rendered HTML
-     */
-    public String render(Node node) {
-        StringBuilder sb = new StringBuilder();
-        render(node, sb);
-        return sb.toString();
+    @Override
+    public NodeRendererContext createContext(Appendable out) {
+        return new RendererContext(new HtmlWriter(out));
     }
 
     /**
@@ -81,7 +75,7 @@ public class HtmlRenderer {
         private boolean escapeHtml = false;
         private boolean percentEncodeUrls = false;
         private List<AttributeProvider> attributeProviders = new ArrayList<>();
-        private List<NodeRendererFactory> nodeRendererFactories = new ArrayList<>();
+        private List<NodeRendererFactory<HtmlNodeRendererContext>> nodeRendererFactories = new ArrayList<>();
 
         /**
          * @return the configured {@link HtmlRenderer}
@@ -160,7 +154,7 @@ public class HtmlRenderer {
          * @param nodeRendererFactory the factory for creating a node renderer
          * @return {@code this}
          */
-        public Builder nodeRendererFactory(NodeRendererFactory nodeRendererFactory) {
+        public Builder nodeRendererFactory(HtmlNodeRendererFactory nodeRendererFactory) {
             this.nodeRendererFactories.add(nodeRendererFactory);
             return this;
         }
@@ -187,24 +181,18 @@ public class HtmlRenderer {
         void extend(Builder rendererBuilder);
     }
 
-    private class MainNodeRenderer implements NodeRendererContext {
+    private class RendererContext extends HtmlNodeRendererContext {
 
         private final HtmlWriter htmlWriter;
-        private final Map<Class<? extends Node>, NodeRenderer> renderers;
 
-        private MainNodeRenderer(HtmlWriter htmlWriter) {
+        private RendererContext(HtmlWriter htmlWriter) {
             this.htmlWriter = htmlWriter;
-            this.renderers = new HashMap<>(32);
 
-            // The first node renderer for a node type "wins".
-            for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
-                NodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
-                NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
-                for (Class<? extends Node> nodeType : nodeRenderer.getNodeTypes()) {
-                    // Overwrite existing renderer
-                    renderers.put(nodeType, nodeRenderer);
-                }
+            List<NodeRenderer> renderers = new ArrayList<>(nodeRendererFactories.size());
+            for (NodeRendererFactory<HtmlNodeRendererContext> nodeRendererFactory : nodeRendererFactories) {
+                renderers.add(nodeRendererFactory.create(this));
             }
+            addNodeRenderers(renderers);
         }
 
         @Override
@@ -229,21 +217,13 @@ public class HtmlRenderer {
         }
 
         @Override
-        public HtmlWriter getHtmlWriter() {
+        public HtmlWriter getWriter() {
             return htmlWriter;
         }
 
         @Override
         public String getSoftbreak() {
             return softbreak;
-        }
-
-        @Override
-        public void render(Node node) {
-            NodeRenderer nodeRenderer = renderers.get(node.getClass());
-            if (nodeRenderer != null) {
-                nodeRenderer.render(node);
-            }
         }
 
         private void setCustomAttributes(Node node, Map<String, String> attrs) {
