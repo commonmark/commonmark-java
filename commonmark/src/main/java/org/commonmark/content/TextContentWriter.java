@@ -1,8 +1,10 @@
 package org.commonmark.content;
 
+import org.commonmark.renderer.Writer;
+
 import java.io.IOException;
 
-public class TextContentWriter {
+public class TextContentWriter implements Writer {
 
     private final Appendable buffer;
 

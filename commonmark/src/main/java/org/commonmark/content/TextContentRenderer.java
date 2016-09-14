@@ -1,17 +1,34 @@
 package org.commonmark.content;
 
-import org.commonmark.node.*;
+import org.commonmark.Extension;
+import org.commonmark.content.renderer.TextContentNodeRenderer;
+import org.commonmark.content.renderer.TextContentNodeRendererContext;
+import org.commonmark.content.renderer.TextContentNodeRendererFactory;
+import org.commonmark.renderer.BaseRenderer;
+import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.NodeRendererContext;
+import org.commonmark.renderer.NodeRendererFactory;
 
-public class TextContentRenderer {
+import java.util.ArrayList;
+import java.util.List;
+
+public class TextContentRenderer extends BaseRenderer {
     private final boolean stripNewlines;
 
-    private Integer orderedListCounter;
-    private Character orderedListDelimiter;
-
-    private Character bulletListMarker;
+    private final List<NodeRendererFactory<TextContentNodeRendererContext>> nodeRendererFactories;
 
     private TextContentRenderer(Builder builder) {
         this.stripNewlines = builder.stripNewlines;
+
+        this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
+        this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
+        // Add as last. This means clients can override the rendering of core nodes if they want.
+        this.nodeRendererFactories.add(new TextContentNodeRendererFactory() {
+            @Override
+            public NodeRenderer create(TextContentNodeRendererContext context) {
+                return new TextContentNodeRenderer(context);
+            }
+        });
     }
 
     /**
@@ -23,21 +40,9 @@ public class TextContentRenderer {
         return new Builder();
     }
 
-    public void render(Node node, Appendable output) {
-        RendererVisitor rendererVisitor = new RendererVisitor(new TextContentWriter(output));
-        node.accept(rendererVisitor);
-    }
-
-    /**
-     * Render the tree of nodes to text content.
-     *
-     * @param node the root node
-     * @return the rendered text content
-     */
-    public String render(Node node) {
-        StringBuilder sb = new StringBuilder();
-        render(node, sb);
-        return sb.toString();
+    @Override
+    protected NodeRendererContext createContext(Appendable out) {
+        return new RendererContext(new TextContentWriter(out));
     }
 
     /**
@@ -46,6 +51,7 @@ public class TextContentRenderer {
     public static class Builder {
 
         private boolean stripNewlines = false;
+        private List<NodeRendererFactory<TextContentNodeRendererContext>> nodeRendererFactories = new ArrayList<>();
 
         /**
          * @return the configured {@link TextContentRenderer}
@@ -65,196 +71,66 @@ public class TextContentRenderer {
             this.stripNewlines = stripNewlines;
             return this;
         }
+
+        /**
+         * Add a factory for instantiating a node renderer (done when rendering). This allows to override the rendering
+         * of node types or define rendering for custom node types.
+         * <p>
+         * If multiple node renderers for the same node type are created, the one from the factory that was added first
+         * "wins". (This is how the rendering for core node types can be overridden; the default rendering comes last.)
+         *
+         * @param nodeRendererFactory the factory for creating a node renderer
+         * @return {@code this}
+         */
+        public Builder nodeRendererFactory(TextContentNodeRendererFactory nodeRendererFactory) {
+            this.nodeRendererFactories.add(nodeRendererFactory);
+            return this;
+        }
+
+        /**
+         * @param extensions extensions to use on this text content renderer
+         * @return {@code this}
+         */
+        public Builder extensions(Iterable<? extends Extension> extensions) {
+            for (Extension extension : extensions) {
+                if (extension instanceof TextContentRenderer.TextContentRendererExtension) {
+                    TextContentRenderer.TextContentRendererExtension htmlRendererExtension =
+                            (TextContentRenderer.TextContentRendererExtension) extension;
+                    htmlRendererExtension.extend(this);
+                }
+            }
+            return this;
+        }
     }
 
-    private class RendererVisitor extends AbstractVisitor {
-        private final TextContentWriter textContent;
+    /**
+     * Extension for {@link TextContentRenderer}.
+     */
+    public interface TextContentRendererExtension extends Extension {
+        void extend(TextContentRenderer.Builder rendererBuilder);
+    }
 
-        public RendererVisitor(TextContentWriter textContentWriter) {
-            textContent = textContentWriter;
-        }
+    private class RendererContext extends TextContentNodeRendererContext {
+        private final TextContentWriter textContentWriter;
 
-        @Override
-        public void visit(BlockQuote blockQuote) {
-            textContent.write('«');
-            visitChildren(blockQuote);
-            textContent.write('»');
+        private RendererContext(TextContentWriter textContentWriter) {
+            this.textContentWriter = textContentWriter;
 
-            writeEndOfLine(blockQuote, null);
-        }
-
-        @Override
-        public void visit(BulletList bulletList) {
-            bulletListMarker = bulletList.getBulletMarker();
-            visitChildren(bulletList);
-            writeEndOfLine(bulletList, null);
-            bulletListMarker = null;
-        }
-
-        @Override
-        public void visit(Code code) {
-            textContent.write('\"');
-            textContent.write(code.getLiteral());
-            textContent.write('\"');
-        }
-
-        @Override
-        public void visit(FencedCodeBlock fencedCodeBlock) {
-            if (stripNewlines) {
-                textContent.writeStripped(fencedCodeBlock.getLiteral());
-                writeEndOfLine(fencedCodeBlock, null);
-            } else {
-                textContent.write(fencedCodeBlock.getLiteral());
+            List<NodeRenderer> renderers = new ArrayList<>(nodeRendererFactories.size());
+            for (NodeRendererFactory<TextContentNodeRendererContext> nodeRendererFactory : nodeRendererFactories) {
+                renderers.add(nodeRendererFactory.create(this));
             }
+            addNodeRenderers(renderers);
         }
 
         @Override
-        public void visit(HardLineBreak hardLineBreak) {
-            writeEndOfLine(hardLineBreak, null);
+        public boolean stripNewlines() {
+            return stripNewlines;
         }
 
         @Override
-        public void visit(Heading heading) {
-            visitChildren(heading);
-            writeEndOfLine(heading, ':');
-        }
-
-        @Override
-        public void visit(ThematicBreak thematicBreak) {
-            if (!stripNewlines) {
-                textContent.write("***");
-            }
-            writeEndOfLine(thematicBreak, null);
-        }
-
-        @Override
-        public void visit(HtmlInline htmlInline) {
-            writeText(htmlInline.getLiteral());
-        }
-
-        @Override
-        public void visit(HtmlBlock htmlBlock) {
-            writeText(htmlBlock.getLiteral());
-        }
-
-        @Override
-        public void visit(Image image) {
-            writeLink(image, image.getTitle(), image.getDestination());
-        }
-
-        @Override
-        public void visit(IndentedCodeBlock indentedCodeBlock) {
-            if (stripNewlines) {
-                textContent.writeStripped(indentedCodeBlock.getLiteral());
-                writeEndOfLine(indentedCodeBlock, null);
-            } else {
-                textContent.write(indentedCodeBlock.getLiteral());
-            }
-        }
-
-        @Override
-        public void visit(Link link) {
-            writeLink(link, link.getTitle(), link.getDestination());
-        }
-
-        @Override
-        public void visit(ListItem listItem) {
-            if (orderedListCounter != null) {
-                textContent.write(String.valueOf(orderedListCounter) + orderedListDelimiter + " ");
-                visitChildren(listItem);
-                writeEndOfLine(listItem, null);
-                orderedListCounter++;
-            } else if (bulletListMarker != null) {
-                if (!stripNewlines) {
-                    textContent.write(bulletListMarker + " ");
-                }
-                visitChildren(listItem);
-                writeEndOfLine(listItem, null);
-            }
-        }
-
-        @Override
-        public void visit(OrderedList orderedList) {
-            orderedListCounter = orderedList.getStartNumber();
-            orderedListDelimiter = orderedList.getDelimiter();
-            visitChildren(orderedList);
-            writeEndOfLine(orderedList, null);
-            orderedListCounter = null;
-            orderedListDelimiter = null;
-        }
-
-        @Override
-        public void visit(Paragraph paragraph) {
-            visitChildren(paragraph);
-            // Add "end of line" only if its "root paragraph.
-            if (paragraph.getParent() == null || paragraph.getParent() instanceof Document) {
-                writeEndOfLine(paragraph, null);
-            }
-        }
-
-        @Override
-        public void visit(SoftLineBreak softLineBreak) {
-            writeEndOfLine(softLineBreak, null);
-        }
-
-        @Override
-        public void visit(Text text) {
-            writeText(text.getLiteral());
-        }
-
-        private void writeText(String text) {
-            if (stripNewlines) {
-                textContent.writeStripped(text);
-            } else {
-                textContent.write(text);
-            }
-        }
-
-        private void writeLink(Node node, String title, String destination) {
-            boolean hasChild = node.getFirstChild() != null;
-            boolean hasTitle = title != null;
-            boolean hasDestination = destination != null && !destination.equals("");
-
-            if (hasChild) {
-                textContent.write('"');
-                visitChildren(node);
-                textContent.write('"');
-                if (hasTitle || hasDestination) {
-                    textContent.whitespace();
-                    textContent.write('(');
-                }
-            }
-
-            if (hasTitle) {
-                textContent.write(title);
-                if (hasDestination) {
-                    textContent.colon();
-                    textContent.whitespace();
-                }
-            }
-
-            if (hasDestination) {
-                textContent.write(destination);
-            }
-
-            if (hasChild && (hasTitle || hasDestination)) {
-                textContent.write(')');
-            }
-        }
-
-        private void writeEndOfLine(Node node, Character c) {
-            if (stripNewlines) {
-                if (c != null) {
-                    textContent.write(c);
-                }
-                if (node.getNext() != null) {
-                    textContent.whitespace();
-                }
-            } else {
-                if (node.getNext() != null) {
-                    textContent.line();
-                }
-            }
+        public TextContentWriter getWriter() {
+            return textContentWriter;
         }
     }
 }

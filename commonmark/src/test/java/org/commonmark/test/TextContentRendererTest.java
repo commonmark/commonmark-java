@@ -10,6 +10,17 @@ import static org.junit.Assert.assertEquals;
 public class TextContentRendererTest {
 
     @Test
+    public void textContentEmphasis() {
+        String rendered;
+
+        rendered = defaultRenderer().render(parse("foo\n***foo***\nbar\n\n***bar***"));
+        assertEquals("foo\nfoo\nbar\nbar", rendered);
+
+        rendered = strippedRenderer().render(parse("foo\n***foo\nbar***\n\n***bar***"));
+        assertEquals("foo foo bar bar", rendered);
+    }
+
+    @Test
     public void textContentQuotes() {
         String rendered;
 
