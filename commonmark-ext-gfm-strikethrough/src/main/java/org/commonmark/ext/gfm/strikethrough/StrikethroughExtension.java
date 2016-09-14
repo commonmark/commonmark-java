@@ -1,13 +1,17 @@
 package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
+import org.commonmark.content.TextContentRenderer;
+import org.commonmark.content.renderer.TextContentNodeRendererContext;
+import org.commonmark.content.renderer.TextContentNodeRendererFactory;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughDelimiterProcessor;
-import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughNodeRenderer;
-import org.commonmark.html.renderer.NodeRenderer;
-import org.commonmark.html.renderer.NodeRendererContext;
-import org.commonmark.html.renderer.NodeRendererFactory;
-import org.commonmark.parser.Parser;
+import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughHtmlNodeRenderer;
+import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughTextContentNodeRenderer;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.html.renderer.HtmlNodeRendererContext;
+import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.NodeRenderer;
 
 /**
  * Extension for GFM strikethrough using ~~ (GitHub Flavored Markdown).
@@ -20,7 +24,8 @@ import org.commonmark.html.HtmlRenderer;
  * The parsed strikethrough text regions are turned into {@link Strikethrough} nodes.
  * </p>
  */
-public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
+public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
+        TextContentRenderer.TextContentRendererExtension {
 
     private StrikethroughExtension() {
     }
@@ -36,10 +41,20 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new NodeRendererFactory() {
+        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
             @Override
-            public NodeRenderer create(NodeRendererContext context) {
-                return new StrikethroughNodeRenderer(context);
+            public NodeRenderer create(HtmlNodeRendererContext context) {
+                return new StrikethroughHtmlNodeRenderer(context);
+            }
+        });
+    }
+
+    @Override
+    public void extend(TextContentRenderer.Builder rendererBuilder) {
+        rendererBuilder.nodeRendererFactory(new TextContentNodeRendererFactory() {
+            @Override
+            public NodeRenderer create(TextContentNodeRendererContext context) {
+                return new StrikethroughTextContentNodeRenderer(context);
             }
         });
     }

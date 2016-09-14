@@ -1,6 +1,7 @@
 package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
+import org.commonmark.content.TextContentRenderer;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
@@ -16,7 +17,9 @@ public class StrikethroughTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Collections.singleton(StrikethroughExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
+    private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer CONTENT_RENDERER = TextContentRenderer.builder()
+            .extensions(EXTENSIONS).build();
 
     @Test
     public void oneTildeIsNotEnough() {
@@ -80,8 +83,14 @@ public class StrikethroughTest extends RenderingTestCase {
         assertEquals("~~", strikethrough.getClosingDelimiter());
     }
 
+    @Test
+    public void textContentRenderer() {
+        Node document = PARSER.parse("~~foo~~");
+        assertEquals("/foo/", CONTENT_RENDERER.render(document));
+    }
+
     @Override
     protected String render(String source) {
-        return RENDERER.render(PARSER.parse(source));
+        return HTML_RENDERER.render(PARSER.parse(source));
     }
 }
