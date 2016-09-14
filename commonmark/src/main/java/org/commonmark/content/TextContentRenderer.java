@@ -5,7 +5,10 @@ import org.commonmark.node.*;
 public class TextContentRenderer {
     private final boolean stripNewlines;
 
-    private int orderedListCounter = 0;
+    private Integer orderedListCounter;
+    private Character orderedListDelimiter;
+
+    private Character bulletListMarker;
 
     private TextContentRenderer(Builder builder) {
         this.stripNewlines = builder.stripNewlines;
@@ -82,8 +85,10 @@ public class TextContentRenderer {
 
         @Override
         public void visit(BulletList bulletList) {
+            bulletListMarker = bulletList.getBulletMarker();
             visitChildren(bulletList);
             writeEndOfLine(bulletList, null);
+            bulletListMarker = null;
         }
 
         @Override
@@ -154,14 +159,14 @@ public class TextContentRenderer {
 
         @Override
         public void visit(ListItem listItem) {
-            if (orderedListCounter > 0) {
-                textContent.write(String.valueOf(orderedListCounter) + ". ");
+            if (orderedListCounter != null) {
+                textContent.write(String.valueOf(orderedListCounter) + orderedListDelimiter + " ");
                 visitChildren(listItem);
                 writeEndOfLine(listItem, null);
                 orderedListCounter++;
-            } else {
+            } else if (bulletListMarker != null) {
                 if (!stripNewlines) {
-                    textContent.write("- ");
+                    textContent.write(bulletListMarker + " ");
                 }
                 visitChildren(listItem);
                 writeEndOfLine(listItem, null);
@@ -170,10 +175,12 @@ public class TextContentRenderer {
 
         @Override
         public void visit(OrderedList orderedList) {
-            orderedListCounter = 1;
+            orderedListCounter = orderedList.getStartNumber();
+            orderedListDelimiter = orderedList.getDelimiter();
             visitChildren(orderedList);
             writeEndOfLine(orderedList, null);
-            orderedListCounter = 0;
+            orderedListCounter = null;
+            orderedListDelimiter = null;
         }
 
         @Override
