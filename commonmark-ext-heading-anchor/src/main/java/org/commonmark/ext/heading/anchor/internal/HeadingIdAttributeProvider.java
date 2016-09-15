@@ -46,7 +46,7 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
 
             String finalString = "";
             for (String word : wordList) {
-                finalString += word + " ";
+                finalString += word;
             }
             finalString = finalString.trim().toLowerCase();
 
