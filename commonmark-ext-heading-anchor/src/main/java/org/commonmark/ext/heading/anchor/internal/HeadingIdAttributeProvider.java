@@ -44,7 +44,13 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
                 }
             });
 
-            attributes.put("id", idProvider.getUniqueIdentifier(String.join("", wordList)).toLowerCase());
+            String finalString = "";
+            for (String word : wordList) {
+                finalString += word + " ";
+            }
+            finalString = finalString.trim().toLowerCase();
+
+            attributes.put("id", idProvider.getUniqueIdentifier(finalString));
         }
     }
 
