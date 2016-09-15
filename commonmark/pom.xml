@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.atlassian.commonmark</groupId>
         <artifactId>commonmark-parent</artifactId>
-        <version>0.4.2-SNAPSHOT</version>
+        <version>0.6.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>commonmark</artifactId>
@@ -38,7 +38,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.4.0</version>
+                        <version>1.5.0</version>
                         <configuration>
                             <executable>java</executable>
                             <classpathScope>test</classpathScope>

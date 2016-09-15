@@ -62,10 +62,6 @@ public class ParagraphParser extends AbstractBlockParser {
         }
     }
 
-    public boolean hasSingleLine() {
-        return content.hasSingleLine();
-    }
-
     public String getContentString() {
         return content.getString();
     }

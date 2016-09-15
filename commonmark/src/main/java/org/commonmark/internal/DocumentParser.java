@@ -33,11 +33,15 @@ public class DocumentParser implements ParserState {
      */
     private int column = 0;
 
+    /**
+     * if the current column is within a tab character (partially consumed tab)
+     */
+    private boolean columnIsInTab;
+
     private int nextNonSpace = 0;
     private int nextNonSpaceColumn = 0;
-    private boolean blank;
-
     private int indent = 0;
+    private boolean blank;
 
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserImpl inlineParser;
@@ -144,8 +148,7 @@ public class DocumentParser implements ParserState {
         line = Parsing.prepareLine(ln);
         index = 0;
         column = 0;
-        nextNonSpace = 0;
-        nextNonSpaceColumn = 0;
+        columnIsInTab = false;
 
         // For each containing block, try to parse the associated line start.
         // Bail out on failure: container will point to the last matching block.
@@ -179,12 +182,6 @@ public class DocumentParser implements ParserState {
         BlockParser blockParser = lastMatchedBlockParser;
         boolean allClosed = unmatchedBlockParsers.isEmpty();
 
-        // Check to see if we've hit 2nd blank line; if so break out of list:
-        if (isBlank() && isLastLineBlank(blockParser.getBlock())) {
-            List<BlockParser> matchedBlockParsers = new ArrayList<>(activeBlockParsers.subList(0, matches));
-            breakOutOfLists(matchedBlockParsers);
-        }
-
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
         boolean tryBlockStarts = blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
@@ -192,7 +189,7 @@ public class DocumentParser implements ParserState {
             findNextNonSpace();
 
             // this is a little performance optimization:
-            if (isBlank() || (indent < IndentedCodeBlockParser.INDENT && Parsing.isLetter(line, nextNonSpace))) {
+            if (isBlank() || (indent < Parsing.CODE_BLOCK_INDENT && Parsing.isLetter(line, nextNonSpace))) {
                 setNewIndex(nextNonSpace);
                 break;
             }
@@ -286,6 +283,8 @@ public class DocumentParser implements ParserState {
         while (index < newIndex && index != line.length()) {
             advance();
         }
+        // If we're going to an index as opposed to a column, we're never within a tab
+        columnIsInTab = false;
     }
 
     private void setNewColumn(int newColumn) {
@@ -297,17 +296,48 @@ public class DocumentParser implements ParserState {
         while (column < newColumn && index != line.length()) {
             advance();
         }
+        if (column > newColumn) {
+            // Last character was a tab and we overshot our target
+            index--;
+            column = newColumn;
+            columnIsInTab = true;
+        } else {
+            columnIsInTab = false;
+        }
     }
 
     private void advance() {
         char c = line.charAt(index);
         if (c == '\t') {
             index++;
-            column += (4 - (column % 4));
+            column += Parsing.columnsToNextTabStop(column);
         } else {
             index++;
             column++;
         }
+    }
+
+    /**
+     * Add line content to the active block parser. We assume it can accept lines -- that check should be done before
+     * calling this.
+     */
+    private void addLine() {
+        CharSequence content;
+        if (columnIsInTab) {
+            // Our column is in a partially consumed tab. Expand the remaining columns (to the next tab stop) to spaces.
+            int afterTab = index + 1;
+            CharSequence rest = line.subSequence(afterTab, line.length());
+            int spaces = Parsing.columnsToNextTabStop(column);
+            StringBuilder sb = new StringBuilder(spaces + rest.length());
+            for (int i = 0; i < spaces; i++) {
+                sb.append(' ');
+            }
+            sb.append(rest);
+            content = sb.toString();
+        } else {
+            content = line.subSequence(index, line.length());
+        }
+        getActiveBlockParser().addLine(content);
     }
 
     private BlockStartImpl findBlockStart(BlockParser blockParser) {
@@ -388,32 +418,6 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Break out of all containing lists, resetting the tip of the document to the parent of the highest list,
-     * and finalizing all the lists. (This is used to implement the "two blank lines break of of all lists" feature.)
-     */
-    private void breakOutOfLists(List<BlockParser> blockParsers) {
-        int lastList = -1;
-        for (int i = blockParsers.size() - 1; i >= 0; i--) {
-            BlockParser blockParser = blockParsers.get(i);
-            if (blockParser instanceof ListBlockParser) {
-                lastList = i;
-            }
-        }
-
-        if (lastList != -1) {
-            finalizeBlocks(blockParsers.subList(lastList, blockParsers.size()));
-        }
-    }
-
-    /**
-     * Add a line to the block at the tip. We assume the tip can accept lines -- that check should be done before
-     * calling this.
-     */
-    private void addLine() {
-        getActiveBlockParser().addLine(line.subSequence(index, line.length()));
-    }
-
-    /**
      * Add block of type tag as a child of the tip. If the tip can't  accept children, close and finalize it and try
      * its parent, and so on til we find a block that can accept children.
      */
@@ -452,10 +456,9 @@ public class DocumentParser implements ParserState {
 
         Block block = blockParser.getBlock();
 
-        // Block quote lines are never blank as they start with >
-        // and we don't count blanks in fenced code for purposes of tight/loose
-        // lists or breaking out of lists. We also don't set lastLineBlank
-        // on an empty list item.
+        // Block quote lines are never blank as they start with `>`.
+        // We don't count blanks in fenced code for purposes of tight/loose lists.
+        // We also don't set lastLineBlank on an empty list item.
         boolean lastLineBlank = isBlank() &&
                 !(block instanceof BlockQuote ||
                         block instanceof FencedCodeBlock ||

@@ -1,4 +1,4 @@
-package org.commonmark.parser;
+package org.commonmark.parser.delimiter;
 
 import org.commonmark.node.Text;
 
@@ -13,28 +13,30 @@ public interface DelimiterProcessor {
      * @return the character that marks the beginning of a delimited node, must not clash with any built-in special
      * characters
      */
-    char getOpeningDelimiterChar();
+    char getOpeningCharacter();
 
     /**
      * @return the character that marks the the ending of a delimited node, must not clash with any built-in special
      * characters. Note that for a symmetric delimiter such as "*", this is the same as the opening.
      */
-    char getClosingDelimiterChar();
+    char getClosingCharacter();
 
     /**
      * Minimum number of delimiter characters that are needed to activate this. Must be at least 1.
      */
-    int getMinDelimiterCount();
+    int getMinLength();
 
     /**
-     * Determine how many of the delimiters should be used. Useful in case the same character with a different count
-     * should have a different meaning (e.g. with "*" for emphasis and "**" for strong emphasis).
+     * Determine how many (if any) of the delimiter characters should be used.
+     * <p>
+     * This allows implementations to decide how many characters to use based on the properties of the delimiter runs.
+     * An implementation can also return 0 when it doesn't want to allow this particular combination of delimiter runs.
      *
-     * @param openerCount the delimiter count of the opening delimiter, at least 1
-     * @param closerCount the delimiter count of the closing delimiter, at least 1
-     * @return how many delimiters should be used; cannot be 0; must not be greater than either openerCount or closerCount
+     * @param opener the opening delimiter run
+     * @param closer the closing delimiter run
+     * @return how many delimiters should be used; must not be greater than length of either opener or closer
      */
-    int getDelimiterUse(int openerCount, int closerCount);
+    int getDelimiterUse(DelimiterRun opener, DelimiterRun closer);
 
     /**
      * Process the matched delimiters, e.g. by wrapping the nodes between opener and closer in a new node, or appending

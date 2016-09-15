@@ -1,19 +1,23 @@
 commonmark-java
 ===============
 
-Java implementation of [CommonMark], a specification of the [Markdown] format for turning plain text into formatted text.
-Parses input to an AST (tree of nodes) and then renders to HTML.
+Java library for parsing and rendering [Markdown] text according to the
+[CommonMark] specification (and some extensions).
 
-This started out as a port of [commonmark.js] and has evolved into a full
-library with a nice Java API and some optional extensions. Features:
+Provides classes for parsing input to an abstract syntax tree of nodes
+(AST), visiting and manipulating nodes, and rendering to HTML. It
+started out as a port of [commonmark.js], but has since evolved into a
+full library with a nice API and the following features:
 
-* Small with minimal dependencies
-* Extensible (see below)
+* Small (minimal dependencies)
 * Fast (10-20 times faster than pegdown, see benchmarks in repo)
+* Flexible (manipulate the AST after parsing, customize HTML rendering)
+* Extensible (tables, strikethrough, autolinking and more, see below)
 
 Requirements:
 
 * Java 7 or above
+* Works on Android, minimum API level 15 (see [commonmark-android-test](commonmark-android-test) directory)
 * The core has no dependencies; for extensions, see below
 
 Coordinates for core library (see all on [Maven Central]):
@@ -22,7 +26,7 @@ Coordinates for core library (see all on [Maven Central]):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.4.1</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
@@ -34,6 +38,8 @@ See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt) file if
 you're wondering which version of the spec is currently implemented.
 
 [![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
+[![Coverage status](https://coveralls.io/repos/github/atlassian/commonmark-java/badge.svg?branch=master)](https://coveralls.io/github/atlassian/commonmark-java?branch=master)
+[![Maven Central status](https://img.shields.io/maven-central/v/com.atlassian.commonmark/commonmark.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.atlassian.commonmark%22)
 
 
 Usage
@@ -105,7 +111,7 @@ First, add an additional dependency (see [Maven Central] for others):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-ext-gfm-tables</artifactId>
-    <version>0.4.1</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
@@ -155,6 +161,33 @@ Enables adding auto generated id attributes to header based on their content.
 
 Use class `HeaderIdExtension` in artifact `commonmark-ext-heading-anchor`
 
+### Ins
+
+Enables underlining of text by enclosing it in `++`. For example, in
+`hey ++you++`, `you` will be rendered as underline text. Uses the &lt;ins&gt; tag.
+
+Use class `InsExtension` in artifact `commonmark-ext-ins`.
+
+### YAML front matter
+
+Adds support for metadata through a YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
+
+```
+---
+key: value
+list:
+  - value 1
+  - value 2
+literal: |
+  this is literal value.
+
+  literal values 2
+---
+
+document start here
+```
+
+Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`.
 
 Contributing
 ------------
@@ -174,7 +207,7 @@ an issue and explaining the intended change.
 License
 -------
 
-Copyright (c) 2015 Atlassian and others.
+Copyright (c) 2015-2016 Atlassian and others.
 
 BSD (2-clause) licensed, see LICENSE.txt file.
 
@@ -184,4 +217,4 @@ BSD (2-clause) licensed, see LICENSE.txt file.
 [Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22com.atlassian.commonmark%22
 [Semantic Versioning]: http://semver.org/
 [autolink-java]: https://github.com/robinst/autolink-java
-[gfm-tables]: https://help.github.com/articles/github-flavored-markdown/#tables
+[gfm-tables]: https://help.github.com/articles/organizing-information-with-tables/

@@ -15,7 +15,9 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     private static final Pattern CLOSING_FENCE = Pattern.compile("^(?:`{3,}|~{3,})(?= *$)");
 
     private final FencedCodeBlock block = new FencedCodeBlock();
-    private BlockContent content = new BlockContent();
+
+    private String firstLine;
+    private StringBuilder otherLines = new StringBuilder();
 
     public FencedCodeBlockParser(char fenceChar, int fenceLength, int fenceIndent) {
         block.setFenceChar(fenceChar);
@@ -55,27 +57,19 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
 
     @Override
     public void addLine(CharSequence line) {
-        content.add(line);
+        if (firstLine == null) {
+            firstLine = line.toString();
+        } else {
+            otherLines.append(line);
+            otherLines.append('\n');
+        }
     }
 
     @Override
     public void closeBlock() {
-        boolean singleLine = content.hasSingleLine();
-        // add trailing newline
-        content.add("");
-        String contentString = content.getString();
-        content = null;
-
         // first line becomes info string
-        int firstNewline = contentString.indexOf('\n');
-        String firstLine = contentString.substring(0, firstNewline);
         block.setInfo(unescapeString(firstLine.trim()));
-        if (singleLine) {
-            block.setLiteral("");
-        } else {
-            String literal = contentString.substring(firstNewline + 1);
-            block.setLiteral(literal);
-        }
+        block.setLiteral(otherLines.toString());
     }
 
     public static class Factory extends AbstractBlockParserFactory {

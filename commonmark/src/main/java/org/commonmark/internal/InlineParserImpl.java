@@ -6,7 +6,7 @@ import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
-import org.commonmark.parser.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.InlineParser;
 
 import java.util.*;
@@ -20,7 +20,7 @@ public class InlineParserImpl implements InlineParser {
     private static final String IN_PARENS_NOSP = "\\((" + REG_CHAR + '|' + ESCAPED_CHAR + ")*\\)";
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
-    private static final String DECLARATION = "<![A-Z]+" + "\\s+[^>]*>";
+    private static final String DECLARATION = "<![A-Z]+\\s+[^>]*>";
     private static final String CDATA = "<!\\[CDATA\\[[\\s\\S]*?\\]\\]>";
     private static final String HTMLTAG = "(?:" + Parsing.OPENTAG + "|" + Parsing.CLOSETAG + "|" + HTMLCOMMENT
             + "|" + PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
@@ -46,7 +46,7 @@ public class InlineParserImpl implements InlineParser {
             "^(?:" + REG_CHAR + "+|" + ESCAPED_CHAR + "|\\\\|" + IN_PARENS_NOSP + ")*");
 
     private static final Pattern LINK_LABEL = Pattern
-            .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "|\\\\){0,1000}\\]");
+            .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "|\\\\){0,999}\\]");
 
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
@@ -87,16 +87,15 @@ public class InlineParserImpl implements InlineParser {
     private int index;
 
     /**
-     * Stack of delimiters (emphasis, strong emphasis).
+     * Top delimiter (emphasis, strong emphasis or custom emphasis). (Brackets are on a separate stack, different
+     * from the algorithm described in the spec.)
      */
-    private Delimiter delimiter;
+    private Delimiter lastDelimiter;
 
     /**
-     * Earliest possible bracket delimiter to go back to when searching for opener.
+     * Top opening bracket (<code>[</code> or <code>![)</code>).
      */
-    private Delimiter bracketDelimiterBottom = null;
-
-    private StringBuilder currentText;
+    private Bracket lastBracket;
 
     public InlineParserImpl(BitSet specialCharacters, BitSet delimiterCharacters, Map<Character, DelimiterProcessor> delimiterProcessors) {
         this.delimiterProcessors = delimiterProcessors;
@@ -135,9 +134,9 @@ public class InlineParserImpl implements InlineParser {
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
         for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
-            char opening = delimiterProcessor.getOpeningDelimiterChar();
+            char opening = delimiterProcessor.getOpeningCharacter();
             addDelimiterProcessorForChar(opening, delimiterProcessor, map);
-            char closing = delimiterProcessor.getClosingDelimiterChar();
+            char closing = delimiterProcessor.getClosingCharacter();
             if (opening != closing) {
                 addDelimiterProcessorForChar(closing, delimiterProcessor, map);
             }
@@ -159,16 +158,16 @@ public class InlineParserImpl implements InlineParser {
         this.block = block;
         this.input = content.trim();
         this.index = 0;
-        this.delimiter = null;
-        this.bracketDelimiterBottom = null;
+        this.lastDelimiter = null;
+        this.lastBracket = null;
 
         boolean moreToParse;
         do {
             moreToParse = parseInline();
         } while (moreToParse);
-        flushTextNode();
 
         processDelimiters(null);
+        mergeTextNodes(block.getFirstChild(), block.getLastChild());
     }
 
     /**
@@ -246,34 +245,18 @@ public class InlineParserImpl implements InlineParser {
         return index - startIndex;
     }
 
-    private void appendText(CharSequence text) {
-        appendText(text, 0, text.length());
+    private Text appendText(CharSequence text, int beginIndex, int endIndex) {
+        return appendText(text.subSequence(beginIndex, endIndex));
     }
 
-    private void appendText(CharSequence text, int beginIndex, int endIndex) {
-        if (currentText == null) {
-            currentText = new StringBuilder(endIndex - beginIndex + 16);
-        }
-        currentText.append(text, beginIndex, endIndex);
-    }
-
-    private void appendNode(Node node) {
-        flushTextNode();
-        block.appendChild(node);
-    }
-
-    // In some cases, we don't want the text to be appended to an existing node, we need it separate
-    private Text appendSeparateText(String text) {
-        Text node = new Text(text);
+    private Text appendText(CharSequence text) {
+        Text node = new Text(text.toString());
         appendNode(node);
         return node;
     }
 
-    private void flushTextNode() {
-        if (currentText != null) {
-            block.appendChild(new Text(currentText.toString()));
-            currentText = null;
-        }
+    private void appendNode(Node node) {
+        block.appendChild(node);
     }
 
     /**
@@ -376,9 +359,6 @@ public class InlineParserImpl implements InlineParser {
     private boolean parseNewline() {
         index++; // assume we're at a \n
 
-        // We're gonna add a new node in any case and we need to check the last text node, so flush outstanding text.
-        flushTextNode();
-
         Node lastChild = block.getLastChild();
         // Check previous text for trailing spaces.
         // The "endsWith" is an optimization to avoid an RE match in the common case.
@@ -450,7 +430,7 @@ public class InlineParserImpl implements InlineParser {
      * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
     private boolean parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
-        DelimiterRun res = scanDelimiters(delimiterProcessor, delimiterChar);
+        DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar);
         if (res == null) {
             return false;
         }
@@ -458,16 +438,13 @@ public class InlineParserImpl implements InlineParser {
         int startIndex = index;
 
         index += numDelims;
-        Text node = appendSeparateText(input.substring(startIndex, index));
+        Text node = appendText(input, startIndex, index);
 
         // Add entry to stack for this opener
-        this.delimiter = new Delimiter(node, this.delimiter, startIndex);
-        this.delimiter.delimiterChar = delimiterChar;
-        this.delimiter.numDelims = numDelims;
-        this.delimiter.canOpen = res.canOpen;
-        this.delimiter.canClose = res.canClose;
-        if (this.delimiter.previous != null) {
-            this.delimiter.previous.next = this.delimiter;
+        lastDelimiter = new Delimiter(node, delimiterChar, res.canOpen, res.canClose, lastDelimiter);
+        lastDelimiter.numDelims = numDelims;
+        if (lastDelimiter.previous != null) {
+            lastDelimiter.previous.next = lastDelimiter;
         }
 
         return true;
@@ -480,18 +457,10 @@ public class InlineParserImpl implements InlineParser {
         int startIndex = index;
         index++;
 
-        Text node = appendSeparateText("[");
+        Text node = appendText("[");
 
         // Add entry to stack for this opener
-        this.delimiter = new Delimiter(node, this.delimiter, startIndex);
-        this.delimiter.delimiterChar = '[';
-        this.delimiter.numDelims = 1;
-        this.delimiter.canOpen = true;
-        this.delimiter.canClose = false;
-        this.delimiter.allowed = true;
-        if (this.delimiter.previous != null) {
-            this.delimiter.previous.next = this.delimiter;
-        }
+        addBracket(Bracket.link(node, startIndex, lastBracket, lastDelimiter));
 
         return true;
     }
@@ -506,18 +475,10 @@ public class InlineParserImpl implements InlineParser {
         if (peek() == '[') {
             index++;
 
-            Text node = appendSeparateText("![");
+            Text node = appendText("![");
 
             // Add entry to stack for this opener
-            this.delimiter = new Delimiter(node, this.delimiter, startIndex + 1);
-            this.delimiter.delimiterChar = '!';
-            this.delimiter.numDelims = 1;
-            this.delimiter.canOpen = true;
-            this.delimiter.canClose = false;
-            this.delimiter.allowed = true;
-            if (this.delimiter.previous != null) {
-                this.delimiter.previous.next = this.delimiter;
-            }
+            addBracket(Bracket.image(node, startIndex + 1, lastBracket, lastDelimiter));
         } else {
             appendText("!");
         }
@@ -532,32 +493,18 @@ public class InlineParserImpl implements InlineParser {
         index++;
         int startIndex = index;
 
-        boolean containsBracket = false;
-        // look through stack of delimiters for a [ or ![
-        Delimiter opener = this.delimiter;
-        while (opener != bracketDelimiterBottom) {
-            if (opener.delimiterChar == '[' || opener.delimiterChar == '!') {
-                if (!opener.matched) {
-                    break;
-                }
-                containsBracket = true;
-            }
-            opener = opener.previous;
-        }
-
-        if (opener == bracketDelimiterBottom) {
-            // No matched opener, just return a literal.
+        // Get previous `[` or `![`
+        Bracket opener = lastBracket;
+        if (opener == null) {
+            // No matching opener, just return a literal.
             appendText("]");
-            // No need to search same delimiters for openers next time.
-            bracketDelimiterBottom = this.delimiter;
             return true;
         }
 
         if (!opener.allowed) {
             // Matching opener but it's not allowed, just return a literal.
             appendText("]");
-            // We could remove the opener now, but that would complicate text node merging. So just skip it next time.
-            opener.matched = true;
+            removeLastBracket();
             return true;
         }
 
@@ -591,8 +538,10 @@ public class InlineParserImpl implements InlineParser {
             String ref = null;
             if (labelLength > 2) {
                 ref = input.substring(beforeLabel, beforeLabel + labelLength);
-            } else if (!containsBracket) {
-                // Empty or missing second label can only be a reference if there's no unescaped bracket in it.
+            } else if (!opener.bracketAfter) {
+                // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
+                // But it can only be a reference when there's no (unescaped) bracket in it.
+                // If there is, we don't even need to try to look up the reference. This is an optimization.
                 ref = input.substring(opener.index, startIndex);
             }
 
@@ -608,12 +557,7 @@ public class InlineParserImpl implements InlineParser {
 
         if (isLinkOrImage) {
             // If we got here, open is a potential opener
-            boolean isImage = opener.delimiterChar == '!';
-            Node linkOrImage = isImage ? new Image(dest, title) : new Link(dest, title);
-
-            // Flush text now. We don't need to worry about combining it with adjacent text nodes, as we'll wrap it in a
-            // link or image node.
-            flushTextNode();
+            Node linkOrImage = opener.image ? new Image(dest, title) : new Link(dest, title);
 
             Node node = opener.node.getNext();
             while (node != null) {
@@ -624,18 +568,21 @@ public class InlineParserImpl implements InlineParser {
             appendNode(linkOrImage);
 
             // Process delimiters such as emphasis inside link/image
-            processDelimiters(opener);
-            removeDelimiterAndNode(opener);
+            processDelimiters(opener.previousDelimiter);
+            mergeTextNodes(linkOrImage.getFirstChild(), linkOrImage.getLastChild());
+            // We don't need the corresponding text node anymore, we turned it into a link/image node
+            opener.node.unlink();
+            removeLastBracket();
 
             // Links within links are not allowed. We found this link, so there can be no other link around it.
-            if (!isImage) {
-                Delimiter delim = this.delimiter;
-                while (delim != null) {
-                    if (delim.delimiterChar == '[') {
+            if (!opener.image) {
+                Bracket bracket = lastBracket;
+                while (bracket != null) {
+                    if (!bracket.image) {
                         // Disallow link opener. It will still get matched, but will not result in a link.
-                        delim.allowed = false;
+                        bracket.allowed = false;
                     }
-                    delim = delim.previous;
+                    bracket = bracket.previous;
                 }
             }
 
@@ -644,12 +591,22 @@ public class InlineParserImpl implements InlineParser {
         } else { // no link or image
 
             appendText("]");
-            // We could remove the opener now, but that would complicate text node merging.
-            // E.g. `[link] (/uri)` isn't a link because of the space, so we want to keep appending text.
-            opener.matched = true;
+            removeLastBracket();
+
             index = startIndex;
             return true;
         }
+    }
+
+    private void addBracket(Bracket bracket) {
+        if (lastBracket != null) {
+            lastBracket.bracketAfter = true;
+        }
+        lastBracket = bracket;
+    }
+
+    private void removeLastBracket() {
+        lastBracket = lastBracket.previous;
     }
 
     /**
@@ -770,7 +727,7 @@ public class InlineParserImpl implements InlineParser {
      *
      * @return information about delimiter run, or {@code null}
      */
-    private DelimiterRun scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
+    private DelimiterData scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
         int startIndex = index;
 
         int delimiterCount = 0;
@@ -779,7 +736,7 @@ public class InlineParserImpl implements InlineParser {
             index++;
         }
 
-        if (delimiterCount < delimiterProcessor.getMinDelimiterCount()) {
+        if (delimiterCount < delimiterProcessor.getMinLength()) {
             index = startIndex;
             return null;
         }
@@ -807,12 +764,12 @@ public class InlineParserImpl implements InlineParser {
             canOpen = leftFlanking && (!rightFlanking || beforeIsPunctuation);
             canClose = rightFlanking && (!leftFlanking || afterIsPunctuation);
         } else {
-            canOpen = leftFlanking && delimiterChar == delimiterProcessor.getOpeningDelimiterChar();
-            canClose = rightFlanking && delimiterChar == delimiterProcessor.getClosingDelimiterChar();
+            canOpen = leftFlanking && delimiterChar == delimiterProcessor.getOpeningCharacter();
+            canClose = rightFlanking && delimiterChar == delimiterProcessor.getClosingCharacter();
         }
 
         index = startIndex;
-        return new DelimiterRun(delimiterCount, canOpen, canClose);
+        return new DelimiterData(delimiterCount, canOpen, canClose);
     }
 
     private void processDelimiters(Delimiter stackBottom) {
@@ -820,7 +777,7 @@ public class InlineParserImpl implements InlineParser {
         Map<Character, Delimiter> openersBottom = new HashMap<>();
 
         // find first closer above stackBottom:
-        Delimiter closer = this.delimiter;
+        Delimiter closer = lastDelimiter;
         while (closer != null && closer.previous != stackBottom) {
             closer = closer.previous;
         }
@@ -834,41 +791,49 @@ public class InlineParserImpl implements InlineParser {
                 continue;
             }
 
-            char openingDelimiterChar = delimiterProcessor.getOpeningDelimiterChar();
+            char openingDelimiterChar = delimiterProcessor.getOpeningCharacter();
 
-            // found delimiter closer. now look back for first matching opener:
+            // Found delimiter closer. Now look back for first matching opener.
+            int useDelims = 0;
             boolean openerFound = false;
+            boolean potentialOpenerFound = false;
             Delimiter opener = closer.previous;
             while (opener != null && opener != stackBottom && opener != openersBottom.get(delimiterChar)) {
-                if (opener.delimiterChar == openingDelimiterChar && opener.canOpen) {
-                    openerFound = true;
-                    break;
+                if (opener.canOpen && opener.delimiterChar == openingDelimiterChar) {
+                    potentialOpenerFound = true;
+                    useDelims = delimiterProcessor.getDelimiterUse(opener, closer);
+                    if (useDelims > 0) {
+                        openerFound = true;
+                        break;
+                    }
                 }
                 opener = opener.previous;
             }
 
             if (!openerFound) {
-                // Set lower bound for future searches for openers:
-                openersBottom.put(delimiterChar, closer.previous);
-                if (!closer.canOpen) {
-                    // We can remove a closer that can't be an opener,
-                    // once we've seen there's no matching opener:
-                    removeDelimiterKeepNode(closer);
+                if (!potentialOpenerFound) {
+                    // Set lower bound for future searches for openers.
+                    // Only do this when we didn't even have a potential
+                    // opener (one that matches the character and can open).
+                    // If an opener was rejected because of the number of
+                    // delimiters (e.g. because of the "multiple of 3" rule),
+                    // we want to consider it next time because the number
+                    // of delimiters can change as we continue processing.
+                    openersBottom.put(delimiterChar, closer.previous);
+                    if (!closer.canOpen) {
+                        // We can remove a closer that can't be an opener,
+                        // once we've seen there's no matching opener:
+                        removeDelimiterKeepNode(closer);
+                    }
                 }
                 closer = closer.next;
                 continue;
             }
 
-            int useDelims = delimiterProcessor.getDelimiterUse(opener.numDelims, closer.numDelims);
-            if (useDelims <= 0) {
-                // nope
-                useDelims = 1;
-            }
-
             Text openerNode = opener.node;
             Text closerNode = closer.node;
 
-            // remove used delimiters from stack elts and inlines
+            // Remove number of used delimiters from stack and inline nodes.
             opener.numDelims -= useDelims;
             closer.numDelims -= useDelims;
             openerNode.setLiteral(
@@ -879,9 +844,12 @@ public class InlineParserImpl implements InlineParser {
                             closerNode.getLiteral().length() - useDelims));
 
             removeDelimitersBetween(opener, closer);
+            // The delimiter processor can re-parent the nodes between opener and closer,
+            // so make sure they're contiguous already.
+            mergeTextNodes(openerNode.getNext(), closerNode.getPrevious());
             delimiterProcessor.process(openerNode, closerNode, useDelims);
 
-            // if opener has 0 delims, remove it and the inline
+            // No delimiter characters left to process, so we can remove delimiter and the now empty node.
             if (opener.numDelims == 0) {
                 removeDelimiterAndNode(opener);
             }
@@ -894,8 +862,8 @@ public class InlineParserImpl implements InlineParser {
         }
 
         // remove all delimiters
-        while (delimiter != null && delimiter != stackBottom) {
-            removeDelimiterKeepNode(delimiter);
+        while (lastDelimiter != null && lastDelimiter != stackBottom) {
+            removeDelimiterKeepNode(lastDelimiter);
         }
     }
 
@@ -913,14 +881,6 @@ public class InlineParserImpl implements InlineParser {
      */
     private void removeDelimiterAndNode(Delimiter delim) {
         Text node = delim.node;
-        Text previousText = delim.getPreviousNonDelimiterTextNode();
-        Text nextText = delim.getNextNonDelimiterTextNode();
-        if (previousText != null && nextText != null) {
-            // Merge adjacent text nodes
-            previousText.setLiteral(previousText.getLiteral() + nextText.getLiteral());
-            nextText.unlink();
-        }
-
         node.unlink();
         removeDelimiter(delim);
     }
@@ -929,23 +889,6 @@ public class InlineParserImpl implements InlineParser {
      * Remove the delimiter but keep the corresponding node as text. For unused delimiters such as `_` in `foo_bar`.
      */
     private void removeDelimiterKeepNode(Delimiter delim) {
-        Text node = delim.node;
-        Text previousText = delim.getPreviousNonDelimiterTextNode();
-        Text nextText = delim.getNextNonDelimiterTextNode();
-        if (previousText != null || nextText != null) {
-            // Merge adjacent text nodes into one
-            StringBuilder sb = new StringBuilder(node.getLiteral());
-            if (previousText != null) {
-                sb.insert(0, previousText.getLiteral());
-                previousText.unlink();
-            }
-            if (nextText != null) {
-                sb.append(nextText.getLiteral());
-                nextText.unlink();
-            }
-            node.setLiteral(sb.toString());
-        }
-
         removeDelimiter(delim);
     }
 
@@ -955,9 +898,68 @@ public class InlineParserImpl implements InlineParser {
         }
         if (delim.next == null) {
             // top of stack
-            this.delimiter = delim.previous;
+            lastDelimiter = delim.previous;
         } else {
             delim.next.previous = delim.previous;
+        }
+    }
+
+    private void mergeTextNodes(Node fromNode, Node toNode) {
+        Text first = null;
+        Text last = null;
+        int length = 0;
+
+        Node node = fromNode;
+        while (node != null) {
+            if (node instanceof Text) {
+                Text text = (Text) node;
+                if (first == null) {
+                    first = text;
+                }
+                length += text.getLiteral().length();
+                last = text;
+            } else {
+                mergeIfNeeded(first, last, length);
+                first = null;
+                last = null;
+                length = 0;
+            }
+            if (node == toNode) {
+                break;
+            }
+            node = node.getNext();
+        }
+
+        mergeIfNeeded(first, last, length);
+    }
+
+    private void mergeIfNeeded(Text first, Text last, int textLength) {
+        if (first != null && last != null && first != last) {
+            StringBuilder sb = new StringBuilder(textLength);
+            sb.append(first.getLiteral());
+            Node node = first.getNext();
+            Node stop = last.getNext();
+            while (node != stop) {
+                sb.append(((Text) node).getLiteral());
+                Node unlink = node;
+                node = node.getNext();
+                unlink.unlink();
+            }
+            String literal = sb.toString();
+            first.setLiteral(literal);
+        }
+    }
+
+    private static class DelimiterData {
+
+        final int count;
+        final boolean canClose;
+        final boolean canOpen;
+
+        DelimiterData(int count, boolean canOpen, boolean canClose) {
+            this.count = count;
+            this.canOpen = canOpen;
+            this.canClose = canClose;
         }
     }
 }

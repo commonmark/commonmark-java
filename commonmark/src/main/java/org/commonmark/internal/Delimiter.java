@@ -1,61 +1,51 @@
 package org.commonmark.internal;
 
-import org.commonmark.node.Node;
 import org.commonmark.node.Text;
+import org.commonmark.parser.delimiter.DelimiterRun;
 
-class Delimiter {
+/**
+ * Delimiter (emphasis, strong emphasis or custom emphasis).
+ */
+class Delimiter implements DelimiterRun {
 
     final Text node;
-    final int index;
-
-    Delimiter previous;
-    Delimiter next;
-
-    char delimiterChar;
-    int numDelims = 1;
+    final char delimiterChar;
 
     /**
      * Can open emphasis, see spec.
      */
-    boolean canOpen = true;
+    final boolean canOpen;
 
     /**
      * Can close emphasis, see spec.
      */
-    boolean canClose = false;
+    final boolean canClose;
 
-    /**
-     * Whether this delimiter is allowed to form a link/image.
-     */
-    boolean allowed = true;
+    Delimiter previous;
+    Delimiter next;
 
-    /**
-     * Skip this delimiter when looking for a link/image opener because it was already matched.
-     */
-    boolean matched = false;
+    int numDelims = 1;
 
-    Delimiter(Text node, Delimiter previous, int index) {
+    Delimiter(Text node, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
         this.node = node;
+        this.delimiterChar = delimiterChar;
+        this.canOpen = canOpen;
+        this.canClose = canClose;
         this.previous = previous;
-        this.index = index;
     }
 
-    Text getPreviousNonDelimiterTextNode() {
-        Node previousNode = node.getPrevious();
-        if (previousNode instanceof Text && (this.previous == null || this.previous.node != previousNode)) {
-            return (Text) previousNode;
-        } else {
-            return null;
-        }
+    @Override
+    public boolean canOpen() {
+        return canOpen;
     }
 
-    Text getNextNonDelimiterTextNode() {
-        Node nextNode = node.getNext();
-        if (nextNode instanceof Text && (this.next == null || this.next.node != nextNode)) {
-            return (Text) nextNode;
-        } else {
-            return null;
-        }
+    @Override
+    public boolean canClose() {
+        return canClose;
     }
 
+    @Override
+    public int length() {
+        return numDelims;
+    }
 }

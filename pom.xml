@@ -11,7 +11,7 @@
 
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-parent</artifactId>
-    <version>0.4.2-SNAPSHOT</version>
+    <version>0.6.1-SNAPSHOT</version>
     <name>commonmark-java parent</name>
     <description>
         Java implementation of CommonMark, a specification of the Markdown format for turning plain text into formatted
@@ -25,6 +25,8 @@
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
         <module>commonmark-ext-heading-anchor</module>
+        <module>commonmark-ext-ins</module>
+        <module>commonmark-ext-yaml-front-matter</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>
     </modules>
@@ -84,27 +86,37 @@
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark</artifactId>
-                <version>0.4.2-SNAPSHOT</version>
+                <version>0.6.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-autolink</artifactId>
-                <version>0.4.2-SNAPSHOT</version>
+                <version>0.6.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-ins</artifactId>
+                <version>0.6.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
-                <version>0.4.2-SNAPSHOT</version>
+                <version>0.6.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-tables</artifactId>
-                <version>0.4.2-SNAPSHOT</version>
+                <version>0.6.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-yaml-front-matter</artifactId>
+                <version>0.6.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-test-util</artifactId>
-                <version>0.4.2-SNAPSHOT</version>
+                <version>0.6.1-SNAPSHOT</version>
             </dependency>
 
             <!-- Common test dependencies -->
@@ -116,15 +128,50 @@
             <dependency>
                 <groupId>org.openjdk.jmh</groupId>
                 <artifactId>jmh-core</artifactId>
-                <version>1.11.3</version>
+                <version>1.13</version>
             </dependency>
             <dependency>
                 <groupId>org.openjdk.jmh</groupId>
                 <artifactId>jmh-generator-annprocess</artifactId>
-                <version>1.11.3</version>
+                <version>1.13</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.7.7.201606060606</version>
+                        <configuration>
+                            <excludes>
+                                <!-- Classes from test-util -->
+                                <exclude>org/commonmark/spec/*</exclude>
+                                <exclude>org/commonmark/test/*</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.eluder.coveralls</groupId>
+                        <artifactId>coveralls-maven-plugin</artifactId>
+                        <version>4.2.0</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <licenses>
         <license>

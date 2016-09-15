@@ -4,12 +4,16 @@
     <parent>
         <groupId>com.atlassian.commonmark</groupId>
         <artifactId>commonmark-parent</artifactId>
-        <version>0.4.2-SNAPSHOT</version>
+        <version>0.6.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>commonmark-ext-autolink</artifactId>
     <name>commonmark-java extension for autolinking</name>
     <description>commonmark-java extension for turning plain URLs and email addresses into links</description>
+
+    <properties>
+        <autolink.version>0.5.0</autolink.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -19,7 +23,7 @@
         <dependency>
             <groupId>org.nibor.autolink</groupId>
             <artifactId>autolink</artifactId>
-            <version>0.4.0</version>
+            <version>${autolink.version}</version>
         </dependency>
 
         <dependency>

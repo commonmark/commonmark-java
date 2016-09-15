@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class ThematicBreakParser extends AbstractBlockParser {
 
-    private static Pattern PATTERN = Pattern.compile("^(?:(?:\\* *){3,}|(?:_ *){3,}|(?:- *){3,}) *$");
+    private static Pattern PATTERN = Pattern.compile("^(?:(?:\\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){3,})[ \t]*$");
 
     private final ThematicBreak block = new ThematicBreak();
 

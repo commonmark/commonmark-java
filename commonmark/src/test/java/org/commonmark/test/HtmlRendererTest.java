@@ -2,12 +2,19 @@ package org.commonmark.test;
 
 import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.html.renderer.NodeRenderer;
+import org.commonmark.html.renderer.NodeRendererContext;
+import org.commonmark.html.renderer.NodeRendererFactory;
 import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.Image;
+import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -77,7 +84,7 @@ public class HtmlRendererTest {
     }
 
     @Test
-    public void attributeProvider() {
+    public void attributeProviderForCodeBlock() {
         AttributeProvider custom = new AttributeProvider() {
             @Override
             public void setAttributes(Node node, Map<String, String> attributes) {
@@ -100,8 +107,67 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void attributeProviderForImage() {
+        AttributeProvider custom = new AttributeProvider() {
+            @Override
+            public void setAttributes(Node node, Map<String, String> attributes) {
+                if (node instanceof Image) {
+                    attributes.remove("alt");
+                    attributes.put("test", "hey");
+                }
+            }
+        };
+
+        HtmlRenderer renderer = HtmlRenderer.builder().attributeProvider(custom).build();
+        String rendered = renderer.render(parse("![foo](/url)\n"));
+        assertEquals("<p><img src=\"/url\" test=\"hey\" /></p>\n", rendered);
+    }
+
+    @Test
+    public void overrideNodeRender() {
+        NodeRendererFactory nodeRendererFactory = new NodeRendererFactory() {
+            @Override
+            public NodeRenderer create(final NodeRendererContext context) {
+                return new NodeRenderer() {
+                    @Override
+                    public Set<Class<? extends Node>> getNodeTypes() {
+                        return Collections.<Class<? extends Node>>singleton(Link.class);
+                    }
+
+                    @Override
+                    public void render(Node node) {
+                        context.getHtmlWriter().text("test");
+                    }
+                };
+            }
+        };
+
+        HtmlRenderer renderer = HtmlRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
+        String rendered = renderer.render(parse("foo [bar](/url)"));
+        assertEquals("<p>foo test</p>\n", rendered);
+    }
+
+    @Test
     public void orderedListStartZero() {
         assertEquals("<ol start=\"0\">\n<li>Test</li>\n</ol>\n", defaultRenderer().render(parse("0. Test\n")));
+    }
+
+    @Test
+    public void imageAltTextWithSoftLineBreak() {
+        assertEquals("<p><img src=\"/url\" alt=\"foo\nbar\" /></p>\n",
+                defaultRenderer().render(parse("![foo\nbar](/url)\n")));
+    }
+
+    @Test
+    public void imageAltTextWithHardLineBreak() {
+        assertEquals("<p><img src=\"/url\" alt=\"foo\nbar\" /></p>\n",
+                defaultRenderer().render(parse("![foo  \nbar](/url)\n")));
+    }
+
+    @Test
+    public void imageAltTextWithEntities() {
+        assertEquals("<p><img src=\"/url\" alt=\"foo \u00E4\" /></p>\n",
+                defaultRenderer().render(parse("![foo &auml;](/url)\n")));
     }
 
     private static HtmlRenderer defaultRenderer() {

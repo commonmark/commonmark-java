@@ -10,10 +10,14 @@ public class ListItemParser extends AbstractBlockParser {
 
     private final ListItem block = new ListItem();
 
-    private int itemIndent;
+    /**
+     * Minimum number of columns that the content has to be indented (relative to the containing block) to be part of
+     * this list item.
+     */
+    private int contentIndent;
 
-    public ListItemParser(int itemIndent) {
-        this.itemIndent = itemIndent;
+    public ListItemParser(int contentIndent) {
+        this.contentIndent = contentIndent;
     }
 
     @Override
@@ -33,15 +37,19 @@ public class ListItemParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState state) {
-        if (state.isBlank() && block.getFirstChild() != null) {
-            return BlockContinue.atIndex(state.getNextNonSpaceIndex());
+        if (state.isBlank()) {
+            if (block.getFirstChild() == null) {
+                // Blank line after empty list item
+                return BlockContinue.none();
+            } else {
+                return BlockContinue.atIndex(state.getNextNonSpaceIndex());
+            }
         }
 
-        if (state.getIndent() >= itemIndent) {
-            return BlockContinue.atColumn(state.getColumn() + itemIndent);
+        if (state.getIndent() >= contentIndent) {
+            return BlockContinue.atColumn(state.getColumn() + contentIndent);
         } else {
             return BlockContinue.none();
         }
     }
-
 }
