@@ -1,24 +1,19 @@
 package org.commonmark.ext.heading.anchor;
 
-import org.commonmark.ext.heading.anchor.internal.HeadingIdAttributeProvider;
+import org.commonmark.Extension;
 import org.commonmark.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
-import org.junit.Before;
 import org.junit.Test;
 
-public class HeaderIdTest extends RenderingTestCase {
+import java.util.Collections;
+import java.util.Set;
 
+public class HeadingAnchorTest extends RenderingTestCase {
+
+    private static final Set<Extension> EXTENSIONS = Collections.singleton(HeadingAnchorExtension.create());
     private static final Parser PARSER = Parser.builder().build();
-    private static final HeadingIdAttributeProvider attributeProvider = HeadingIdAttributeProvider.create();
-    private static HtmlRenderer RENDERER = HtmlRenderer.builder().attributeProvider(attributeProvider).build();
-
-    @Before
-    public void resetHeader() {
-        RENDERER = HtmlRenderer.builder()
-                .attributeProvider(HeadingIdAttributeProvider.create())
-                .build();
-    }
+    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void baseCaseSingleHeader() {

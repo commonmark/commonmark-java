@@ -1,6 +1,9 @@
 package org.commonmark.html;
 
 import org.commonmark.Extension;
+import org.commonmark.html.attribute.AttributeProvider;
+import org.commonmark.html.attribute.AttributeProviderContext;
+import org.commonmark.html.attribute.AttributeProviderFactory;
 import org.commonmark.html.renderer.CoreNodeRenderer;
 import org.commonmark.html.renderer.NodeRenderer;
 import org.commonmark.html.renderer.NodeRendererContext;
@@ -26,20 +29,19 @@ public class HtmlRenderer {
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean percentEncodeUrls;
-    private final List<AttributeProvider> attributeProviders;
+    private final List<AttributeProviderFactory> attributeProviderFactories;
     private final List<NodeRendererFactory> nodeRendererFactories;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
         this.percentEncodeUrls = builder.percentEncodeUrls;
-        this.attributeProviders = builder.attributeProviders;
+        this.attributeProviderFactories = new ArrayList<>(builder.attributeProviderFactories);
 
         this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
         this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
         // Add as last. This means clients can override the rendering of core nodes if they want.
         this.nodeRendererFactories.add(new NodeRendererFactory() {
-            @Override
             public NodeRenderer create(NodeRendererContext context) {
                 return new CoreNodeRenderer(context);
             }
@@ -80,7 +82,7 @@ public class HtmlRenderer {
         private String softbreak = "\n";
         private boolean escapeHtml = false;
         private boolean percentEncodeUrls = false;
-        private List<AttributeProvider> attributeProviders = new ArrayList<>();
+        private List<AttributeProviderFactory> attributeProviderFactories = new ArrayList<>();
         private List<NodeRendererFactory> nodeRendererFactories = new ArrayList<>();
 
         /**
@@ -140,13 +142,13 @@ public class HtmlRenderer {
         }
 
         /**
-         * Add an attribute provider for adding/changing HTML attributes to the rendered tags.
+         * Add a factory for an attribute provider for adding/changing HTML attributes to the rendered tags.
          *
-         * @param attributeProvider the attribute provider to add
+         * @param attributeProviderFactory the attribute provider factory to add
          * @return {@code this}
          */
-        public Builder attributeProvider(AttributeProvider attributeProvider) {
-            this.attributeProviders.add(attributeProvider);
+        public Builder attributeProviderFactory(AttributeProviderFactory attributeProviderFactory) {
+            this.attributeProviderFactories.add(attributeProviderFactory);
             return this;
         }
 
@@ -187,15 +189,21 @@ public class HtmlRenderer {
         void extend(Builder rendererBuilder);
     }
 
-    private class MainNodeRenderer implements NodeRendererContext {
+    private class MainNodeRenderer implements NodeRendererContext, AttributeProviderContext {
 
         private final HtmlWriter htmlWriter;
+        private final List<AttributeProvider> attributeProviders;
         private final Map<Class<? extends Node>, NodeRenderer> renderers;
 
         private MainNodeRenderer(HtmlWriter htmlWriter) {
             this.htmlWriter = htmlWriter;
-            this.renderers = new HashMap<>(32);
 
+            attributeProviders = new ArrayList<>(attributeProviderFactories.size());
+            for (AttributeProviderFactory attributeProviderFactory : attributeProviderFactories) {
+                attributeProviders.add(attributeProviderFactory.create(this));
+            }
+
+            renderers = new HashMap<>(32);
             // The first node renderer for a node type "wins".
             for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
                 NodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
