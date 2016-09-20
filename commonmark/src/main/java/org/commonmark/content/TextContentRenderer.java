@@ -1,21 +1,22 @@
 package org.commonmark.content;
 
 import org.commonmark.Extension;
-import org.commonmark.content.renderer.TextContentNodeRenderer;
+import org.commonmark.content.renderer.CoreTextContentNodeRenderer;
 import org.commonmark.content.renderer.TextContentNodeRendererContext;
 import org.commonmark.content.renderer.TextContentNodeRendererFactory;
-import org.commonmark.renderer.BaseRenderer;
+import org.commonmark.internal.renderer.NodeRendererMap;
+import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.NodeRendererContext;
-import org.commonmark.renderer.NodeRendererFactory;
+import org.commonmark.renderer.Renderer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextContentRenderer extends BaseRenderer {
+public class TextContentRenderer implements Renderer {
+
     private final boolean stripNewlines;
 
-    private final List<NodeRendererFactory<TextContentNodeRendererContext>> nodeRendererFactories;
+    private final List<TextContentNodeRendererFactory> nodeRendererFactories;
 
     private TextContentRenderer(Builder builder) {
         this.stripNewlines = builder.stripNewlines;
@@ -26,7 +27,7 @@ public class TextContentRenderer extends BaseRenderer {
         this.nodeRendererFactories.add(new TextContentNodeRendererFactory() {
             @Override
             public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new TextContentNodeRenderer(context);
+                return new CoreTextContentNodeRenderer(context);
             }
         });
     }
@@ -41,8 +42,16 @@ public class TextContentRenderer extends BaseRenderer {
     }
 
     @Override
-    protected NodeRendererContext createContext(Appendable out) {
-        return new RendererContext(new TextContentWriter(out));
+    public void render(Node node, Appendable output) {
+        RendererContext context = new RendererContext(new TextContentWriter(output));
+        context.render(node);
+    }
+
+    @Override
+    public String render(Node node) {
+        StringBuilder sb = new StringBuilder();
+        render(node, sb);
+        return sb.toString();
     }
 
     /**
@@ -51,7 +60,7 @@ public class TextContentRenderer extends BaseRenderer {
     public static class Builder {
 
         private boolean stripNewlines = false;
-        private List<NodeRendererFactory<TextContentNodeRendererContext>> nodeRendererFactories = new ArrayList<>();
+        private List<TextContentNodeRendererFactory> nodeRendererFactories = new ArrayList<>();
 
         /**
          * @return the configured {@link TextContentRenderer}
@@ -110,17 +119,19 @@ public class TextContentRenderer extends BaseRenderer {
         void extend(TextContentRenderer.Builder rendererBuilder);
     }
 
-    private class RendererContext extends TextContentNodeRendererContext {
+    private class RendererContext implements TextContentNodeRendererContext {
         private final TextContentWriter textContentWriter;
+        private final NodeRendererMap nodeRendererMap = new NodeRendererMap();
 
         private RendererContext(TextContentWriter textContentWriter) {
             this.textContentWriter = textContentWriter;
 
-            List<NodeRenderer> renderers = new ArrayList<>(nodeRendererFactories.size());
-            for (NodeRendererFactory<TextContentNodeRendererContext> nodeRendererFactory : nodeRendererFactories) {
-                renderers.add(nodeRendererFactory.create(this));
+            // The first node renderer for a node type "wins".
+            for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
+                TextContentNodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
+                NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
+                nodeRendererMap.add(nodeRenderer);
             }
-            addNodeRenderers(renderers);
         }
 
         @Override
@@ -131,6 +142,11 @@ public class TextContentRenderer extends BaseRenderer {
         @Override
         public TextContentWriter getWriter() {
             return textContentWriter;
+        }
+
+        @Override
+        public void render(Node node) {
+            nodeRendererMap.render(node);
         }
     }
 }

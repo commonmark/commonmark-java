@@ -7,7 +7,7 @@ public interface Renderer {
     /**
      * Render the tree of nodes to output.
      *
-     * @param node   the root node
+     * @param node the root node
      * @param output output for rendering
      */
     void render(Node node, Appendable output);

@@ -10,7 +10,6 @@ import org.commonmark.parser.Parser;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.delimiter.DelimiterRun;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.NodeRendererContext;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -137,9 +136,9 @@ public class DelimiterProcessorTest extends RenderingTestCase {
 
     private static class UpperCaseNodeRenderer implements NodeRenderer {
 
-        private final NodeRendererContext context;
+        private final HtmlNodeRendererContext context;
 
-        private UpperCaseNodeRenderer(NodeRendererContext context) {
+        private UpperCaseNodeRenderer(HtmlNodeRendererContext context) {
             this.context = context;
         }
 

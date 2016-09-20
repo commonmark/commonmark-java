@@ -9,12 +9,12 @@ import java.util.*;
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
  */
-public class HtmlNodeRenderer extends AbstractVisitor implements NodeRenderer {
+public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
     protected final HtmlNodeRendererContext context;
     private final HtmlWriter html;
 
-    public HtmlNodeRenderer(HtmlNodeRendererContext context) {
+    public CoreHtmlNodeRenderer(HtmlNodeRendererContext context) {
         this.context = context;
         this.html = context.getWriter();
     }

@@ -13,7 +13,6 @@ public class StrikethroughHtmlNodeRenderer extends StrikethroughNodeRenderer {
     private final HtmlWriter html;
 
     public StrikethroughHtmlNodeRenderer(HtmlNodeRendererContext context) {
-        super(context);
         this.context = context;
         this.html = context.getWriter();
     }
@@ -24,5 +23,14 @@ public class StrikethroughHtmlNodeRenderer extends StrikethroughNodeRenderer {
         html.tag("del", attributes);
         renderChildren(node);
         html.tag("/del");
+    }
+
+    private void renderChildren(Node parent) {
+        Node node = parent.getFirstChild();
+        while (node != null) {
+            Node next = node.getNext();
+            context.render(node);
+            node = next;
+        }
     }
 }

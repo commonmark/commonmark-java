@@ -4,17 +4,16 @@ import org.commonmark.Extension;
 import org.commonmark.html.attribute.AttributeProvider;
 import org.commonmark.html.attribute.AttributeProviderContext;
 import org.commonmark.html.attribute.AttributeProviderFactory;
-import org.commonmark.html.renderer.HtmlNodeRenderer;
+import org.commonmark.html.renderer.CoreHtmlNodeRenderer;
 import org.commonmark.html.renderer.HtmlNodeRendererContext;
 import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.HtmlInline;
 import org.commonmark.node.Node;
-import org.commonmark.renderer.BaseRenderer;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.NodeRendererContext;
-import org.commonmark.renderer.NodeRendererFactory;
+import org.commonmark.renderer.Renderer;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,13 +29,13 @@ import java.util.Map;
  * renderer.render(node);
  * </code></pre>
  */
-public class HtmlRenderer extends BaseRenderer {
+public class HtmlRenderer implements Renderer {
 
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean percentEncodeUrls;
     private final List<AttributeProviderFactory> attributeProviderFactories;
-    private final List<NodeRendererFactory<HtmlNodeRendererContext>> nodeRendererFactories;
+    private final List<HtmlNodeRendererFactory> nodeRendererFactories;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
@@ -50,7 +49,7 @@ public class HtmlRenderer extends BaseRenderer {
         this.nodeRendererFactories.add(new HtmlNodeRendererFactory() {
             @Override
             public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new HtmlNodeRenderer(context);
+                return new CoreHtmlNodeRenderer(context);
             }
         });
     }
@@ -65,8 +64,16 @@ public class HtmlRenderer extends BaseRenderer {
     }
 
     @Override
-    public NodeRendererContext createContext(Appendable out) {
-        return new RendererContext(new HtmlWriter(out));
+    public void render(Node node, Appendable output) {
+        RendererContext context = new RendererContext(new HtmlWriter(output));
+        context.render(node);
+    }
+
+    @Override
+    public String render(Node node) {
+        StringBuilder sb = new StringBuilder();
+        render(node, sb);
+        return sb.toString();
     }
 
     /**
@@ -78,7 +85,7 @@ public class HtmlRenderer extends BaseRenderer {
         private boolean escapeHtml = false;
         private boolean percentEncodeUrls = false;
         private List<AttributeProviderFactory> attributeProviderFactories = new ArrayList<>();
-        private List<NodeRendererFactory<HtmlNodeRendererContext>> nodeRendererFactories = new ArrayList<>();
+        private List<HtmlNodeRendererFactory> nodeRendererFactories = new ArrayList<>();
 
         /**
          * @return the configured {@link HtmlRenderer}
@@ -184,10 +191,11 @@ public class HtmlRenderer extends BaseRenderer {
         void extend(Builder rendererBuilder);
     }
 
-    private class RendererContext extends HtmlNodeRendererContext implements AttributeProviderContext {
+    private class RendererContext implements HtmlNodeRendererContext, AttributeProviderContext {
 
         private final HtmlWriter htmlWriter;
         private final List<AttributeProvider> attributeProviders;
+        private final NodeRendererMap nodeRendererMap = new NodeRendererMap();
 
         private RendererContext(HtmlWriter htmlWriter) {
             this.htmlWriter = htmlWriter;
@@ -197,11 +205,12 @@ public class HtmlRenderer extends BaseRenderer {
                 attributeProviders.add(attributeProviderFactory.create(this));
             }
 
-            List<NodeRenderer> renderers = new ArrayList<>(nodeRendererFactories.size());
-            for (NodeRendererFactory<HtmlNodeRendererContext> nodeRendererFactory : nodeRendererFactories) {
-                renderers.add(nodeRendererFactory.create(this));
+            // The first node renderer for a node type "wins".
+            for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
+                HtmlNodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
+                NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
+                nodeRendererMap.add(nodeRenderer);
             }
-            addNodeRenderers(renderers);
         }
 
         @Override
@@ -233,6 +242,11 @@ public class HtmlRenderer extends BaseRenderer {
         @Override
         public String getSoftbreak() {
             return softbreak;
+        }
+
+        @Override
+        public void render(Node node) {
+            nodeRendererMap.render(node);
         }
 
         private void setCustomAttributes(Node node, Map<String, String> attrs) {

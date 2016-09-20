@@ -1,8 +1,8 @@
 package org.commonmark.content.renderer;
 
-import org.commonmark.content.TextContentWriter;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.content.TextContentWriter;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
  */
-public class TextContentNodeRenderer extends AbstractVisitor implements NodeRenderer {
+public class CoreTextContentNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
     protected final TextContentNodeRendererContext context;
     private final TextContentWriter textContent;
@@ -21,7 +21,7 @@ public class TextContentNodeRenderer extends AbstractVisitor implements NodeRend
 
     private Character bulletListMarker;
 
-    public TextContentNodeRenderer(TextContentNodeRendererContext context) {
+    public CoreTextContentNodeRenderer(TextContentNodeRendererContext context) {
         this.context = context;
         this.textContent = context.getWriter();
     }
