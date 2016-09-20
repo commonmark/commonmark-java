@@ -1,8 +1,7 @@
-package org.commonmark.content.renderer;
+package org.commonmark.renderer.text;
 
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.content.TextContentWriter;
 
 import java.util.Arrays;
 import java.util.HashSet;

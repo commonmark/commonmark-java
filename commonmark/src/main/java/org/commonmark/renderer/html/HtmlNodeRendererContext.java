@@ -1,6 +1,5 @@
-package org.commonmark.html.renderer;
+package org.commonmark.renderer.html;
 
-import org.commonmark.html.HtmlWriter;
 import org.commonmark.node.Node;
 
 import java.util.Map;

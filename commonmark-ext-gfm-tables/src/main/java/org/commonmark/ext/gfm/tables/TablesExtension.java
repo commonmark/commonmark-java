@@ -3,9 +3,9 @@ package org.commonmark.ext.gfm.tables;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
 import org.commonmark.ext.gfm.tables.internal.TableNodeRenderer;
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.renderer.HtmlNodeRendererContext;
-import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 
@@ -14,7 +14,7 @@ import org.commonmark.renderer.NodeRenderer;
  * <p>
  * Create it with {@link #create()} and then configure it on the builders
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * {@link HtmlRenderer.Builder#extensions(Iterable)}).
  * </p>
  * <p>
  * The parsed tables are turned into {@link TableBlock} blocks.

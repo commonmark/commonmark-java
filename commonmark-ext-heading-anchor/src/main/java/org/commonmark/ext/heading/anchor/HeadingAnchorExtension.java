@@ -2,16 +2,16 @@ package org.commonmark.ext.heading.anchor;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.heading.anchor.internal.HeadingIdAttributeProvider;
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.attribute.AttributeProvider;
-import org.commonmark.html.attribute.AttributeProviderContext;
-import org.commonmark.html.attribute.AttributeProviderFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.html.AttributeProvider;
+import org.commonmark.renderer.html.AttributeProviderContext;
+import org.commonmark.renderer.html.AttributeProviderFactory;
 
 /**
  * Extension for adding auto generated IDs to headings.
  * <p>
  * Create it with {@link #create()} and then configure it on the builder
- * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * {@link HtmlRenderer.Builder#extensions(Iterable)}).
  * </p>
  * <p>
  * The heading text will be used to create the id. Multiple headings with the

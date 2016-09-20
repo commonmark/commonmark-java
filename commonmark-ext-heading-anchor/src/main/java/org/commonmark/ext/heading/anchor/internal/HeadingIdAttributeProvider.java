@@ -1,7 +1,7 @@
 package org.commonmark.ext.heading.anchor.internal;
 
 import org.commonmark.ext.heading.anchor.IdGenerator;
-import org.commonmark.html.attribute.AttributeProvider;
+import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.node.*;
 
 import java.util.ArrayList;

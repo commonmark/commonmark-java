@@ -1,10 +1,10 @@
 package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.attribute.AttributeProvider;
-import org.commonmark.html.attribute.AttributeProviderContext;
-import org.commonmark.html.attribute.AttributeProviderFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.html.AttributeProvider;
+import org.commonmark.renderer.html.AttributeProviderContext;
+import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;

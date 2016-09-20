@@ -1,12 +1,6 @@
-package org.commonmark.html;
+package org.commonmark.renderer.html;
 
 import org.commonmark.Extension;
-import org.commonmark.html.attribute.AttributeProvider;
-import org.commonmark.html.attribute.AttributeProviderContext;
-import org.commonmark.html.attribute.AttributeProviderFactory;
-import org.commonmark.html.renderer.CoreHtmlNodeRenderer;
-import org.commonmark.html.renderer.HtmlNodeRendererContext;
-import org.commonmark.html.renderer.HtmlNodeRendererFactory;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.HtmlBlock;

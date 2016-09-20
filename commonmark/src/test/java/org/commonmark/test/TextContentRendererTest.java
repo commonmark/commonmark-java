@@ -1,6 +1,6 @@
 package org.commonmark.test;
 
-import org.commonmark.content.TextContentRenderer;
+import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.junit.Test;

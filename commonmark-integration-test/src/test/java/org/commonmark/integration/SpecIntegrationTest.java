@@ -6,7 +6,7 @@ import org.commonmark.ext.ins.InsExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
-import org.commonmark.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.spec.SpecExample;
 import org.commonmark.test.SpecTestCase;

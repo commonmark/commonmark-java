@@ -1,6 +1,6 @@
 package org.commonmark.test;
 
-import org.commonmark.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;

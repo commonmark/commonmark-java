@@ -1,11 +1,11 @@
 package org.commonmark.test;
 
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.attribute.AttributeProvider;
-import org.commonmark.html.attribute.AttributeProviderContext;
-import org.commonmark.html.attribute.AttributeProviderFactory;
-import org.commonmark.html.renderer.HtmlNodeRendererContext;
-import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.html.AttributeProvider;
+import org.commonmark.renderer.html.AttributeProviderContext;
+import org.commonmark.renderer.html.AttributeProviderFactory;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Image;
 import org.commonmark.node.Link;

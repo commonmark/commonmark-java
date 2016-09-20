@@ -1,7 +1,6 @@
-package org.commonmark.content.renderer;
+package org.commonmark.renderer.text;
 
 import org.commonmark.node.Node;
-import org.commonmark.content.TextContentWriter;
 
 public interface TextContentNodeRendererContext {
 

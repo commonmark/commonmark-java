@@ -3,10 +3,10 @@ package org.commonmark.ext.ins;
 import org.commonmark.Extension;
 import org.commonmark.ext.ins.internal.InsDelimiterProcessor;
 import org.commonmark.ext.ins.internal.InsNodeRenderer;
-import org.commonmark.html.renderer.HtmlNodeRendererContext;
-import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.parser.Parser;
-import org.commonmark.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.NodeRenderer;
 
 /**
@@ -14,7 +14,7 @@ import org.commonmark.renderer.NodeRenderer;
  * <p>
  * Create it with {@link #create()} and then configure it on the builders
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * {@link HtmlRenderer.Builder#extensions(Iterable)}).
  * </p>
  * <p>
  * The parsed ins text regions are turned into {@link Ins} nodes.

@@ -1,4 +1,4 @@
-package org.commonmark.html.renderer;
+package org.commonmark.renderer.html;
 
 import org.commonmark.renderer.NodeRenderer;
 

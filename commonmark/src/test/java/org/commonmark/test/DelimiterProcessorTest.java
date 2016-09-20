@@ -1,8 +1,8 @@
 package org.commonmark.test;
 
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.renderer.HtmlNodeRendererContext;
-import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;

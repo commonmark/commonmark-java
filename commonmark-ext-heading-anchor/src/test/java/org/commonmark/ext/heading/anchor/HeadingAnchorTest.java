@@ -1,7 +1,7 @@
 package org.commonmark.ext.heading.anchor;
 
 import org.commonmark.Extension;
-import org.commonmark.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;

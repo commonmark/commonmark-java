@@ -1,6 +1,6 @@
 package org.commonmark.test;
 
-import org.commonmark.content.TextContentWriter;
+import org.commonmark.renderer.text.TextContentWriter;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

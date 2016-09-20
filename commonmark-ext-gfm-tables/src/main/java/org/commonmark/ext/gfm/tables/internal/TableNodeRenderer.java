@@ -1,8 +1,8 @@
 package org.commonmark.ext.gfm.tables.internal;
 
 import org.commonmark.ext.gfm.tables.*;
-import org.commonmark.html.HtmlWriter;
-import org.commonmark.html.renderer.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlWriter;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
 

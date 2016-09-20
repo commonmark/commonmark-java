@@ -1,9 +1,6 @@
-package org.commonmark.content;
+package org.commonmark.renderer.text;
 
 import org.commonmark.Extension;
-import org.commonmark.content.renderer.CoreTextContentNodeRenderer;
-import org.commonmark.content.renderer.TextContentNodeRendererContext;
-import org.commonmark.content.renderer.TextContentNodeRendererFactory;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;

@@ -1,4 +1,4 @@
-package org.commonmark.html;
+package org.commonmark.renderer.html;
 
 import org.commonmark.internal.util.Escaping;
 

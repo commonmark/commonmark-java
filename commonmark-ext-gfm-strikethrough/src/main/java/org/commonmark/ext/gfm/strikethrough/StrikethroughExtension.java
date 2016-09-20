@@ -1,15 +1,15 @@
 package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
-import org.commonmark.content.TextContentRenderer;
-import org.commonmark.content.renderer.TextContentNodeRendererContext;
-import org.commonmark.content.renderer.TextContentNodeRendererFactory;
+import org.commonmark.renderer.text.TextContentRenderer;
+import org.commonmark.renderer.text.TextContentNodeRendererContext;
+import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughDelimiterProcessor;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughHtmlNodeRenderer;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughTextContentNodeRenderer;
-import org.commonmark.html.HtmlRenderer;
-import org.commonmark.html.renderer.HtmlNodeRendererContext;
-import org.commonmark.html.renderer.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 
@@ -18,7 +18,7 @@ import org.commonmark.renderer.NodeRenderer;
  * <p>
  * Create it with {@link #create()} and then configure it on the builders
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
+ * {@link HtmlRenderer.Builder#extensions(Iterable)}).
  * </p>
  * <p>
  * The parsed strikethrough text regions are turned into {@link Strikethrough} nodes.
