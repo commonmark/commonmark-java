@@ -1,24 +1,19 @@
 package org.commonmark.ext.heading.anchor.internal;
 
+import org.commonmark.ext.heading.anchor.IdGenerator;
+import org.commonmark.html.attribute.AttributeProvider;
+import org.commonmark.node.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.commonmark.html.attribute.AttributeProvider;
-import org.commonmark.node.AbstractVisitor;
-import org.commonmark.node.Code;
-import org.commonmark.node.Heading;
-import org.commonmark.node.Node;
-import org.commonmark.node.Text;
-
-import org.commonmark.ext.heading.anchor.UniqueIdentifierProvider;
-
 public class HeadingIdAttributeProvider implements AttributeProvider {
 
-    private final UniqueIdentifierProvider idProvider;
+    private final IdGenerator idGenerator;
 
     private HeadingIdAttributeProvider() {
-        idProvider = new UniqueIdentifierProvider("heading");
+        idGenerator = IdGenerator.builder().defaultId("heading").build();
     }
 
     public static HeadingIdAttributeProvider create() {
@@ -50,8 +45,7 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
             }
             finalString = finalString.trim().toLowerCase();
 
-            attributes.put("id", idProvider.getUniqueIdentifier(finalString));
+            attributes.put("id", idGenerator.generateId(finalString));
         }
     }
-
 }

@@ -8,7 +8,7 @@ import org.commonmark.html.attribute.AttributeProviderContext;
 import org.commonmark.html.attribute.AttributeProviderFactory;
 
 /**
- * Extension for adding auto generated ids to headings
+ * Extension for adding auto generated IDs to headings.
  * <p>
  * Create it with {@link #create()} and then configure it on the builder
  * {@link org.commonmark.html.HtmlRenderer.Builder#extensions(Iterable)}).
@@ -30,6 +30,8 @@ import org.commonmark.html.attribute.AttributeProviderFactory;
  * &lt;h1 id="heading-1"&gt;Heading&lt;/h1&gt;
  * </pre>
  * </code>
+ *
+ * @see IdGenerator the IdGenerator class if just the ID generation part is needed
  */
 public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtension {
 
