@@ -1,6 +1,9 @@
 package org.commonmark.html;
 
 import org.commonmark.Extension;
+import org.commonmark.html.attribute.AttributeProvider;
+import org.commonmark.html.attribute.AttributeProviderContext;
+import org.commonmark.html.attribute.AttributeProviderFactory;
 import org.commonmark.html.renderer.HtmlNodeRenderer;
 import org.commonmark.html.renderer.HtmlNodeRendererContext;
 import org.commonmark.html.renderer.HtmlNodeRendererFactory;
@@ -32,14 +35,14 @@ public class HtmlRenderer extends BaseRenderer {
     private final String softbreak;
     private final boolean escapeHtml;
     private final boolean percentEncodeUrls;
-    private final List<AttributeProvider> attributeProviders;
+    private final List<AttributeProviderFactory> attributeProviderFactories;
     private final List<NodeRendererFactory<HtmlNodeRendererContext>> nodeRendererFactories;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
         this.percentEncodeUrls = builder.percentEncodeUrls;
-        this.attributeProviders = builder.attributeProviders;
+        this.attributeProviderFactories = new ArrayList<>(builder.attributeProviderFactories);
 
         this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
         this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
@@ -74,7 +77,7 @@ public class HtmlRenderer extends BaseRenderer {
         private String softbreak = "\n";
         private boolean escapeHtml = false;
         private boolean percentEncodeUrls = false;
-        private List<AttributeProvider> attributeProviders = new ArrayList<>();
+        private List<AttributeProviderFactory> attributeProviderFactories = new ArrayList<>();
         private List<NodeRendererFactory<HtmlNodeRendererContext>> nodeRendererFactories = new ArrayList<>();
 
         /**
@@ -134,13 +137,13 @@ public class HtmlRenderer extends BaseRenderer {
         }
 
         /**
-         * Add an attribute provider for adding/changing HTML attributes to the rendered tags.
+         * Add a factory for an attribute provider for adding/changing HTML attributes to the rendered tags.
          *
-         * @param attributeProvider the attribute provider to add
+         * @param attributeProviderFactory the attribute provider factory to add
          * @return {@code this}
          */
-        public Builder attributeProvider(AttributeProvider attributeProvider) {
-            this.attributeProviders.add(attributeProvider);
+        public Builder attributeProviderFactory(AttributeProviderFactory attributeProviderFactory) {
+            this.attributeProviderFactories.add(attributeProviderFactory);
             return this;
         }
 
@@ -181,12 +184,18 @@ public class HtmlRenderer extends BaseRenderer {
         void extend(Builder rendererBuilder);
     }
 
-    private class RendererContext extends HtmlNodeRendererContext {
+    private class RendererContext extends HtmlNodeRendererContext implements AttributeProviderContext {
 
         private final HtmlWriter htmlWriter;
+        private final List<AttributeProvider> attributeProviders;
 
         private RendererContext(HtmlWriter htmlWriter) {
             this.htmlWriter = htmlWriter;
+
+            attributeProviders = new ArrayList<>(attributeProviderFactories.size());
+            for (AttributeProviderFactory attributeProviderFactory : attributeProviderFactories) {
+                attributeProviders.add(attributeProviderFactory.create(this));
+            }
 
             List<NodeRenderer> renderers = new ArrayList<>(nodeRendererFactories.size());
             for (NodeRendererFactory<HtmlNodeRendererContext> nodeRendererFactory : nodeRendererFactories) {

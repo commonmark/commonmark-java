@@ -1,7 +1,9 @@
 package org.commonmark.test;
 
-import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.html.attribute.AttributeProvider;
+import org.commonmark.html.attribute.AttributeProviderContext;
+import org.commonmark.html.attribute.AttributeProviderFactory;
 import org.commonmark.html.renderer.HtmlNodeRendererContext;
 import org.commonmark.html.renderer.HtmlNodeRendererFactory;
 import org.commonmark.node.FencedCodeBlock;
@@ -85,20 +87,25 @@ public class HtmlRendererTest {
 
     @Test
     public void attributeProviderForCodeBlock() {
-        AttributeProvider custom = new AttributeProvider() {
+        AttributeProviderFactory custom = new AttributeProviderFactory() {
             @Override
-            public void setAttributes(Node node, Map<String, String> attributes) {
-                if (node instanceof FencedCodeBlock) {
-                    FencedCodeBlock fencedCodeBlock = (FencedCodeBlock) node;
-                    // Remove the default attribute for info
-                    attributes.remove("class");
-                    // Put info in custom attribute instead
-                    attributes.put("data-custom", fencedCodeBlock.getInfo());
-                }
+            public AttributeProvider create(AttributeProviderContext context) {
+                return new AttributeProvider() {
+                    @Override
+                    public void setAttributes(Node node, Map<String, String> attributes) {
+                        if (node instanceof FencedCodeBlock) {
+                            FencedCodeBlock fencedCodeBlock = (FencedCodeBlock) node;
+                            // Remove the default attribute for info
+                            attributes.remove("class");
+                            // Put info in custom attribute instead
+                            attributes.put("data-custom", fencedCodeBlock.getInfo());
+                        }
+                    }
+                };
             }
         };
 
-        HtmlRenderer renderer = HtmlRenderer.builder().attributeProvider(custom).build();
+        HtmlRenderer renderer = HtmlRenderer.builder().attributeProviderFactory(custom).build();
         String rendered = renderer.render(parse("```info\ncontent\n```"));
         assertEquals("<pre><code data-custom=\"info\">content\n</code></pre>\n", rendered);
 
@@ -108,19 +115,47 @@ public class HtmlRendererTest {
 
     @Test
     public void attributeProviderForImage() {
-        AttributeProvider custom = new AttributeProvider() {
+        AttributeProviderFactory custom = new AttributeProviderFactory() {
             @Override
-            public void setAttributes(Node node, Map<String, String> attributes) {
-                if (node instanceof Image) {
-                    attributes.remove("alt");
-                    attributes.put("test", "hey");
-                }
+            public AttributeProvider create(AttributeProviderContext context) {
+                return new AttributeProvider() {
+                    @Override
+                    public void setAttributes(Node node, Map<String, String> attributes) {
+                        if (node instanceof Image) {
+                            attributes.remove("alt");
+                            attributes.put("test", "hey");
+                        }
+                    }
+                };
             }
         };
 
-        HtmlRenderer renderer = HtmlRenderer.builder().attributeProvider(custom).build();
+        HtmlRenderer renderer = HtmlRenderer.builder().attributeProviderFactory(custom).build();
         String rendered = renderer.render(parse("![foo](/url)\n"));
         assertEquals("<p><img src=\"/url\" test=\"hey\" /></p>\n", rendered);
+    }
+
+    @Test
+    public void attributeProviderFactoryNewInstanceForEachRender() {
+        AttributeProviderFactory factory = new AttributeProviderFactory() {
+            @Override
+            public AttributeProvider create(AttributeProviderContext context) {
+                return new AttributeProvider() {
+                    int i = 0;
+
+                    @Override
+                    public void setAttributes(Node node, Map<String, String> attributes) {
+                        attributes.put("key", "" + i);
+                        i++;
+                    }
+                };
+            }
+        };
+
+        HtmlRenderer renderer = HtmlRenderer.builder().attributeProviderFactory(factory).build();
+        String rendered = renderer.render(parse("text node"));
+        String secondPass = renderer.render(parse("text node"));
+        assertEquals(rendered, secondPass);
     }
 
     @Test

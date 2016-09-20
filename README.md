@@ -34,8 +34,10 @@ Note that for 0.x releases of this library, the API is not considered stable
 yet and may break between minor releases. After 1.0, [Semantic Versioning] will
 be followed.
 
-See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt) file if
-you're wondering which version of the spec is currently implemented.
+See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt)
+file if you're wondering which version of the spec is currently
+implemented. Also check out the [CommonMark dingus] for getting familiar
+with the syntax or trying out edge cases.
 
 [![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
 [![Coverage status](https://coveralls.io/repos/github/atlassian/commonmark-java/badge.svg?branch=master)](https://coveralls.io/github/atlassian/commonmark-java?branch=master)
@@ -149,6 +151,18 @@ Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
+### Header IDs
+
+Enables adding auto generated id attributes to header based on their content.
+
+`# Heading` will be rendered as
+
+```
+<h1 id="heading">Heading</h1>
+```
+
+Use class `HeaderIdExtension` in artifact `commonmark-ext-heading-anchor`
+
 ### Ins
 
 Enables underlining of text by enclosing it in `++`. For example, in
@@ -202,6 +216,7 @@ BSD (2-clause) licensed, see LICENSE.txt file.
 [CommonMark]: http://commonmark.org/
 [Markdown]: https://daringfireball.net/projects/markdown/
 [commonmark.js]: https://github.com/jgm/commonmark.js
+[CommonMark Dingus]: http://spec.commonmark.org/dingus/
 [Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22com.atlassian.commonmark%22
 [Semantic Versioning]: http://semver.org/
 [autolink-java]: https://github.com/robinst/autolink-java

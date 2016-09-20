@@ -1,4 +1,4 @@
-package org.commonmark.html;
+package org.commonmark.html.attribute;
 
 import org.commonmark.node.Node;
 

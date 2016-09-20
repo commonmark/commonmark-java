@@ -4,6 +4,7 @@ import org.commonmark.node.Node;
 
 /**
  * The context for node rendering, including configuration and functionality for the node renderer to use.
+ * <p><em>This interface is not intended to be implemented by clients.</em></p>
  */
 public interface NodeRendererContext<W extends Writer> {
 

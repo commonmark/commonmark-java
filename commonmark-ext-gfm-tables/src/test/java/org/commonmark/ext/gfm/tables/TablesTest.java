@@ -1,8 +1,10 @@
 package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
-import org.commonmark.html.AttributeProvider;
 import org.commonmark.html.HtmlRenderer;
+import org.commonmark.html.attribute.AttributeProvider;
+import org.commonmark.html.attribute.AttributeProviderContext;
+import org.commonmark.html.attribute.AttributeProviderFactory;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.RenderingTestCase;
@@ -308,24 +310,29 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void attributeProviderIsApplied() {
-        AttributeProvider attributeProvider = new AttributeProvider() {
+        AttributeProviderFactory factory = new AttributeProviderFactory() {
             @Override
-            public void setAttributes(Node node, Map<String, String> attributes) {
-                if (node instanceof TableBlock) {
-                    attributes.put("test", "block");
-                } else if (node instanceof TableHead) {
-                    attributes.put("test", "head");
-                } else if (node instanceof TableBody) {
-                    attributes.put("test", "body");
-                } else if (node instanceof TableRow) {
-                    attributes.put("test", "row");
-                } else if (node instanceof TableCell) {
-                    attributes.put("test", "cell");
-                }
+            public AttributeProvider create(AttributeProviderContext context) {
+                return new AttributeProvider() {
+                    @Override
+                    public void setAttributes(Node node, Map<String, String> attributes) {
+                        if (node instanceof TableBlock) {
+                            attributes.put("test", "block");
+                        } else if (node instanceof TableHead) {
+                            attributes.put("test", "head");
+                        } else if (node instanceof TableBody) {
+                            attributes.put("test", "body");
+                        } else if (node instanceof TableRow) {
+                            attributes.put("test", "row");
+                        } else if (node instanceof TableCell) {
+                            attributes.put("test", "cell");
+                        }
+                    }
+                };
             }
         };
         HtmlRenderer renderer = HtmlRenderer.builder()
-                .attributeProvider(attributeProvider)
+                .attributeProviderFactory(factory)
                 .extensions(EXTENSIONS)
                 .build();
         String rendered = renderer.render(PARSER.parse("Abc|Def\n---|---\n1|2"));
