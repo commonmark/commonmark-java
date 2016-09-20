@@ -34,8 +34,10 @@ Note that for 0.x releases of this library, the API is not considered stable
 yet and may break between minor releases. After 1.0, [Semantic Versioning] will
 be followed.
 
-See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt) file if
-you're wondering which version of the spec is currently implemented.
+See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt)
+file if you're wondering which version of the spec is currently
+implemented. Also check out the [CommonMark dingus] for getting familiar
+with the syntax or trying out edge cases.
 
 [![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
 [![Coverage status](https://coveralls.io/repos/github/atlassian/commonmark-java/badge.svg?branch=master)](https://coveralls.io/github/atlassian/commonmark-java?branch=master)
@@ -214,6 +216,7 @@ BSD (2-clause) licensed, see LICENSE.txt file.
 [CommonMark]: http://commonmark.org/
 [Markdown]: https://daringfireball.net/projects/markdown/
 [commonmark.js]: https://github.com/jgm/commonmark.js
+[CommonMark Dingus]: http://spec.commonmark.org/dingus/
 [Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22com.atlassian.commonmark%22
 [Semantic Versioning]: http://semver.org/
 [autolink-java]: https://github.com/robinst/autolink-java
