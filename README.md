@@ -68,6 +68,9 @@ options, see methods on the builders.
 Note that this library doesn't try to sanitize the resulting HTML; that is
 the responsibility of the caller.
 
+For rendering to plain text, there's also a `TextContentRenderer` with
+a very similar API.
+
 #### Use a visitor to process parsed nodes
 
 After the source text has been parsed, the result is a tree of nodes.
