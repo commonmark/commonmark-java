@@ -70,6 +70,10 @@ the responsibility of the caller.
 
 #### Use a visitor to process parsed nodes
 
+After the source text has been parsed, the result is a tree of nodes.
+That tree can be modified before rendering, or just inspected without
+rendering:
+
 ```java
 Node node = parser.parse("Example\n=======\n\nSome more text");
 WordCountVisitor visitor = new WordCountVisitor();
@@ -88,6 +92,54 @@ class WordCountVisitor extends AbstractVisitor {
 
         // Descend into children (could be omitted in this case because Text nodes don't have children).
         visitChildren(text);
+    }
+}
+```
+
+#### Customize HTML rendering
+
+Sometimes you might want to customize how HTML is rendered, or you added
+custom node subclasses that you want to render to HTML. Both can be done
+using node renderers.
+
+In this example, we're changing the rendering of indented code blocks:
+
+```java
+Parser parser = Parser.builder().build();
+HtmlNodeRendererFactory factory = new HtmlNodeRendererFactory() {
+    @Override
+    public NodeRenderer create(HtmlNodeRendererContext context) {
+        return new IndentedCodeBlockNodeRenderer(context);
+    }
+};
+HtmlRenderer renderer = HtmlRenderer.builder().nodeRendererFactory(factory).build();
+
+Node document = parser.parse("Example:\n\n    code");
+renderer.render(document);  // "<p>Example:</p>\n<pre>code\n</pre>\n"
+
+class IndentedCodeBlockNodeRenderer implements NodeRenderer {
+
+    private final HtmlWriter html;
+
+    IndentedCodeBlockNodeRenderer(HtmlNodeRendererContext context) {
+        this.html = context.getWriter();
+    }
+
+    @Override
+    public Set<Class<? extends Node>> getNodeTypes() {
+        // Return the node types we want to use this renderer for.
+        return Collections.<Class<? extends Node>>singleton(IndentedCodeBlock.class);
+    }
+
+    @Override
+    public void render(Node node) {
+        // We only handle one type as per getNodeTypes, so we can just cast it here.
+        IndentedCodeBlock codeBlock = (IndentedCodeBlock) node;
+        html.line();
+        html.tag("pre");
+        html.text(codeBlock.getLiteral());
+        html.tag("/pre");
+        html.line();
     }
 }
 ```
