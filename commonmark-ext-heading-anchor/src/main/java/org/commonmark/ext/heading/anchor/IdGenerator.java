@@ -30,11 +30,9 @@ public class IdGenerator {
     /**
      * <p>
      * Generate an ID based on the provided text and previously generated IDs.
-     * </p>
      * <p>
      * This method is not thread safe, concurrent calls can end up
      * with non-unique identifiers.
-     * </p>
      * <p>
      * Note that collision can occur in the case that
      * <ul>
@@ -42,7 +40,6 @@ public class IdGenerator {
      * <li>Method called with 'X' again</li>
      * <li>Method called with 'X-1'</li>
      * </ul>
-     * </p>
      * <p>
      * In that case, the three generated IDs will be:
      * <ul>
@@ -50,11 +47,9 @@ public class IdGenerator {
      * <li>X-1</li>
      * <li>X-1</li>
      * </ul>
-     * </p>
      * <p>
      * Therefore if collisions are unacceptable you should ensure that
      * numbers are stripped from end of {@code text}.
-     * </p>
      *
      * @param text Text that the identifier should be based on. Will be normalised, then used to generate the
      * identifier.
