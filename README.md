@@ -206,17 +206,22 @@ Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
-### Header IDs
+### Heading anchor
 
-Enables adding auto generated id attributes to header based on their content.
+Enables adding auto generated "id" attributes to heading tags. The "id"
+is based on the text of the heading.
 
-`# Heading` will be rendered as
+`# Heading` will be rendered as:
 
 ```
 <h1 id="heading">Heading</h1>
 ```
 
-Use class `HeaderIdExtension` in artifact `commonmark-ext-heading-anchor`
+Use class `HeadingAnchorExtension` in artifact `commonmark-ext-heading-anchor`.
+
+In case you want custom rendering of the heading instead, you can use
+the `IdGenerator` class directly together with a
+`HtmlNodeRendererFactory` (see example above).
 
 ### Ins
 
