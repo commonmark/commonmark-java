@@ -178,8 +178,12 @@ Then, configure the extension on the builders:
 import org.commonmark.ext.gfm.tables.TablesExtension;
 
 List<Extension> extensions = Arrays.asList(TablesExtension.create());
-Parser parser = Parser.builder().extensions(extensions).build();
-HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
+Parser parser = Parser.builder()
+        .extensions(extensions)
+        .build();
+HtmlRenderer renderer = HtmlRenderer.builder()
+        .extensions(extensions)
+        .build();
 ```
 
 To configure another extension in the above example, just add it to the list.
