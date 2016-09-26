@@ -1,18 +1,13 @@
 package org.commonmark.test;
 
-import org.commonmark.node.AbstractVisitor;
-import org.commonmark.node.IndentedCodeBlock;
-import org.commonmark.node.Node;
-import org.commonmark.node.Text;
+import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.html.HtmlWriter;
+import org.commonmark.renderer.html.*;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -37,15 +32,31 @@ public class UsageExampleTest {
     }
 
     @Test
+    public void addAttributes() {
+        Parser parser = Parser.builder().build();
+        HtmlRenderer renderer = HtmlRenderer.builder()
+                .attributeProviderFactory(new AttributeProviderFactory() {
+                    public AttributeProvider create(AttributeProviderContext context) {
+                        return new ImageAttributeProvider();
+                    }
+                })
+                .build();
+
+        Node document = parser.parse("![text](/url.png)");
+        assertEquals("<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n",
+                renderer.render(document));
+    }
+
+    @Test
     public void customizeRendering() {
         Parser parser = Parser.builder().build();
-        HtmlNodeRendererFactory factory = new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new IndentedCodeBlockNodeRenderer(context);
-            }
-        };
-        HtmlRenderer renderer = HtmlRenderer.builder().nodeRendererFactory(factory).build();
+        HtmlRenderer renderer = HtmlRenderer.builder()
+                .nodeRendererFactory(new HtmlNodeRendererFactory() {
+                    public NodeRenderer create(HtmlNodeRendererContext context) {
+                        return new IndentedCodeBlockNodeRenderer(context);
+                    }
+                })
+                .build();
 
         Node document = parser.parse("Example:\n\n    code");
         assertEquals("<p>Example:</p>\n<pre>code\n</pre>\n", renderer.render(document));
@@ -64,6 +75,15 @@ public class UsageExampleTest {
 
             // Descend into children (could be omitted in this case because Text nodes don't have children).
             visitChildren(text);
+        }
+    }
+
+    class ImageAttributeProvider implements AttributeProvider {
+        @Override
+        public void setAttributes(Node node, Map<String, String> attributes) {
+            if (node instanceof Image) {
+                attributes.put("class", "border");
+            }
         }
     }
 

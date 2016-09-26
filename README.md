@@ -99,26 +99,60 @@ class WordCountVisitor extends AbstractVisitor {
 }
 ```
 
-#### Customize HTML rendering
+#### Add or change attributes of HTML elements
 
-Sometimes you might want to customize how HTML is rendered, or you added
-custom node subclasses that you want to render to HTML. Both can be done
-using node renderers.
+Sometimes you might want to customize how HTML is rendered. If all you
+want to do is add or change attributes on some elements, there's a
+simple way to do that.
 
-In this example, we're changing the rendering of indented code blocks:
+In this example, we register a factory for an `AttributeProvider` on the
+renderer to set a `class="border"` attribute on `img` elements.
 
 ```java
 Parser parser = Parser.builder().build();
-HtmlNodeRendererFactory factory = new HtmlNodeRendererFactory() {
+HtmlRenderer renderer = HtmlRenderer.builder()
+        .attributeProviderFactory(new AttributeProviderFactory() {
+            public AttributeProvider create(AttributeProviderContext context) {
+                return new ImageAttributeProvider();
+            }
+        })
+        .build();
+
+Node document = parser.parse("![text](/url.png)");
+renderer.render(document);
+// "<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n"
+
+class ImageAttributeProvider implements AttributeProvider {
     @Override
-    public NodeRenderer create(HtmlNodeRendererContext context) {
-        return new IndentedCodeBlockNodeRenderer(context);
+    public void setAttributes(Node node, Map<String, String> attributes) {
+        if (node instanceof Image) {
+            attributes.put("class", "border");
+        }
     }
-};
-HtmlRenderer renderer = HtmlRenderer.builder().nodeRendererFactory(factory).build();
+}
+```
+
+#### Customize HTML rendering
+
+If you want to do more than just change attributes, there's also a way
+to take complete control over how HTML is rendered.
+
+In this example, we're changing the rendering of indented code blocks to
+only wrap them in `pre` instead of `pre` and `code`:
+
+```java
+Parser parser = Parser.builder().build();
+HtmlRenderer renderer = HtmlRenderer.builder()
+        .nodeRendererFactory(new HtmlNodeRendererFactory() {
+            public NodeRenderer create(HtmlNodeRendererContext context) {
+                return new IndentedCodeBlockNodeRenderer(context);
+            }
+        })
+        .build();
 
 Node document = parser.parse("Example:\n\n    code");
-renderer.render(document);  // "<p>Example:</p>\n<pre>code\n</pre>\n"
+renderer.render(document);
+// "<p>Example:</p>\n<pre>code\n</pre>\n"
 
 class IndentedCodeBlockNodeRenderer implements NodeRenderer {
 
@@ -146,6 +180,15 @@ class IndentedCodeBlockNodeRenderer implements NodeRenderer {
     }
 }
 ```
+
+#### Add your own node types
+
+In case you want to store additional data in the document or have custom
+elements in the resulting HTML, you can create your own subclass of
+`CustomNode` and add instances as child nodes to existing nodes.
+
+To define the HTML rendering for them, you can use a `NodeRenderer` as
+explained above.
 
 ### API documentation
 
