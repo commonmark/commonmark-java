@@ -20,10 +20,6 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
                 .build();
     }
 
-    public static HeadingIdAttributeProvider create() {
-        return create("default", "", "");
-    }
-
     public static HeadingIdAttributeProvider create(String defaultId, String prefix, String suffix) {
         return new HeadingIdAttributeProvider(defaultId, prefix, suffix);
     }

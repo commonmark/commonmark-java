@@ -43,7 +43,7 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
         return create(builder());
     }
 
-    public static Extension create(Builder builder) {
+    private static Extension create(Builder builder) {
         return new HeadingAnchorExtension(builder.defaultId, builder.idPrefix, builder.idSuffix);
     }
 
