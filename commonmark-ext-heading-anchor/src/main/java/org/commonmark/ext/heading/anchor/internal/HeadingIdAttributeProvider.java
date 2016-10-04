@@ -12,12 +12,20 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
 
     private final IdGenerator idGenerator;
 
-    private HeadingIdAttributeProvider() {
-        idGenerator = IdGenerator.builder().defaultId("heading").build();
+    private HeadingIdAttributeProvider(String defaultId, String prefix, String suffix) {
+        idGenerator = IdGenerator.builder()
+                .defaultId(defaultId)
+                .prefix(prefix)
+                .suffix(suffix)
+                .build();
     }
 
     public static HeadingIdAttributeProvider create() {
-        return new HeadingIdAttributeProvider();
+        return create("default", "", "");
+    }
+
+    public static HeadingIdAttributeProvider create(String defaultId, String prefix, String suffix) {
+        return new HeadingIdAttributeProvider(defaultId, prefix, suffix);
     }
 
     @Override

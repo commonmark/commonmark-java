@@ -29,11 +29,26 @@ import org.commonmark.renderer.html.HtmlRenderer;
  */
 public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtension {
 
-    private HeadingAnchorExtension() {
+    private final String defaultId;
+    private final String idPrefix;
+    private final String idSuffix;
+
+    private HeadingAnchorExtension(String defaultId, String idPrefix, String idSuffix) {
+        this.defaultId = defaultId;
+        this.idPrefix = idPrefix;
+        this.idSuffix = idSuffix;
     }
 
     public static Extension create() {
-        return new HeadingAnchorExtension();
+        return create(builder());
+    }
+
+    public static Extension create(Builder builder) {
+        return new HeadingAnchorExtension(builder.defaultId, builder.idPrefix, builder.idSuffix);
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -41,8 +56,51 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
         rendererBuilder.attributeProviderFactory(new AttributeProviderFactory() {
             @Override
             public AttributeProvider create(AttributeProviderContext context) {
-                return HeadingIdAttributeProvider.create();
+                return HeadingIdAttributeProvider.create(defaultId, idPrefix, idSuffix);
             }
         });
+    }
+
+    public static class Builder {
+        private String defaultId;
+        private String idPrefix;
+        private String idSuffix;
+
+        public Builder() {
+            defaultId = "id";
+            idPrefix = "";
+            idSuffix = "";
+        }
+
+        /**
+         * @param value Default value for the id to take if no generated id can be extracted. Default "id"
+         * @return {@code this}
+         */
+        public Builder defaultId(String value) {
+            this.defaultId = value;
+            return this;
+        }
+
+        /**
+         * @param value Set the value to be prepended to every id generated. Default ""
+         * @return {@code this}
+         */
+        public Builder idPrefix(String value) {
+            this.idPrefix = value;
+            return this;
+        }
+
+        /**
+         * @param value Set the value to be appended to every id generated. Default ""
+         * @return
+         */
+        public Builder idSuffix(String value) {
+            this.idSuffix = value;
+            return this;
+        }
+
+        public Extension build() {
+            return HeadingAnchorExtension.create(this);
+        }
     }
 }
