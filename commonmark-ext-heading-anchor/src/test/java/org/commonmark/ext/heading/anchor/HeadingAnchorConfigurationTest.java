@@ -1,13 +1,11 @@
 package org.commonmark.ext.heading.anchor;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
-
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;

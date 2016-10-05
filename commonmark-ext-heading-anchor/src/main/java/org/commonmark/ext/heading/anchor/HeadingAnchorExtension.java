@@ -10,8 +10,8 @@ import org.commonmark.renderer.html.HtmlRenderer;
 /**
  * Extension for adding auto generated IDs to headings.
  * <p>
- * Create it with {@link #create()} and then configure it on the builder
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
+ * Create it with {@link #create()} or {@link #builder()} and then configure it on the
+ * renderer builder ({@link HtmlRenderer.Builder#extensions(Iterable)}).
  * <p>
  * The heading text will be used to create the id. Multiple headings with the
  * same text will result in appending a hyphen and number. For example:
@@ -33,20 +33,22 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
     private final String idPrefix;
     private final String idSuffix;
 
-    private HeadingAnchorExtension(String defaultId, String idPrefix, String idSuffix) {
-        this.defaultId = defaultId;
-        this.idPrefix = idPrefix;
-        this.idSuffix = idSuffix;
+    private HeadingAnchorExtension(Builder builder) {
+        this.defaultId = builder.defaultId;
+        this.idPrefix = builder.idPrefix;
+        this.idSuffix = builder.idSuffix;
     }
 
+    /**
+     * @return the extension built with default settings
+     */
     public static Extension create() {
-        return create(builder());
+        return new HeadingAnchorExtension(builder());
     }
 
-    private static Extension create(Builder builder) {
-        return new HeadingAnchorExtension(builder.defaultId, builder.idPrefix, builder.idSuffix);
-    }
-
+    /**
+     * @return a builder to configure the extension settings
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -62,15 +64,9 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
     }
 
     public static class Builder {
-        private String defaultId;
-        private String idPrefix;
-        private String idSuffix;
-
-        public Builder() {
-            defaultId = "id";
-            idPrefix = "";
-            idSuffix = "";
-        }
+        private String defaultId = "id";
+        private String idPrefix = "";
+        private String idSuffix = "";
 
         /**
          * @param value Default value for the id to take if no generated id can be extracted. Default "id"
@@ -92,15 +88,18 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
 
         /**
          * @param value Set the value to be appended to every id generated. Default ""
-         * @return
+         * @return {@code this}
          */
         public Builder idSuffix(String value) {
             this.idSuffix = value;
             return this;
         }
 
+        /**
+         * @return a configured extension
+         */
         public Extension build() {
-            return HeadingAnchorExtension.create(this);
+            return new HeadingAnchorExtension(this);
         }
     }
 }
