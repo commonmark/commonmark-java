@@ -13,10 +13,14 @@ import java.util.regex.Pattern;
 public class IdGenerator {
     private final Pattern allowedCharacters = Pattern.compile("[\\w\\-_]+", Pattern.UNICODE_CHARACTER_CLASS);
     private final Map<String, Integer> identityMap;
+    private final String prefix;
+    private final String suffix;
     private String defaultIdentifier;
 
     private IdGenerator(Builder builder) {
         this.defaultIdentifier = builder.defaultIdentifier;
+        this.prefix = builder.prefix;
+        this.suffix = builder.suffix;
         this.identityMap = new HashMap<>();
     }
 
@@ -67,11 +71,11 @@ public class IdGenerator {
 
         if (!identityMap.containsKey(normalizedIdentity)) {
             identityMap.put(normalizedIdentity, 1);
-            return normalizedIdentity;
+            return prefix + normalizedIdentity + suffix;
         } else {
             int currentCount = identityMap.get(normalizedIdentity);
             identityMap.put(normalizedIdentity, currentCount + 1);
-            return normalizedIdentity + "-" + currentCount;
+            return prefix + normalizedIdentity + "-" + currentCount + suffix;
         }
     }
 
@@ -95,6 +99,8 @@ public class IdGenerator {
 
     public static class Builder {
         private String defaultIdentifier = "id";
+        private String prefix = "";
+        private String suffix = "";
 
         public IdGenerator build() {
             return new IdGenerator(this);
@@ -105,6 +111,25 @@ public class IdGenerator {
          * @return {@code this}
          */
         public Builder defaultId(String defaultId) {
+            this.defaultIdentifier = defaultId;
+            return this;
+        }
+
+        /**
+         * @param prefix the text to place before the generated identity
+         * @return {@code this}
+         */
+        public Builder prefix(String prefix) {
+            this.prefix = prefix;
+            return this;
+        }
+
+        /**
+         * @param suffix the text to place after the generated identity
+         * @return {@code this}
+         */
+        public Builder suffix(String suffix) {
+            this.suffix = suffix;
             return this;
         }
     }
