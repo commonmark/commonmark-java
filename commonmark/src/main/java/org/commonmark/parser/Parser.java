@@ -5,6 +5,7 @@ import java.io.Reader;
 import org.commonmark.Extension;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserImpl;
+import org.commonmark.node.Block;
 import org.commonmark.node.Node;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
@@ -32,7 +33,7 @@ public class Parser {
     private final List<PostProcessor> postProcessors;
 
     private Parser(Builder builder) {
-        this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories);
+        this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.allowedBlockTypes);
         this.delimiterProcessors = InlineParserImpl.calculateDelimiterProcessors(builder.delimiterProcessors);
         this.delimiterCharacters = InlineParserImpl.calculateDelimiterCharacters(delimiterProcessors.keySet());
         this.specialCharacters = InlineParserImpl.calculateSpecialCharacters(delimiterCharacters);
@@ -93,6 +94,7 @@ public class Parser {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
+        private List<Class<? extends Block>> allowedBlockTypes = DocumentParser.getDefaultBlockParserTypes();
 
         /**
          * @return the configured {@link Parser}
@@ -112,6 +114,37 @@ public class Parser {
                     parserExtension.extend(this);
                 }
             }
+            return this;
+        }
+
+        /**
+         * Describe the list of markdown features the parser will recognize and parse.
+         *
+         * By default, Commonmark will recognize and parse the following set of core markdown features:
+         *
+         * Heading (#) - Heading.class
+         * HTML (<html></html>) - HtmlBlock.class
+         * Horizontal Rule / Thematic Break (---) - ThematicBreak.class
+         * Fenced Code Block (```) - FencedCodeBlock.class
+         * Indented Code Block - IndentedCodeBlock.class
+         * Block Quote (>) - BlockQuote.class
+         * Ordered / Unordered List (>) - ListBlock.class
+         *
+         * To parse only a subset of the features listed above, pass a list of each feature's associated Node class.
+         * E.g., to only parse Headings and Lists:
+         * <pre>
+         *     {@code
+         *     Parser.builder().allowedBlockTypes(Heading.class, ListBlock.class);
+         *     }
+         * </pre>
+         *
+         * @param allowedBlockTypes A list of nodes the parser will parse.
+         *                     If this list is empty, the parser will not recognize any Commonmark core markdown features.
+         *
+         * @return {@code this}
+         */
+        public Builder allowedBlockTypes(List<Class<? extends Block>> allowedBlockTypes) {
+            this.allowedBlockTypes = allowedBlockTypes;
             return this;
         }
 

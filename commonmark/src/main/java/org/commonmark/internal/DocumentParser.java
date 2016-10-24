@@ -12,14 +12,28 @@ import java.util.*;
 
 public class DocumentParser implements ParserState {
 
-    private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
-            new BlockQuoteParser.Factory(),
-            new HeadingParser.Factory(),
-            new FencedCodeBlockParser.Factory(),
-            new HtmlBlockParser.Factory(),
-            new ThematicBreakParser.Factory(),
-            new ListBlockParser.Factory(),
-            new IndentedCodeBlockParser.Factory());
+    private static final List<Class<? extends Block>> CORE_FACTORY_TYPES = Arrays.<Class<? extends Block>>asList(
+            BlockQuote.class,
+            Heading.class,
+            FencedCodeBlock.class,
+            HtmlBlock.class,
+            ThematicBreak.class,
+            ListBlock.class,
+            IndentedCodeBlock.class);
+
+    private static final Map<Class<? extends Block>, BlockParserFactory> NODES_TO_CORE_FACTORIES;
+    static {
+        Map<Class<? extends Block>, BlockParserFactory> map = new HashMap<>();
+        map.put(BlockQuote.class, new BlockQuoteParser.Factory());
+        map.put(Heading.class, new HeadingParser.Factory());
+        map.put(FencedCodeBlock.class, new FencedCodeBlockParser.Factory());
+        map.put(HtmlBlock.class, new HtmlBlockParser.Factory());
+        map.put(ThematicBreak.class, new ThematicBreakParser.Factory());
+        map.put(ListBlock.class, new ListBlockParser.Factory());
+        map.put(IndentedCodeBlock.class, new IndentedCodeBlockParser.Factory());
+        NODES_TO_CORE_FACTORIES = Collections.unmodifiableMap(map);
+    }
+
 
     private CharSequence line;
 
@@ -59,11 +73,17 @@ public class DocumentParser implements ParserState {
         activateBlockParser(this.documentBlockParser);
     }
 
-    public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories) {
+    public static List<Class<? extends Block>> getDefaultBlockParserTypes() {
+        return CORE_FACTORY_TYPES;
+    }
+
+    public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories, List<Class<? extends Block>> allowedBlockTypes) {
         List<BlockParserFactory> list = new ArrayList<>();
         // By having the custom factories come first, extensions are able to change behavior of core syntax.
         list.addAll(customBlockParserFactories);
-        list.addAll(DocumentParser.CORE_FACTORIES);
+        for (Class<? extends Block> blockType : allowedBlockTypes) {
+            list.add(NODES_TO_CORE_FACTORIES.get(blockType));
+        }
         return list;
     }
 

@@ -1,18 +1,19 @@
 package org.commonmark.test;
 
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.block.*;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.spec.SpecReader;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.List;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -47,6 +48,25 @@ public class ParserTest {
         assertThat(document.getLastChild(), instanceOf(DashBlock.class));
     }
     
+    @Test
+    public void allowedBlockTypes() {
+        String given = "# heading 1\n\nnot a heading";
+
+        Parser parser = Parser.builder().build(); // all core parsers by default
+        Node document = parser.parse(given);
+        assertThat(document.getFirstChild(), instanceOf(Heading.class));
+
+        List headersOnly = Collections.singletonList(Heading.class);
+        parser = Parser.builder().allowedBlockTypes(headersOnly).build();
+        document = parser.parse(given);
+        assertThat(document.getFirstChild(), instanceOf(Heading.class));
+
+        List noCoreTypes = Collections.emptyList();
+        parser = Parser.builder().allowedBlockTypes(noCoreTypes).build();
+        document = parser.parse(given);
+        assertThat(document.getFirstChild(), not(instanceOf(Heading.class)));
+    }
+
     @Test
     public void indentation() {
         String given = " - 1 space\n   - 3 spaces\n     - 5 spaces\n\t - tab + space";
