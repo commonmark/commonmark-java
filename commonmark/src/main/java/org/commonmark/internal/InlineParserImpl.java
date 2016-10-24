@@ -172,9 +172,8 @@ public class InlineParserImpl implements InlineParser {
 
     /**
      * Attempt to parse a link reference, modifying the internal reference map.
-     *
-     * @return how many characters were parsed as a reference, {@code 0} if none
      */
+    @Override
     public int parseReference(String s) {
         this.input = s;
         this.index = 0;

@@ -6,7 +6,7 @@ import org.commonmark.parser.delimiter.DelimiterRun;
 /**
  * Delimiter (emphasis, strong emphasis or custom emphasis).
  */
-class Delimiter implements DelimiterRun {
+public class Delimiter implements DelimiterRun {
 
     final Text node;
     final char delimiterChar;

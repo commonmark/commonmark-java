@@ -31,6 +31,7 @@ public class Parser {
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final BitSet delimiterCharacters;
     private final BitSet specialCharacters;
+    private final InlineParser inlineParser;
     private final List<PostProcessor> postProcessors;
 
     private Parser(Builder builder) {
@@ -38,6 +39,7 @@ public class Parser {
         this.delimiterProcessors = InlineParserImpl.calculateDelimiterProcessors(builder.delimiterProcessors);
         this.delimiterCharacters = InlineParserImpl.calculateDelimiterCharacters(delimiterProcessors.keySet());
         this.specialCharacters = InlineParserImpl.calculateSpecialCharacters(delimiterCharacters);
+        this.inlineParser = builder.inlineParser;
         this.postProcessors = builder.postProcessors;
     }
 
@@ -59,7 +61,7 @@ public class Parser {
      * @return the root node
      */
     public Node parse(String input) {
-        InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
+        InlineParser inlineParser = getInlineParser();
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
         Node document = documentParser.parse(input);
         return postProcess(document);
@@ -75,10 +77,18 @@ public class Parser {
      * @throws IOException when reading throws an exception
      */
     public Node parseReader(Reader input) throws IOException {
-        InlineParserImpl inlineParser = new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
+        InlineParser inlineParser = getInlineParser();
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
         Node document = documentParser.parse(input);
         return postProcess(document);
+    }
+
+    private InlineParser getInlineParser() {
+        if (this.inlineParser == null) {
+            return new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
+        } else {
+            return this.inlineParser;
+        }
     }
 
     private Node postProcess(Node document) {
@@ -96,6 +106,7 @@ public class Parser {
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
+        private InlineParser inlineParser = null;
 
         /**
          * @return the configured {@link Parser}
@@ -175,6 +186,29 @@ public class Parser {
 
         public Builder postProcessor(PostProcessor postProcessor) {
             postProcessors.add(postProcessor);
+            return this;
+        }
+
+        /**
+         * Overrides the parser used for inline markdown processing.
+         *
+         * Provide an implementation of InlineParser to modify how the following are parsed:
+         * bold (**)
+         * italic (*)
+         * strikethrough (~~)
+         * backtick quote (`)
+         * link ([title](http://))
+         * image (![alt](http://))
+         *
+         * <p>
+         * Note that if this method is not called or the inline parser is set to null, then the default
+         * implementation will be used.
+         *
+         * @param parser an inline parser implementation
+         * @return {@code this}
+         */
+        public Builder inlineParser(InlineParser parser) {
+            this.inlineParser = parser;
             return this;
         }
     }

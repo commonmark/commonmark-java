@@ -5,7 +5,7 @@ import org.commonmark.node.Text;
 /**
  * Opening bracket for links (<code>[</code>) or images (<code>![</code>).
  */
-class Bracket {
+public class Bracket {
 
     final Text node;
     final int index;

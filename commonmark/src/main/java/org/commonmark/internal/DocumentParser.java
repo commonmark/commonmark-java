@@ -6,6 +6,7 @@ import java.io.Reader;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
+import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
 
 import java.util.ArrayList;
@@ -66,14 +67,14 @@ public class DocumentParser implements ParserState {
     private boolean blank;
 
     private final List<BlockParserFactory> blockParserFactories;
-    private final InlineParserImpl inlineParser;
+    private final InlineParser inlineParser;
     private final DocumentBlockParser documentBlockParser;
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
     private Set<BlockParser> allBlockParsers = new HashSet<>();
     private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
-    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserImpl inlineParser) {
+    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParser inlineParser) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParser = inlineParser;
         
