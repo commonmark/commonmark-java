@@ -7,35 +7,35 @@ import org.commonmark.node.Text;
  */
 public class Bracket {
 
-    final Text node;
-    final int index;
-    final boolean image;
+    public final Text node;
+    public final int index;
+    public final boolean image;
 
     /**
      * Previous bracket.
      */
-    final Bracket previous;
+    public final Bracket previous;
 
     /**
      * Previous delimiter (emphasis, etc) before this bracket.
      */
-    final Delimiter previousDelimiter;
+    public final Delimiter previousDelimiter;
 
     /**
      * Whether this bracket is allowed to form a link/image (also known as "active").
      */
-    boolean allowed = true;
+    public boolean allowed = true;
 
     /**
      * Whether there is an unescaped bracket (opening or closing) anywhere after this opening bracket.
      */
-    boolean bracketAfter = false;
+    public boolean bracketAfter = false;
 
-    static Bracket link(Text node, int index, Bracket previous, Delimiter previousDelimiter) {
+    static public Bracket link(Text node, int index, Bracket previous, Delimiter previousDelimiter) {
         return new Bracket(node, index, previous, previousDelimiter, false);
     }
 
-    static Bracket image(Text node, int index, Bracket previous, Delimiter previousDelimiter) {
+    static public Bracket image(Text node, int index, Bracket previous, Delimiter previousDelimiter) {
         return new Bracket(node, index, previous, previousDelimiter, true);
     }
 

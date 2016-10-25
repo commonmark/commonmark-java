@@ -8,25 +8,25 @@ import org.commonmark.parser.delimiter.DelimiterRun;
  */
 public class Delimiter implements DelimiterRun {
 
-    final Text node;
-    final char delimiterChar;
+    public final Text node;
+    public final char delimiterChar;
 
     /**
      * Can open emphasis, see spec.
      */
-    final boolean canOpen;
+    public final boolean canOpen;
 
     /**
      * Can close emphasis, see spec.
      */
-    final boolean canClose;
+    public final boolean canClose;
 
-    Delimiter previous;
-    Delimiter next;
+    public Delimiter previous;
+    public Delimiter next;
 
-    int numDelims = 1;
+    public int numDelims = 1;
 
-    Delimiter(Text node, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
+    public Delimiter(Text node, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
         this.node = node;
         this.delimiterChar = delimiterChar;
         this.canOpen = canOpen;
