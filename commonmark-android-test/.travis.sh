@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+set -x
 
 version=$(cd .. && mvn help:evaluate -Dexpression=project.version | grep -v '^\[' | tail -1)
 autolink_version=$(cd ../commonmark-ext-autolink && mvn help:evaluate -Dexpression=autolink.version | grep -v '^\[' | tail -1)
