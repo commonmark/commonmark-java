@@ -51,6 +51,9 @@ repositories {
                 '../../commonmark-ext-autolink/target',
                 '../../commonmark-ext-gfm-strikethrough/target',
                 '../../commonmark-ext-gfm-tables/target',
+                '../../commonmark-ext-heading-anchor/target',
+                '../../commonmark-ext-ins/target',
+                '../../commonmark-ext-yaml-front-matter/target',
                 '../../commonmark-test-util/target'
     }
 }
@@ -66,10 +69,16 @@ dependencies {
     androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-autolink:' + testProperties['version.maven']
     androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:' + testProperties['version.maven']
     androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-gfm-tables:' + testProperties['version.maven']
+    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-heading-anchor:' + testProperties['version.maven']
+    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-ins:' + testProperties['version.maven']
+    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-yaml-front-matter:' + testProperties['version.maven']
 
     androidTestSnapshotCompile 'org.nibor.autolink:autolink:' + testProperties['version.snapshot_autolink']
     androidTestSnapshotCompile ':commonmark-' + testProperties['version.snapshot']
     androidTestSnapshotCompile ':commonmark-ext-autolink-' + testProperties['version.snapshot']
     androidTestSnapshotCompile ':commonmark-ext-gfm-strikethrough-' + testProperties['version.snapshot']
     androidTestSnapshotCompile ':commonmark-ext-gfm-tables-' + testProperties['version.snapshot']
+    androidTestSnapshotCompile ':commonmark-ext-heading-anchor-' + testProperties['version.snapshot']
+    androidTestSnapshotCompile ':commonmark-ext-ins-' + testProperties['version.snapshot']
+    androidTestSnapshotCompile ':commonmark-ext-yaml-front-matter-' + testProperties['version.snapshot']
 }
