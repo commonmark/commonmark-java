@@ -514,7 +514,7 @@ public class InlineParserImpl implements InlineParser {
         String title = null;
         boolean isLinkOrImage = false;
 
-        // Inline link?
+        // Maybe a inline link like `[foo](/uri "title")`
         if (peek() == '(') {
             index++;
             spnl();
@@ -528,11 +528,16 @@ public class InlineParserImpl implements InlineParser {
                 if (peek() == ')') {
                     index++;
                     isLinkOrImage = true;
+                } else {
+                    index = startIndex;
                 }
             }
-        } else { // maybe reference link
+        }
 
-            // See if there's a link label
+        // Maybe a reference link like `[foo][bar]`, `[foo][]` or `[foo]`
+        if (!isLinkOrImage) {
+
+            // See if there's a link label like `[bar]` or `[]`
             int beforeLabel = index;
             int labelLength = parseLinkLabel();
             String ref = null;
