@@ -39,7 +39,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
                             "caption|center|col|colgroup|" +
                             "dd|details|dialog|dir|div|dl|dt|" +
                             "fieldset|figcaption|figure|footer|form|frame|frameset|" +
-                            "h1|head|header|hr|html|" +
+                            "h1|h2|h3|h4|h5|h6|head|header|hr|html|" +
                             "iframe|" +
                             "legend|li|link|" +
                             "main|menu|menuitem|meta|" +
