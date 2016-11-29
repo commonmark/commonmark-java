@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+set -x
 
 version=$(cd .. && mvn help:evaluate -Dexpression=project.version | grep -v '^\[' | tail -1)
 autolink_version=$(cd ../commonmark-ext-autolink && mvn help:evaluate -Dexpression=autolink.version | grep -v '^\[' | tail -1)
@@ -12,7 +13,7 @@ echo "version.maven_autolink=0.5.0" >> test.properties
 echo "version.snapshot=$version" >> test.properties
 echo "version.snapshot_autolink=$autolink_version" >> test.properties
 
-echo no | android create avd --force -n test -t "android-15"
+echo no | android create avd --force -n test -t "android-16"
 emulator -avd test -no-audio -no-window &
 android-wait-for-emulator
 

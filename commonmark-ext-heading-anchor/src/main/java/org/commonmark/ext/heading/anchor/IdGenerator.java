@@ -11,13 +11,14 @@ import java.util.regex.Pattern;
  * Use {@link #builder()} to create an instance.
  */
 public class IdGenerator {
-    private final Pattern allowedCharacters = Pattern.compile("[\\w\\-_]+", Pattern.UNICODE_CHARACTER_CLASS);
+    private final Pattern allowedCharacters;
     private final Map<String, Integer> identityMap;
     private final String prefix;
     private final String suffix;
     private String defaultIdentifier;
 
     private IdGenerator(Builder builder) {
+        this.allowedCharacters = compileAllowedCharactersPattern();
         this.defaultIdentifier = builder.defaultIdentifier;
         this.prefix = builder.prefix;
         this.suffix = builder.suffix;
@@ -76,6 +77,17 @@ public class IdGenerator {
             int currentCount = identityMap.get(normalizedIdentity);
             identityMap.put(normalizedIdentity, currentCount + 1);
             return prefix + normalizedIdentity + "-" + currentCount + suffix;
+        }
+    }
+
+    private static Pattern compileAllowedCharactersPattern() {
+        String regex = "[\\w\\-_]+";
+        try {
+            return Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
+        } catch (IllegalArgumentException e) {
+            // Android only supports the flag in API level 24. But it actually uses Unicode character classes by
+            // default, so not specifying the flag is ok. See issue #71.
+            return Pattern.compile(regex);
         }
     }
 
