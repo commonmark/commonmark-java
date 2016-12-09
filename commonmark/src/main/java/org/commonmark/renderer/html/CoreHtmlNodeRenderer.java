@@ -187,14 +187,14 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(Emphasis emphasis) {
-        html.tag("em");
+        html.tag("em", getAttrs(emphasis, "em"));
         visitChildren(emphasis);
         html.tag("/em");
     }
 
     @Override
     public void visit(StrongEmphasis strongEmphasis) {
-        html.tag("strong");
+        html.tag("strong", getAttrs(strongEmphasis, "strong"));
         visitChildren(strongEmphasis);
         html.tag("/strong");
     }
@@ -206,7 +206,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(Code code) {
-        html.tag("code");
+        html.tag("code", getAttrs(code, "code"));
         html.text(code.getLiteral());
         html.tag("/code");
     }
@@ -227,7 +227,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(HardLineBreak hardLineBreak) {
-        html.tag("br", null, true);
+        html.tag("br", getAttrs(hardLineBreak, "br"), true);
         html.line();
     }
 
