@@ -27,7 +27,7 @@ public class InsNodeRenderer implements NodeRenderer {
 
     @Override
     public void render(Node node) {
-        Map<String, String> attributes = context.extendAttributes(node, Collections.<String, String>emptyMap());
+        Map<String, String> attributes = context.extendAttributes(node, "ins", Collections.<String, String>emptyMap());
         html.tag("ins", attributes);
         renderChildren(node);
         html.tag("/ins");

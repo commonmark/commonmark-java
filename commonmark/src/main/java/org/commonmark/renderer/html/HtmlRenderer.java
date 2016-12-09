@@ -222,9 +222,9 @@ public class HtmlRenderer implements Renderer {
         }
 
         @Override
-        public Map<String, String> extendAttributes(Node node, Map<String, String> attributes) {
+        public Map<String, String> extendAttributes(Node node, String tagName, Map<String, String> attributes) {
             Map<String, String> attrs = new LinkedHashMap<>(attributes);
-            setCustomAttributes(node, attrs);
+            setCustomAttributes(node, tagName, attrs);
             return attrs;
         }
 
@@ -243,9 +243,9 @@ public class HtmlRenderer implements Renderer {
             nodeRendererMap.render(node);
         }
 
-        private void setCustomAttributes(Node node, Map<String, String> attrs) {
+        private void setCustomAttributes(Node node, String tagName, Map<String, String> attrs) {
             for (AttributeProvider attributeProvider : attributeProviders) {
-                attributeProvider.setAttributes(node, attrs);
+                attributeProvider.setAttributes(node, tagName, attrs);
             }
         }
     }

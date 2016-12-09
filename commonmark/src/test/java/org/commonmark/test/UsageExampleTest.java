@@ -80,7 +80,7 @@ public class UsageExampleTest {
 
     class ImageAttributeProvider implements AttributeProvider {
         @Override
-        public void setAttributes(Node node, Map<String, String> attributes) {
+        public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
             if (node instanceof Image) {
                 attributes.put("class", "border");
             }

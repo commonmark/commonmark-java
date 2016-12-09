@@ -19,7 +19,7 @@ public class StrikethroughHtmlNodeRenderer extends StrikethroughNodeRenderer {
 
     @Override
     public void render(Node node) {
-        Map<String, String> attributes = context.extendAttributes(node, Collections.<String, String>emptyMap());
+        Map<String, String> attributes = context.extendAttributes(node, "del", Collections.<String, String>emptyMap());
         html.tag("del", attributes);
         renderChildren(node);
         html.tag("/del");

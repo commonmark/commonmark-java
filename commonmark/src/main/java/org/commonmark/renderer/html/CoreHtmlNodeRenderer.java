@@ -59,7 +59,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     public void visit(Heading heading) {
         String htag = "h" + heading.getLevel();
         html.line();
-        html.tag(htag, getAttrs(heading));
+        html.tag(htag, getAttrs(heading, htag));
         visitChildren(heading);
         html.tag('/' + htag);
         html.line();
@@ -70,7 +70,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         boolean inTightList = isInTightList(paragraph);
         if (!inTightList) {
             html.line();
-            html.tag("p", getAttrs(paragraph));
+            html.tag("p", getAttrs(paragraph, "p"));
         }
         visitChildren(paragraph);
         if (!inTightList) {
@@ -82,7 +82,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     @Override
     public void visit(BlockQuote blockQuote) {
         html.line();
-        html.tag("blockquote", getAttrs(blockQuote));
+        html.tag("blockquote", getAttrs(blockQuote, "blockquote"));
         html.line();
         visitChildren(blockQuote);
         html.line();
@@ -92,7 +92,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(BulletList bulletList) {
-        renderListBlock(bulletList, "ul", getAttrs(bulletList));
+        renderListBlock(bulletList, "ul", getAttrs(bulletList, "ul"));
     }
 
     @Override
@@ -110,7 +110,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
             }
             attributes.put("class", "language-" + language);
         }
-        renderCodeBlock(literal, getAttrs(fencedCodeBlock, attributes));
+        renderCodeBlock(literal, fencedCodeBlock, attributes);
     }
 
     @Override
@@ -127,13 +127,13 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     @Override
     public void visit(ThematicBreak thematicBreak) {
         html.line();
-        html.tag("hr", getAttrs(thematicBreak), true);
+        html.tag("hr", getAttrs(thematicBreak, "hr"), true);
         html.line();
     }
 
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
-        renderCodeBlock(indentedCodeBlock.getLiteral(), getAttrs(indentedCodeBlock));
+        renderCodeBlock(indentedCodeBlock.getLiteral(), indentedCodeBlock, Collections.<String, String>emptyMap());
     }
 
     @Override
@@ -144,14 +144,14 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         if (link.getTitle() != null) {
             attrs.put("title", link.getTitle());
         }
-        html.tag("a", getAttrs(link, attrs));
+        html.tag("a", getAttrs(link, "a", attrs));
         visitChildren(link);
         html.tag("/a");
     }
 
     @Override
     public void visit(ListItem listItem) {
-        html.tag("li", getAttrs(listItem));
+        html.tag("li", getAttrs(listItem, "li"));
         visitChildren(listItem);
         html.tag("/li");
         html.line();
@@ -164,7 +164,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         if (start != 1) {
             attrs.put("start", String.valueOf(start));
         }
-        renderListBlock(orderedList, "ol", getAttrs(orderedList, attrs));
+        renderListBlock(orderedList, "ol", getAttrs(orderedList, "ol", attrs));
     }
 
     @Override
@@ -182,7 +182,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
             attrs.put("title", image.getTitle());
         }
 
-        html.tag("img", getAttrs(image, attrs), true);
+        html.tag("img", getAttrs(image, "img", attrs), true);
     }
 
     @Override
@@ -241,10 +241,10 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         }
     }
 
-    private void renderCodeBlock(String literal, Map<String, String> attributes) {
+    private void renderCodeBlock(String literal, Node node, Map<String, String> attributes) {
         html.line();
-        html.tag("pre");
-        html.tag("code", attributes);
+        html.tag("pre", getAttrs(node, "pre"));
+        html.tag("code", getAttrs(node, "code", attributes));
         html.text(literal);
         html.tag("/code");
         html.tag("/pre");
@@ -273,12 +273,12 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         return false;
     }
 
-    private Map<String, String> getAttrs(Node node) {
-        return context.extendAttributes(node, Collections.<String, String>emptyMap());
+    private Map<String, String> getAttrs(Node node, String tagName) {
+        return getAttrs(node, tagName, Collections.<String, String>emptyMap());
     }
 
-    private Map<String, String> getAttrs(Node node, Map<String, String> defaultAttributes) {
-        return context.extendAttributes(node, defaultAttributes);
+    private Map<String, String> getAttrs(Node node, String tagName, Map<String, String> defaultAttributes) {
+        return context.extendAttributes(node, tagName, defaultAttributes);
     }
 
     private static class AltTextVisitor extends AbstractVisitor {

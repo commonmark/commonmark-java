@@ -13,13 +13,14 @@ public interface HtmlNodeRendererContext {
     String encodeUrl(String url);
 
     /**
-     * Extend the attributes by extensions.
+     * Let extensions modify the HTML tag attributes.
      *
      * @param node the node for which the attributes are applied
+     * @param tagName the HTML tag name that these attributes are for (e.g. {@code h1}, {@code pre}, {@code code}).
      * @param attributes the attributes that were calculated by the renderer
      * @return the extended attributes with added/updated/removed entries
      */
-    Map<String, String> extendAttributes(Node node, Map<String, String> attributes);
+    Map<String, String> extendAttributes(Node node, String tagName, Map<String, String> attributes);
 
     /**
      * @return the HTML writer to use

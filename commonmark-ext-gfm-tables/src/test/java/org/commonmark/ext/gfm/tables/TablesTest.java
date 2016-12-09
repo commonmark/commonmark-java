@@ -315,7 +315,7 @@ public class TablesTest extends RenderingTestCase {
             public AttributeProvider create(AttributeProviderContext context) {
                 return new AttributeProvider() {
                     @Override
-                    public void setAttributes(Node node, Map<String, String> attributes) {
+                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
                         if (node instanceof TableBlock) {
                             attributes.put("test", "block");
                         } else if (node instanceof TableHead) {

@@ -92,13 +92,15 @@ public class HtmlRendererTest {
             public AttributeProvider create(AttributeProviderContext context) {
                 return new AttributeProvider() {
                     @Override
-                    public void setAttributes(Node node, Map<String, String> attributes) {
-                        if (node instanceof FencedCodeBlock) {
+                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
+                        if (node instanceof FencedCodeBlock && tagName.equals("code")) {
                             FencedCodeBlock fencedCodeBlock = (FencedCodeBlock) node;
                             // Remove the default attribute for info
                             attributes.remove("class");
                             // Put info in custom attribute instead
                             attributes.put("data-custom", fencedCodeBlock.getInfo());
+                        } else if (node instanceof FencedCodeBlock && tagName.equals("pre")) {
+                            attributes.put("data-code-block", "fenced");
                         }
                     }
                 };
@@ -107,10 +109,10 @@ public class HtmlRendererTest {
 
         HtmlRenderer renderer = HtmlRenderer.builder().attributeProviderFactory(custom).build();
         String rendered = renderer.render(parse("```info\ncontent\n```"));
-        assertEquals("<pre><code data-custom=\"info\">content\n</code></pre>\n", rendered);
+        assertEquals("<pre data-code-block=\"fenced\"><code data-custom=\"info\">content\n</code></pre>\n", rendered);
 
         String rendered2 = renderer.render(parse("```evil\"\ncontent\n```"));
-        assertEquals("<pre><code data-custom=\"evil&quot;\">content\n</code></pre>\n", rendered2);
+        assertEquals("<pre data-code-block=\"fenced\"><code data-custom=\"evil&quot;\">content\n</code></pre>\n", rendered2);
     }
 
     @Test
@@ -120,7 +122,7 @@ public class HtmlRendererTest {
             public AttributeProvider create(AttributeProviderContext context) {
                 return new AttributeProvider() {
                     @Override
-                    public void setAttributes(Node node, Map<String, String> attributes) {
+                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
                         if (node instanceof Image) {
                             attributes.remove("alt");
                             attributes.put("test", "hey");
@@ -144,7 +146,7 @@ public class HtmlRendererTest {
                     int i = 0;
 
                     @Override
-                    public void setAttributes(Node node, Map<String, String> attributes) {
+                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
                         attributes.put("key", "" + i);
                         i++;
                     }

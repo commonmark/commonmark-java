@@ -25,7 +25,7 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
     }
 
     @Override
-    public void setAttributes(Node node, final Map<String, String> attributes) {
+    public void setAttributes(Node node, String tagName, final Map<String, String> attributes) {
 
         if (node instanceof Heading) {
 
