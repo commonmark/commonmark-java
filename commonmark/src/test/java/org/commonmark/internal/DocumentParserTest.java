@@ -7,6 +7,8 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -25,7 +27,7 @@ public class DocumentParserTest {
     @Test
     public void calculateBlockParserFactories_givenAFullListOfAllowedNodes_includesAllCoreFactories() {
         List<BlockParserFactory> customParserFactories = Collections.emptyList();
-        List<Class<? extends Block>> nodes = Arrays.asList(BlockQuote.class, Heading.class, FencedCodeBlock.class, HtmlBlock.class, ThematicBreak.class, ListBlock.class, IndentedCodeBlock.class);
+        Set<Class<? extends Block>> nodes = new HashSet<>(Arrays.asList(BlockQuote.class, Heading.class, FencedCodeBlock.class, HtmlBlock.class, ThematicBreak.class, ListBlock.class, IndentedCodeBlock.class));
 
         List<BlockParserFactory> blockParserFactories = DocumentParser.calculateBlockParserFactories(customParserFactories, nodes);
         assertThat(blockParserFactories.size(), is(CORE_FACTORIES.size()));
@@ -38,7 +40,8 @@ public class DocumentParserTest {
     @Test
     public void calculateBlockParserFactories_givenAListOfAllowedNodes_includesAssociatedFactories() {
         List<BlockParserFactory> customParserFactories = Collections.emptyList();
-        List<Class<? extends Block>> nodes = Collections.<Class<? extends Block>>singletonList(IndentedCodeBlock.class);
+        Set<Class<? extends Block>> nodes = new HashSet<>();
+        nodes.add(IndentedCodeBlock.class);
 
         List<BlockParserFactory> blockParserFactories = DocumentParser.calculateBlockParserFactories(customParserFactories, nodes);
 

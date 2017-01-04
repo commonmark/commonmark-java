@@ -2,18 +2,19 @@ package org.commonmark.parser;
 
 import java.io.IOException;
 import java.io.Reader;
-import org.commonmark.Extension;
-import org.commonmark.internal.DocumentParser;
-import org.commonmark.internal.InlineParserImpl;
-import org.commonmark.node.Block;
-import org.commonmark.node.Node;
-import org.commonmark.parser.block.BlockParserFactory;
-import org.commonmark.parser.delimiter.DelimiterProcessor;
-
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.commonmark.Extension;
+import org.commonmark.internal.DocumentParser;
+import org.commonmark.internal.InlineParserImpl;
+import org.commonmark.node.*;
+import org.commonmark.parser.block.BlockParserFactory;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
+
 
 /**
  * Parses input text to a tree of nodes.
@@ -33,7 +34,7 @@ public class Parser {
     private final List<PostProcessor> postProcessors;
 
     private Parser(Builder builder) {
-        this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.allowedBlockTypes);
+        this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.enabledBlockTypes);
         this.delimiterProcessors = InlineParserImpl.calculateDelimiterProcessors(builder.delimiterProcessors);
         this.delimiterCharacters = InlineParserImpl.calculateDelimiterCharacters(delimiterProcessors.keySet());
         this.specialCharacters = InlineParserImpl.calculateSpecialCharacters(delimiterCharacters);
@@ -94,7 +95,7 @@ public class Parser {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
-        private List<Class<? extends Block>> allowedBlockTypes = DocumentParser.getDefaultBlockParserTypes();
+        private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
 
         /**
          * @return the configured {@link Parser}
@@ -119,32 +120,36 @@ public class Parser {
 
         /**
          * Describe the list of markdown features the parser will recognize and parse.
-         *
+         * <p>
          * By default, Commonmark will recognize and parse the following set of core markdown features:
          *
-         * Heading (#) - Heading.class
-         * HTML (<html></html>) - HtmlBlock.class
-         * Horizontal Rule / Thematic Break (---) - ThematicBreak.class
-         * Fenced Code Block (```) - FencedCodeBlock.class
-         * Indented Code Block - IndentedCodeBlock.class
-         * Block Quote (>) - BlockQuote.class
-         * Ordered / Unordered List (>) - ListBlock.class
+         * <ul>
+         * <li>{@link Heading} ({@code #})
+         * <li>{@link HtmlBlock} ({@code <html></html>})
+         * <li> {@link ThematicBreak} (Horizontal Rule) ({@code ---})
+         * <li>{@link FencedCodeBlock} ({@code ```})
+         * <li>{@link IndentedCodeBlock}
+         * <li>{@link BlockQuote} ({@code >})
+         * <li>{@link ListBlock} (Ordered / Unordered List) ({@code 1. / *})
+         * </ul>
          *
+         * <p>
          * To parse only a subset of the features listed above, pass a list of each feature's associated Node class.
+         * <p>
          * E.g., to only parse Headings and Lists:
          * <pre>
          *     {@code
-         *     Parser.builder().allowedBlockTypes(Heading.class, ListBlock.class);
+         *     Parser.builder().enabledBlockTypes(Heading.class, ListBlock.class);
          *     }
          * </pre>
          *
-         * @param allowedBlockTypes A list of nodes the parser will parse.
+         * @param enabledBlockTypes A list of nodes the parser will parse.
          *                     If this list is empty, the parser will not recognize any Commonmark core markdown features.
          *
          * @return {@code this}
          */
-        public Builder allowedBlockTypes(List<Class<? extends Block>> allowedBlockTypes) {
-            this.allowedBlockTypes = allowedBlockTypes;
+        public Builder enabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
+            this.enabledBlockTypes = enabledBlockTypes;
             return this;
         }
 

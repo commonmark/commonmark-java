@@ -8,18 +8,26 @@ import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 
 public class DocumentParser implements ParserState {
 
-    private static final List<Class<? extends Block>> CORE_FACTORY_TYPES = Arrays.<Class<? extends Block>>asList(
+    private static final Set<Class<? extends Block>> CORE_FACTORY_TYPES = new LinkedHashSet<>(Arrays.asList(
             BlockQuote.class,
             Heading.class,
             FencedCodeBlock.class,
             HtmlBlock.class,
             ThematicBreak.class,
             ListBlock.class,
-            IndentedCodeBlock.class);
+            IndentedCodeBlock.class));
 
     private static final Map<Class<? extends Block>, BlockParserFactory> NODES_TO_CORE_FACTORIES;
     static {
@@ -73,15 +81,15 @@ public class DocumentParser implements ParserState {
         activateBlockParser(this.documentBlockParser);
     }
 
-    public static List<Class<? extends Block>> getDefaultBlockParserTypes() {
+    public static Set<Class<? extends Block>> getDefaultBlockParserTypes() {
         return CORE_FACTORY_TYPES;
     }
 
-    public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories, List<Class<? extends Block>> allowedBlockTypes) {
+    public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories, Set<Class<? extends Block>> enabledBlockTypes) {
         List<BlockParserFactory> list = new ArrayList<>();
         // By having the custom factories come first, extensions are able to change behavior of core syntax.
         list.addAll(customBlockParserFactories);
-        for (Class<? extends Block> blockType : allowedBlockTypes) {
+        for (Class<? extends Block> blockType : enabledBlockTypes) {
             list.add(NODES_TO_CORE_FACTORIES.get(blockType));
         }
         return list;
