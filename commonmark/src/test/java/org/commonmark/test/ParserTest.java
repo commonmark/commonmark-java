@@ -1,18 +1,19 @@
 package org.commonmark.test;
 
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.block.*;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.spec.SpecReader;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -46,23 +47,43 @@ public class ParserTest {
         assertEquals("hey", ((Text) document.getFirstChild().getFirstChild()).getLiteral());
         assertThat(document.getLastChild(), instanceOf(DashBlock.class));
     }
-    
+
+    @Test
+    public void enabledBlockTypes() {
+        String given = "# heading 1\n\nnot a heading";
+
+        Parser parser = Parser.builder().build(); // all core parsers by default
+        Node document = parser.parse(given);
+        assertThat(document.getFirstChild(), instanceOf(Heading.class));
+
+        Set<Class<? extends Block>> headersOnly = new HashSet<>();
+        headersOnly.add(Heading.class);
+        parser = Parser.builder().enabledBlockTypes(headersOnly).build();
+        document = parser.parse(given);
+        assertThat(document.getFirstChild(), instanceOf(Heading.class));
+
+        Set<Class<? extends Block>> noCoreTypes = new HashSet<>();
+        parser = Parser.builder().enabledBlockTypes(noCoreTypes).build();
+        document = parser.parse(given);
+        assertThat(document.getFirstChild(), not(instanceOf(Heading.class)));
+    }
+
     @Test
     public void indentation() {
         String given = " - 1 space\n   - 3 spaces\n     - 5 spaces\n\t - tab + space";
         Parser parser = Parser.builder().build();
         Node document = parser.parse(given);
-        
+
         assertThat(document.getFirstChild(), instanceOf(BulletList.class));
-        
+
         Node list = document.getFirstChild(); // first level list
         assertEquals("expect one child", list.getFirstChild(), list.getLastChild());
         assertEquals("1 space", firstText(list.getFirstChild()));
-        
+
         list = list.getFirstChild().getLastChild(); // second level list
         assertEquals("expect one child", list.getFirstChild(), list.getLastChild());
         assertEquals("3 spaces", firstText(list.getFirstChild()));
-        
+
         list = list.getFirstChild().getLastChild(); // third level list
         assertEquals("5 spaces", firstText(list.getFirstChild()));
         assertEquals("tab + space", firstText(list.getFirstChild().getNext()));
