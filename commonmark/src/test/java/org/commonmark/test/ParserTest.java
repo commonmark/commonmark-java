@@ -1,6 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
@@ -92,7 +93,7 @@ public class ParserTest {
 
     @Test
     public void inlineParser() {
-        InlineParser fakeInlineParser = new InlineParser() {
+        final InlineParser fakeInlineParser = new InlineParser() {
             @Override
             public void parse(String input, Node node) {
                 node.appendChild(new ThematicBreak());
@@ -104,7 +105,15 @@ public class ParserTest {
             }
         };
 
-        Parser parser = Parser.builder().inlineParser(fakeInlineParser).build();
+        InlineParserFactory fakeInlineParserFactory = new InlineParserFactory(){
+
+            @Override
+            public InlineParser create() {
+                return fakeInlineParser;
+            }
+        };
+
+        Parser parser = Parser.builder().inlineParserFactory(fakeInlineParserFactory).build();
         String input = "**bold** **bold** ~~strikethrough~~";
 
         assertThat(parser.parse(input).getFirstChild().getFirstChild(), instanceOf(ThematicBreak.class));

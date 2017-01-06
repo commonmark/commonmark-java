@@ -31,7 +31,7 @@ public class Parser {
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final BitSet delimiterCharacters;
     private final BitSet specialCharacters;
-    private final InlineParser inlineParser;
+    private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
 
     private Parser(Builder builder) {
@@ -39,7 +39,7 @@ public class Parser {
         this.delimiterProcessors = InlineParserImpl.calculateDelimiterProcessors(builder.delimiterProcessors);
         this.delimiterCharacters = InlineParserImpl.calculateDelimiterCharacters(delimiterProcessors.keySet());
         this.specialCharacters = InlineParserImpl.calculateSpecialCharacters(delimiterCharacters);
-        this.inlineParser = builder.inlineParser;
+        this.inlineParserFactory = builder.inlineParserFactory;
         this.postProcessors = builder.postProcessors;
     }
 
@@ -84,10 +84,10 @@ public class Parser {
     }
 
     private InlineParser getInlineParser() {
-        if (this.inlineParser == null) {
+        if (this.inlineParserFactory == null) {
             return new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
         } else {
-            return this.inlineParser;
+            return this.inlineParserFactory.create();
         }
     }
 
@@ -106,7 +106,7 @@ public class Parser {
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
-        private InlineParser inlineParser = null;
+        private InlineParserFactory inlineParserFactory = null;
 
         /**
          * @return the configured {@link Parser}
@@ -192,7 +192,8 @@ public class Parser {
         /**
          * Overrides the parser used for inline markdown processing.
          *
-         * Provide an implementation of InlineParser to modify how the following are parsed:
+         * Provide an implementation of InlineParserFactory which provides a custom inline parser
+         * to modify how the following are parsed:
          * bold (**)
          * italic (*)
          * strikethrough (~~)
@@ -201,14 +202,14 @@ public class Parser {
          * image (![alt](http://))
          *
          * <p>
-         * Note that if this method is not called or the inline parser is set to null, then the default
+         * Note that if this method is not called or the inline parser factory is set to null, then the default
          * implementation will be used.
          *
-         * @param parser an inline parser implementation
+         * @param inlineParserFactory an inline parser factory implementation
          * @return {@code this}
          */
-        public Builder inlineParser(InlineParser parser) {
-            this.inlineParser = parser;
+        public Builder inlineParserFactory(InlineParserFactory inlineParserFactory) {
+            this.inlineParserFactory = inlineParserFactory;
             return this;
         }
     }
