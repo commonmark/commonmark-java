@@ -121,12 +121,12 @@ public class Parser {
         /**
          * Describe the list of markdown features the parser will recognize and parse.
          * <p>
-         * By default, Commonmark will recognize and parse the following set of core markdown features:
+         * By default, CommonMark will recognize and parse the following set of "block" elements:
          *
          * <ul>
          * <li>{@link Heading} ({@code #})
          * <li>{@link HtmlBlock} ({@code <html></html>})
-         * <li> {@link ThematicBreak} (Horizontal Rule) ({@code ---})
+         * <li>{@link ThematicBreak} (Horizontal Rule) ({@code ---})
          * <li>{@link FencedCodeBlock} ({@code ```})
          * <li>{@link IndentedCodeBlock}
          * <li>{@link BlockQuote} ({@code >})
@@ -134,17 +134,17 @@ public class Parser {
          * </ul>
          *
          * <p>
-         * To parse only a subset of the features listed above, pass a list of each feature's associated Node class.
+         * To parse only a subset of the features listed above, pass a list of each feature's associated {@link Block} class.
          * <p>
-         * E.g., to only parse Headings and Lists:
+         * E.g., to only parse headings and lists:
          * <pre>
          *     {@code
-         *     Parser.builder().enabledBlockTypes(Heading.class, ListBlock.class);
+         *     Parser.builder().enabledBlockTypes(new HashSet<>(Arrays.asList(Heading.class, ListBlock.class)));
          *     }
          * </pre>
          *
-         * @param enabledBlockTypes A list of nodes the parser will parse.
-         *                     If this list is empty, the parser will not recognize any Commonmark core markdown features.
+         * @param enabledBlockTypes A list of block nodes the parser will parse.
+         *                     If this list is empty, the parser will not recognize any CommonMark core features.
          *
          * @return {@code this}
          */
