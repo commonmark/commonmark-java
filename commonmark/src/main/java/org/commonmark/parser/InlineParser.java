@@ -12,10 +12,4 @@ public interface InlineParser {
      * @param node the node to append resulting nodes to (as children)
      */
     void parse(String input, Node node);
-
-    /**
-     * @return how many characters were parsed as a reference, {@code 0} if none
-     */
-    int parseReference(String s);
-
 }

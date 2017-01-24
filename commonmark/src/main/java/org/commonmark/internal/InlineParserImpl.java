@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InlineParserImpl implements InlineParser {
+public class InlineParserImpl implements InlineParser, ReferenceParser {
 
     private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
     private static final String REG_CHAR = "[^\\\\()\\x00-\\x20]";
@@ -97,10 +97,10 @@ public class InlineParserImpl implements InlineParser {
      */
     private Bracket lastBracket;
 
-    public InlineParserImpl(BitSet specialCharacters, BitSet delimiterCharacters, Map<Character, DelimiterProcessor> delimiterProcessors) {
-        this.delimiterProcessors = delimiterProcessors;
-        this.delimiterCharacters = delimiterCharacters;
-        this.specialCharacters = specialCharacters;
+    public InlineParserImpl(List<DelimiterProcessor> delimiterProcessors) {
+        this.delimiterProcessors = calculateDelimiterProcessors(delimiterProcessors);
+        this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
+        this.specialCharacters = calculateSpecialCharacters(delimiterCharacters);
     }
 
     public static BitSet calculateDelimiterCharacters(Set<Character> characters) {

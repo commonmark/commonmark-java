@@ -392,9 +392,10 @@ public class DocumentParser implements ParserState {
 
         blockParser.closeBlock();
 
-        if (blockParser instanceof ParagraphParser) {
+        if (blockParser instanceof ParagraphParser
+                && inlineParser instanceof ReferenceParser) {
             ParagraphParser paragraphParser = (ParagraphParser) blockParser;
-            paragraphParser.closeBlock(inlineParser);
+            paragraphParser.closeBlock((ReferenceParser) inlineParser);
         } else if (blockParser instanceof ListBlockParser) {
             ListBlockParser listBlockParser = (ListBlockParser) blockParser;
             finalizeListTight(listBlockParser);

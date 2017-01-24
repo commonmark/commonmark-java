@@ -3,9 +3,7 @@ package org.commonmark.parser;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.commonmark.Extension;
@@ -28,19 +26,15 @@ import org.commonmark.parser.delimiter.DelimiterProcessor;
 public class Parser {
 
     private final List<BlockParserFactory> blockParserFactories;
-    private final Map<Character, DelimiterProcessor> delimiterProcessors;
-    private final BitSet delimiterCharacters;
-    private final BitSet specialCharacters;
+    private final List<DelimiterProcessor> delimiterProcessors;
     private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
 
     private Parser(Builder builder) {
         this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.enabledBlockTypes);
-        this.delimiterProcessors = InlineParserImpl.calculateDelimiterProcessors(builder.delimiterProcessors);
-        this.delimiterCharacters = InlineParserImpl.calculateDelimiterCharacters(delimiterProcessors.keySet());
-        this.specialCharacters = InlineParserImpl.calculateSpecialCharacters(delimiterCharacters);
         this.inlineParserFactory = builder.inlineParserFactory;
         this.postProcessors = builder.postProcessors;
+        this.delimiterProcessors = builder.delimiterProcessors;
     }
 
     /**
@@ -85,9 +79,9 @@ public class Parser {
 
     private InlineParser getInlineParser() {
         if (this.inlineParserFactory == null) {
-            return new InlineParserImpl(specialCharacters, delimiterCharacters, delimiterProcessors);
+            return new InlineParserImpl(delimiterProcessors);
         } else {
-            return this.inlineParserFactory.create();
+            return this.inlineParserFactory.create(delimiterProcessors);
         }
     }
 

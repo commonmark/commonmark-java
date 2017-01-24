@@ -36,7 +36,7 @@ public class ParagraphParser extends AbstractBlockParser {
     public void closeBlock() {
     }
 
-    public void closeBlock(InlineParser inlineParser) {
+    public void closeBlock(ReferenceParser inlineParser) {
         String contentString = content.getString();
         boolean hasReferenceDefs = false;
 

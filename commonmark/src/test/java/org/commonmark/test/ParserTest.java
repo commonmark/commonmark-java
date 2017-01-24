@@ -2,6 +2,7 @@ package org.commonmark.test;
 
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserFactory;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -98,17 +100,12 @@ public class ParserTest {
             public void parse(String input, Node node) {
                 node.appendChild(new ThematicBreak());
             }
-
-            @Override
-            public int parseReference(String s) {
-                return 0;
-            }
         };
 
         InlineParserFactory fakeInlineParserFactory = new InlineParserFactory(){
 
             @Override
-            public InlineParser create() {
+            public InlineParser create(List<DelimiterProcessor> delimiterProcessors) {
                 return fakeInlineParser;
             }
         };
