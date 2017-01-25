@@ -1,6 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -105,7 +106,7 @@ public class ParserTest {
         InlineParserFactory fakeInlineParserFactory = new InlineParserFactory(){
 
             @Override
-            public InlineParser create(List<DelimiterProcessor> delimiterProcessors) {
+            public InlineParser create(InlineParserContext inlineParserContext) {
                 return fakeInlineParser;
             }
         };

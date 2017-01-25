@@ -81,7 +81,8 @@ public class Parser {
         if (this.inlineParserFactory == null) {
             return new InlineParserImpl(delimiterProcessors);
         } else {
-            return this.inlineParserFactory.create(delimiterProcessors);
+            CustomInlineParserContext inlineParserContext = new CustomInlineParserContext(delimiterProcessors);
+            return this.inlineParserFactory.create(inlineParserContext);
         }
     }
 
@@ -90,6 +91,20 @@ public class Parser {
             document = postProcessor.process(document);
         }
         return document;
+    }
+
+    private class CustomInlineParserContext implements InlineParserContext {
+
+        private List<DelimiterProcessor> delimiterProcessors;
+
+        CustomInlineParserContext(List<DelimiterProcessor> delimiterProcessors) {
+            this.delimiterProcessors = delimiterProcessors;
+        }
+
+        @Override
+        public List<DelimiterProcessor> getCustomDelimiterProcessors() {
+            return delimiterProcessors;
+        }
     }
 
     /**
