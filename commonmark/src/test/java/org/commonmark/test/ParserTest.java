@@ -1,9 +1,13 @@
 package org.commonmark.test;
 
+import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.InlineParserContext;
+import org.commonmark.parser.InlineParserFactory;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.block.*;
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.spec.SpecReader;
 import org.junit.Test;
 
@@ -11,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -88,7 +93,30 @@ public class ParserTest {
         assertEquals("5 spaces", firstText(list.getFirstChild()));
         assertEquals("tab + space", firstText(list.getFirstChild().getNext()));
     }
-    
+
+    @Test
+    public void inlineParser() {
+        final InlineParser fakeInlineParser = new InlineParser() {
+            @Override
+            public void parse(String input, Node node) {
+                node.appendChild(new ThematicBreak());
+            }
+        };
+
+        InlineParserFactory fakeInlineParserFactory = new InlineParserFactory(){
+
+            @Override
+            public InlineParser create(InlineParserContext inlineParserContext) {
+                return fakeInlineParser;
+            }
+        };
+
+        Parser parser = Parser.builder().inlineParserFactory(fakeInlineParserFactory).build();
+        String input = "**bold** **bold** ~~strikethrough~~";
+
+        assertThat(parser.parse(input).getFirstChild().getFirstChild(), instanceOf(ThematicBreak.class));
+    }
+
     private String firstText(Node n) {
         while (!(n instanceof Text)) {
             assertThat(n, notNullValue());
