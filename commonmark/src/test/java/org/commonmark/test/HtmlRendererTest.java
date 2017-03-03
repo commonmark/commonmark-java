@@ -44,7 +44,7 @@ public class HtmlRendererTest {
     @Test
     public void htmlEscapingShouldEscapeHtmlBlocks() {
         String rendered = htmlEscapingRenderer().render(parse("<div id='foo' class=\"bar\">block &amp;</div>"));
-        assertEquals("&lt;div id='foo' class=&quot;bar&quot;&gt;block &amp;amp;&lt;/div&gt;\n", rendered);
+        assertEquals("<p>&lt;div id='foo' class=&quot;bar&quot;&gt;block &amp;amp;&lt;/div&gt;</p>\n", rendered);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class HtmlRendererTest {
     }
 
     @Test
-    public void percendEncodeUrlDisabled() {
+    public void percentEncodeUrlDisabled() {
         assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo&amp;bar)")));
         assertEquals("<p><a href=\"ä\">a</a></p>\n", defaultRenderer().render(parse("[a](ä)")));
         assertEquals("<p><a href=\"foo%20bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo%20bar)")));

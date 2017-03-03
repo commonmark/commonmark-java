@@ -117,7 +117,9 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     public void visit(HtmlBlock htmlBlock) {
         html.line();
         if (context.shouldEscapeHtml()) {
+            html.tag("p", getAttrs(htmlBlock, "p"));
             html.text(htmlBlock.getLiteral());
+            html.tag("/p");
         } else {
             html.raw(htmlBlock.getLiteral());
         }
