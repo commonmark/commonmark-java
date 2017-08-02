@@ -223,7 +223,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     private void writeLink(Node node, String title, String destination) {
         boolean hasChild = node.getFirstChild() != null;
-        boolean hasTitle = title != null;
+        boolean hasTitle = title != null && !title.equals(destination);
         boolean hasDestination = destination != null && !destination.equals("");
 
         if (hasChild) {
