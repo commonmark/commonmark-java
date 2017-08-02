@@ -31,7 +31,7 @@ public class TextContentWriter {
     }
 
     public void writeStripped(String s) {
-        append(s.replaceAll("[\\r\\n\\s]+", " ").trim());
+        append(s.replaceAll("[\\r\\n\\s]+", " "));
     }
 
     public void write(String s) {
