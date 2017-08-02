@@ -10,129 +10,224 @@ import static org.junit.Assert.assertEquals;
 public class TextContentRendererTest {
 
     @Test
-    public void textContentEmphasis() {
+    public void textContentText() {
+        String source;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo\n***foo***\nbar\n\n***bar***"));
-        assertEquals("foo\nfoo\nbar\nbar", rendered);
+        source = "foo bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("foo bar", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("foo bar", rendered);
 
-        rendered = strippedRenderer().render(parse("foo\n***foo\nbar***\n\n***bar***"));
+        source = "foo foo\n\nbar\nbar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("foo foo\nbar\nbar", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("foo foo bar bar", rendered);
+    }
+
+    @Test
+    public void textContentEmphasis() {
+        String source;
+        String rendered;
+
+        source = "***foo***";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("foo", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("foo", rendered);
+
+        source = "foo ***foo*** bar ***bar***";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("foo foo bar bar", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("foo foo bar bar", rendered);
+
+        source = "foo\n***foo***\nbar\n\n***bar***";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("foo\nfoo\nbar\nbar", rendered);
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo foo bar bar", rendered);
     }
 
     @Test
     public void textContentQuotes() {
+        String source;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo\n>foo\nbar\n\nbar"));
+        source = "foo\n>foo\nbar\n\nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\n«foo\nbar»\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo\n>foo\nbar\n\nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo «foo bar» bar", rendered);
     }
 
     @Test
     public void textContentLinks() {
+        String source;
+        String expected;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo [text](http://link \"title\") bar"));
-        assertEquals("foo \"text\" (title: http://link) bar", rendered);
+        source = "foo [text](http://link \"title\") bar";
+        expected = "foo \"text\" (title: http://link) bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
 
-        rendered = defaultRenderer().render(parse("foo [text](http://link) bar"));
-        assertEquals("foo \"text\" (http://link) bar", rendered);
+        source = "foo [text](http://link \"http://link\") bar";
+        expected = "foo \"text\" (http://link) bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
 
-        rendered = defaultRenderer().render(parse("foo [text]() bar"));
-        assertEquals("foo \"text\" bar", rendered);
+        source = "foo [text](http://link) bar";
+        expected = "foo \"text\" (http://link) bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
 
-        rendered = defaultRenderer().render(parse("foo http://link bar"));
-        assertEquals("foo http://link bar", rendered);
+        source = "foo [text]() bar";
+        expected = "foo \"text\" bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+
+        source = "foo http://link bar";
+        expected = "foo http://link bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
     }
 
     @Test
     public void textContentImages() {
+        String source;
+        String expected;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo ![text](http://link \"title\") bar"));
-        assertEquals("foo \"text\" (title: http://link) bar", rendered);
+        source = "foo ![text](http://link \"title\") bar";
+        expected = "foo \"text\" (title: http://link) bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
 
-        rendered = defaultRenderer().render(parse("foo ![text](http://link) bar"));
-        assertEquals("foo \"text\" (http://link) bar", rendered);
+        source = "foo ![text](http://link) bar";
+        expected = "foo \"text\" (http://link) bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
 
-        rendered = defaultRenderer().render(parse("foo ![text]() bar"));
-        assertEquals("foo \"text\" bar", rendered);
+        source = "foo ![text]() bar";
+        expected = "foo \"text\" bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
     }
 
     @Test
     public void textContentLists() {
+        String source;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo\n* foo\n* bar\n\nbar"));
+        source = "foo\n* foo\n* bar\n\nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\n* foo\n* bar\nbar", rendered);
-
-        rendered = defaultRenderer().render(parse("foo\n- foo\n- bar\n\nbar"));
-        assertEquals("foo\n- foo\n- bar\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo\n* foo\n* bar\n\nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo foo bar bar", rendered);
 
-        rendered = defaultRenderer().render(parse("foo\n1. foo\n2. bar\n\nbar"));
+        source = "foo\n- foo\n- bar\n\nbar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("foo\n- foo\n- bar\nbar", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("foo foo bar bar", rendered);
+
+        source = "foo\n1. foo\n2. bar\n\nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\n1. foo\n2. bar\nbar", rendered);
-
-        rendered = defaultRenderer().render(parse("foo\n0) foo\n1) bar\n\nbar"));
-        assertEquals("foo\n0) foo\n1) bar\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo\n1. foo\n2. bar\n\nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo 1. foo 2. bar bar", rendered);
 
-        rendered = strippedRenderer().render(parse("foo\n0) foo\n1) bar\n\nbar"));
+        source = "foo\n0) foo\n1) bar\n\nbar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("foo\n0) foo\n1) bar\nbar", rendered);
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo 0) foo 1) bar bar", rendered);
+
+        source = "bar\n1. foo\n   1. bar\n2. foo";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("bar\n1. foo\n   1. bar\n2. foo", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("bar 1. foo 1. bar 2. foo", rendered);
+
+        source = "bar\n* foo\n   - bar\n* foo";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("bar\n* foo\n   - bar\n* foo", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("bar foo bar foo", rendered);
     }
 
     @Test
     public void textContentCode() {
+        String source;
+        String expected;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo `code` bar"));
-        assertEquals("foo \"code\" bar", rendered);
+        source = "foo `code` bar";
+        expected = "foo \"code\" bar";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals(expected, rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals(expected, rendered);
     }
 
     @Test
     public void textContentCodeBlock() {
+        String source;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo\n```\nfoo\nbar\n```\nbar"));
+        source = "foo\n```\nfoo\nbar\n```\nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\nfoo\nbar\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo\n```\nfoo\nbar\n```\nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo foo bar bar", rendered);
 
-        rendered = defaultRenderer().render(parse("foo\n\n    foo\n     bar\nbar"));
+        source = "foo\n\n    foo\n     bar\nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\nfoo\n bar\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo\n\n    foo\n     bar\nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo foo bar bar", rendered);
     }
 
     @Test
     public void textContentBrakes() {
+        String source;
         String rendered;
 
-        rendered = defaultRenderer().render(parse("foo\nbar"));
+        source = "foo\nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo\nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo bar", rendered);
 
-        rendered = defaultRenderer().render(parse("foo  \nbar"));
+        source = "foo  \nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo  \nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo bar", rendered);
 
-        rendered = defaultRenderer().render(parse("foo\n___\nbar"));
+        source = "foo\n___\nbar";
+        rendered = defaultRenderer().render(parse(source));
         assertEquals("foo\n***\nbar", rendered);
-
-        rendered = strippedRenderer().render(parse("foo\n___\nbar"));
+        rendered = strippedRenderer().render(parse(source));
         assertEquals("foo bar", rendered);
     }
 
