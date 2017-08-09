@@ -135,9 +135,23 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
         for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
             char opening = delimiterProcessor.getOpeningCharacter();
-            addDelimiterProcessorForChar(opening, delimiterProcessor, map);
             char closing = delimiterProcessor.getClosingCharacter();
-            if (opening != closing) {
+            if (opening == closing) {
+                DelimiterProcessor old = map.get(opening);
+                if(old != null && old.getOpeningCharacter() == old.getClosingCharacter()) {
+                    StaggeredDelimiterProcessor s;
+                    if(old instanceof StaggeredDelimiterProcessor) s = (StaggeredDelimiterProcessor)old;
+                    else {
+                        s = new StaggeredDelimiterProcessor(opening);
+                        s.add(old);
+                    }
+                    s.add(delimiterProcessor);
+                    map.put(opening, s);
+                } else {
+                    addDelimiterProcessorForChar(opening, delimiterProcessor, map);
+                }
+            } else {
+                addDelimiterProcessorForChar(opening, delimiterProcessor, map);
                 addDelimiterProcessorForChar(closing, delimiterProcessor, map);
             }
         }
