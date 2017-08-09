@@ -1,8 +1,5 @@
 package org.commonmark.test;
 
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
@@ -10,6 +7,9 @@ import org.commonmark.parser.Parser;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.delimiter.DelimiterRun;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -45,6 +45,24 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         assertRendering("}foo} bar", "<p>}foo} bar</p>\n");
         assertRendering("{foo{ bar", "<p>{foo{ bar</p>\n");
         assertRendering("}foo{ bar", "<p>}foo{ bar</p>\n");
+    }
+
+    @Test
+    public void multipleDelimitersWithDifferentLengths() {
+        Parser parser = Parser.builder()
+                .customDelimiterProcessor(new OneTildeDelimiterProcessor())
+                .customDelimiterProcessor(new TwoTildesDelimiterProcessor())
+                .build();
+        assertEquals("<p>(1)one(/1) (2)two(/2)</p>\n", RENDERER.render(parser.parse("~one~ ~~two~~")));
+        assertEquals("<p>(1)(2)both(/2)(/1)</p>\n", RENDERER.render(parser.parse("~~~both~~~")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void multipleDelimitersWithSameLength() {
+        Parser.builder()
+                .customDelimiterProcessor(new OneTildeDelimiterProcessor())
+                .customDelimiterProcessor(new OneTildeDelimiterProcessor())
+                .build();
     }
 
     @Override
@@ -157,6 +175,64 @@ public class DelimiterProcessorTest extends RenderingTestCase {
                 }
                 context.render(child);
             }
+        }
+    }
+
+    private static class OneTildeDelimiterProcessor implements DelimiterProcessor {
+
+        @Override
+        public char getOpeningCharacter() {
+            return '~';
+        }
+
+        @Override
+        public char getClosingCharacter() {
+            return '~';
+        }
+
+        @Override
+        public int getMinLength() {
+            return 1;
+        }
+
+        @Override
+        public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+            return 1;
+        }
+
+        @Override
+        public void process(Text opener, Text closer, int delimiterUse) {
+            opener.insertAfter(new Text("(1)"));
+            closer.insertBefore(new Text("(/1)"));
+        }
+    }
+
+    private static class TwoTildesDelimiterProcessor implements DelimiterProcessor {
+
+        @Override
+        public char getOpeningCharacter() {
+            return '~';
+        }
+
+        @Override
+        public char getClosingCharacter() {
+            return '~';
+        }
+
+        @Override
+        public int getMinLength() {
+            return 2;
+        }
+
+        @Override
+        public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+            return 2;
+        }
+
+        @Override
+        public void process(Text opener, Text closer, int delimiterUse) {
+            opener.insertAfter(new Text("(2)"));
+            closer.insertBefore(new Text("(/2)"));
         }
     }
 }

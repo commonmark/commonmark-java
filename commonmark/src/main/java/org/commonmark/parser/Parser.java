@@ -35,6 +35,9 @@ public class Parser {
         this.inlineParserFactory = builder.inlineParserFactory;
         this.postProcessors = builder.postProcessors;
         this.delimiterProcessors = builder.delimiterProcessors;
+
+        // Try to construct an inline parser. This might raise exceptions in case of invalid configuration.
+        getInlineParser();
     }
 
     /**
@@ -142,7 +145,6 @@ public class Parser {
          * Describe the list of markdown features the parser will recognize and parse.
          * <p>
          * By default, CommonMark will recognize and parse the following set of "block" elements:
-         *
          * <ul>
          * <li>{@link Heading} ({@code #})
          * <li>{@link HtmlBlock} ({@code <html></html>})
@@ -152,7 +154,6 @@ public class Parser {
          * <li>{@link BlockQuote} ({@code >})
          * <li>{@link ListBlock} (Ordered / Unordered List) ({@code 1. / *})
          * </ul>
-         *
          * <p>
          * To parse only a subset of the features listed above, pass a list of each feature's associated {@link Block} class.
          * <p>
@@ -164,8 +165,7 @@ public class Parser {
          * </pre>
          *
          * @param enabledBlockTypes A list of block nodes the parser will parse.
-         *                     If this list is empty, the parser will not recognize any CommonMark core features.
-         *
+         * If this list is empty, the parser will not recognize any CommonMark core features.
          * @return {@code this}
          */
         public Builder enabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
@@ -188,6 +188,16 @@ public class Parser {
             return this;
         }
 
+        /**
+         * Adds a custom delimiter processor.
+         * <p>
+         * Note that multiple delimiter processors with the same characters can be added, as long as they have a
+         * different minimum length. In that case, the processor with the shortest matching length is used. Adding more
+         * than one delimiter processor with the same character and minimum length is invalid.
+         *
+         * @param delimiterProcessor a delimiter processor implementation
+         * @return {@code this}
+         */
         public Builder customDelimiterProcessor(DelimiterProcessor delimiterProcessor) {
             delimiterProcessors.add(delimiterProcessor);
             return this;
@@ -200,7 +210,7 @@ public class Parser {
 
         /**
          * Overrides the parser used for inline markdown processing.
-         *
+         * <p>
          * Provide an implementation of InlineParserFactory which provides a custom inline parser
          * to modify how the following are parsed:
          * bold (**)
@@ -209,7 +219,7 @@ public class Parser {
          * backtick quote (`)
          * link ([title](http://))
          * image (![alt](http://))
-         *
+         * <p>
          * <p>
          * Note that if this method is not called or the inline parser factory is set to null, then the default
          * implementation will be used.
