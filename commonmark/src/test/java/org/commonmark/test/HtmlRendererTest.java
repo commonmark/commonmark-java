@@ -1,24 +1,24 @@
 package org.commonmark.test;
 
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
-import org.commonmark.renderer.html.AttributeProviderFactory;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Image;
 import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.html.*;
+import org.commonmark.spec.SpecReader;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class HtmlRendererTest {
 
@@ -205,6 +205,34 @@ public class HtmlRendererTest {
     public void imageAltTextWithEntities() {
         assertEquals("<p><img src=\"/url\" alt=\"foo \u00E4\" /></p>\n",
                 defaultRenderer().render(parse("![foo &auml;](/url)\n")));
+    }
+
+    @Test
+    public void threading() throws Exception {
+        Parser parser = Parser.builder().build();
+        String spec = SpecReader.readSpec();
+        final Node document = parser.parse(spec);
+
+        final HtmlRenderer htmlRenderer = HtmlRenderer.builder().build();
+        String expectedRendering = htmlRenderer.render(document);
+
+        // Render in parallel using the same HtmlRenderer instance.
+        List<Future<String>> futures = new ArrayList<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        for (int i = 0; i < 40; i++) {
+            Future<String> future = executorService.submit(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return htmlRenderer.render(document);
+                }
+            });
+            futures.add(future);
+        }
+
+        for (Future<String> future : futures) {
+            String rendering = future.get();
+            assertThat(rendering, is(expectedRendering));
+        }
     }
 
     private static HtmlRenderer defaultRenderer() {

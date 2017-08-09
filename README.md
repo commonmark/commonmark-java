@@ -190,6 +190,16 @@ elements in the resulting HTML, you can create your own subclass of
 To define the HTML rendering for them, you can use a `NodeRenderer` as
 explained above.
 
+#### Thread-safety
+
+Both the `Parser` and `HtmlRenderer` are designed so that you can
+configure them once using the builders and then use them multiple
+times/from multiple threads. This is done by separating the state for
+parsing/rendering from the configuration.
+
+Having said that, there might be bugs of course. If you find one, please
+report an issue.
+
 ### API documentation
 
 Javadocs are available online on

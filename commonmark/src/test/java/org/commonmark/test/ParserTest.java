@@ -1,22 +1,26 @@
 package org.commonmark.test;
 
+import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.InlineParserFactory;
-import org.commonmark.parser.delimiter.DelimiterProcessor;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.block.*;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.spec.SpecReader;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
@@ -103,7 +107,7 @@ public class ParserTest {
             }
         };
 
-        InlineParserFactory fakeInlineParserFactory = new InlineParserFactory(){
+        InlineParserFactory fakeInlineParserFactory = new InlineParserFactory() {
 
             @Override
             public InlineParser create(InlineParserContext inlineParserContext) {
@@ -115,6 +119,33 @@ public class ParserTest {
         String input = "**bold** **bold** ~~strikethrough~~";
 
         assertThat(parser.parse(input).getFirstChild().getFirstChild(), instanceOf(ThematicBreak.class));
+    }
+
+    @Test
+    public void threading() throws Exception {
+        final Parser parser = Parser.builder().build();
+        final String spec = SpecReader.readSpec();
+
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        String expectedRendering = renderer.render(parser.parse(spec));
+
+        // Parse in parallel using the same Parser instance.
+        List<Future<Node>> futures = new ArrayList<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        for (int i = 0; i < 40; i++) {
+            Future<Node> future = executorService.submit(new Callable<Node>() {
+                @Override
+                public Node call() throws Exception {
+                    return parser.parse(spec);
+                }
+            });
+            futures.add(future);
+        }
+
+        for (Future<Node> future : futures) {
+            Node node = future.get();
+            assertThat(renderer.render(node), is(expectedRendering));
+        }
     }
 
     private String firstText(Node n) {
