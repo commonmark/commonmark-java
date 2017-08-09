@@ -6,8 +6,8 @@ import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
-import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -138,10 +138,11 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             char closing = delimiterProcessor.getClosingCharacter();
             if (opening == closing) {
                 DelimiterProcessor old = map.get(opening);
-                if(old != null && old.getOpeningCharacter() == old.getClosingCharacter()) {
+                if (old != null && old.getOpeningCharacter() == old.getClosingCharacter()) {
                     StaggeredDelimiterProcessor s;
-                    if(old instanceof StaggeredDelimiterProcessor) s = (StaggeredDelimiterProcessor)old;
-                    else {
+                    if (old instanceof StaggeredDelimiterProcessor) {
+                        s = (StaggeredDelimiterProcessor) old;
+                    } else {
                         s = new StaggeredDelimiterProcessor(opening);
                         s.add(old);
                     }
