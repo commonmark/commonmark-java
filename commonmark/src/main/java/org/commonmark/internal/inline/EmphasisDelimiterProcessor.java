@@ -37,11 +37,10 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
             return 0;
         }
         // calculate actual number of delimiters used from this closer
-        if (opener.length() < 3 || closer.length() < 3) {
-            return closer.length() <= opener.length() ?
-                    closer.length() : opener.length();
+        if (opener.length() >= 2 && closer.length() >= 2) {
+            return 2;
         } else {
-            return closer.length() % 2 == 0 ? 2 : 1;
+            return 1;
         }
     }
 

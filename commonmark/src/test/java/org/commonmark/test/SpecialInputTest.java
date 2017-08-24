@@ -107,6 +107,12 @@ public class SpecialInputTest extends CoreRenderingTestCase {
                 "<p>[foo][12" + label2 + "]</p>\n<p>[12" + label2 + "]: /</p>\n");
     }
 
+    @Test
+    public void linkDestinationEscaping() {
+        assertRendering("[link](\\))", "<p><a href=\")\">link</a></p>\n");
+        assertRendering("[link](\\ )", "<p><a href=\"\\ \">link</a></p>\n");
+    }
+
     // commonmark/CommonMark#468
     @Test
     public void linkReferenceBackslash() {
