@@ -774,9 +774,9 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         boolean afterIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(after).matches();
 
         boolean leftFlanking = !afterIsWhitespace &&
-                !(afterIsPunctuation && !beforeIsWhitespace && !beforeIsPunctuation);
+                (!afterIsPunctuation || beforeIsWhitespace || beforeIsPunctuation);
         boolean rightFlanking = !beforeIsWhitespace &&
-                !(beforeIsPunctuation && !afterIsWhitespace && !afterIsPunctuation);
+                (!beforeIsPunctuation || afterIsWhitespace || afterIsPunctuation);
         boolean canOpen;
         boolean canClose;
         if (delimiterChar == '_') {
