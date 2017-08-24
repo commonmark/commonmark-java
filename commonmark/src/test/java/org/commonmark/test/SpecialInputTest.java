@@ -107,8 +107,15 @@ public class SpecialInputTest extends CoreRenderingTestCase {
                 "<p>[foo][12" + label2 + "]</p>\n<p>[12" + label2 + "]: /</p>\n");
     }
 
+    // commonmark/CommonMark#468
     @Test
     public void linkReferenceBackslash() {
         assertRendering("[\\]: test", "<p>[]: test</p>\n");
+    }
+
+    // commonmark/cmark#177
+    @Test
+    public void emphasisMultipleOf3Rule() {
+        assertRendering("a***b* c*", "<p>a*<em><em>b</em> c</em></p>\n");
     }
 }

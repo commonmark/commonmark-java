@@ -448,15 +448,16 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         if (res == null) {
             return false;
         }
-        int numDelims = res.count;
+        int length = res.count;
         int startIndex = index;
 
-        index += numDelims;
+        index += length;
         Text node = appendText(input, startIndex, index);
 
         // Add entry to stack for this opener
         lastDelimiter = new Delimiter(node, delimiterChar, res.canOpen, res.canClose, lastDelimiter);
-        lastDelimiter.numDelims = numDelims;
+        lastDelimiter.length = length;
+        lastDelimiter.originalLength = length;
         if (lastDelimiter.previous != null) {
             lastDelimiter.previous.next = lastDelimiter;
         }
@@ -853,8 +854,8 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             Text closerNode = closer.node;
 
             // Remove number of used delimiters from stack and inline nodes.
-            opener.numDelims -= useDelims;
-            closer.numDelims -= useDelims;
+            opener.length -= useDelims;
+            closer.length -= useDelims;
             openerNode.setLiteral(
                     openerNode.getLiteral().substring(0,
                             openerNode.getLiteral().length() - useDelims));
@@ -869,11 +870,11 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             delimiterProcessor.process(openerNode, closerNode, useDelims);
 
             // No delimiter characters left to process, so we can remove delimiter and the now empty node.
-            if (opener.numDelims == 0) {
+            if (opener.length == 0) {
                 removeDelimiterAndNode(opener);
             }
 
-            if (closer.numDelims == 0) {
+            if (closer.length == 0) {
                 Delimiter next = closer.next;
                 removeDelimiterAndNode(closer);
                 closer = next;

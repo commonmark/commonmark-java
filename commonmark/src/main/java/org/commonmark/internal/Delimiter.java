@@ -24,7 +24,8 @@ public class Delimiter implements DelimiterRun {
     public Delimiter previous;
     public Delimiter next;
 
-    public int numDelims = 1;
+    public int length = 1;
+    public int originalLength = 1;
 
     public Delimiter(Text node, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
         this.node = node;
@@ -46,6 +47,11 @@ public class Delimiter implements DelimiterRun {
 
     @Override
     public int length() {
-        return numDelims;
+        return length;
+    }
+
+    @Override
+    public int originalLength() {
+        return originalLength;
     }
 }
