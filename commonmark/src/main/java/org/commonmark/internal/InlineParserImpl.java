@@ -16,8 +16,6 @@ import java.util.regex.Pattern;
 public class InlineParserImpl implements InlineParser, ReferenceParser {
 
     private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
-    private static final String REG_CHAR = "[^\\\\()\\x00-\\x20]";
-    private static final String IN_PARENS_NOSP = "\\((" + REG_CHAR + '|' + ESCAPED_CHAR + ")*\\)";
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
     private static final String DECLARATION = "<![A-Z]+\\s+[^>]*>";
@@ -41,9 +39,6 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
     private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile(
             "^(?:[<](?:[^<> \\t\\n\\\\\\x00]" + '|' + ESCAPED_CHAR + '|' + "\\\\)*[>])");
-
-    private static final Pattern LINK_DESTINATION = Pattern.compile(
-            "^(?:" + REG_CHAR + "+|" + ESCAPED_CHAR + "|\\\\|" + IN_PARENS_NOSP + ")*");
 
     private static final Pattern LINK_LABEL = Pattern
             .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "){0,999}\\]");
@@ -641,12 +636,48 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                 return Escaping.unescapeString(res.substring(1, res.length() - 1));
             }
         } else {
-            res = match(LINK_DESTINATION);
-            if (res != null) {
-                return Escaping.unescapeString(res);
-            } else {
-                return null;
+            int startIndex = index;
+            parseLinkDestinationWithBalancedParens();
+            return Escaping.unescapeString(input.substring(startIndex, index));
+        }
+    }
+
+    private void parseLinkDestinationWithBalancedParens() {
+        int parens = 0;
+        while (true) {
+            char c = peek();
+            switch (c) {
+                case '\0':
+                    return;
+                case '\\':
+                    // go to character after backslash
+                    index++;
+                    // stop if that took us to the end of input
+                    if (peek() == '\0') {
+                        return;
+                    }
+                    // otherwise, we'll skip over character after backslash
+                    break;
+                case '(':
+                    parens++;
+                    break;
+                case ')':
+                    if (parens == 0) {
+                        return;
+                    } else {
+                        parens--;
+                    }
+                    break;
+                case ' ':
+                    // ASCII space
+                    return;
+                default:
+                    // or control character
+                    if (Character.isISOControl(c)) {
+                        return;
+                    }
             }
+            index++;
         }
     }
 
