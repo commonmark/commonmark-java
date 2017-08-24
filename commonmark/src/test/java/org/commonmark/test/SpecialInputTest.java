@@ -106,4 +106,9 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         assertRendering("[foo][12" + label2 + "]\n\n[12" + label2 + "]: /",
                 "<p>[foo][12" + label2 + "]</p>\n<p>[12" + label2 + "]: /</p>\n");
     }
+
+    @Test
+    public void linkReferenceBackslash() {
+        assertRendering("[\\]: test", "<p>[]: test</p>\n");
+    }
 }

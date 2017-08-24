@@ -46,7 +46,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             "^(?:" + REG_CHAR + "+|" + ESCAPED_CHAR + "|\\\\|" + IN_PARENS_NOSP + ")*");
 
     private static final Pattern LINK_LABEL = Pattern
-            .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "|\\\\){0,999}\\]");
+            .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "){0,999}\\]");
 
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
