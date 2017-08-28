@@ -109,8 +109,15 @@ public class SpecialInputTest extends CoreRenderingTestCase {
 
     @Test
     public void linkDestinationEscaping() {
-        assertRendering("[link](\\))", "<p><a href=\")\">link</a></p>\n");
-        assertRendering("[link](\\ )", "<p><a href=\"\\ \">link</a></p>\n");
+        assertRendering("[foo](\\))", "<p><a href=\")\">foo</a></p>\n");
+        assertRendering("[foo](\\ )", "<p><a href=\"\\ \">foo</a></p>\n");
+
+        // Backslash escapes `>`, so it's not a `(<...>)` link, but a `(...)` link instead
+        assertRendering("[foo](<\\>)", "<p><a href=\"&lt;&gt;\">foo</a></p>\n");
+        // Backslash is a literal, so valid
+        assertRendering("[foo](<a\\b>)", "<p><a href=\"a\\b\">foo</a></p>\n");
+        // Backslash escapes `>` but there's another `>`, valid
+        assertRendering("[foo](<a\\>>)", "<p><a href=\"a&gt;\">foo</a></p>\n");
     }
 
     // commonmark/CommonMark#468
