@@ -116,7 +116,12 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     // commonmark/CommonMark#468
     @Test
     public void linkReferenceBackslash() {
+        // Backslash escapes ']', so not a valid link label
         assertRendering("[\\]: test", "<p>[]: test</p>\n");
+        // Backslash is a literal, so valid
+        assertRendering("[a\\b]\n\n[a\\b]: test", "<p><a href=\"test\">a\\b</a></p>\n");
+        // Backslash escapes `]` but there's another `]`, valid
+        assertRendering("[a\\]]\n\n[a\\]]: test", "<p><a href=\"test\">a]</a></p>\n");
     }
 
     // commonmark/cmark#177

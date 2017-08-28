@@ -40,8 +40,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile(
             "^(?:[<](?:[^<> \\t\\n\\\\\\x00]" + '|' + ESCAPED_CHAR + '|' + "\\\\)*[>])");
 
-    private static final Pattern LINK_LABEL = Pattern
-            .compile("^\\[(?:[^\\\\\\[\\]]|" + ESCAPED_CHAR + "){0,999}\\]");
+    private static final Pattern LINK_LABEL = Pattern.compile("^\\[(?:[^\\\\\\[\\]]|\\\\.)*\\]");
 
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
@@ -699,7 +698,12 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      */
     private int parseLinkLabel() {
         String m = match(LINK_LABEL);
-        return m == null ? 0 : m.length();
+        // Spec says "A link label can have at most 999 characters inside the square brackets"
+        if (m == null || m.length() > 1001) {
+            return 0;
+        } else {
+            return m.length();
+        }
     }
 
     /**
