@@ -45,6 +45,7 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         assertRendering("}foo} bar", "<p>}foo} bar</p>\n");
         assertRendering("{foo{ bar", "<p>{foo{ bar</p>\n");
         assertRendering("}foo{ bar", "<p>}foo{ bar</p>\n");
+        assertRendering("{} {foo}", "<p> FOO</p>\n");
     }
 
     @Test

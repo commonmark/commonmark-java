@@ -175,7 +175,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         } while (moreToParse);
 
         processDelimiters(null);
-        mergeTextNodes(block.getFirstChild(), block.getLastChild());
+        mergeChildTextNodes(block);
     }
 
     /**
@@ -582,7 +582,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
             // Process delimiters such as emphasis inside link/image
             processDelimiters(opener.previousDelimiter);
-            mergeTextNodes(linkOrImage.getFirstChild(), linkOrImage.getLastChild());
+            mergeChildTextNodes(linkOrImage);
             // We don't need the corresponding text node anymore, we turned it into a link/image node
             opener.node.unlink();
             removeLastBracket();
@@ -899,8 +899,8 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
             removeDelimitersBetween(opener, closer);
             // The delimiter processor can re-parent the nodes between opener and closer,
-            // so make sure they're contiguous already.
-            mergeTextNodes(openerNode.getNext(), closerNode.getPrevious());
+            // so make sure they're contiguous already. Exclusive because we want to keep opener/closer themselves.
+            mergeTextNodesBetweenExclusive(openerNode, closerNode);
             delimiterProcessor.process(openerNode, closerNode, useDelims);
 
             // No delimiter characters left to process, so we can remove delimiter and the now empty node.
@@ -958,7 +958,25 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         }
     }
 
-    private void mergeTextNodes(Node fromNode, Node toNode) {
+    private void mergeTextNodesBetweenExclusive(Node fromNode, Node toNode) {
+        // No nodes between them
+        if (fromNode == toNode || fromNode.getNext() == toNode) {
+            return;
+        }
+
+        mergeTextNodesInclusive(fromNode.getNext(), toNode.getPrevious());
+    }
+
+    private void mergeChildTextNodes(Node node) {
+        // No children or just one child node, no need for merging
+        if (node.getFirstChild() == node.getLastChild()) {
+            return;
+        }
+
+        mergeTextNodesInclusive(node.getFirstChild(), node.getLastChild());
+    }
+
+    private void mergeTextNodesInclusive(Node fromNode, Node toNode) {
         Text first = null;
         Text last = null;
         int length = 0;
