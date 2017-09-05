@@ -173,6 +173,18 @@ public class TextContentRendererTest {
         assertEquals("bar\n* foo\n   - bar\n* foo", rendered);
         rendered = strippedRenderer().render(parse(source));
         assertEquals("bar foo bar foo", rendered);
+
+        source = "bar\n* foo\n   1. bar\n   2. bar\n* foo";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("bar\n* foo\n   1. bar\n   2. bar\n* foo", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("bar foo 1. bar 2. bar foo", rendered);
+
+        source = "bar\n1. foo\n   * bar\n   * bar\n2. foo";
+        rendered = defaultRenderer().render(parse(source));
+        assertEquals("bar\n1. foo\n   * bar\n   * bar\n2. foo", rendered);
+        rendered = strippedRenderer().render(parse(source));
+        assertEquals("bar 1. foo bar bar 2. foo", rendered);
     }
 
     @Test
