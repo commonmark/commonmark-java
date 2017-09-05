@@ -1,6 +1,6 @@
 package org.commonmark.renderer.text.holder;
 
-abstract class ListHolder {
+public abstract class ListHolder {
     private static final String INDENT_DEFAULT = "   ";
     private static final String INDENT_EMPTY = "";
 

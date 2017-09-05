@@ -6,7 +6,7 @@ public class OrderedListHolder extends ListHolder {
     private final char delimiter;
     private int counter;
 
-    public OrderedListHolder(OrderedListHolder parent, OrderedList list) {
+    public OrderedListHolder(ListHolder parent, OrderedList list) {
         super(parent);
         delimiter = list.getDelimiter();
         counter = list.getStartNumber();

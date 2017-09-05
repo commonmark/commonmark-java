@@ -3,6 +3,7 @@ package org.commonmark.renderer.text;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.text.holder.BulletListHolder;
+import org.commonmark.renderer.text.holder.ListHolder;
 import org.commonmark.renderer.text.holder.OrderedListHolder;
 
 import java.util.Arrays;
@@ -17,8 +18,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
     protected final TextContentNodeRendererContext context;
     private final TextContentWriter textContent;
 
-    private OrderedListHolder orderedListHolder;
-    private BulletListHolder bulletListHolder;
+    private ListHolder listHolder;
 
     public CoreTextContentNodeRenderer(TextContentNodeRendererContext context) {
         this.context = context;
@@ -73,16 +73,16 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(BulletList bulletList) {
-        if (bulletListHolder != null) {
+        if (listHolder != null) {
             writeEndOfLine();
         }
-        bulletListHolder = new BulletListHolder(bulletListHolder, bulletList);
+        listHolder = new BulletListHolder(listHolder, bulletList);
         visitChildren(bulletList);
         writeEndOfLineIfNeeded(bulletList, null);
-        if (bulletListHolder.getParent() != null) {
-            bulletListHolder = (BulletListHolder) bulletListHolder.getParent();
+        if (listHolder.getParent() != null) {
+            listHolder = listHolder.getParent();
         } else {
-            bulletListHolder = null;
+            listHolder = null;
         }
     }
 
@@ -154,13 +154,15 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(ListItem listItem) {
-        if (orderedListHolder != null) {
+        if (listHolder != null && listHolder instanceof OrderedListHolder) {
+            OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
             String indent = context.stripNewlines() ? "" : orderedListHolder.getIndent();
             textContent.write(indent + orderedListHolder.getCounter() + orderedListHolder.getDelimiter() + " ");
             visitChildren(listItem);
             writeEndOfLineIfNeeded(listItem, null);
             orderedListHolder.increaseCounter();
-        } else if (bulletListHolder != null) {
+        } else if (listHolder != null && listHolder instanceof BulletListHolder) {
+            BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
             if (!context.stripNewlines()) {
                 textContent.write(bulletListHolder.getIndent() + bulletListHolder.getMarker() + " ");
             }
@@ -171,16 +173,16 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(OrderedList orderedList) {
-        if (orderedListHolder != null) {
+        if (listHolder != null) {
             writeEndOfLine();
         }
-        orderedListHolder = new OrderedListHolder(orderedListHolder, orderedList);
+        listHolder = new OrderedListHolder(listHolder, orderedList);
         visitChildren(orderedList);
         writeEndOfLineIfNeeded(orderedList, null);
-        if (orderedListHolder.getParent() != null) {
-            orderedListHolder = (OrderedListHolder) orderedListHolder.getParent();
+        if (listHolder.getParent() != null) {
+            listHolder = listHolder.getParent();
         } else {
-            orderedListHolder = null;
+            listHolder = null;
         }
     }
 
