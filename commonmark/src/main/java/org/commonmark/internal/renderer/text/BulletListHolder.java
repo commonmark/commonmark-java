@@ -1,4 +1,4 @@
-package org.commonmark.renderer.text.holder;
+package org.commonmark.internal.renderer.text;
 
 import org.commonmark.node.BulletList;
 
