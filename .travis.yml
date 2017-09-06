@@ -1,14 +1,13 @@
 language: android
-jdk:
-  - openjdk7
-  - oraclejdk8
-env:
-  - TEST=java
-  - TEST=android
 matrix:
-  exclude:
+  include:
     - jdk: oraclejdk8
+      env: TEST=java
+    - jdk: openjdk7
+      env: TEST=java
+    - jdk: openjdk7
       env: TEST=android
+      dist: precise
 android:
   components:
     - android-16
