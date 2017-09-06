@@ -41,7 +41,7 @@ public class TextContentWriterTest {
     public void writeStripped() throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
-        writer.writeStripped("foo\n bar\n");
+        writer.writeStripped("foo\n bar");
         assertEquals("foo bar", stringBuilder.toString());
     }
 
