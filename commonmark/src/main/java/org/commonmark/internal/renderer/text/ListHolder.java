@@ -1,4 +1,4 @@
-package org.commonmark.renderer.text.holder;
+package org.commonmark.internal.renderer.text;
 
 public abstract class ListHolder {
     private static final String INDENT_DEFAULT = "   ";

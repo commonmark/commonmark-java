@@ -2,9 +2,9 @@ package org.commonmark.renderer.text;
 
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.text.holder.BulletListHolder;
-import org.commonmark.renderer.text.holder.ListHolder;
-import org.commonmark.renderer.text.holder.OrderedListHolder;
+import org.commonmark.internal.renderer.text.BulletListHolder;
+import org.commonmark.internal.renderer.text.ListHolder;
+import org.commonmark.internal.renderer.text.OrderedListHolder;
 
 import java.util.Arrays;
 import java.util.HashSet;
