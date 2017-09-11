@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.10.0] - 2017-09-11
 ### Added
 - Support multiple `DelimiterProcessor` with the same delimiter char as long
   as they have different length, thanks @szeiger
