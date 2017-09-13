@@ -68,13 +68,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <configuration>
-                        <!-- There's lots of potential for things to go wrong when publishing to Central, so
-                             don't push the tag and master automatically (which happens before publishing). Also
-                             requires "localCheckout" for release:perform to work. -->
-                        <pushChanges>false</pushChanges>
-                        <localCheckout>true</localCheckout>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
