@@ -202,6 +202,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.10.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.9.0...commonmark-parent-0.10.0
 [0.9.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.8.0...commonmark-parent-0.9.0
 [0.8.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.7.1...commonmark-parent-0.8.0
 [0.7.1]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.7.0...commonmark-parent-0.7.1
