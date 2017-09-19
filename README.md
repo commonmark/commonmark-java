@@ -326,7 +326,7 @@ an issue and explaining the intended change.
 License
 -------
 
-Copyright (c) 2015-2016 Atlassian and others.
+Copyright (c) 2015-2017 Atlassian and others.
 
 BSD (2-clause) licensed, see LICENSE.txt file.
 
