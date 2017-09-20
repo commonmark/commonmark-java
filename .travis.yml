@@ -1,4 +1,5 @@
 language: android
+
 matrix:
   include:
     - jdk: oraclejdk8
@@ -8,12 +9,16 @@ matrix:
     - jdk: openjdk7
       env: TEST=android
       dist: precise
-android:
-  components:
-    - android-16
-    - build-tools-21.1.1
-    - extra-android-m2repository
-    - sys-img-armeabi-v7a-android-16
+      android:
+        components:
+          - android-16
+          - build-tools-21.1.1
+          - extra-android-m2repository
+          - sys-img-armeabi-v7a-android-16
+
+  allow_failures:
+    - env: TEST=android
+
 script:
   - 'if [ $TEST = java ]; then mvn test -Dsurefire.useFile=false; fi'
   - 'if [ $TEST = android ]; then mvn install -DskipTests && cd commonmark-android-test && travis_retry ./.travis.sh; fi'
