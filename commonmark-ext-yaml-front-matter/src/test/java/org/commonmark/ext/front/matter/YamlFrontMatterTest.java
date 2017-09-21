@@ -181,6 +181,24 @@ public class YamlFrontMatterTest extends RenderingTestCase {
     }
 
     @Test
+    public void empty() {
+        final String input = "---\n" +
+                "---\n" +
+                "test";
+        final String rendered = "<p>test</p>\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertTrue(data.isEmpty());
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
     public void yamlInParagraph() {
         final String input = "# hello\n" +
                 "\nhello markdown world!" +
@@ -201,10 +219,47 @@ public class YamlFrontMatterTest extends RenderingTestCase {
     }
 
     @Test
+    public void yamlOnSecondLine() {
+        final String input = "hello\n" +
+                "\n---" +
+                "\nhello: world" +
+                "\n---";
+        final String rendered = "<p>hello</p>\n<hr />\n<h2>hello: world</h2>\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertTrue(data.isEmpty());
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
     public void nonMatchedStartTag() {
         final String input = "----\n" +
                 "test";
         final String rendered = "<hr />\n<p>test</p>\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertTrue(data.isEmpty());
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
+    public void inList() {
+        final String input = "* ---\n" +
+                "  ---\n" +
+                "test";
+        final String rendered = "<ul>\n<li>\n<hr />\n<hr />\n</li>\n</ul>\n<p>test</p>\n";
 
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
         Node document = PARSER.parse(input);
