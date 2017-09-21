@@ -19,14 +19,12 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     private static final Pattern REGEX_BEGIN = Pattern.compile("^-{3}(\\s.*)?");
     private static final Pattern REGEX_END = Pattern.compile("^(-{3}|\\.{3})(\\s.*)?");
 
-    private boolean inYAMLBlock;
     private boolean inLiteral;
     private String currentKey;
     private List<String> currentValues;
     private YamlFrontMatterBlock block;
 
     public YamlFrontMatterBlockParser() {
-        inYAMLBlock = true;
         inLiteral = false;
         currentKey = null;
         currentValues = new ArrayList<>();
@@ -46,55 +44,48 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     public BlockContinue tryContinue(ParserState parserState) {
         final CharSequence line = parserState.getLine();
 
-        if (inYAMLBlock) {
-            if (REGEX_END.matcher(line).matches()) {
-                if (currentKey != null) {
-                    block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
-                }
-                return BlockContinue.finished();
+        if (REGEX_END.matcher(line).matches()) {
+            if (currentKey != null) {
+                block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
             }
-
-            Matcher matcher = REGEX_METADATA.matcher(line);
-            if (matcher.matches()) {
-                if (currentKey != null) {
-                    block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
-                }
-
-                inLiteral = false;
-                currentKey = matcher.group(1);
-                currentValues = new ArrayList<>();
-                if ("|".equals(matcher.group(2))) {
-                    inLiteral = true;
-                } else if (!"".equals(matcher.group(2))) {
-                    currentValues.add(matcher.group(2));
-                }
-
-                return BlockContinue.atIndex(parserState.getIndex());
-            } else {
-                if (inLiteral) {
-                    matcher = REGEX_METADATA_LITERAL.matcher(line);
-                    if (matcher.matches()) {
-                        if (currentValues.size() == 1) {
-                            currentValues.set(0, currentValues.get(0) + "\n" + matcher.group(1).trim());
-                        } else {
-                            currentValues.add(matcher.group(1).trim());
-                        }
-                    }
-                } else {
-                    matcher = REGEX_METADATA_LIST.matcher(line);
-                    if (matcher.matches()) {
-                        currentValues.add(matcher.group(1));
-                    }
-                }
-
-                return BlockContinue.atIndex(parserState.getIndex());
-            }
-        } else if (REGEX_BEGIN.matcher(line).matches()) {
-            inYAMLBlock = true;
-            return BlockContinue.atIndex(parserState.getIndex());
+            return BlockContinue.finished();
         }
 
-        return BlockContinue.none();
+        Matcher matcher = REGEX_METADATA.matcher(line);
+        if (matcher.matches()) {
+            if (currentKey != null) {
+                block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
+            }
+
+            inLiteral = false;
+            currentKey = matcher.group(1);
+            currentValues = new ArrayList<>();
+            if ("|".equals(matcher.group(2))) {
+                inLiteral = true;
+            } else if (!"".equals(matcher.group(2))) {
+                currentValues.add(matcher.group(2));
+            }
+
+            return BlockContinue.atIndex(parserState.getIndex());
+        } else {
+            if (inLiteral) {
+                matcher = REGEX_METADATA_LITERAL.matcher(line);
+                if (matcher.matches()) {
+                    if (currentValues.size() == 1) {
+                        currentValues.set(0, currentValues.get(0) + "\n" + matcher.group(1).trim());
+                    } else {
+                        currentValues.add(matcher.group(1).trim());
+                    }
+                }
+            } else {
+                matcher = REGEX_METADATA_LIST.matcher(line);
+                if (matcher.matches()) {
+                    currentValues.add(matcher.group(1));
+                }
+            }
+
+            return BlockContinue.atIndex(parserState.getIndex());
+        }
     }
 
     @Override
