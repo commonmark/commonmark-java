@@ -1,9 +1,10 @@
 package org.commonmark.ext.front.matter;
 
 import org.commonmark.Extension;
-import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
 
@@ -180,6 +181,24 @@ public class YamlFrontMatterTest extends RenderingTestCase {
     }
 
     @Test
+    public void empty() {
+        final String input = "---\n" +
+                "---\n" +
+                "test";
+        final String rendered = "<p>test</p>\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertTrue(data.isEmpty());
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
     public void yamlInParagraph() {
         final String input = "# hello\n" +
                 "\nhello markdown world!" +
@@ -187,6 +206,25 @@ public class YamlFrontMatterTest extends RenderingTestCase {
                 "\nhello: world" +
                 "\n---";
         final String rendered = "<h1>hello</h1>\n<h2>hello markdown world!</h2>\n<h2>hello: world</h2>\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertTrue(data.isEmpty());
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
+    public void yamlOnSecondLine() {
+        final String input = "hello\n" +
+                "\n---" +
+                "\nhello: world" +
+                "\n---";
+        final String rendered = "<p>hello</p>\n<hr />\n<h2>hello: world</h2>\n";
 
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
         Node document = PARSER.parse(input);
@@ -216,8 +254,69 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         assertRendering(input, rendered);
     }
 
+    @Test
+    public void inList() {
+        final String input = "* ---\n" +
+                "  ---\n" +
+                "test";
+        final String rendered = "<ul>\n<li>\n<hr />\n<hr />\n</li>\n</ul>\n<p>test</p>\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertTrue(data.isEmpty());
+
+        assertRendering(input, rendered);
+    }
+
+    @Test
+    public void visitorIgnoresOtherCustomNodes() {
+        final String input = "---" +
+                "\nhello: world" +
+                "\n---" +
+                "\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.appendChild(new TestNode());
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+        assertEquals(1, data.size());
+        assertTrue(data.containsKey("hello"));
+        assertEquals(Collections.singletonList("world"), data.get("hello"));
+    }
+
+    @Test
+    public void nodesCanBeModified() {
+        final String input = "---" +
+                "\nhello: world" +
+                "\n---" +
+                "\n";
+
+        Node document = PARSER.parse(input);
+        YamlFrontMatterNode node = (YamlFrontMatterNode) document.getFirstChild().getFirstChild();
+        node.setKey("see");
+        node.setValues(Collections.singletonList("you"));
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+        assertEquals(1, data.size());
+        assertTrue(data.containsKey("see"));
+        assertEquals(Collections.singletonList("you"), data.get("see"));
+    }
+
     @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));
+    }
+
+    // Custom node for tests
+    private static class TestNode extends CustomNode {
     }
 }
