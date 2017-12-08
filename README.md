@@ -267,6 +267,12 @@ Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
+### Tables as text
+
+Enables text rendering tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
+
+Use class `TextTablesExtension` in artifact `commonmark-ext-gfm-tables-text`.
+
 ### Heading anchor
 
 Enables adding auto generated "id" attributes to heading tags. The "id"

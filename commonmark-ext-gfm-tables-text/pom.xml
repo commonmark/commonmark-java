@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.commonmark</groupId>
+        <artifactId>commonmark-parent</artifactId>
+        <version>0.10.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>commonmark-ext-gfm-tables-text</artifactId>
+    <name>commonmark-java extension for GFM tables as text</name>
+    <description>commonmark-java extension to render GFM tables as text using "|" pipes (GitHub Flavored Markdown)</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.commonmark</groupId>
+            <artifactId>commonmark-ext-gfm-tables</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.atlassian.commonmark</groupId>
+            <artifactId>commonmark-test-util</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
