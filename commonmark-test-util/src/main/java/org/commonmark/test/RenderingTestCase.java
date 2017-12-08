@@ -6,12 +6,12 @@ public abstract class RenderingTestCase {
 
     protected abstract String render(String source);
 
-    protected void assertRendering(String source, String expectedHtml) {
-        String html = render(source);
+    protected void assertRendering(String source, String expectedResult) {
+        String renderedContent = render(source);
 
         // include source for better assertion errors
-        String expected = showTabs(expectedHtml + "\n\n" + source);
-        String actual = showTabs(html + "\n\n" + source);
+        String expected = showTabs(expectedResult + "\n\n" + source);
+        String actual = showTabs(renderedContent + "\n\n" + source);
         assertEquals(expected, actual);
     }
 

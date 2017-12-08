@@ -4,7 +4,7 @@ import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
 import org.commonmark.ext.ins.InsExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
-import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.ext.gfm.tables.HtmlTablesExtension;
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
@@ -23,7 +23,7 @@ public class SpecIntegrationTest extends SpecTestCase {
             AutolinkExtension.create(),
             InsExtension.create(),
             StrikethroughExtension.create(),
-            TablesExtension.create(),
+            HtmlTablesExtension.create(),
             YamlFrontMatterExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.

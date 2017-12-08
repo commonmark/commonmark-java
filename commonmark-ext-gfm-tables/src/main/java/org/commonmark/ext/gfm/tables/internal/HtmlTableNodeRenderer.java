@@ -8,12 +8,12 @@ import org.commonmark.renderer.html.HtmlWriter;
 
 import java.util.*;
 
-public class TableNodeRenderer implements NodeRenderer {
+public class HtmlTableNodeRenderer implements NodeRenderer {
 
     private final HtmlWriter htmlWriter;
     private final HtmlNodeRendererContext context;
 
-    public TableNodeRenderer(HtmlNodeRendererContext context) {
+    public HtmlTableNodeRenderer(HtmlNodeRendererContext context) {
         this.htmlWriter = context.getWriter();
         this.context = context;
     }

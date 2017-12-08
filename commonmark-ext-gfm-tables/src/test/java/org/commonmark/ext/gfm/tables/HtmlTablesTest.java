@@ -17,9 +17,9 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class TablesTest extends RenderingTestCase {
+public class HtmlTablesTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+    private static final Set<Extension> EXTENSIONS = Collections.singleton(HtmlTablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
