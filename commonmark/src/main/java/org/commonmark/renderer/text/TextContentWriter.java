@@ -42,7 +42,7 @@ public class TextContentWriter {
         append(c);
     }
 
-    protected void append(String s) {
+    private void append(String s) {
         try {
             buffer.append(s);
         } catch (IOException e) {
@@ -55,7 +55,7 @@ public class TextContentWriter {
         }
     }
 
-    protected void append(char c) {
+    private void append(char c) {
         try {
             buffer.append(c);
         } catch (IOException e) {

@@ -57,7 +57,7 @@ public class TextContentWriterTest {
     public void append() throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         SubclassedWriter writer = new SubclassedWriter(stringBuilder);
-        writer.append("foo");
+        writer.write("foo");
         assertEquals("foo", stringBuilder.toString());
     }
 
@@ -65,7 +65,7 @@ public class TextContentWriterTest {
     public void getLastChar() throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         SubclassedWriter writer = new SubclassedWriter(stringBuilder);
-        writer.append("foo");
+        writer.write("foo");
         assertEquals('o', writer.getLastChar());
     }
 
@@ -73,7 +73,7 @@ public class TextContentWriterTest {
     public void getBuffer() throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         SubclassedWriter writer = new SubclassedWriter(stringBuilder);
-        writer.append("foo");
+        writer.write("foo");
         assertEquals("foo", writer.getBuffer().toString());
     }
 
@@ -81,11 +81,6 @@ public class TextContentWriterTest {
 
         SubclassedWriter(StringBuilder out) {
             super(out);
-        }
-
-        @Override
-        protected void append(String s) {
-            super.append(s);
         }
 
         @Override
