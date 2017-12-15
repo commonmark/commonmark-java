@@ -52,4 +52,51 @@ public class TextContentWriterTest {
         writer.writeStripped("foo bar");
         assertEquals("foo bar", stringBuilder.toString());
     }
+
+    @Test
+    public void append() throws Exception {
+        StringBuilder stringBuilder = new StringBuilder();
+        SubclassedWriter writer = new SubclassedWriter(stringBuilder);
+        writer.append("foo");
+        assertEquals("foo", stringBuilder.toString());
+    }
+
+    @Test
+    public void getLastChar() throws Exception {
+        StringBuilder stringBuilder = new StringBuilder();
+        SubclassedWriter writer = new SubclassedWriter(stringBuilder);
+        writer.append("foo");
+        assertEquals('o', writer.getLastChar());
+    }
+
+    @Test
+    public void getBuffer() throws Exception {
+        StringBuilder stringBuilder = new StringBuilder();
+        SubclassedWriter writer = new SubclassedWriter(stringBuilder);
+        writer.append("foo");
+        assertEquals("foo", writer.getBuffer().toString());
+    }
+
+    private static class SubclassedWriter extends TextContentWriter {
+
+        SubclassedWriter(StringBuilder out) {
+            super(out);
+        }
+
+        @Override
+        protected void append(String s) {
+            super.append(s);
+        }
+
+        @Override
+        protected Appendable getBuffer() {
+            return super.getBuffer();
+        }
+
+        @Override
+        protected char getLastChar() {
+            return super.getLastChar();
+        }
+
+    }
 }

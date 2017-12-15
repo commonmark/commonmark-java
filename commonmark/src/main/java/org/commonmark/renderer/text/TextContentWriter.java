@@ -42,7 +42,7 @@ public class TextContentWriter {
         append(c);
     }
 
-    private void append(String s) {
+    protected void append(String s) {
         try {
             buffer.append(s);
         } catch (IOException e) {
@@ -55,7 +55,7 @@ public class TextContentWriter {
         }
     }
 
-    private void append(char c) {
+    protected void append(char c) {
         try {
             buffer.append(c);
         } catch (IOException e) {
@@ -63,5 +63,13 @@ public class TextContentWriter {
         }
 
         lastChar = c;
+    }
+
+    protected Appendable getBuffer() {
+        return buffer;
+    }
+
+    protected char getLastChar() {
+        return lastChar;
     }
 }
