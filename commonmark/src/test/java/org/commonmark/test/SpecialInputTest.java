@@ -1,5 +1,6 @@
 package org.commonmark.test;
 
+import org.commonmark.testutil.Strings;
 import org.junit.Test;
 
 public class SpecialInputTest extends CoreRenderingTestCase {

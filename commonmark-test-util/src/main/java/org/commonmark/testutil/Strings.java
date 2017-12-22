@@ -1,4 +1,4 @@
-package org.commonmark.test;
+package org.commonmark.testutil;
 
 public class Strings {
 

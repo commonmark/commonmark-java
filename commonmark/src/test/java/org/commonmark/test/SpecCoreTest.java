@@ -5,7 +5,8 @@ import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
-import org.commonmark.spec.SpecExample;
+import org.commonmark.testutil.SpecTestCase;
+import org.commonmark.testutil.spec.SpecExample;
 import org.junit.Test;
 
 import static org.junit.Assert.fail;

@@ -1,11 +1,11 @@
 package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
-import org.commonmark.renderer.text.TextContentRenderer;
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
-import org.commonmark.test.RenderingTestCase;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.text.TextContentRenderer;
+import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Collections;

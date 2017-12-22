@@ -1,7 +1,8 @@
 package org.commonmark.test;
 
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.testutil.RenderingTestCase;
 
 public class CoreRenderingTestCase extends RenderingTestCase {
 
