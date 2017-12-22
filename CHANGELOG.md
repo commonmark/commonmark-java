@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Changed
+- Add `Automatic-Module-Name` manifest entries so that library can be used
+  nicely in Java 9 modules. The module names correspond to the root
+  package name: `org.commonmark`, `org.commonmark.ext.autolink`, etc.
+
 ## [0.10.0] - 2017-09-14
 ### Added
 - Support multiple `DelimiterProcessor` with the same delimiter char as long
