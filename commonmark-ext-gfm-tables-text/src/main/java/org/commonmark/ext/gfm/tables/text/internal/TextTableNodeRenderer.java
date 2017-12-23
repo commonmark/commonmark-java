@@ -40,8 +40,6 @@ public class TextTableNodeRenderer implements NodeRenderer {
 
     @Override
     public void render(Node node) {
-        // We don't render the table header (node instanceof TableHead) and its children for the text content.
-
         if (node instanceof TableBlock) {
             renderBlock((TableBlock) node);
         } else if (node instanceof TableHead) {
