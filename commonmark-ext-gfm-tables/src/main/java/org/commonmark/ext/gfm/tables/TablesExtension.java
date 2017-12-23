@@ -2,7 +2,7 @@ package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
-import org.commonmark.ext.gfm.tables.internal.HtmlTableNodeRenderer;
+import org.commonmark.ext.gfm.tables.internal.TableNodeRenderer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
@@ -20,13 +20,13 @@ import org.commonmark.renderer.NodeRenderer;
  * The parsed tables are turned into {@link TableBlock} blocks.
  * </p>
  */
-public class HtmlTablesExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
+public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
 
-    private HtmlTablesExtension() {
+    private TablesExtension() {
     }
 
     public static Extension create() {
-        return new HtmlTablesExtension();
+        return new TablesExtension();
     }
 
     @Override
@@ -39,7 +39,7 @@ public class HtmlTablesExtension implements Parser.ParserExtension, HtmlRenderer
         rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
             @Override
             public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new HtmlTableNodeRenderer(context);
+                return new TableNodeRenderer(context);
             }
         });
     }
