@@ -17,16 +17,15 @@ Provides classes for parsing input to an abstract syntax tree of nodes
 started out as a port of [commonmark.js], but has since evolved into a
 full library with a nice API and the following features:
 
-* Small (minimal dependencies)
+* Small (core has no dependencies, extensions in separate artifacts)
 * Fast (10-20 times faster than pegdown, see benchmarks in repo)
 * Flexible (manipulate the AST after parsing, customize HTML rendering)
 * Extensible (tables, strikethrough, autolinking and more, see below)
 
-Requirements:
-
-* Java 7 or above
-* Works on Android, minimum API level 15 (see [commonmark-android-test](commonmark-android-test) directory)
-* The core has no dependencies; for extensions, see below
+The library is supported on Java 8 or higher. It should work on Java 7
+and Android too, but that is on a "best effort" basis, please report
+problems. For Android the minimum API level is 15, see the
+[commonmark-android-test](commonmark-android-test) directory.
 
 Coordinates for core library (see all on [Maven Central]):
 
