@@ -10,6 +10,7 @@ import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Collections;

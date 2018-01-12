@@ -12,7 +12,7 @@
     <description>commonmark-java extension for turning plain URLs and email addresses into links</description>
 
     <properties>
-        <autolink.version>0.7.0</autolink.version>
+        <autolink.version>0.8.0</autolink.version>
     </properties>
 
     <dependencies>
@@ -32,5 +32,21 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>org.commonmark.ext.autolink</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -7,7 +7,7 @@ import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.block.*;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.spec.SpecReader;
+import org.commonmark.testutil.spec.SpecReader;
 import org.junit.Test;
 
 import java.io.IOException;

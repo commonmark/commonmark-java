@@ -10,7 +10,7 @@ import org.junit.runners.MethodSorters;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.commonmark.test.Strings.repeat;
+import static org.commonmark.testutil.Strings.repeat;
 
 /**
  * Pathological input cases (from commonmark.js).

@@ -1,6 +1,6 @@
 package org.commonmark.integration;
 
-import org.commonmark.spec.SpecReader;
+import org.commonmark.testutil.spec.SpecReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;

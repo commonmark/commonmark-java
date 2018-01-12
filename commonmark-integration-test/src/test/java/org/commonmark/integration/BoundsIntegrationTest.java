@@ -2,8 +2,8 @@ package org.commonmark.integration;
 
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
-import org.commonmark.spec.SpecExample;
-import org.commonmark.spec.SpecReader;
+import org.commonmark.testutil.spec.SpecExample;
+import org.commonmark.testutil.spec.SpecReader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
