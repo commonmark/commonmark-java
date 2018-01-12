@@ -11,6 +11,8 @@ with the exception that 0.x versions can break between minor versions.
 - Add `Automatic-Module-Name` manifest entries so that library can be used
   nicely in Java 9 modules. The module names correspond to the root
   package name: `org.commonmark`, `org.commonmark.ext.autolink`, etc.
+- Java 7 is now only supported on a best-effort basis (but it has been
+  EOL for quite some time, so yeah)
 
 ## [0.10.0] - 2017-09-14
 ### Added
