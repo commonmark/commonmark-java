@@ -8,8 +8,8 @@ import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
-import org.commonmark.spec.SpecExample;
-import org.commonmark.test.SpecTestCase;
+import org.commonmark.testutil.spec.SpecExample;
+import org.commonmark.testutil.SpecTestCase;
 import org.junit.Test;
 
 import java.util.*;

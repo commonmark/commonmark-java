@@ -1,12 +1,5 @@
 package org.commonmark.ext.gfm.tables;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
@@ -14,8 +7,15 @@ import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.AttributeProviderContext;
 import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.test.RenderingTestCase;
+import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class TablesTest extends RenderingTestCase {
 

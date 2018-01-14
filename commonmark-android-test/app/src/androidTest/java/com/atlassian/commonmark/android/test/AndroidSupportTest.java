@@ -10,7 +10,7 @@ import org.commonmark.ext.ins.InsExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.spec.SpecReader;
+import org.commonmark.testutil.spec.SpecReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

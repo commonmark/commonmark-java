@@ -5,7 +5,7 @@ import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.test.RenderingTestCase;
+import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Collections;
