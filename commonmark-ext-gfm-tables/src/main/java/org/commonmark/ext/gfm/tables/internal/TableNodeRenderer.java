@@ -1,22 +1,18 @@
 package org.commonmark.ext.gfm.tables.internal;
 
-import org.commonmark.ext.gfm.tables.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.commonmark.ext.gfm.tables.TableBlock;
+import org.commonmark.ext.gfm.tables.TableBody;
+import org.commonmark.ext.gfm.tables.TableCell;
+import org.commonmark.ext.gfm.tables.TableHead;
+import org.commonmark.ext.gfm.tables.TableRow;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlWriter;
 
-import java.util.*;
-
-public class TableNodeRenderer implements NodeRenderer {
-
-    private final HtmlWriter htmlWriter;
-    private final HtmlNodeRendererContext context;
-
-    public TableNodeRenderer(HtmlNodeRendererContext context) {
-        this.htmlWriter = context.getWriter();
-        this.context = context;
-    }
+abstract class TableNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
@@ -44,75 +40,13 @@ public class TableNodeRenderer implements NodeRenderer {
         }
     }
 
-    private void renderBlock(TableBlock tableBlock) {
-        htmlWriter.line();
-        htmlWriter.tag("table", getAttributes(tableBlock, "table"));
-        renderChildren(tableBlock);
-        htmlWriter.tag("/table");
-        htmlWriter.line();
-    }
+    protected abstract void renderBlock(TableBlock node);
 
-    private void renderHead(TableHead tableHead) {
-        htmlWriter.line();
-        htmlWriter.tag("thead", getAttributes(tableHead, "thead"));
-        renderChildren(tableHead);
-        htmlWriter.tag("/thead");
-        htmlWriter.line();
-    }
+    protected abstract void renderHead(TableHead node);
 
-    private void renderBody(TableBody tableBody) {
-        htmlWriter.line();
-        htmlWriter.tag("tbody", getAttributes(tableBody, "tbody"));
-        renderChildren(tableBody);
-        htmlWriter.tag("/tbody");
-        htmlWriter.line();
-    }
+    protected abstract void renderBody(TableBody node);
 
-    private void renderRow(TableRow tableRow) {
-        htmlWriter.line();
-        htmlWriter.tag("tr", getAttributes(tableRow, "tr"));
-        renderChildren(tableRow);
-        htmlWriter.tag("/tr");
-        htmlWriter.line();
-    }
+    protected abstract void renderRow(TableRow node);
 
-    private void renderCell(TableCell tableCell) {
-        String tagName = tableCell.isHeader() ? "th" : "td";
-        htmlWriter.tag(tagName, getCellAttributes(tableCell, tagName));
-        renderChildren(tableCell);
-        htmlWriter.tag("/" + tagName);
-    }
-
-    private Map<String, String> getAttributes(Node node, String tagName) {
-        return context.extendAttributes(node, tagName, Collections.<String, String>emptyMap());
-    }
-
-    private Map<String, String> getCellAttributes(TableCell tableCell, String tagName) {
-        if (tableCell.getAlignment() != null) {
-            return context.extendAttributes(tableCell, tagName, Collections.singletonMap("align", getAlignValue(tableCell.getAlignment())));
-        } else {
-            return context.extendAttributes(tableCell, tagName, Collections.<String, String>emptyMap());
-        }
-    }
-
-    private static String getAlignValue(TableCell.Alignment alignment) {
-        switch (alignment) {
-            case LEFT:
-                return "left";
-            case CENTER:
-                return "center";
-            case RIGHT:
-                return "right";
-        }
-        throw new IllegalStateException("Unknown alignment: " + alignment);
-    }
-
-    private void renderChildren(Node parent) {
-        Node node = parent.getFirstChild();
-        while (node != null) {
-            Node next = node.getNext();
-            context.render(node);
-            node = next;
-        }
-    }
+    protected abstract void renderCell(TableCell node);
 }

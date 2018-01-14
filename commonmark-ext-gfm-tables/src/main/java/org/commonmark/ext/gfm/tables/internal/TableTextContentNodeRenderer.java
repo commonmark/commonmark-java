@@ -1,8 +1,4 @@
-package org.commonmark.ext.gfm.tables.text.internal;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+package org.commonmark.ext.gfm.tables.internal;
 
 import org.commonmark.ext.gfm.tables.TableBlock;
 import org.commonmark.ext.gfm.tables.TableBody;
@@ -10,71 +6,44 @@ import org.commonmark.ext.gfm.tables.TableCell;
 import org.commonmark.ext.gfm.tables.TableHead;
 import org.commonmark.ext.gfm.tables.TableRow;
 import org.commonmark.node.Node;
-import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentWriter;
 
 /**
- * The Table node renderer that is needed for rendering GFM tables (GitHub Flavored Markdown) to text.
+ * The Table node renderer that is needed for rendering GFM tables (GitHub Flavored Markdown) to text content.
  */
-public class TextTableNodeRenderer implements NodeRenderer {
+public class TableTextContentNodeRenderer extends TableNodeRenderer {
 
     private final TextContentWriter textContentWriter;
     private final TextContentNodeRendererContext context;
 
-    public TextTableNodeRenderer(TextContentNodeRendererContext context) {
+    public TableTextContentNodeRenderer(TextContentNodeRendererContext context) {
         this.textContentWriter = context.getWriter();
         this.context = context;
     }
 
-    @Override
-    public Set<Class<? extends Node>> getNodeTypes() {
-        return new HashSet<>(Arrays.asList(
-            TableBlock.class,
-            TableHead.class,
-            TableBody.class,
-            TableRow.class,
-            TableCell.class
-        ));
-    }
-
-    @Override
-    public void render(Node node) {
-        if (node instanceof TableBlock) {
-            renderBlock((TableBlock) node);
-        } else if (node instanceof TableHead) {
-            renderHead((TableHead) node);
-        } else if (node instanceof TableBody) {
-            renderBody((TableBody) node);
-        } else if (node instanceof TableRow) {
-            renderRow((TableRow) node);
-        } else if (node instanceof TableCell) {
-            renderCell((TableCell) node);
-        }
-    }
-
-    private void renderBlock(TableBlock tableBlock) {
+    protected void renderBlock(TableBlock tableBlock) {
         renderChildren(tableBlock);
         if (tableBlock.getNext() != null) {
             textContentWriter.write("\n");
         }
     }
 
-    private void renderHead(TableHead tableHead) {
+    protected void renderHead(TableHead tableHead) {
         renderChildren(tableHead);
     }
 
-    private void renderBody(TableBody tableBody) {
+    protected void renderBody(TableBody tableBody) {
         renderChildren(tableBody);
     }
 
-    private void renderRow(TableRow tableRow) {
+    protected void renderRow(TableRow tableRow) {
         textContentWriter.line();
         renderChildren(tableRow);
         textContentWriter.line();
     }
 
-    private void renderCell(TableCell tableCell) {
+    protected void renderCell(TableCell tableCell) {
         renderChildren(tableCell);
         textContentWriter.pipe();
         textContentWriter.whitespace();

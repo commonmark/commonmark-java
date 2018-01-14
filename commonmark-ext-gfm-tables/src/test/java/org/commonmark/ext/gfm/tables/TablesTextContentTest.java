@@ -1,4 +1,4 @@
-package org.commonmark.ext.gfm.tables.text;
+package org.commonmark.ext.gfm.tables;
 
 import java.util.Collections;
 import java.util.Set;
@@ -9,9 +9,9 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.test.RenderingTestCase;
 import org.junit.Test;
 
-public class TextTablesTest extends RenderingTestCase {
+public class TablesTextContentTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(TextTablesExtension.create());
+    private static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final TextContentRenderer RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS).build();
 
