@@ -45,7 +45,7 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
 
     protected void renderCell(TableCell tableCell) {
         renderChildren(tableCell);
-        textContentWriter.pipe();
+        textContentWriter.write('|');
         textContentWriter.whitespace();
     }
 

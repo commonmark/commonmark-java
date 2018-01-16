@@ -24,12 +24,6 @@ public class TextContentWriter {
         }
     }
 
-    public void pipe() {
-        if (lastChar != 0 && lastChar != '|') {
-            append('|');
-        }
-    }
-
     public void line() {
         if (lastChar != 0 && lastChar != '\n') {
             append('\n');
