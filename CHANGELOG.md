@@ -6,7 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.11.0] - 2018-01-16
+### Added
+- The extension for tables now also renders to plain text
+  (when using a `TextContentRenderer`), thanks @ahjaworski
 ### Changed
 - Add `Automatic-Module-Name` manifest entries so that library can be used
   nicely in Java 9 modules. The module names correspond to the root
@@ -210,6 +213,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.11.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.10.0...commonmark-parent-0.11.0
 [0.10.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.9.0...commonmark-parent-0.10.0
 [0.9.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.8.0...commonmark-parent-0.9.0
 [0.8.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.7.1...commonmark-parent-0.8.0
