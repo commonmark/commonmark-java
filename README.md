@@ -37,6 +37,9 @@ Coordinates for core library (see all on [Maven Central]):
 </dependency>
 ```
 
+The module names to use in Java 9 are `org.commonmark`,
+`org.commonmark.ext.autolink`, etc, corresponding to package names.
+
 Note that for 0.x releases of this library, the API is not considered stable
 yet and may break between minor releases. After 1.0, [Semantic Versioning] will
 be followed.
