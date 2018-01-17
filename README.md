@@ -22,7 +22,7 @@ full library with a nice API and the following features:
 * Flexible (manipulate the AST after parsing, customize HTML rendering)
 * Extensible (tables, strikethrough, autolinking and more, see below)
 
-The library is supported on Java 8 or higher. It should work on Java 7
+The library is supported on Java 8 and Java 9. It should work on Java 7
 and Android too, but that is on a best-effort basis, please report
 problems. For Android the minimum API level is 15, see the
 [commonmark-android-test](commonmark-android-test) directory.
@@ -33,7 +33,7 @@ Coordinates for core library (see all on [Maven Central]):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
 </dependency>
 ```
 
