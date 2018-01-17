@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.atlassian.commonmark</groupId>
         <artifactId>commonmark-parent</artifactId>
-        <version>0.10.1-SNAPSHOT</version>
+        <version>0.11.0</version>
     </parent>
 
     <artifactId>commonmark-integration-test</artifactId>
