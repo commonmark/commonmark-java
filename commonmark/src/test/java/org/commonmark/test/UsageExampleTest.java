@@ -4,8 +4,13 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +25,16 @@ public class UsageExampleTest {
         Node document = parser.parse("This is *Sparta*");
         HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
         assertEquals("<p>This is <em>Sparta</em></p>\n", renderer.render(document));
+    }
+
+    @Test
+    @Ignore
+    public void parseReaderRender() throws IOException {
+        Parser parser = Parser.builder().build();
+        try (InputStreamReader reader = new InputStreamReader(new FileInputStream("file.md"), StandardCharsets.UTF_8)) {
+            Node document = parser.parseReader(reader);
+            // ...
+        }
     }
 
     @Test

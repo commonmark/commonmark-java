@@ -1,17 +1,17 @@
 package org.commonmark.parser;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.commonmark.Extension;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -52,7 +52,7 @@ public class Parser {
     /**
      * Parse the specified input text into a tree of nodes.
      * <p>
-     * Note that this method is thread-safe (a new parser state is used for each invocation).
+     * This method is thread-safe (a new parser state is used for each invocation).
      *
      * @param input the text to parse
      * @return the root node
@@ -66,8 +66,17 @@ public class Parser {
 
     /**
      * Parse the specified reader into a tree of nodes. The caller is responsible for closing the reader.
+     * <pre><code>
+     * Parser parser = Parser.builder().build();
+     * try (InputStreamReader reader = new InputStreamReader(new FileInputStream("file.md"), StandardCharsets.UTF_8)) {
+     *     Node document = parser.parseReader(reader);
+     *     // ...
+     * }
+     * </code></pre>
+     * Note that if you have a file with a byte order mark (BOM), you need to skip it before handing the reader to this
+     * library. There's existing classes that do that, e.g. see {@code BOMInputStream} in Commons IO.
      * <p>
-     * Note that this method is thread-safe (a new parser state is used for each invocation).
+     * This method is thread-safe (a new parser state is used for each invocation).
      *
      * @param input the reader to parse
      * @return the root node
