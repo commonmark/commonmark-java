@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 public class TableBlockParser extends AbstractBlockParser {
 
-    private static String COL = "\\s*:?-{3,}:?\\s*";
+    private static String COL = "\\s*:?-{1,}:?\\s*";
     private static Pattern TABLE_HEADER_SEPARATOR = Pattern.compile(
             // For single column, require at least one pipe, otherwise it's ambiguous with setext headers
             "\\|" + COL + "\\|?\\s*" + "|" +
