@@ -30,9 +30,26 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
-    public void separatorMustBeThreeOrMore() {
-        assertRendering("Abc|Def\n-|-", "<p>Abc|Def\n-|-</p>\n");
-        assertRendering("Abc|Def\n--|--", "<p>Abc|Def\n--|--</p>\n");
+    public void separatorMustBeOneOrMore() {
+        assertRendering("Abc|Def\n-|-", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody></tbody>\n" +
+                "</table>\n");
+        assertRendering("Abc|Def\n--|--", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th>Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody></tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
+    public void separatorMustNotContainInvalidChars() {
+        assertRendering("Abc|Def\n |-a-|---", "<p>Abc|Def\n|-a-|---</p>\n");
+        assertRendering("Abc|Def\n |:--a|---", "<p>Abc|Def\n|:--a|---</p>\n");
+        assertRendering("Abc|Def\n |:--a--:|---", "<p>Abc|Def\n|:--a--:|---</p>\n");
     }
 
     @Test
@@ -191,6 +208,22 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void alignLeft() {
+        assertRendering("Abc|Def\n:-|-\n1|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th align=\"left\">Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td align=\"left\">1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+        assertRendering("Abc|Def\n:-|-\n1|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th align=\"left\">Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td align=\"left\">1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
         assertRendering("Abc|Def\n:---|---\n1|2", "<table>\n" +
                 "<thead>\n" +
                 "<tr><th align=\"left\">Abc</th><th>Def</th></tr>\n" +
@@ -203,6 +236,22 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void alignRight() {
+        assertRendering("Abc|Def\n-:|-\n1|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th align=\"right\">Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td align=\"right\">1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+        assertRendering("Abc|Def\n--:|--\n1|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th align=\"right\">Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td align=\"right\">1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
         assertRendering("Abc|Def\n---:|---\n1|2", "<table>\n" +
                 "<thead>\n" +
                 "<tr><th align=\"right\">Abc</th><th>Def</th></tr>\n" +
@@ -215,6 +264,22 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void alignCenter() {
+        assertRendering("Abc|Def\n:-:|-\n1|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th align=\"center\">Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td align=\"center\">1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+        assertRendering("Abc|Def\n:--:|--\n1|2", "<table>\n" +
+                "<thead>\n" +
+                "<tr><th align=\"center\">Abc</th><th>Def</th></tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr><td align=\"center\">1</td><td>2</td></tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
         assertRendering("Abc|Def\n:---:|---\n1|2", "<table>\n" +
                 "<thead>\n" +
                 "<tr><th align=\"center\">Abc</th><th>Def</th></tr>\n" +
