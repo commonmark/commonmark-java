@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 public class HeadingParser extends AbstractBlockParser {
 
     private static Pattern ATX_HEADING = Pattern.compile("^#{1,6}(?:[ \t]+|$)");
-    private static Pattern ATX_TRAILING = Pattern.compile("(^| ) *#+ *$");
-    private static Pattern SETEXT_HEADING = Pattern.compile("^(?:=+|-+) *$");
+    private static Pattern ATX_TRAILING = Pattern.compile("(^|[ \t]+)#+[ \t]*$");
+    private static Pattern SETEXT_HEADING = Pattern.compile("^(?:=+|-+)[ \t]*$");
 
     private final Heading block = new Heading();
     private final String content;
@@ -54,7 +54,8 @@ public class HeadingParser extends AbstractBlockParser {
                 int newOffset = nextNonSpace + matcher.group(0).length();
                 int level = matcher.group(0).trim().length(); // number of #s
                 // remove trailing ###s:
-                String content = ATX_TRAILING.matcher(line.subSequence(newOffset, line.length())).replaceAll("");
+                CharSequence afterLeading = line.subSequence(newOffset, line.length());
+                String content = ATX_TRAILING.matcher(afterLeading).replaceAll("");
                 return BlockStart.of(new HeadingParser(level, content))
                         .atIndex(line.length());
 

@@ -1,8 +1,9 @@
 package org.commonmark.test;
 
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
-import org.commonmark.testutil.spec.SpecReader;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.testutil.TestResources;
+import org.commonmark.testutil.example.ExampleReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -17,8 +18,8 @@ import java.util.List;
 @State(Scope.Benchmark)
 public class SpecBenchmark {
 
-    private static final String SPEC = SpecReader.readSpec();
-    private static final List<String> SPEC_EXAMPLES = SpecReader.readExamplesAsString();
+    private static final String SPEC = TestResources.readAsString(TestResources.getSpec());
+    private static final List<String> SPEC_EXAMPLES = ExampleReader.readExampleSources(TestResources.getSpec());
     private static final Parser PARSER = Parser.builder().build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
 

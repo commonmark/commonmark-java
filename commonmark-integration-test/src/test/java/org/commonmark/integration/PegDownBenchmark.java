@@ -1,6 +1,7 @@
 package org.commonmark.integration;
 
-import org.commonmark.testutil.spec.SpecReader;
+import org.commonmark.testutil.TestResources;
+import org.commonmark.testutil.example.ExampleReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -17,8 +18,8 @@ import java.util.List;
 @State(Scope.Benchmark)
 public class PegDownBenchmark {
 
-    private static final String SPEC = SpecReader.readSpec();
-    private static final List<String> SPEC_EXAMPLES = SpecReader.readExamplesAsString();
+    private static final String SPEC = TestResources.readAsString(TestResources.getSpec());
+    private static final List<String> SPEC_EXAMPLES = ExampleReader.readExampleSources(TestResources.getSpec());
     private static final PegDownProcessor PROCESSOR = new PegDownProcessor(Extensions.FENCED_CODE_BLOCKS);
 
     public static void main(String[] args) throws Exception {

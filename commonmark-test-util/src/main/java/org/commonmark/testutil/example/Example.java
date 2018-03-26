@@ -1,13 +1,15 @@
-package org.commonmark.testutil.spec;
+package org.commonmark.testutil.example;
 
-public class SpecExample {
+public class Example {
 
+    private final String filename;
     private final String section;
     private final int exampleNumber;
     private final String source;
     private final String html;
 
-    public SpecExample(String section, int exampleNumber, String source, String html) {
+    public Example(String filename, String section, int exampleNumber, String source, String html) {
+        this.filename = filename;
         this.section = section;
         this.exampleNumber = exampleNumber;
         this.source = source;
@@ -24,6 +26,6 @@ public class SpecExample {
 
     @Override
     public String toString() {
-        return "Section \"" + section + "\" example " + exampleNumber;
+        return "File \"" + filename + "\" section \"" + section + "\" example " + exampleNumber;
     }
 }

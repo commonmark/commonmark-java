@@ -6,7 +6,7 @@ import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
 import org.commonmark.testutil.SpecTestCase;
-import org.commonmark.testutil.spec.SpecExample;
+import org.commonmark.testutil.example.Example;
 import org.junit.Test;
 
 import static org.junit.Assert.fail;
@@ -17,7 +17,7 @@ public class SpecCoreTest extends SpecTestCase {
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().percentEncodeUrls(true).build();
 
-    public SpecCoreTest(SpecExample example) {
+    public SpecCoreTest(Example example) {
         super(example);
     }
 
