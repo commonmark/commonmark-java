@@ -110,9 +110,10 @@ public class SpecialInputTest extends CoreRenderingTestCase {
 
     @Test
     public void linkDestinationEscaping() {
+        // Backslash escapes `)`
         assertRendering("[foo](\\))", "<p><a href=\")\">foo</a></p>\n");
-        assertRendering("[foo](\\ )", "<p><a href=\"\\ \">foo</a></p>\n");
-
+        // ` ` is not escapable, so the backslash is a literal backslash and there's an optional space at the end
+        assertRendering("[foo](\\ )", "<p><a href=\"\\\">foo</a></p>\n");
         // Backslash escapes `>`, so it's not a `(<...>)` link, but a `(...)` link instead
         assertRendering("[foo](<\\>)", "<p><a href=\"&lt;&gt;\">foo</a></p>\n");
         // Backslash is a literal, so valid

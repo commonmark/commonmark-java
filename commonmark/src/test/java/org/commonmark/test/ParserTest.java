@@ -7,7 +7,7 @@ import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.block.*;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.testutil.spec.SpecReader;
+import org.commonmark.testutil.TestResources;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -32,13 +32,13 @@ public class ParserTest {
     public void ioReaderTest() throws IOException {
         Parser parser = Parser.builder().build();
 
-        InputStream input1 = SpecReader.getSpecInputStream();
+        InputStream input1 = TestResources.getSpec().openStream();
         Node document1;
         try (InputStreamReader reader = new InputStreamReader(input1)) {
             document1 = parser.parseReader(reader);
         }
 
-        String spec = SpecReader.readSpec();
+        String spec = TestResources.readAsString(TestResources.getSpec());
         Node document2 = parser.parse(spec);
 
         HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
@@ -124,7 +124,7 @@ public class ParserTest {
     @Test
     public void threading() throws Exception {
         final Parser parser = Parser.builder().build();
-        final String spec = SpecReader.readSpec();
+        final String spec = TestResources.readAsString(TestResources.getSpec());
 
         HtmlRenderer renderer = HtmlRenderer.builder().build();
         String expectedRendering = renderer.render(parser.parse(spec));

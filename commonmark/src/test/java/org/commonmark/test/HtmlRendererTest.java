@@ -7,7 +7,7 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
-import org.commonmark.testutil.spec.SpecReader;
+import org.commonmark.testutil.TestResources;
 import org.junit.Test;
 
 import java.util.*;
@@ -210,7 +210,7 @@ public class HtmlRendererTest {
     @Test
     public void threading() throws Exception {
         Parser parser = Parser.builder().build();
-        String spec = SpecReader.readSpec();
+        String spec = TestResources.readAsString(TestResources.getSpec());
         final Node document = parser.parse(spec);
 
         final HtmlRenderer htmlRenderer = HtmlRenderer.builder().build();

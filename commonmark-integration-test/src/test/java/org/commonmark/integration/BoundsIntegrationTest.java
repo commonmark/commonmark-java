@@ -2,8 +2,9 @@ package org.commonmark.integration;
 
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
-import org.commonmark.testutil.spec.SpecExample;
-import org.commonmark.testutil.spec.SpecReader;
+import org.commonmark.testutil.TestResources;
+import org.commonmark.testutil.example.Example;
+import org.commonmark.testutil.example.ExampleReader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,9 +30,9 @@ public class BoundsIntegrationTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static List<Object[]> data() {
-        List<SpecExample> examples = SpecReader.readExamples();
+        List<Example> examples = ExampleReader.readExamples(TestResources.getSpec());
         List<Object[]> data = new ArrayList<>();
-        for (SpecExample example : examples) {
+        for (Example example : examples) {
             data.add(new Object[]{example.getSource()});
         }
         return data;

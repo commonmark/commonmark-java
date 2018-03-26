@@ -648,13 +648,13 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                 case '\0':
                     return;
                 case '\\':
-                    // go to character after backslash
-                    index++;
-                    // stop if that took us to the end of input
-                    if (peek() == '\0') {
-                        return;
+                    // check if we have an escapable character
+                    if (index + 1 < input.length() && ESCAPABLE.matcher(input.substring(index + 1, index + 2)).matches()) {
+                        // skip over the escaped character (after switch)
+                        index++;
+                        break;
                     }
-                    // otherwise, we'll skip over character after backslash
+                    // otherwise, we treat this as a literal backslash
                     break;
                 case '(':
                     parens++;
