@@ -64,4 +64,12 @@ public class TextContentWriter {
 
         lastChar = c;
     }
+
+    protected Appendable getBuffer() {
+        return buffer;
+    }
+
+    protected char getLastChar() {
+        return lastChar;
+    }
 }
