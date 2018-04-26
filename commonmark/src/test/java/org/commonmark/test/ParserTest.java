@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,7 +35,7 @@ public class ParserTest {
 
         InputStream input1 = TestResources.getSpec().openStream();
         Node document1;
-        try (InputStreamReader reader = new InputStreamReader(input1)) {
+        try (InputStreamReader reader = new InputStreamReader(input1, Charset.forName("UTF-8"))) {
             document1 = parser.parseReader(reader);
         }
 
