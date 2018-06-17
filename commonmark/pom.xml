@@ -48,12 +48,12 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                  <instructions>
-                    <Export-Package>
-                      *,
-                      org.commonmark.internal
-                    </Export-Package>
-                  </instructions>
+                    <instructions>
+                        <Export-Package>
+                            *,
+                            org.commonmark.internal
+                        </Export-Package>
+                    </instructions>
                 </configuration>
             </plugin>
         </plugins>

@@ -29,10 +29,12 @@
         <module>commonmark-ext-yaml-front-matter</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>
+        <module>commonmark-karaf-features</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <autolink.version>0.8.0</autolink.version>
         <commonmark.javadoc.location>${project.basedir}/../commonmark/target/apidocs/</commonmark.javadoc.location>
     </properties>
 
@@ -59,6 +61,12 @@
                     <version>3.5.0</version>
                     <extensions>true</extensions>
                 </plugin>
+                    <plugin>
+                        <groupId>org.apache.karaf.tooling</groupId>
+                        <artifactId>karaf-maven-plugin</artifactId>
+                        <version>4.2.0</version>
+                        <extensions>true</extensions>
+                    </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>

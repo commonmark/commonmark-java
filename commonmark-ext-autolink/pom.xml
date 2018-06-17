@@ -12,10 +12,6 @@
     <name>commonmark-java extension for autolinking</name>
     <description>commonmark-java extension for turning plain URLs and email addresses into links</description>
 
-    <properties>
-        <autolink.version>0.8.0</autolink.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
