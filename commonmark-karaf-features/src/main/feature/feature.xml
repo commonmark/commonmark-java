@@ -21,6 +21,7 @@
   xmlns="http://karaf.apache.org/xmlns/features/v1.5.0">
 
   <feature description="Installs commonmark-java" name="commonmark" version="${project.version}">
+    <feature>scr</feature>
     <bundle>mvn:com.atlassian.commonmark/commonmark/${project.version}</bundle>
   </feature>
 
