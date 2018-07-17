@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>commonmark-ext-heading-anchor</artifactId>
+    <packaging>bundle</packaging>
     <name>commonmark-java extension for adding id attributes to h tags</name>
     <description>commonmark-java extension for adding unique id attributes to header tags</description>
 
@@ -36,6 +37,11 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>

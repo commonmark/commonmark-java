@@ -8,10 +8,26 @@
     </parent>
 
     <artifactId>commonmark</artifactId>
+    <packaging>bundle</packaging>
     <name>commonmark-java core</name>
     <description>Core of commonmark-java (implementation of CommonMark for parsing markdown and rendering to HTML)</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.annotation</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.metatype.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
             <artifactId>commonmark-test-util</artifactId>
@@ -40,6 +56,19 @@
                             <Automatic-Module-Name>org.commonmark</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            *,
+                            org.commonmark.internal
+                        </Export-Package>
+                    </instructions>
                 </configuration>
             </plugin>
         </plugins>

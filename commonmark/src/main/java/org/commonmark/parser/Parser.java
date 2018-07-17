@@ -12,6 +12,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.osgi.service.component.annotations.Component;
 
 
 /**
@@ -23,7 +24,7 @@ import java.util.Set;
  * Node document = parser.parse("input text");
  * </code></pre>
  */
-public class Parser {
+public class Parser implements IParser {
 
     private final List<BlockParserFactory> blockParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
@@ -57,6 +58,7 @@ public class Parser {
      * @param input the text to parse
      * @return the root node
      */
+    @Override
     public Node parse(String input) {
         InlineParser inlineParser = getInlineParser();
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
@@ -82,6 +84,7 @@ public class Parser {
      * @return the root node
      * @throws IOException when reading throws an exception
      */
+    @Override
     public Node parseReader(Reader input) throws IOException {
         InlineParser inlineParser = getInlineParser();
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
