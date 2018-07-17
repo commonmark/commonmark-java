@@ -8,12 +8,9 @@
     </parent>
 
     <artifactId>commonmark-ext-autolink</artifactId>
+    <packaging>bundle</packaging>
     <name>commonmark-java extension for autolinking</name>
     <description>commonmark-java extension for turning plain URLs and email addresses into links</description>
-
-    <properties>
-        <autolink.version>0.8.0</autolink.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -45,6 +42,11 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>
