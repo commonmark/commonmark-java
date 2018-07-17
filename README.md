@@ -314,6 +314,12 @@ document start here
 
 Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`.
 
+See also
+--------
+
+* [Markwon](https://github.com/noties/Markwon): Android library for rendering markdown as system-native Spannables
+* [flexmark-java](https://github.com/vsch/flexmark-java): Fork that added support for a lot more syntax and flexibility
+
 Contributing
 ------------
 
