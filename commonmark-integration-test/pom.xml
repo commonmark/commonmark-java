@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>commonmark-integration-test</artifactId>
+    <packaging>bundle</packaging>
     <name>commonmark-java integration tests</name>
     <description>Tests integration of all extensions</description>
 
@@ -78,6 +79,11 @@
                     <!-- We don't have anything to install for this module, it only contains tests -->
                     <skip>true</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>

@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>commonmark-test-util</artifactId>
+    <packaging>bundle</packaging>
     <name>commonmark-java test utilities</name>
     <description>commonmark-java classes for tests</description>
 
@@ -30,6 +31,11 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>
