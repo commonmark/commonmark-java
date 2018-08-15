@@ -4,11 +4,7 @@ import org.commonmark.node.Block;
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.block.*;
 
-import java.util.regex.Pattern;
-
 public class ThematicBreakParser extends AbstractBlockParser {
-
-    private static Pattern PATTERN = Pattern.compile("^(?:(?:\\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){3,})[ \t]*$");
 
     private final ThematicBreak block = new ThematicBreak();
 
@@ -32,11 +28,42 @@ public class ThematicBreakParser extends AbstractBlockParser {
             }
             int nextNonSpace = state.getNextNonSpaceIndex();
             CharSequence line = state.getLine();
-            if (PATTERN.matcher(line.subSequence(nextNonSpace, line.length())).matches()) {
+            if (isThematicBreak(line, nextNonSpace)) {
                 return BlockStart.of(new ThematicBreakParser()).atIndex(line.length());
             } else {
                 return BlockStart.none();
             }
         }
+    }
+
+    // spec: A line consisting of 0-3 spaces of indentation, followed by a sequence of three or more matching -, _, or *
+    // characters, each followed optionally by any number of spaces, forms a thematic break.
+    private static boolean isThematicBreak(CharSequence line, int index) {
+        int dashes = 0;
+        int underscores = 0;
+        int asterisks = 0;
+        for (int i = index; i < line.length(); i++) {
+            switch (line.charAt(i)) {
+                case '-':
+                    dashes++;
+                    break;
+                case '_':
+                    underscores++;
+                    break;
+                case '*':
+                    asterisks++;
+                    break;
+                case ' ':
+                case '\t':
+                    // Allowed, even between markers
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        return ((dashes >= 3 && underscores == 0 && asterisks == 0) ||
+                (underscores >= 3 && dashes == 0 && asterisks == 0) ||
+                (asterisks >= 3 && dashes == 0 && underscores == 0));
     }
 }
