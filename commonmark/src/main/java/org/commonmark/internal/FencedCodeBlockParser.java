@@ -100,20 +100,16 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
             }
         }
         if (backticks >= 3 && tildes == 0) {
-            for (int i = index + backticks; i < line.length(); i++) {
-                // spec: The info string may not contain any backtick characters.
-                if (line.charAt(i) == '`') {
-                    return null;
-                }
+            // spec: The info string may not contain any backtick characters.
+            if (Parsing.find('`', line, index + backticks) != -1) {
+                return null;
             }
             return new FencedCodeBlockParser('`', backticks, indent);
         } else if (tildes >= 3 && backticks == 0) {
-            for (int i = index + tildes; i < line.length(); i++) {
-                // This follows commonmark.js but the spec is unclear about this:
-                // https://github.com/commonmark/CommonMark/issues/119
-                if (line.charAt(i) == '~') {
-                    return null;
-                }
+            // This follows commonmark.js but the spec is unclear about this:
+            // https://github.com/commonmark/CommonMark/issues/119
+            if (Parsing.find('~', line, index + tildes) != -1) {
+                return null;
             }
             return new FencedCodeBlockParser('~', tildes, indent);
         } else {
@@ -127,23 +123,12 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     private boolean isClosing(CharSequence line, int index) {
         char fenceChar = block.getFenceChar();
         int fenceLength = block.getFenceLength();
-        int fences = 0;
-        for (int i = index; i < line.length(); i++) {
-            if (line.charAt(i) == fenceChar) {
-                fences++;
-            } else {
-                break;
-            }
-        }
+        int fences = Parsing.skip(fenceChar, line, index, line.length()) - index;
         if (fences < fenceLength) {
             return false;
         }
         // spec: The closing code fence [...] may be followed only by spaces, which are ignored.
-        for (int i = index + fences; i < line.length(); i++) {
-            if (line.charAt(i) != ' ') {
-                return false;
-            }
-        }
-        return true;
+        int after = Parsing.skipSpaceTab(line, index + fences, line.length());
+        return after == line.length();
     }
 }

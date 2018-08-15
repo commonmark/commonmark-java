@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class FencedCodeBlockTest extends RenderingTestCase {
+public class FencedCodeBlockParserTest extends RenderingTestCase {
 
     private static final Parser PARSER = Parser.builder().build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();

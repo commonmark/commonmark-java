@@ -24,6 +24,15 @@ public class Parsing {
         return 4 - (column % 4);
     }
 
+    public static int find(char c, CharSequence s, int startIndex) {
+        for (int i = startIndex; i < s.length(); i++) {
+            if (s.charAt(i) == c) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static int findLineBreak(CharSequence s, int startIndex) {
         for (int i = startIndex; i < s.length(); i++) {
             switch (s.charAt(i)) {
