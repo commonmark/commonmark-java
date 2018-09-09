@@ -4,14 +4,7 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.*;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class ListBlockParser extends AbstractBlockParser {
-
-    private static Pattern MARKER = Pattern.compile(
-            "^([*+-])(?= |\t|$)" +
-                    "|^(\\d{1,9})([.)])(?= |\t|$)");
 
     private final ListBlock block;
 
@@ -48,18 +41,16 @@ public class ListBlockParser extends AbstractBlockParser {
     /**
      * Parse a list marker and return data on the marker or null.
      */
-    private static ListData parseListMarker(CharSequence line, final int markerIndex, final int markerColumn,
-                                            final boolean inParagraph) {
-        CharSequence rest = line.subSequence(markerIndex, line.length());
-        Matcher matcher = MARKER.matcher(rest);
-        if (!matcher.find()) {
+    private static ListData parseList(CharSequence line, final int markerIndex, final int markerColumn,
+                                      final boolean inParagraph) {
+        ListMarkerData listMarker = parseListMarker(line, markerIndex);
+        if (listMarker == null) {
             return null;
         }
+        ListBlock listBlock = listMarker.listBlock;
 
-        ListBlock listBlock = createListBlock(matcher);
-
-        int markerLength = matcher.end() - matcher.start();
-        int indexAfterMarker = markerIndex + markerLength;
+        int indexAfterMarker = listMarker.indexAfterMarker;
+        int markerLength = indexAfterMarker - markerIndex;
         // marker doesn't include tabs, so counting them as columns directly is ok
         int columnAfterMarker = markerColumn + markerLength;
         // the column within the line where the content starts
@@ -98,19 +89,76 @@ public class ListBlockParser extends AbstractBlockParser {
         return new ListData(listBlock, contentColumn);
     }
 
-    private static ListBlock createListBlock(Matcher matcher) {
-        String bullet = matcher.group(1);
-        if (bullet != null) {
-            BulletList bulletList = new BulletList();
-            bulletList.setBulletMarker(bullet.charAt(0));
-            return bulletList;
+    private static ListMarkerData parseListMarker(CharSequence line, int index) {
+        char c = line.charAt(index);
+        switch (c) {
+            // spec: A bullet list marker is a -, +, or * character.
+            case '-':
+            case '+':
+            case '*':
+                if (isSpaceTabOrEnd(line, index + 1)) {
+                    BulletList bulletList = new BulletList();
+                    bulletList.setBulletMarker(c);
+                    return new ListMarkerData(bulletList, index + 1);
+                } else {
+                    return null;
+                }
+            default:
+                return parseOrderedList(line, index);
+        }
+    }
+
+    // spec: An ordered list marker is a sequence of 1–9 arabic digits (0-9), followed by either a `.` character or a
+    // `)` character.
+    private static ListMarkerData parseOrderedList(CharSequence line, int index) {
+        int digits = 0;
+        for (int i = index; i < line.length(); i++) {
+            char c = line.charAt(i);
+            switch (c) {
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    digits++;
+                    if (digits > 9) {
+                        return null;
+                    }
+                    break;
+                case '.':
+                case ')':
+                    if (digits >= 1 && isSpaceTabOrEnd(line, i + 1)) {
+                        String number = line.subSequence(index, i).toString();
+                        OrderedList orderedList = new OrderedList();
+                        orderedList.setStartNumber(Integer.parseInt(number));
+                        orderedList.setDelimiter(c);
+                        return new ListMarkerData(orderedList, i + 1);
+                    } else {
+                        return null;
+                    }
+                default:
+                    return null;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isSpaceTabOrEnd(CharSequence line, int index) {
+        if (index < line.length()) {
+            switch (line.charAt(index)) {
+                case ' ':
+                case '\t':
+                    return true;
+                default:
+                    return false;
+            }
         } else {
-            String digit = matcher.group(2);
-            String delim = matcher.group(3);
-            OrderedList orderedList = new OrderedList();
-            orderedList.setStartNumber(Integer.parseInt(digit));
-            orderedList.setDelimiter(delim.charAt(0));
-            return orderedList;
+            return true;
         }
     }
 
@@ -144,7 +192,7 @@ public class ListBlockParser extends AbstractBlockParser {
             int markerIndex = state.getNextNonSpaceIndex();
             int markerColumn = state.getColumn() + state.getIndent();
             boolean inParagraph = matchedBlockParser.getParagraphContent() != null;
-            ListData listData = parseListMarker(state.getLine(), markerIndex, markerColumn, inParagraph);
+            ListData listData = parseList(state.getLine(), markerIndex, markerColumn, inParagraph);
             if (listData == null) {
                 return BlockStart.none();
             }
@@ -173,6 +221,16 @@ public class ListBlockParser extends AbstractBlockParser {
         ListData(ListBlock listBlock, int contentColumn) {
             this.listBlock = listBlock;
             this.contentColumn = contentColumn;
+        }
+    }
+
+    private static class ListMarkerData {
+        final ListBlock listBlock;
+        final int indexAfterMarker;
+
+        ListMarkerData(ListBlock listBlock, int indexAfterMarker) {
+            this.listBlock = listBlock;
+            this.indexAfterMarker = indexAfterMarker;
         }
     }
 }
