@@ -1,23 +1,14 @@
 package org.commonmark.internal;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.LinkedHashSet;
-import java.util.HashSet;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.*;
 
 public class DocumentParser implements ParserState {
 
@@ -31,6 +22,7 @@ public class DocumentParser implements ParserState {
             IndentedCodeBlock.class));
 
     private static final Map<Class<? extends Block>, BlockParserFactory> NODES_TO_CORE_FACTORIES;
+
     static {
         Map<Class<? extends Block>, BlockParserFactory> map = new HashMap<>();
         map.put(BlockQuote.class, new BlockQuoteParser.Factory());
@@ -77,7 +69,7 @@ public class DocumentParser implements ParserState {
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParser inlineParser) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParser = inlineParser;
-        
+
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(this.documentBlockParser);
     }
@@ -103,7 +95,7 @@ public class DocumentParser implements ParserState {
         int lineStart = 0;
         int lineBreak;
         while ((lineBreak = Parsing.findLineBreak(input, lineStart)) != -1) {
-            CharSequence line = Substring.of(input, lineStart, lineBreak);
+            String line = input.substring(lineStart, lineBreak);
             incorporateLine(line);
             if (lineBreak + 1 < input.length() && input.charAt(lineBreak) == '\r' && input.charAt(lineBreak + 1) == '\n') {
                 lineStart = lineBreak + 2;
@@ -112,12 +104,13 @@ public class DocumentParser implements ParserState {
             }
         }
         if (input.length() > 0 && (lineStart == 0 || lineStart < input.length())) {
-            incorporateLine(Substring.of(input, lineStart, input.length()));
+            String line = input.substring(lineStart);
+            incorporateLine(line);
         }
 
         return finalizeAndProcess();
     }
-    
+
     public Document parse(Reader input) throws IOException {
         BufferedReader bufferedReader;
         if (input instanceof BufferedReader) {
@@ -125,7 +118,7 @@ public class DocumentParser implements ParserState {
         } else {
             bufferedReader = new BufferedReader(input);
         }
-        
+
         String line;
         while ((line = bufferedReader.readLine()) != null) {
             incorporateLine(line);
@@ -532,7 +525,7 @@ public class DocumentParser implements ParserState {
         this.processInlines();
         return this.documentBlockParser.getBlock();
     }
-    
+
     private static class MatchedBlockParserImpl implements MatchedBlockParser {
 
         private final BlockParser matchedBlockParser;
