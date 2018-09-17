@@ -58,7 +58,8 @@ public class ListBlockParser extends AbstractBlockParser {
 
         // See at which column the content starts if there is content
         boolean hasContent = false;
-        for (int i = indexAfterMarker; i < line.length(); i++) {
+        int length = line.length();
+        for (int i = indexAfterMarker; i < length; i++) {
             char c = line.charAt(i);
             if (c == '\t') {
                 contentColumn += Parsing.columnsToNextTabStop(contentColumn);
@@ -112,7 +113,8 @@ public class ListBlockParser extends AbstractBlockParser {
     // `)` character.
     private static ListMarkerData parseOrderedList(CharSequence line, int index) {
         int digits = 0;
-        for (int i = index; i < line.length(); i++) {
+        int length = line.length();
+        for (int i = index; i < length; i++) {
             char c = line.charAt(i);
             switch (c) {
                 case '0':

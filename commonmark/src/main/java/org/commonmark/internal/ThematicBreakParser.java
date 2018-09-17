@@ -42,7 +42,8 @@ public class ThematicBreakParser extends AbstractBlockParser {
         int dashes = 0;
         int underscores = 0;
         int asterisks = 0;
-        for (int i = index; i < line.length(); i++) {
+        int length = line.length();
+        for (int i = index; i < length; i++) {
             switch (line.charAt(i)) {
                 case '-':
                     dashes++;

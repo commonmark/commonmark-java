@@ -282,7 +282,8 @@ public class DocumentParser implements ParserState {
         int cols = column;
 
         blank = true;
-        while (i < line.length()) {
+        int length = line.length();
+        while (i < length) {
             char c = line.charAt(i);
             switch (c) {
                 case ' ':
@@ -309,7 +310,8 @@ public class DocumentParser implements ParserState {
             index = nextNonSpace;
             column = nextNonSpaceColumn;
         }
-        while (index < newIndex && index != line.length()) {
+        int length = line.length();
+        while (index < newIndex && index != length) {
             advance();
         }
         // If we're going to an index as opposed to a column, we're never within a tab
@@ -322,7 +324,8 @@ public class DocumentParser implements ParserState {
             index = nextNonSpace;
             column = nextNonSpaceColumn;
         }
-        while (column < newColumn && index != line.length()) {
+        int length = line.length();
+        while (column < newColumn && index != length) {
             advance();
         }
         if (column > newColumn) {

@@ -37,7 +37,8 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         } else {
             // skip optional spaces of fence indent
             int i = block.getFenceIndent();
-            while (i > 0 && newIndex < line.length() && line.charAt(newIndex) == ' ') {
+            int length = line.length();
+            while (i > 0 && newIndex < length && line.charAt(newIndex) == ' ') {
                 newIndex++;
                 i--;
             }
@@ -86,8 +87,9 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     private static FencedCodeBlockParser checkOpener(CharSequence line, int index, int indent) {
         int backticks = 0;
         int tildes = 0;
+        int length = line.length();
         loop:
-        for (int i = index; i < line.length(); i++) {
+        for (int i = index; i < length; i++) {
             switch (line.charAt(i)) {
                 case '`':
                     backticks++;
