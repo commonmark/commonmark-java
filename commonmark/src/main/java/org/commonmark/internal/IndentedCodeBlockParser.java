@@ -1,17 +1,18 @@
 package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.node.*;
+import org.commonmark.node.Block;
+import org.commonmark.node.IndentedCodeBlock;
+import org.commonmark.node.Paragraph;
 import org.commonmark.parser.block.*;
 
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IndentedCodeBlockParser extends AbstractBlockParser {
 
-    private static final Pattern TRAILING_BLANK_LINES = Pattern.compile("(?:\n[ \t]*)+$");
-
     private final IndentedCodeBlock block = new IndentedCodeBlock();
-    private BlockContent content = new BlockContent();
+    private final List<CharSequence> lines = new ArrayList<>();
 
     @Override
     public Block getBlock() {
@@ -31,17 +32,26 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
 
     @Override
     public void addLine(CharSequence line) {
-        content.add(line);
+        lines.add(line);
     }
 
     @Override
     public void closeBlock() {
-        // add trailing newline
-        content.add("");
-        String contentString = content.getString();
-        content = null;
+        int lastNonBlank = lines.size() - 1;
+        while (lastNonBlank >= 0) {
+            if (!Parsing.isBlank(lines.get(lastNonBlank))) {
+                break;
+            }
+            lastNonBlank--;
+        }
 
-        String literal = TRAILING_BLANK_LINES.matcher(contentString).replaceFirst("\n");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < lastNonBlank + 1; i++) {
+            sb.append(lines.get(i));
+            sb.append('\n');
+        }
+
+        String literal = sb.toString();
         block.setLiteral(literal);
     }
 

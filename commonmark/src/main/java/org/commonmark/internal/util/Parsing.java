@@ -24,6 +24,15 @@ public class Parsing {
         return 4 - (column % 4);
     }
 
+    public static int find(char c, CharSequence s, int startIndex) {
+        for (int i = startIndex; i < s.length(); i++) {
+            if (s.charAt(i) == c) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static int findLineBreak(CharSequence s, int startIndex) {
         for (int i = startIndex; i < s.length(); i++) {
             switch (s.charAt(i)) {
@@ -83,6 +92,50 @@ public class Parsing {
         } else {
             return line;
         }
+    }
+
+    public static int skip(char skip, CharSequence s, int startIndex, int endIndex) {
+        for (int i = startIndex; i < endIndex; i++) {
+            if (s.charAt(i) != skip) {
+                return i;
+            }
+        }
+        return endIndex;
+    }
+
+    public static int skipBackwards(char skip, CharSequence s, int startIndex, int lastIndex) {
+        for (int i = startIndex; i >= lastIndex; i--) {
+            if (s.charAt(i) != skip) {
+                return i;
+            }
+        }
+        return lastIndex - 1;
+    }
+
+    public static int skipSpaceTab(CharSequence s, int startIndex, int endIndex) {
+        for (int i = startIndex; i < endIndex; i++) {
+            switch (s.charAt(i)) {
+                case ' ':
+                case '\t':
+                    break;
+                default:
+                    return i;
+            }
+        }
+        return endIndex;
+    }
+
+    public static int skipSpaceTabBackwards(CharSequence s, int startIndex, int lastIndex) {
+        for (int i = startIndex; i >= lastIndex; i--) {
+            switch (s.charAt(i)) {
+                case ' ':
+                case '\t':
+                    break;
+                default:
+                    return i;
+            }
+        }
+        return lastIndex - 1;
     }
 
     private static int findNonSpace(CharSequence s, int startIndex) {
