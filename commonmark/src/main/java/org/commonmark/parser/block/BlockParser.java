@@ -15,7 +15,7 @@ public interface BlockParser {
      */
     boolean isContainer();
 
-    boolean canContain(Block block);
+    boolean canContain(Block childBlock);
 
     Block getBlock();
 

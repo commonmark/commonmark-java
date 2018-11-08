@@ -64,7 +64,6 @@ public class DocumentParser implements ParserState {
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
     private Set<BlockParser> allBlockParsers = new HashSet<>();
-    private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParser inlineParser) {
         this.blockParserFactories = blockParserFactories;
@@ -258,7 +257,6 @@ public class DocumentParser implements ParserState {
             if (!allClosed) {
                 finalizeBlocks(unmatchedBlockParsers);
             }
-            propagateLastLineBlank(blockParser, lastMatchedBlockParser);
 
             if (!blockParser.isContainer()) {
                 addLine();
@@ -392,9 +390,6 @@ public class DocumentParser implements ParserState {
                 && inlineParser instanceof ReferenceParser) {
             ParagraphParser paragraphParser = (ParagraphParser) blockParser;
             paragraphParser.closeBlock((ReferenceParser) inlineParser);
-        } else if (blockParser instanceof ListBlockParser) {
-            ListBlockParser listBlockParser = (ListBlockParser) blockParser;
-            finalizeListTight(listBlockParser);
         }
     }
 
@@ -405,42 +400,6 @@ public class DocumentParser implements ParserState {
         for (BlockParser blockParser : allBlockParsers) {
             blockParser.parseInlines(inlineParser);
         }
-    }
-
-    private void finalizeListTight(ListBlockParser listBlockParser) {
-        Node item = listBlockParser.getBlock().getFirstChild();
-        while (item != null) {
-            // check for non-final list item ending with blank line:
-            if (endsWithBlankLine(item) && item.getNext() != null) {
-                listBlockParser.setTight(false);
-                break;
-            }
-            // recurse into children of list item, to see if there are
-            // spaces between any of them:
-            Node subItem = item.getFirstChild();
-            while (subItem != null) {
-                if (endsWithBlankLine(subItem) && (item.getNext() != null || subItem.getNext() != null)) {
-                    listBlockParser.setTight(false);
-                    break;
-                }
-                subItem = subItem.getNext();
-            }
-            item = item.getNext();
-        }
-    }
-
-    private boolean endsWithBlankLine(Node block) {
-        while (block != null) {
-            if (isLastLineBlank(block)) {
-                return true;
-            }
-            if (block instanceof ListBlock || block instanceof ListItem) {
-                block = block.getLastChild();
-            } else {
-                break;
-            }
-        }
-        return false;
     }
 
     /**
@@ -475,49 +434,14 @@ public class DocumentParser implements ParserState {
         old.getBlock().unlink();
     }
 
-    private void propagateLastLineBlank(BlockParser blockParser, BlockParser lastMatchedBlockParser) {
-        if (isBlank() && blockParser.getBlock().getLastChild() != null) {
-            setLastLineBlank(blockParser.getBlock().getLastChild(), true);
-        }
-
-        Block block = blockParser.getBlock();
-
-        // Block quote lines are never blank as they start with `>`.
-        // We don't count blanks in fenced code for purposes of tight/loose lists.
-        // We also don't set lastLineBlank on an empty list item.
-        boolean lastLineBlank = isBlank() &&
-                !(block instanceof BlockQuote ||
-                        block instanceof FencedCodeBlock ||
-                        (block instanceof ListItem &&
-                                block.getFirstChild() == null &&
-                                blockParser != lastMatchedBlockParser));
-
-        // Propagate lastLineBlank up through parents
-        Node node = blockParser.getBlock();
-        while (node != null) {
-            setLastLineBlank(node, lastLineBlank);
-            node = node.getParent();
-        }
-    }
-
-    private void setLastLineBlank(Node node, boolean value) {
-        lastLineBlank.put(node, value);
-    }
-
-    private boolean isLastLineBlank(Node node) {
-        Boolean value = lastLineBlank.get(node);
-        return value != null && value;
-    }
-
     /**
      * Finalize blocks of previous line. Returns true.
      */
-    private boolean finalizeBlocks(List<BlockParser> blockParsers) {
+    private void finalizeBlocks(List<BlockParser> blockParsers) {
         for (int i = blockParsers.size() - 1; i >= 0; i--) {
             BlockParser blockParser = blockParsers.get(i);
             finalize(blockParser);
         }
-        return true;
     }
 
     private Document finalizeAndProcess() {

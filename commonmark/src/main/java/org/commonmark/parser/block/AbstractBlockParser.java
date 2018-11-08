@@ -11,7 +11,7 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     @Override
-    public boolean canContain(Block block) {
+    public boolean canContain(Block childBlock) {
         return false;
     }
 
