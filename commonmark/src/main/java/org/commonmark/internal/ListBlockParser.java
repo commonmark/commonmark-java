@@ -8,6 +8,9 @@ public class ListBlockParser extends AbstractBlockParser {
 
     private final ListBlock block;
 
+    private boolean hadBlankLine;
+    private int linesAfterBlank;
+
     public ListBlockParser(ListBlock block) {
         this.block = block;
     }
@@ -18,8 +21,20 @@ public class ListBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean canContain(Block block) {
-        return block instanceof ListItem;
+    public boolean canContain(Block childBlock) {
+        if (childBlock instanceof ListItem) {
+            // Another list item is added to this list block. If the previous line was blank, that means this list block
+            // is "loose" (not tight).
+            //
+            // spec: A list is loose if any of its constituent list items are separated by blank lines
+            if (hadBlankLine && linesAfterBlank == 1) {
+                block.setTight(false);
+                hadBlankLine = false;
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -29,13 +44,15 @@ public class ListBlockParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState state) {
+        if (state.isBlank()) {
+            hadBlankLine = true;
+            linesAfterBlank = 0;
+        } else if (hadBlankLine) {
+            linesAfterBlank++;
+        }
         // List blocks themselves don't have any markers, only list items. So try to stay in the list.
         // If there is a block start other than list item, canContain makes sure that this list is closed.
         return BlockContinue.atIndex(state.getIndex());
-    }
-
-    public void setTight(boolean tight) {
-        block.setTight(tight);
     }
 
     /**
@@ -58,7 +75,8 @@ public class ListBlockParser extends AbstractBlockParser {
 
         // See at which column the content starts if there is content
         boolean hasContent = false;
-        for (int i = indexAfterMarker; i < line.length(); i++) {
+        int length = line.length();
+        for (int i = indexAfterMarker; i < length; i++) {
             char c = line.charAt(i);
             if (c == '\t') {
                 contentColumn += Parsing.columnsToNextTabStop(contentColumn);
@@ -112,7 +130,8 @@ public class ListBlockParser extends AbstractBlockParser {
     // `)` character.
     private static ListMarkerData parseOrderedList(CharSequence line, int index) {
         int digits = 0;
-        for (int i = index; i < line.length(); i++) {
+        int length = line.length();
+        for (int i = index; i < length; i++) {
             char c = line.charAt(i);
             switch (c) {
                 case '0':
@@ -205,7 +224,8 @@ public class ListBlockParser extends AbstractBlockParser {
                     !(listsMatch((ListBlock) matched.getBlock(), listData.listBlock))) {
 
                 ListBlockParser listBlockParser = new ListBlockParser(listData.listBlock);
-                listBlockParser.setTight(true);
+                // We start out with assuming a list is tight. If we find a blank line, we set it to loose later.
+                listData.listBlock.setTight(true);
 
                 return BlockStart.of(listBlockParser, listItemParser).atColumn(newColumn);
             } else {

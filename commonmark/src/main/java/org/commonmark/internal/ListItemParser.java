@@ -1,7 +1,9 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Block;
+import org.commonmark.node.ListBlock;
 import org.commonmark.node.ListItem;
+import org.commonmark.node.Paragraph;
 import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
@@ -16,6 +18,8 @@ public class ListItemParser extends AbstractBlockParser {
      */
     private int contentIndent;
 
+    private boolean hadBlankLine;
+
     public ListItemParser(int contentIndent) {
         this.contentIndent = contentIndent;
     }
@@ -26,7 +30,17 @@ public class ListItemParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean canContain(Block block) {
+    public boolean canContain(Block childBlock) {
+        if (hadBlankLine) {
+            // We saw a blank line in this list item, that means the list block is loose.
+            //
+            // spec: if any of its constituent list items directly contain two block-level elements with a blank line
+            // between them
+            Block parent = block.getParent();
+            if (parent instanceof ListBlock) {
+                ((ListBlock) parent).setTight(false);
+            }
+        }
         return true;
     }
 
@@ -42,6 +56,9 @@ public class ListItemParser extends AbstractBlockParser {
                 // Blank line after empty list item
                 return BlockContinue.none();
             } else {
+                Block activeBlock = state.getActiveBlockParser().getBlock();
+                // If the active block is a code block, blank lines in it should not affect if the list is tight.
+                hadBlankLine = activeBlock instanceof Paragraph || activeBlock instanceof ListItem;
                 return BlockContinue.atIndex(state.getNextNonSpaceIndex());
             }
         }

@@ -25,7 +25,8 @@ public class Parsing {
     }
 
     public static int find(char c, CharSequence s, int startIndex) {
-        for (int i = startIndex; i < s.length(); i++) {
+        int length = s.length();
+        for (int i = startIndex; i < length; i++) {
             if (s.charAt(i) == c) {
                 return i;
             }
@@ -34,7 +35,8 @@ public class Parsing {
     }
 
     public static int findLineBreak(CharSequence s, int startIndex) {
-        for (int i = startIndex; i < s.length(); i++) {
+        int length = s.length();
+        for (int i = startIndex; i < length; i++) {
             switch (s.charAt(i)) {
                 case '\n':
                 case '\r':
@@ -70,12 +72,13 @@ public class Parsing {
     public static CharSequence prepareLine(CharSequence line) {
         // Avoid building a new string in the majority of cases (no \0)
         StringBuilder sb = null;
-        for (int i = 0; i < line.length(); i++) {
+        int length = line.length();
+        for (int i = 0; i < length; i++) {
             char c = line.charAt(i);
-            switch (line.charAt(i)) {
+            switch (c) {
                 case '\0':
                     if (sb == null) {
-                        sb = new StringBuilder(line.length());
+                        sb = new StringBuilder(length);
                         sb.append(line, 0, i);
                     }
                     sb.append('\uFFFD');
@@ -139,7 +142,8 @@ public class Parsing {
     }
 
     private static int findNonSpace(CharSequence s, int startIndex) {
-        for (int i = startIndex; i < s.length(); i++) {
+        int length = s.length();
+        for (int i = startIndex; i < length; i++) {
             switch (s.charAt(i)) {
                 case ' ':
                 case '\t':

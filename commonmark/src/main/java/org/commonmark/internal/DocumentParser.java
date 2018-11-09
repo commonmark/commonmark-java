@@ -1,23 +1,14 @@
 package org.commonmark.internal;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.internal.util.Substring;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.LinkedHashSet;
-import java.util.HashSet;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.*;
 
 public class DocumentParser implements ParserState {
 
@@ -31,6 +22,7 @@ public class DocumentParser implements ParserState {
             IndentedCodeBlock.class));
 
     private static final Map<Class<? extends Block>, BlockParserFactory> NODES_TO_CORE_FACTORIES;
+
     static {
         Map<Class<? extends Block>, BlockParserFactory> map = new HashMap<>();
         map.put(BlockQuote.class, new BlockQuoteParser.Factory());
@@ -72,12 +64,11 @@ public class DocumentParser implements ParserState {
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
     private Set<BlockParser> allBlockParsers = new HashSet<>();
-    private Map<Node, Boolean> lastLineBlank = new HashMap<>();
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParser inlineParser) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParser = inlineParser;
-        
+
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(this.documentBlockParser);
     }
@@ -103,7 +94,7 @@ public class DocumentParser implements ParserState {
         int lineStart = 0;
         int lineBreak;
         while ((lineBreak = Parsing.findLineBreak(input, lineStart)) != -1) {
-            CharSequence line = Substring.of(input, lineStart, lineBreak);
+            String line = input.substring(lineStart, lineBreak);
             incorporateLine(line);
             if (lineBreak + 1 < input.length() && input.charAt(lineBreak) == '\r' && input.charAt(lineBreak + 1) == '\n') {
                 lineStart = lineBreak + 2;
@@ -112,12 +103,13 @@ public class DocumentParser implements ParserState {
             }
         }
         if (input.length() > 0 && (lineStart == 0 || lineStart < input.length())) {
-            incorporateLine(Substring.of(input, lineStart, input.length()));
+            String line = input.substring(lineStart);
+            incorporateLine(line);
         }
 
         return finalizeAndProcess();
     }
-    
+
     public Document parse(Reader input) throws IOException {
         BufferedReader bufferedReader;
         if (input instanceof BufferedReader) {
@@ -125,7 +117,7 @@ public class DocumentParser implements ParserState {
         } else {
             bufferedReader = new BufferedReader(input);
         }
-        
+
         String line;
         while ((line = bufferedReader.readLine()) != null) {
             incorporateLine(line);
@@ -265,7 +257,6 @@ public class DocumentParser implements ParserState {
             if (!allClosed) {
                 finalizeBlocks(unmatchedBlockParsers);
             }
-            propagateLastLineBlank(blockParser, lastMatchedBlockParser);
 
             if (!blockParser.isContainer()) {
                 addLine();
@@ -282,7 +273,8 @@ public class DocumentParser implements ParserState {
         int cols = column;
 
         blank = true;
-        while (i < line.length()) {
+        int length = line.length();
+        while (i < length) {
             char c = line.charAt(i);
             switch (c) {
                 case ' ':
@@ -309,7 +301,8 @@ public class DocumentParser implements ParserState {
             index = nextNonSpace;
             column = nextNonSpaceColumn;
         }
-        while (index < newIndex && index != line.length()) {
+        int length = line.length();
+        while (index < newIndex && index != length) {
             advance();
         }
         // If we're going to an index as opposed to a column, we're never within a tab
@@ -322,7 +315,8 @@ public class DocumentParser implements ParserState {
             index = nextNonSpace;
             column = nextNonSpaceColumn;
         }
-        while (column < newColumn && index != line.length()) {
+        int length = line.length();
+        while (column < newColumn && index != length) {
             advance();
         }
         if (column > newColumn) {
@@ -396,9 +390,6 @@ public class DocumentParser implements ParserState {
                 && inlineParser instanceof ReferenceParser) {
             ParagraphParser paragraphParser = (ParagraphParser) blockParser;
             paragraphParser.closeBlock((ReferenceParser) inlineParser);
-        } else if (blockParser instanceof ListBlockParser) {
-            ListBlockParser listBlockParser = (ListBlockParser) blockParser;
-            finalizeListTight(listBlockParser);
         }
     }
 
@@ -409,42 +400,6 @@ public class DocumentParser implements ParserState {
         for (BlockParser blockParser : allBlockParsers) {
             blockParser.parseInlines(inlineParser);
         }
-    }
-
-    private void finalizeListTight(ListBlockParser listBlockParser) {
-        Node item = listBlockParser.getBlock().getFirstChild();
-        while (item != null) {
-            // check for non-final list item ending with blank line:
-            if (endsWithBlankLine(item) && item.getNext() != null) {
-                listBlockParser.setTight(false);
-                break;
-            }
-            // recurse into children of list item, to see if there are
-            // spaces between any of them:
-            Node subItem = item.getFirstChild();
-            while (subItem != null) {
-                if (endsWithBlankLine(subItem) && (item.getNext() != null || subItem.getNext() != null)) {
-                    listBlockParser.setTight(false);
-                    break;
-                }
-                subItem = subItem.getNext();
-            }
-            item = item.getNext();
-        }
-    }
-
-    private boolean endsWithBlankLine(Node block) {
-        while (block != null) {
-            if (isLastLineBlank(block)) {
-                return true;
-            }
-            if (block instanceof ListBlock || block instanceof ListItem) {
-                block = block.getLastChild();
-            } else {
-                break;
-            }
-        }
-        return false;
     }
 
     /**
@@ -479,49 +434,14 @@ public class DocumentParser implements ParserState {
         old.getBlock().unlink();
     }
 
-    private void propagateLastLineBlank(BlockParser blockParser, BlockParser lastMatchedBlockParser) {
-        if (isBlank() && blockParser.getBlock().getLastChild() != null) {
-            setLastLineBlank(blockParser.getBlock().getLastChild(), true);
-        }
-
-        Block block = blockParser.getBlock();
-
-        // Block quote lines are never blank as they start with `>`.
-        // We don't count blanks in fenced code for purposes of tight/loose lists.
-        // We also don't set lastLineBlank on an empty list item.
-        boolean lastLineBlank = isBlank() &&
-                !(block instanceof BlockQuote ||
-                        block instanceof FencedCodeBlock ||
-                        (block instanceof ListItem &&
-                                block.getFirstChild() == null &&
-                                blockParser != lastMatchedBlockParser));
-
-        // Propagate lastLineBlank up through parents
-        Node node = blockParser.getBlock();
-        while (node != null) {
-            setLastLineBlank(node, lastLineBlank);
-            node = node.getParent();
-        }
-    }
-
-    private void setLastLineBlank(Node node, boolean value) {
-        lastLineBlank.put(node, value);
-    }
-
-    private boolean isLastLineBlank(Node node) {
-        Boolean value = lastLineBlank.get(node);
-        return value != null && value;
-    }
-
     /**
      * Finalize blocks of previous line. Returns true.
      */
-    private boolean finalizeBlocks(List<BlockParser> blockParsers) {
+    private void finalizeBlocks(List<BlockParser> blockParsers) {
         for (int i = blockParsers.size() - 1; i >= 0; i--) {
             BlockParser blockParser = blockParsers.get(i);
             finalize(blockParser);
         }
-        return true;
     }
 
     private Document finalizeAndProcess() {
@@ -529,7 +449,7 @@ public class DocumentParser implements ParserState {
         this.processInlines();
         return this.documentBlockParser.getBlock();
     }
-    
+
     private static class MatchedBlockParserImpl implements MatchedBlockParser {
 
         private final BlockParser matchedBlockParser;
