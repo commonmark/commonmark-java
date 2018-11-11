@@ -1,12 +1,11 @@
 package org.commonmark.test;
 
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
 import org.commonmark.testutil.example.ExampleReader;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
@@ -16,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 
 @State(Scope.Benchmark)
+@Fork(5)
+@Warmup(iterations = 10)
+@Measurement(iterations = 20)
 public class SpecBenchmark {
 
     private static final String SPEC = TestResources.readAsString(TestResources.getSpec());
@@ -32,12 +34,22 @@ public class SpecBenchmark {
     }
 
     @Benchmark
-    public long wholeSpec() {
+    public long parseWholeSpec() {
+        return parse(Collections.singletonList(SPEC));
+    }
+
+    @Benchmark
+    public long parseExamples() {
+        return parse(SPEC_EXAMPLES);
+    }
+
+    @Benchmark
+    public long parseAndRenderWholeSpec() {
         return parseAndRender(Collections.singletonList(SPEC));
     }
 
     @Benchmark
-    public long examples() {
+    public long parseAndRenderExamples() {
         return parseAndRender(SPEC_EXAMPLES);
     }
 
@@ -50,4 +62,12 @@ public class SpecBenchmark {
         return length;
     }
 
+    private static long parse(List<String> examples) {
+        long length = 0;
+        for (String example : examples) {
+            Node document = PARSER.parse(example);
+            length += document.getFirstChild() == document.getLastChild() ? 0 : 1;
+        }
+        return length;
+    }
 }
