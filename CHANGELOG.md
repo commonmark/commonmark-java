@@ -13,6 +13,7 @@ with the exception that 0.x versions can break between minor versions.
   documents! (#137, #140)
 - Parse backslash followed by unescapable character the same way as
   the reference implementations.
+- Build and test on Java 11 as well.
 ### Fixed
 - Fix tab handling in ATX and Setext headings.
 
