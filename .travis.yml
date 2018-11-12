@@ -4,6 +4,8 @@ matrix:
   include:
     - jdk: oraclejdk8
       env: TEST=java
+    - jdk: openjdk11
+      env: TEST=java
     - jdk: oraclejdk8
       env: TEST=android
       dist: precise
