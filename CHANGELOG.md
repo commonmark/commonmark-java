@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.12.0] - 2018-11-12
 ### Changed
 - Speed up parsing significantly: Compared to the previous version, the
   benchmarks show up to 55% faster parsing for both small and large
@@ -223,6 +223,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.12.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.11.0...commonmark-parent-0.12.0
 [0.11.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.10.0...commonmark-parent-0.11.0
 [0.10.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.9.0...commonmark-parent-0.10.0
 [0.9.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.8.0...commonmark-parent-0.9.0
