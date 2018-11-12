@@ -30,12 +30,12 @@ path.report=../report
 # Version number of commonmark and extensions in maven central.
 version.maven=0.11.0
 # Version number of autolink in maven central (not bundled with extension jar).
-version.maven_autolink=0.8.0
+version.maven_autolink=0.10.0
 
 # Version number of commonmark and extensions in project.
 version.snapshot=0.11.1-SNAPSHOT
 # Version number of autolink for snapshots (not bundled in extension jar).
-version.snapshot_autolink=0.8.0
+version.snapshot_autolink=0.10.0
 ```
 
 If you're going to test on device with Android 15 then you can skip downloading emulator.

@@ -1,10 +1,14 @@
 package org.commonmark.ext.autolink.internal;
 
-import org.commonmark.node.*;
+import org.commonmark.node.AbstractVisitor;
+import org.commonmark.node.Link;
+import org.commonmark.node.Node;
+import org.commonmark.node.Text;
 import org.commonmark.parser.PostProcessor;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
+import org.nibor.autolink.Span;
 
 import java.util.EnumSet;
 
@@ -21,28 +25,26 @@ public class AutolinkPostProcessor implements PostProcessor {
         return node;
     }
 
-    private void linkify(Text text) {
-        String literal = text.getLiteral();
-        Iterable<LinkSpan> links = linkExtractor.extractLinks(literal);
+    private void linkify(Text textNode) {
+        String literal = textNode.getLiteral();
 
-        Node lastNode = text;
-        int last = 0;
-        for (LinkSpan link : links) {
-            String linkText = literal.substring(link.getBeginIndex(), link.getEndIndex());
-            if (link.getBeginIndex() != last) {
-                lastNode = insertNode(new Text(literal.substring(last, link.getBeginIndex())), lastNode);
+        Node lastNode = textNode;
+
+        for (Span span : linkExtractor.extractSpans(literal)) {
+            String text = literal.substring(span.getBeginIndex(), span.getEndIndex());
+            if (span instanceof LinkSpan) {
+                String destination = getDestination((LinkSpan) span, text);
+                Text contentNode = new Text(text);
+                Link linkNode = new Link(destination, null);
+                linkNode.appendChild(contentNode);
+                lastNode = insertNode(linkNode, lastNode);
+            } else {
+                lastNode = insertNode(new Text(text), lastNode);
             }
-            Text contentNode = new Text(linkText);
-            String destination = getDestination(link, linkText);
-            Link linkNode = new Link(destination, null);
-            linkNode.appendChild(contentNode);
-            lastNode = insertNode(linkNode, lastNode);
-            last = link.getEndIndex();
         }
-        if (last != literal.length()) {
-            insertNode(new Text(literal.substring(last)), lastNode);
-        }
-        text.unlink();
+
+        // Original node no longer needed
+        textNode.unlink();
     }
 
     private static String getDestination(LinkSpan linkSpan, String linkText) {

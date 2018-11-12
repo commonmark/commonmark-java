@@ -9,7 +9,7 @@ autolink_version=$(cd ../commonmark-ext-autolink && mvn help:evaluate -Dexpressi
 touch test.properties
 echo "path.report=../report" >> test.properties
 echo "version.maven=0.9.0" >> test.properties
-echo "version.maven_autolink=0.7.0" >> test.properties
+echo "version.maven_autolink=0.10.0" >> test.properties
 echo "version.snapshot=$version" >> test.properties
 echo "version.snapshot_autolink=$autolink_version" >> test.properties
 

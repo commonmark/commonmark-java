@@ -12,7 +12,7 @@
     <description>commonmark-java extension for turning plain URLs and email addresses into links</description>
 
     <properties>
-        <autolink.version>0.8.0</autolink.version>
+        <autolink.version>0.10.0</autolink.version>
     </properties>
 
     <dependencies>
