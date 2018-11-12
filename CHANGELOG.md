@@ -8,9 +8,9 @@ with the exception that 0.x versions can break between minor versions.
 
 ## Unreleased
 ### Changed
-- Speed up block parsing significantly. If your document uses a lot of
-  blocks (paragraphs, code blocks, lists, headings), there's performance
-  improvements of 15% to 50% (see #137).
+- Speed up parsing significantly: Compared to the previous version, the
+  benchmarks show up to 55% faster parsing for both small and large
+  documents! (#137, #140)
 - Parse backslash followed by unescapable character the same way as
   the reference implementations.
 ### Fixed
