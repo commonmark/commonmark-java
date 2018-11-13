@@ -33,7 +33,7 @@ Coordinates for core library (see all on [Maven Central]):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.1</version>
 </dependency>
 ```
 
