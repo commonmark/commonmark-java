@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.atlassian.commonmark</groupId>
         <artifactId>commonmark-parent</artifactId>
-        <version>0.12.1-SNAPSHOT</version>
+        <version>0.12.1</version>
     </parent>
 
     <artifactId>commonmark-ext-gfm-tables</artifactId>

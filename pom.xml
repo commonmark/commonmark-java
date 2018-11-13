@@ -11,7 +11,7 @@
 
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-parent</artifactId>
-    <version>0.12.1-SNAPSHOT</version>
+    <version>0.12.1</version>
     <name>commonmark-java parent</name>
     <description>
         Java implementation of CommonMark, a specification of the Markdown format for turning plain text into formatted
@@ -87,42 +87,42 @@
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-autolink</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-ins</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-tables</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-heading-anchor</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-yaml-front-matter</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-test-util</artifactId>
-                <version>0.12.1-SNAPSHOT</version>
+                <version>0.12.1</version>
             </dependency>
 
             <!-- Common test dependencies -->
@@ -195,7 +195,7 @@
         <connection>scm:git:git@github.com:atlassian/commonmark-java.git</connection>
         <developerConnection>scm:git:git@github.com:atlassian/commonmark-java.git</developerConnection>
         <url>https://github.com/atlassian/commonmark-java</url>
-        <tag>HEAD</tag>
+        <tag>commonmark-parent-0.12.1</tag>
     </scm>
 
 </project>
