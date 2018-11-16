@@ -374,6 +374,23 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void issue142() {
+        assertRendering("||Alveolar|Bilabial\n" +
+                        "|:--|:-:|:-:\n" +
+                        "|**Plosive**|t, d|b\n" +
+                        "|**Tap**|ɾ|",
+                "<table>\n" +
+                        "<thead>\n" +
+                        "<tr><th align=\"left\"></th><th align=\"center\">Alveolar</th><th align=\"center\">Bilabial</th></tr>\n" +
+                        "</thead>\n" +
+                        "<tbody>\n" +
+                        "<tr><td align=\"left\"><strong>Plosive</strong></td><td align=\"center\">t, d</td><td align=\"center\">b</td></tr>\n" +
+                        "<tr><td align=\"left\"><strong>Tap</strong></td><td align=\"center\">ɾ</td><td align=\"center\"></td></tr>\n" +
+                        "</tbody>\n" +
+                        "</table>\n");
+    }
+
+    @Test
     public void attributeProviderIsApplied() {
         AttributeProviderFactory factory = new AttributeProviderFactory() {
             @Override
