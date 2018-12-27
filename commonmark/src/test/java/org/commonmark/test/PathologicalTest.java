@@ -99,4 +99,11 @@ public class PathologicalTest extends CoreRenderingTestCase {
                 repeat("<blockquote>\n", x) + "<p>a</p>\n" +
                         repeat("</blockquote>\n", x));
     }
+
+    @Test
+    public void hugeHorizontalRule() {
+        assertRendering(
+                repeat("*", 10000) + "\n",
+                "<hr />\n");
+    }
 }
