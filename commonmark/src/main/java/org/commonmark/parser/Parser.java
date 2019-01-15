@@ -54,10 +54,13 @@ public class Parser {
      * <p>
      * This method is thread-safe (a new parser state is used for each invocation).
      *
-     * @param input the text to parse
+     * @param input the text to parse - must not be null
      * @return the root node
      */
     public Node parse(String input) {
+        if (input == null) {
+            throw new NullPointerException("input must not be null");
+        }
         InlineParser inlineParser = getInlineParser();
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
         Node document = documentParser.parse(input);
@@ -78,11 +81,14 @@ public class Parser {
      * <p>
      * This method is thread-safe (a new parser state is used for each invocation).
      *
-     * @param input the reader to parse
+     * @param input the reader to parse - must not be null
      * @return the root node
      * @throws IOException when reading throws an exception
      */
     public Node parseReader(Reader input) throws IOException {
+        if (input == null) {
+            throw new NullPointerException("input must not be null");
+        }
         InlineParser inlineParser = getInlineParser();
         DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
         Node document = documentParser.parse(input);
@@ -141,6 +147,9 @@ public class Parser {
          * @return {@code this}
          */
         public Builder extensions(Iterable<? extends Extension> extensions) {
+            if (extensions == null) {
+                throw new NullPointerException("extensions must not be null");
+            }
             for (Extension extension : extensions) {
                 if (extension instanceof ParserExtension) {
                     ParserExtension parserExtension = (ParserExtension) extension;
@@ -178,6 +187,9 @@ public class Parser {
          * @return {@code this}
          */
         public Builder enabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
+            if (enabledBlockTypes == null) {
+                throw new NullPointerException("enabledBlockTypes must not be null");
+            }
             this.enabledBlockTypes = enabledBlockTypes;
             return this;
         }
@@ -193,6 +205,9 @@ public class Parser {
          * @return {@code this}
          */
         public Builder customBlockParserFactory(BlockParserFactory blockParserFactory) {
+            if (blockParserFactory == null) {
+                throw new NullPointerException("blockParserFactory must not be null");
+            }
             blockParserFactories.add(blockParserFactory);
             return this;
         }
@@ -208,11 +223,17 @@ public class Parser {
          * @return {@code this}
          */
         public Builder customDelimiterProcessor(DelimiterProcessor delimiterProcessor) {
+            if (delimiterProcessor == null) {
+                throw new NullPointerException("delimiterProcessor must not be null");
+            }
             delimiterProcessors.add(delimiterProcessor);
             return this;
         }
 
         public Builder postProcessor(PostProcessor postProcessor) {
+            if (postProcessor == null) {
+                throw new NullPointerException("postProcessor must not be null");
+            }
             postProcessors.add(postProcessor);
             return this;
         }

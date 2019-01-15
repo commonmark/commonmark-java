@@ -14,6 +14,9 @@ public class HtmlWriter {
     private char lastChar = 0;
 
     public HtmlWriter(Appendable out) {
+        if (out == null) {
+            throw new NullPointerException("out must not be null");
+        }
         this.buffer = out;
     }
 
