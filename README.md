@@ -227,7 +227,7 @@ First, add an additional dependency (see [Maven Central] for others):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-ext-gfm-tables</artifactId>
-    <version>0.9.0</version>
+    <version>0.12.1</version>
 </dependency>
 ```
 
