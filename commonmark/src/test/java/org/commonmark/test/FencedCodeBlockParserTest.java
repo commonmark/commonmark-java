@@ -48,6 +48,16 @@ public class FencedCodeBlockParserTest extends RenderingTestCase {
                 "<pre><code>code\n``` a\n</code></pre>\n");
     }
 
+    @Test
+    public void issue151() {
+        assertRendering("```\nthis code\n\nshould not have BRs or paragraphs in it\nok\n```",
+                "<pre><code>this code\n" +
+                        "\n" +
+                        "should not have BRs or paragraphs in it\n" +
+                        "ok\n" +
+                        "</code></pre>\n");
+    }
+
     @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));
