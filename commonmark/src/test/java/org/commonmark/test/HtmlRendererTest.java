@@ -1,9 +1,6 @@
 package org.commonmark.test;
 
-import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.Image;
-import org.commonmark.node.Link;
-import org.commonmark.node.Node;
+import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
@@ -205,6 +202,24 @@ public class HtmlRendererTest {
     public void imageAltTextWithEntities() {
         assertEquals("<p><img src=\"/url\" alt=\"foo \u00E4\" /></p>\n",
                 defaultRenderer().render(parse("![foo &auml;](/url)\n")));
+    }
+
+    @Test
+    public void canRenderContentsOfSingleParagraph() {
+        Node paragraphs = parse("Here I have a test [link](http://www.google.com)");
+        Node paragraph = paragraphs.getFirstChild();
+
+        Document document = new Document();
+        Node child = paragraph.getFirstChild();
+        while (child != null) {
+            Node current = child;
+            child = current.getNext();
+
+            document.appendChild(current);
+        }
+
+        assertEquals("Here I have a test <a href=\"http://www.google.com\">link</a>",
+                defaultRenderer().render(document));
     }
 
     @Test
