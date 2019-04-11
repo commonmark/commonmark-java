@@ -39,7 +39,8 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
     private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile("^(?:[<](?:[^<> \\t\\n\\\\]|\\\\.)*[>])");
 
-    private static final Pattern LINK_LABEL = Pattern.compile("^\\[(?:[^\\\\\\[\\]]|\\\\.)*\\]");
+    private static final Pattern LINK_LABEL = Pattern.compile(
+            "^\\[(?:[^\\\\\\[\\]]|\\\\.){0,1000}\\]");
 
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
