@@ -638,18 +638,21 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             }
         } else {
             int startIndex = index;
-            parseLinkDestinationWithBalancedParens();
-            return Escaping.unescapeString(input.substring(startIndex, index));
+            if (parseLinkDestinationWithBalancedParens()) {
+                return Escaping.unescapeString(input.substring(startIndex, index));
+            } else {
+                return null;
+            }
         }
     }
 
-    private void parseLinkDestinationWithBalancedParens() {
+    private boolean parseLinkDestinationWithBalancedParens() {
         int parens = 0;
         while (true) {
             char c = peek();
             switch (c) {
                 case '\0':
-                    return;
+                    return true;
                 case '\\':
                     // check if we have an escapable character
                     if (index + 1 < input.length() && ESCAPABLE.matcher(input.substring(index + 1, index + 2)).matches()) {
@@ -661,21 +664,25 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                     break;
                 case '(':
                     parens++;
+                    // Limit to 32 nested parens for pathological cases
+                    if (parens > 32) {
+                        return false;
+                    }
                     break;
                 case ')':
                     if (parens == 0) {
-                        return;
+                        return true;
                     } else {
                         parens--;
                     }
                     break;
                 case ' ':
                     // ASCII space
-                    return;
+                    return true;
                 default:
                     // or control character
                     if (Character.isISOControl(c)) {
-                        return;
+                        return true;
                     }
             }
             index++;
