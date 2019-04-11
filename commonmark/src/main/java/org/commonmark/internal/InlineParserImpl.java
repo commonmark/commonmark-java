@@ -37,7 +37,8 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                     '|' +
                     "\\((" + ESCAPED_CHAR + "|[^)\\x00])*\\))");
 
-    private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile("^(?:[<](?:[^<> \\t\\n\\\\]|\\\\.)*[>])");
+    private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile(
+            "^(?:[<](?:[^<>\n\\\\\\x00]|\\\\.)*[>])");
 
     private static final Pattern LINK_LABEL = Pattern.compile(
             "^\\[(?:[^\\\\\\[\\]]|\\\\.){0,1000}\\]");
@@ -190,7 +191,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         this.input = s;
         this.index = 0;
         String dest;
-        String title;
+        String title = null;
         int matchChars;
         int startIndex = index;
 
@@ -212,13 +213,15 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         spnl();
 
         dest = parseLinkDestination();
-        if (dest == null || dest.length() == 0) {
+        if (dest == null) {
             return 0;
         }
 
         int beforeTitle = index;
         spnl();
-        title = parseLinkTitle();
+        if (index != beforeTitle) {
+            title = parseLinkTitle();
+        }
         if (title == null) {
             // rewind before spaces
             index = beforeTitle;
@@ -637,6 +640,9 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                 return Escaping.unescapeString(res.substring(1, res.length() - 1));
             }
         } else {
+            if (peek() == '<') {
+                return null;
+            }
             int startIndex = index;
             if (parseLinkDestinationWithBalancedParens()) {
                 return Escaping.unescapeString(input.substring(startIndex, index));
@@ -647,12 +653,14 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     }
 
     private boolean parseLinkDestinationWithBalancedParens() {
+        int startIndex = index;
         int parens = 0;
         while (true) {
             char c = peek();
             switch (c) {
                 case '\0':
-                    return true;
+                case ' ':
+                    return startIndex != index;
                 case '\\':
                     // check if we have an escapable character
                     if (index + 1 < input.length() && ESCAPABLE.matcher(input.substring(index + 1, index + 2)).matches()) {
@@ -676,13 +684,10 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                         parens--;
                     }
                     break;
-                case ' ':
-                    // ASCII space
-                    return true;
                 default:
                     // or control character
                     if (Character.isISOControl(c)) {
-                        return true;
+                        return startIndex != index;
                     }
             }
             index++;
