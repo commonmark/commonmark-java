@@ -50,6 +50,12 @@ public class Parsing {
         return findNonSpace(s, 0) == -1;
     }
 
+    public static boolean hasNonSpace(CharSequence s) {
+        int length = s.length();
+        int skipped = skip(' ', s, 0, length);
+        return skipped != length;
+    }
+
     public static boolean isLetter(CharSequence s, int index) {
         int codePoint = Character.codePointAt(s, index);
         return Character.isLetter(codePoint);

@@ -419,8 +419,18 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             if (matched.equals(ticks)) {
                 Code node = new Code();
                 String content = input.substring(afterOpenTicks, index - ticks.length());
-                String literal = WHITESPACE.matcher(content.trim()).replaceAll(" ");
-                node.setLiteral(literal);
+                content = content.replace('\n', ' ');
+
+                // spec: If the resulting string both begins and ends with a space character, but does not consist
+                // entirely of space characters, a single space character is removed from the front and back.
+                if (content.length() >= 3 &&
+                        content.charAt(0) == ' ' &&
+                        content.charAt(content.length() - 1) == ' ' &&
+                        Parsing.hasNonSpace(content)) {
+                    content = content.substring(1, content.length() - 1);
+                }
+
+                node.setLiteral(content);
                 return node;
             }
         }
