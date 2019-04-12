@@ -74,8 +74,6 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      */
     private Map<String, Link> referenceMap = new HashMap<>();
 
-    private Node block;
-
     private String input;
     private int index;
 
@@ -163,16 +161,21 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      */
     @Override
     public void parse(String content, Node block) {
-        this.block = block;
         this.input = content.trim();
         this.index = 0;
         this.lastDelimiter = null;
         this.lastBracket = null;
 
-        boolean moreToParse;
-        do {
-            moreToParse = parseInline();
-        } while (moreToParse);
+        Node previous = null;
+        while (true) {
+            Node node = parseInline(previous);
+            previous = node;
+            if (node != null) {
+                block.appendChild(node);
+            } else {
+                break;
+            }
+        }
 
         processDelimiters(null);
         mergeChildTextNodes(block);
@@ -252,75 +255,73 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         return index - startIndex;
     }
 
-    private Text appendText(CharSequence text, int beginIndex, int endIndex) {
-        return appendText(text.subSequence(beginIndex, endIndex));
+    private Text text(String text, int beginIndex, int endIndex) {
+        return new Text(text.substring(beginIndex, endIndex));
     }
 
-    private Text appendText(CharSequence text) {
-        Text node = new Text(text.toString());
-        appendNode(node);
-        return node;
-    }
-
-    private void appendNode(Node node) {
-        block.appendChild(node);
+    private Text text(String text) {
+        return new Text(text);
     }
 
     /**
      * Parse the next inline element in subject, advancing input index.
-     * On success, add the result to block's children and return true.
-     * On failure, return false.
+     * On success, return the new inline node.
+     * On failure, return null.
      */
-    private boolean parseInline() {
-        boolean res;
+    private Node parseInline(Node previous) {
         char c = peek();
         if (c == '\0') {
-            return false;
+            return null;
         }
+
+        Node node;
         switch (c) {
             case '\n':
-                res = parseNewline();
+                node = parseNewline(previous);
                 break;
             case '\\':
-                res = parseBackslash();
+                node = parseBackslash();
                 break;
             case '`':
-                res = parseBackticks();
+                node = parseBackticks();
                 break;
             case '[':
-                res = parseOpenBracket();
+                node = parseOpenBracket();
                 break;
             case '!':
-                res = parseBang();
+                node = parseBang();
                 break;
             case ']':
-                res = parseCloseBracket();
+                node = parseCloseBracket();
                 break;
             case '<':
-                res = parseAutolink() || parseHtmlInline();
+                node = parseAutolink();
+                if (node == null) {
+                    node = parseHtmlInline();
+                }
                 break;
             case '&':
-                res = parseEntity();
+                node = parseEntity();
                 break;
             default:
                 boolean isDelimiter = delimiterCharacters.get(c);
                 if (isDelimiter) {
                     DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
-                    res = parseDelimiters(delimiterProcessor, c);
+                    node = parseDelimiters(delimiterProcessor, c);
                 } else {
-                    res = parseString();
+                    node = parseString();
                 }
                 break;
         }
-        if (!res) {
+        if (node != null) {
+            return node;
+        } else {
             index++;
             // When we get here, it's only for a single special character that turned out to not have a special meaning.
             // So we shouldn't have a single surrogate here, hence it should be ok to turn it into a String.
             String literal = String.valueOf(c);
-            appendText(literal);
+            return text(literal);
         }
-
-        return true;
     }
 
     /**
@@ -355,65 +356,62 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * Parse zero or more space characters, including at most one newline.
      */
-    private boolean spnl() {
+    private void spnl() {
         match(SPNL);
-        return true;
     }
 
     /**
      * Parse a newline. If it was preceded by two spaces, return a hard line break; otherwise a soft line break.
      */
-    private boolean parseNewline() {
+    private Node parseNewline(Node previous) {
         index++; // assume we're at a \n
 
-        Node lastChild = block.getLastChild();
         // Check previous text for trailing spaces.
         // The "endsWith" is an optimization to avoid an RE match in the common case.
-        if (lastChild != null && lastChild instanceof Text && ((Text) lastChild).getLiteral().endsWith(" ")) {
-            Text text = (Text) lastChild;
+        if (previous instanceof Text && ((Text) previous).getLiteral().endsWith(" ")) {
+            Text text = (Text) previous;
             String literal = text.getLiteral();
             Matcher matcher = FINAL_SPACE.matcher(literal);
             int spaces = matcher.find() ? matcher.end() - matcher.start() : 0;
             if (spaces > 0) {
                 text.setLiteral(literal.substring(0, literal.length() - spaces));
             }
-            appendNode(spaces >= 2 ? new HardLineBreak() : new SoftLineBreak());
+            if (spaces >= 2) {
+                return new HardLineBreak();
+            } else {
+                return new SoftLineBreak();
+            }
         } else {
-            appendNode(new SoftLineBreak());
+            return new SoftLineBreak();
         }
-
-        // gobble leading spaces in next line
-        while (peek() == ' ') {
-            index++;
-        }
-        return true;
     }
 
     /**
      * Parse a backslash-escaped special character, adding either the escaped  character, a hard line break
      * (if the backslash is followed by a newline), or a literal backslash to the block's children.
      */
-    private boolean parseBackslash() {
+    private Node parseBackslash() {
         index++;
+        Node node;
         if (peek() == '\n') {
-            appendNode(new HardLineBreak());
+            node = new HardLineBreak();
             index++;
         } else if (index < input.length() && ESCAPABLE.matcher(input.substring(index, index + 1)).matches()) {
-            appendText(input, index, index + 1);
+            node = text(input, index, index + 1);
             index++;
         } else {
-            appendText("\\");
+            node = text("\\");
         }
-        return true;
+        return node;
     }
 
     /**
-     * Attempt to parse backticks, adding either a backtick code span or a literal sequence of backticks.
+     * Attempt to parse backticks, returning either a backtick code span or a literal sequence of backticks.
      */
-    private boolean parseBackticks() {
+    private Node parseBackticks() {
         String ticks = match(TICKS_HERE);
         if (ticks == null) {
-            return false;
+            return null;
         }
         int afterOpenTicks = index;
         String matched;
@@ -423,29 +421,27 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                 String content = input.substring(afterOpenTicks, index - ticks.length());
                 String literal = WHITESPACE.matcher(content.trim()).replaceAll(" ");
                 node.setLiteral(literal);
-                appendNode(node);
-                return true;
+                return node;
             }
         }
         // If we got here, we didn't match a closing backtick sequence.
         index = afterOpenTicks;
-        appendText(ticks);
-        return true;
+        return text(ticks);
     }
 
     /**
      * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
-    private boolean parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
+    private Node parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
         DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar);
         if (res == null) {
-            return false;
+            return null;
         }
         int length = res.count;
         int startIndex = index;
 
         index += length;
-        Text node = appendText(input, startIndex, index);
+        Text node = text(input, startIndex, index);
 
         // Add entry to stack for this opener
         lastDelimiter = new Delimiter(node, delimiterChar, res.canOpen, res.canClose, lastDelimiter);
@@ -455,49 +451,50 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             lastDelimiter.previous.next = lastDelimiter;
         }
 
-        return true;
+        return node;
     }
 
     /**
      * Add open bracket to delimiter stack and add a text node to block's children.
      */
-    private boolean parseOpenBracket() {
+    private Node parseOpenBracket() {
         int startIndex = index;
         index++;
 
-        Text node = appendText("[");
+        Text node = text("[");
 
         // Add entry to stack for this opener
         addBracket(Bracket.link(node, startIndex, lastBracket, lastDelimiter));
 
-        return true;
+        return node;
     }
 
     /**
      * If next character is [, and ! delimiter to delimiter stack and add a text node to block's children.
      * Otherwise just add a text node.
      */
-    private boolean parseBang() {
+    private Node parseBang() {
         int startIndex = index;
         index++;
         if (peek() == '[') {
             index++;
 
-            Text node = appendText("![");
+            Text node = text("![");
 
             // Add entry to stack for this opener
             addBracket(Bracket.image(node, startIndex + 1, lastBracket, lastDelimiter));
+
+            return node;
         } else {
-            appendText("!");
+            return text("!");
         }
-        return true;
     }
 
     /**
-     * Try to match close bracket against an opening in the delimiter stack. Add either a link or image, or a
-     * plain [ character, to block's children. If there is a matching delimiter, remove it from the delimiter stack.
+     * Try to match close bracket against an opening in the delimiter stack. Return either a link or image, or a
+     * plain [ character. If there is a matching delimiter, remove it from the delimiter stack.
      */
-    private boolean parseCloseBracket() {
+    private Node parseCloseBracket() {
         index++;
         int startIndex = index;
 
@@ -505,15 +502,13 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         Bracket opener = lastBracket;
         if (opener == null) {
             // No matching opener, just return a literal.
-            appendText("]");
-            return true;
+            return text("]");
         }
 
         if (!opener.allowed) {
             // Matching opener but it's not allowed, just return a literal.
-            appendText("]");
             removeLastBracket();
-            return true;
+            return text("]");
         }
 
         // Check to see if we have a link/image
@@ -578,7 +573,6 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                 linkOrImage.appendChild(node);
                 node = next;
             }
-            appendNode(linkOrImage);
 
             // Process delimiters such as emphasis inside link/image
             processDelimiters(opener.previousDelimiter);
@@ -599,15 +593,13 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
                 }
             }
 
-            return true;
+            return linkOrImage;
 
         } else { // no link or image
-
-            appendText("]");
+            index = startIndex;
             removeLastBracket();
 
-            index = startIndex;
-            return true;
+            return text("]");
         }
     }
 
@@ -708,57 +700,53 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * Attempt to parse an autolink (URL or email in pointy brackets).
      */
-    private boolean parseAutolink() {
+    private Node parseAutolink() {
         String m;
         if ((m = match(EMAIL_AUTOLINK)) != null) {
             String dest = m.substring(1, m.length() - 1);
             Link node = new Link("mailto:" + dest, null);
             node.appendChild(new Text(dest));
-            appendNode(node);
-            return true;
+            return node;
         } else if ((m = match(AUTOLINK)) != null) {
             String dest = m.substring(1, m.length() - 1);
             Link node = new Link(dest, null);
             node.appendChild(new Text(dest));
-            appendNode(node);
-            return true;
+            return node;
         } else {
-            return false;
+            return null;
         }
     }
 
     /**
      * Attempt to parse inline HTML.
      */
-    private boolean parseHtmlInline() {
+    private Node parseHtmlInline() {
         String m = match(HTML_TAG);
         if (m != null) {
             HtmlInline node = new HtmlInline();
             node.setLiteral(m);
-            appendNode(node);
-            return true;
+            return node;
         } else {
-            return false;
+            return null;
         }
     }
 
     /**
-     * Attempt to parse an entity, return Entity object if successful.
+     * Attempt to parse a HTML style entity.
      */
-    private boolean parseEntity() {
+    private Node parseEntity() {
         String m;
         if ((m = match(ENTITY_HERE)) != null) {
-            appendText(Html5Entities.entityToString(m));
-            return true;
+            return text(Html5Entities.entityToString(m));
         } else {
-            return false;
+            return null;
         }
     }
 
     /**
      * Parse a run of ordinary characters, or a single character with a special meaning in markdown, as a plain string.
      */
-    private boolean parseString() {
+    private Node parseString() {
         int begin = index;
         int length = input.length();
         while (index != length) {
@@ -768,10 +756,9 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             index++;
         }
         if (begin != index) {
-            appendText(input, begin, index);
-            return true;
+            return text(input, begin, index);
         } else {
-            return false;
+            return null;
         }
     }
 
