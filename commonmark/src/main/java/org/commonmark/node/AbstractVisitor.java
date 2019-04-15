@@ -109,6 +109,11 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
+    public void visit(LinkReferenceDefinition linkReferenceDefinition) {
+        visitChildren(linkReferenceDefinition);
+    }
+
+    @Override
     public void visit(CustomBlock customBlock) {
         visitChildren(customBlock);
     }

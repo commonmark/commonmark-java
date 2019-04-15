@@ -3,7 +3,7 @@ package org.commonmark.node;
 /**
  * Node visitor.
  * <p>
- * See {@link AbstractVisitor} for a base class that can be extended.
+ * Implementations should subclass {@link AbstractVisitor} instead of implementing this directly.
  */
 public interface Visitor {
 
@@ -46,6 +46,8 @@ public interface Visitor {
     void visit(StrongEmphasis strongEmphasis);
 
     void visit(Text text);
+
+    void visit(LinkReferenceDefinition linkReferenceDefinition);
 
     void visit(CustomBlock customBlock);
 

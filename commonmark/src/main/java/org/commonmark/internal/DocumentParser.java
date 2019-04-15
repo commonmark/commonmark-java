@@ -3,7 +3,9 @@ package org.commonmark.internal;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.block.*;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,17 +61,23 @@ public class DocumentParser implements ParserState {
     private boolean blank;
 
     private final List<BlockParserFactory> blockParserFactories;
-    private final InlineParser inlineParser;
+    private final InlineParserFactory inlineParserFactory;
+    private final List<DelimiterProcessor> delimiterProcessors;
     private final DocumentBlockParser documentBlockParser;
+    private final LinkReferenceDefinitionParser linkReferenceDefinitionParser;
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
-    private Set<BlockParser> allBlockParsers = new HashSet<>();
+    // LinkedHashSet to have a deterministic order
+    private Set<BlockParser> allBlockParsers = new LinkedHashSet<>();
 
-    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParser inlineParser) {
+    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
+                          List<DelimiterProcessor> delimiterProcessors) {
         this.blockParserFactories = blockParserFactories;
-        this.inlineParser = inlineParser;
+        this.inlineParserFactory = inlineParserFactory;
+        this.delimiterProcessors = delimiterProcessors;
 
         this.documentBlockParser = new DocumentBlockParser();
+        this.linkReferenceDefinitionParser = new LinkReferenceDefinitionParser();
         activateBlockParser(this.documentBlockParser);
     }
 
@@ -233,7 +241,7 @@ public class DocumentParser implements ParserState {
             }
 
             if (blockStart.isReplaceActiveBlockParser()) {
-                removeActiveBlockParser();
+                prepareActiveBlockParserForReplacement();
             }
 
             for (BlockParser newBlockParser : blockStart.getBlockParsers()) {
@@ -386,10 +394,26 @@ public class DocumentParser implements ParserState {
 
         blockParser.closeBlock();
 
-        if (blockParser instanceof ParagraphParser
-                && inlineParser instanceof ReferenceParser) {
+        if (blockParser instanceof ParagraphParser) {
             ParagraphParser paragraphParser = (ParagraphParser) blockParser;
-            paragraphParser.closeBlock((ReferenceParser) inlineParser);
+            String content = paragraphParser.getContentString();
+
+            Block paragraph = paragraphParser.getBlock();
+
+            // TODO: Insert resulting nodes into AST (before paragraph node)
+            int afterDefinitions = linkReferenceDefinitionParser.parseDefinitions(content);
+
+            if (afterDefinitions != 0) {
+                String remainingContent = content.substring(afterDefinitions);
+                if (Parsing.isBlank(remainingContent)) {
+                    // If all we had was reference definitions, remove the block that's now empty
+                    paragraph.unlink();
+                    paragraphParser.setContentString("");
+                } else {
+                    // We had some content after the definitions, use that for the paragraph
+                    paragraphParser.setContentString(remainingContent);
+                }
+            }
         }
     }
 
@@ -397,6 +421,17 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
+        Map<String, LinkReferenceDefinition> definitions = new LinkedHashMap<>();
+        for (LinkReferenceDefinition definition : linkReferenceDefinitionParser.getDefinitions()) {
+            String label = definition.getLabel();
+            // spec: When there are multiple matching link reference definitions, the first is used
+            if (!definitions.containsKey(label)) {
+                definitions.put(label, definition);
+            }
+        }
+        InlineParserContextImpl context = new InlineParserContextImpl(delimiterProcessors, definitions);
+        InlineParser inlineParser = inlineParserFactory.create(context);
+
         for (BlockParser blockParser : allBlockParsers) {
             blockParser.parseInlines(inlineParser);
         }
@@ -426,10 +461,20 @@ public class DocumentParser implements ParserState {
         activeBlockParsers.remove(activeBlockParsers.size() - 1);
     }
 
-    private void removeActiveBlockParser() {
+    private void prepareActiveBlockParserForReplacement() {
         BlockParser old = getActiveBlockParser();
         deactivateBlockParser();
         allBlockParsers.remove(old);
+
+        if (old instanceof ParagraphParser) {
+            String content = ((ParagraphParser) old).getContentString();
+            // Collect any link reference definitions. Note that replacing the active block parser is done after a
+            // block parser got the current paragraph content using MatchedBlockParser#getContentString. In our
+            // implementation of that, we strip link reference definitions from the paragraph content before we give it
+            // to the block parser. We want to keep them. If no replacement happens, we collect the definitions as part
+            // of finalizing paragraph blocks.
+            linkReferenceDefinitionParser.parseDefinitions(content);
+        }
 
         old.getBlock().unlink();
     }
@@ -467,7 +512,20 @@ public class DocumentParser implements ParserState {
         public CharSequence getParagraphContent() {
             if (matchedBlockParser instanceof ParagraphParser) {
                 ParagraphParser paragraphParser = (ParagraphParser) matchedBlockParser;
-                return paragraphParser.getContentString();
+                String content = paragraphParser.getContentString();
+
+                // Strip link reference definitions, they are not going to be part of the paragraph text.
+                LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
+                int afterDefinitions = parser.parseDefinitions(content);
+                if (afterDefinitions != 0) {
+                    content = content.substring(afterDefinitions);
+                    if (Parsing.isBlank(content)) {
+                        // Paragraph consists only of link reference definitions -> no actual paragraph content
+                        return null;
+                    }
+                }
+
+                return content;
             }
             return null;
         }

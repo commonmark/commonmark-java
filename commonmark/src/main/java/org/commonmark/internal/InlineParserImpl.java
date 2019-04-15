@@ -7,13 +7,14 @@ import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InlineParserImpl implements InlineParser, ReferenceParser {
+public class InlineParserImpl implements InlineParser {
 
     private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
@@ -65,19 +66,13 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
     private static final Pattern FINAL_SPACE = Pattern.compile(" *$");
 
-    private static final Pattern LINE_END = Pattern.compile("^ *(?:\n|$)");
-
     private final BitSet specialCharacters;
     private final BitSet delimiterCharacters;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
+    private final InlineParserContext context;
 
-    /**
-     * Link references by ID, needs to be built up using parseReference before calling parse.
-     */
-    private Map<String, Link> referenceMap = new HashMap<>();
-
-    private String input;
-    private int index;
+    String input;
+    int index;
 
     /**
      * Top delimiter (emphasis, strong emphasis or custom emphasis). (Brackets are on a separate stack, different
@@ -90,10 +85,12 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      */
     private Bracket lastBracket;
 
-    public InlineParserImpl(List<DelimiterProcessor> delimiterProcessors) {
-        this.delimiterProcessors = calculateDelimiterProcessors(delimiterProcessors);
+    public InlineParserImpl(InlineParserContext inlineParserContext) {
+        this.delimiterProcessors = calculateDelimiterProcessors(inlineParserContext.getCustomDelimiterProcessors());
         this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
         this.specialCharacters = calculateSpecialCharacters(delimiterCharacters);
+
+        this.context = inlineParserContext;
     }
 
     public static BitSet calculateDelimiterCharacters(Set<Character> characters) {
@@ -163,10 +160,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      */
     @Override
     public void parse(String content, Node block) {
-        this.input = content.trim();
-        this.index = 0;
-        this.lastDelimiter = null;
-        this.lastBracket = null;
+        reset(content.trim());
 
         Node previous = null;
         while (true) {
@@ -183,81 +177,13 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         mergeChildTextNodes(block);
     }
 
-    /**
-     * Attempt to parse a link reference, modifying the internal reference map.
-     */
-    @Override
-    public int parseReference(String s) {
-        this.input = s;
+    void reset(String content) {
+        this.input = content;
         this.index = 0;
-        String dest;
-        String title = null;
-        int matchChars;
-        int startIndex = index;
-
-        // label:
-        matchChars = parseLinkLabel();
-        if (matchChars == 0) {
-            return 0;
-        }
-
-        String rawLabel = input.substring(0, matchChars);
-
-        // colon:
-        if (peek() != ':') {
-            return 0;
-        }
-        index++;
-
-        // link url
-        spnl();
-
-        dest = parseLinkDestination();
-        if (dest == null) {
-            return 0;
-        }
-
-        int beforeTitle = index;
-        spnl();
-        if (index != beforeTitle) {
-            title = parseLinkTitle();
-        }
-        if (title == null) {
-            // rewind before spaces
-            index = beforeTitle;
-        }
-
-        boolean atLineEnd = true;
-        if (index != input.length() && match(LINE_END) == null) {
-            if (title == null) {
-                atLineEnd = false;
-            } else {
-                // the potential title we found is not at the line end,
-                // but it could still be a legal link reference if we
-                // discard the title
-                title = null;
-                // rewind before spaces
-                index = beforeTitle;
-                // and instead check if the link URL is at the line end
-                atLineEnd = match(LINE_END) != null;
-            }
-        }
-
-        if (!atLineEnd) {
-            return 0;
-        }
-
-        String normalizedLabel = Escaping.normalizeReference(rawLabel);
-        if (normalizedLabel.isEmpty()) {
-            return 0;
-        }
-
-        if (!referenceMap.containsKey(normalizedLabel)) {
-            Link link = new Link(dest, title);
-            referenceMap.put(normalizedLabel, link);
-        }
-        return index - startIndex;
+        this.lastDelimiter = null;
+        this.lastBracket = null;
     }
+
 
     private Text text(String text, int beginIndex, int endIndex) {
         return new Text(text.substring(beginIndex, endIndex));
@@ -331,7 +257,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * If RE matches at current index in the input, advance index and return the match; otherwise return null.
      */
-    private String match(Pattern re) {
+    String match(Pattern re) {
         if (index >= input.length()) {
             return null;
         }
@@ -349,7 +275,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * Returns the char at the current input index, or {@code '\0'} in case there are no more characters.
      */
-    private char peek() {
+    char peek() {
         if (index < input.length()) {
             return input.charAt(index);
         } else {
@@ -360,7 +286,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * Parse zero or more space characters, including at most one newline.
      */
-    private void spnl() {
+    void spnl() {
         match(SPNL);
     }
 
@@ -568,10 +494,11 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             }
 
             if (ref != null) {
-                Link link = referenceMap.get(Escaping.normalizeReference(ref));
-                if (link != null) {
-                    dest = link.getDestination();
-                    title = link.getTitle();
+                String label = Escaping.normalizeReference(ref);
+                LinkReferenceDefinition definition = context.getLinkReferenceDefinition(label);
+                if (definition != null) {
+                    dest = definition.getDestination();
+                    title = definition.getTitle();
                     isLinkOrImage = true;
                 }
             }
@@ -631,7 +558,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * Attempt to parse link destination, returning the string or null if no match.
      */
-    private String parseLinkDestination() {
+    String parseLinkDestination() {
         String res = match(LINK_DESTINATION_BRACES);
         if (res != null) { // chop off surrounding <..>:
             if (res.length() == 2) {
@@ -697,7 +624,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
-    private String parseLinkTitle() {
+    String parseLinkTitle() {
         String title = match(LINK_TITLE);
         if (title != null) {
             // chop off quotes from title and unescape:
@@ -710,7 +637,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
     /**
      * Attempt to parse a link label, returning number of characters parsed.
      */
-    private int parseLinkLabel() {
+    int parseLinkLabel() {
         String m = match(LINK_LABEL);
         // Spec says "A link label can have at most 999 characters inside the square brackets"
         if (m == null || m.length() > 1001) {
