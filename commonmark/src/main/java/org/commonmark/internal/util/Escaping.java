@@ -109,9 +109,14 @@ public class Escaping {
     }
 
     public static String normalizeReference(String input) {
-        // Strip '[' and ']', then trim
-        String stripped = input.substring(1, input.length() - 1).trim();
-        String lowercase = stripped.toLowerCase(Locale.ROOT);
+        // Strip '[' and ']'
+        String stripped = input.substring(1, input.length() - 1);
+        return normalizeLabelContent(stripped);
+    }
+
+    public static String normalizeLabelContent(String input) {
+        String trimmed = input.trim();
+        String lowercase = trimmed.toLowerCase(Locale.ROOT);
         return WHITESPACE.matcher(lowercase).replaceAll(" ");
     }
 

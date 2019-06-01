@@ -4,6 +4,7 @@ import org.commonmark.internal.inline.AsteriskDelimiterProcessor;
 import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
+import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
@@ -15,8 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InlineParserImpl implements InlineParser {
-
-    private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
+    
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
     private static final String DECLARATION = "<![A-Z]+\\s+[^>]*>";
@@ -30,19 +30,6 @@ public class InlineParserImpl implements InlineParser {
             .compile("^[" + ASCII_PUNCTUATION + "\\p{Pc}\\p{Pd}\\p{Pe}\\p{Pf}\\p{Pi}\\p{Po}\\p{Ps}]");
 
     private static final Pattern HTML_TAG = Pattern.compile('^' + HTMLTAG, Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern LINK_TITLE = Pattern.compile(
-            "^(?:\"(" + ESCAPED_CHAR + "|[^\"\\x00])*\"" +
-                    '|' +
-                    "'(" + ESCAPED_CHAR + "|[^'\\x00])*'" +
-                    '|' +
-                    "\\((" + ESCAPED_CHAR + "|[^()\\x00])*\\))");
-
-    private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile(
-            "^(?:[<](?:[^<>\n\\\\\\x00]|\\\\.)*[>])");
-
-    private static final Pattern LINK_LABEL = Pattern.compile(
-            "^\\[(?:[^\\\\\\[\\]]|\\\\.){0,1000}\\]");
 
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
@@ -482,7 +469,8 @@ public class InlineParserImpl implements InlineParser {
 
             // See if there's a link label like `[bar]` or `[]`
             int beforeLabel = index;
-            int labelLength = parseLinkLabel();
+            parseLinkLabel();
+            int labelLength = index - beforeLabel;
             String ref = null;
             if (labelLength > 2) {
                 ref = input.substring(beforeLabel, beforeLabel + labelLength);
@@ -559,92 +547,58 @@ public class InlineParserImpl implements InlineParser {
      * Attempt to parse link destination, returning the string or null if no match.
      */
     String parseLinkDestination() {
-        String res = match(LINK_DESTINATION_BRACES);
-        if (res != null) { // chop off surrounding <..>:
-            if (res.length() == 2) {
-                return "";
-            } else {
-                return Escaping.unescapeString(res.substring(1, res.length() - 1));
-            }
-        } else {
-            if (peek() == '<') {
-                return null;
-            }
-            int startIndex = index;
-            if (parseLinkDestinationWithBalancedParens()) {
-                return Escaping.unescapeString(input.substring(startIndex, index));
-            } else {
-                return null;
-            }
+        int afterDest = LinkScanner.scanLinkDestination(input, index);
+        if (afterDest == -1) {
+            return null;
         }
-    }
 
-    private boolean parseLinkDestinationWithBalancedParens() {
-        int startIndex = index;
-        int parens = 0;
-        while (true) {
-            char c = peek();
-            switch (c) {
-                case '\0':
-                case ' ':
-                    return startIndex != index;
-                case '\\':
-                    // check if we have an escapable character
-                    if (index + 1 < input.length() && ESCAPABLE.matcher(input.substring(index + 1, index + 2)).matches()) {
-                        // skip over the escaped character (after switch)
-                        index++;
-                        break;
-                    }
-                    // otherwise, we treat this as a literal backslash
-                    break;
-                case '(':
-                    parens++;
-                    // Limit to 32 nested parens for pathological cases
-                    if (parens > 32) {
-                        return false;
-                    }
-                    break;
-                case ')':
-                    if (parens == 0) {
-                        return true;
-                    } else {
-                        parens--;
-                    }
-                    break;
-                default:
-                    // or control character
-                    if (Character.isISOControl(c)) {
-                        return startIndex != index;
-                    }
-            }
-            index++;
+        String dest;
+        if (peek() == '<') {
+            // chop off surrounding <..>:
+            dest = input.substring(index + 1, afterDest - 1);
+        } else {
+            dest = input.substring(index, afterDest);
         }
+
+        index = afterDest;
+        return Escaping.unescapeString(dest);
     }
 
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
     String parseLinkTitle() {
-        String title = match(LINK_TITLE);
-        if (title != null) {
-            // chop off quotes from title and unescape:
-            return Escaping.unescapeString(title.substring(1, title.length() - 1));
-        } else {
+        int afterTitle = LinkScanner.scanLinkTitle(input, index);
+        if (afterTitle == -1) {
             return null;
         }
+
+        // chop off ', " or parens
+        String title = input.substring(index + 1, afterTitle - 1);
+        index = afterTitle;
+        return Escaping.unescapeString(title);
     }
 
     /**
      * Attempt to parse a link label, returning number of characters parsed.
      */
     int parseLinkLabel() {
-        String m = match(LINK_LABEL);
-        // Spec says "A link label can have at most 999 characters inside the square brackets"
-        if (m == null || m.length() > 1001) {
+        if (index >= input.length() || input.charAt(index) != '[') {
             return 0;
-        } else {
-            return m.length();
         }
+
+        int startContent = index + 1;
+        int endContent = LinkScanner.scanLinkLabelContent(input, startContent);
+        // spec: A link label can have at most 999 characters inside the square brackets.
+        int contentLength = endContent - startContent;
+        if (endContent == -1 || contentLength > 999) {
+            return 0;
+        }
+        if (endContent >= input.length() || input.charAt(endContent) != ']') {
+            return 0;
+        }
+        index = endContent + 1;
+        return contentLength + 2;
     }
 
     /**

@@ -72,6 +72,47 @@ public class Parsing {
         return false;
     }
 
+    public static boolean isEscapable(CharSequence s, int index) {
+        if (index < s.length()) {
+            switch (s.charAt(index)) {
+                case '!':
+                case '"':
+                case '#':
+                case '$':
+                case '%':
+                case '&':
+                case '\'':
+                case '(':
+                case ')':
+                case '*':
+                case '+':
+                case ',':
+                case '-':
+                case '.':
+                case '/':
+                case ':':
+                case ';':
+                case '<':
+                case '=':
+                case '>':
+                case '?':
+                case '@':
+                case '[':
+                case '\\':
+                case ']':
+                case '^':
+                case '_':
+                case '`':
+                case '{':
+                case '|':
+                case '}':
+                case '~':
+                    return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Prepares the input line replacing {@code \0}
      */
