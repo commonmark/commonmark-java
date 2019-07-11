@@ -147,3 +147,15 @@ Issue #289.
 .
 <p>[a](&lt;b) c&gt;</p>
 ````````````````````````````````
+
+Issue #161.
+
+```````````````````````````````` example
+*failed to be italic!*\
+text
+.
+<p><em>failed to be italic!</em><br />
+text</p>
+````````````````````````````````
+
+
