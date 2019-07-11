@@ -139,4 +139,27 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     public void emphasisMultipleOf3Rule() {
         assertRendering("a***b* c*", "<p>a*<em><em>b</em> c</em></p>\n");
     }
+
+    @Test
+    public void deeplyIndentedList() {
+        assertRendering("* one\n" +
+                        "  * two\n" +
+                        "    * three\n" +
+                        "      * four",
+                "<ul>\n" +
+                        "<li>one\n" +
+                        "<ul>\n" +
+                        "<li>two\n" +
+                        "<ul>\n" +
+                        "<li>three\n" +
+                        "<ul>\n" +
+                        "<li>four</li>\n" +
+                        "</ul>\n" +
+                        "</li>\n" +
+                        "</ul>\n" +
+                        "</li>\n" +
+                        "</ul>\n" +
+                        "</li>\n" +
+                        "</ul>\n");
+    }
 }
