@@ -64,6 +64,18 @@ public class LinkReferenceDefinitionParserTest {
     }
 
     @Test
+    public void testLabelStartsWithNewline() {
+        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
+        parser.parse("[");
+        assertEquals(State.LABEL, parser.getState());
+        parser.parse("weird]:");
+        assertEquals(State.DESTINATION, parser.getState());
+        parser.parse("/url");
+        assertEquals(State.START_TITLE, parser.getState());
+        assertDef(parser.getDefinitions().get(0), "weird", "/url", null);
+    }
+
+    @Test
     public void testDestination() {
         LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
         parser.parse("[foo]: /url");

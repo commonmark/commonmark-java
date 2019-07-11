@@ -92,7 +92,12 @@ public class LinkReferenceDefinitionParser {
         state = State.LABEL;
         label = new StringBuilder();
 
-        return i + 1;
+        int labelStart = i + 1;
+        if (labelStart >= line.length()) {
+            label.append('\n');
+        }
+
+        return labelStart;
     }
 
     private int label(CharSequence line, int i) {
@@ -114,7 +119,10 @@ public class LinkReferenceDefinitionParser {
                 return -1;
             }
 
-            int afterSpace = Parsing.skipSpaceTab(line, colon + 1, line.length());
+            // spec: A link label can have at most 999 characters inside the square brackets.
+            if (label.length() > 999) {
+                return -1;
+            }
 
             String normalizedLabel = Escaping.normalizeLabelContent(label.toString());
             if (normalizedLabel.isEmpty()) {
@@ -124,7 +132,7 @@ public class LinkReferenceDefinitionParser {
             this.normalizedLabel = normalizedLabel;
             state = State.DESTINATION;
 
-            return afterSpace;
+            return Parsing.skipSpaceTab(line, colon + 1, line.length());
         } else {
             return -1;
         }
