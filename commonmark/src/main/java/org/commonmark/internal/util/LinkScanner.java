@@ -77,7 +77,7 @@ public class LinkScanner {
                 return -1;
         }
 
-        int afterContent = scanLinkTitleContent(input, start, endDelimiter);
+        int afterContent = scanLinkTitleContent(input, start + 1, endDelimiter);
         if (afterContent == -1) {
             return -1;
         }
@@ -91,7 +91,7 @@ public class LinkScanner {
     }
 
     public static int scanLinkTitleContent(CharSequence input, int start, char endDelimiter) {
-        for (int i = start + 1; i < input.length(); i++) {
+        for (int i = start; i < input.length(); i++) {
             char c = input.charAt(i);
             if (c == '\\' && Parsing.isEscapable(input, i + 1)) {
                 i += 1;

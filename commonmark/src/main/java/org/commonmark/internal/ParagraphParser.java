@@ -1,16 +1,19 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Block;
+import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.Paragraph;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
 
+import java.util.List;
+
 public class ParagraphParser extends AbstractBlockParser {
 
     private final Paragraph block = new Paragraph();
-    private BlockContent content = new BlockContent();
+    private LinkReferenceDefinitionParser linkReferenceDefinitionParser = new LinkReferenceDefinitionParser();
 
     @Override
     public Block getBlock() {
@@ -28,25 +31,29 @@ public class ParagraphParser extends AbstractBlockParser {
 
     @Override
     public void addLine(CharSequence line) {
-        content.add(line);
+        linkReferenceDefinitionParser.parse(line);
     }
 
     @Override
     public void closeBlock() {
+        if (linkReferenceDefinitionParser.getParagraphContent().length() == 0) {
+            block.unlink();
+        }
     }
 
     @Override
     public void parseInlines(InlineParser inlineParser) {
-        if (content != null) {
-            inlineParser.parse(content.getString(), block);
+        CharSequence content = linkReferenceDefinitionParser.getParagraphContent();
+        if (content.length() > 0) {
+            inlineParser.parse(content.toString(), block);
         }
     }
 
-    public String getContentString() {
-        return content.getString();
+    public CharSequence getContentString() {
+        return linkReferenceDefinitionParser.getParagraphContent();
     }
 
-    void setContentString(String contentString) {
-        content = new BlockContent(contentString);
+    public List<LinkReferenceDefinition> getDefinitions() {
+        return linkReferenceDefinitionParser.getDefinitions();
     }
 }
