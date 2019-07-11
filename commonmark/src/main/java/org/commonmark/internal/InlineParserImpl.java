@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InlineParserImpl implements InlineParser {
-    
+
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
     private static final String DECLARATION = "<![A-Z]+\\s+[^>]*>";
@@ -58,8 +58,8 @@ public class InlineParserImpl implements InlineParser {
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final InlineParserContext context;
 
-    String input;
-    int index;
+    private String input;
+    private int index;
 
     /**
      * Top delimiter (emphasis, strong emphasis or custom emphasis). (Brackets are on a separate stack, different
@@ -244,7 +244,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * If RE matches at current index in the input, advance index and return the match; otherwise return null.
      */
-    String match(Pattern re) {
+    private String match(Pattern re) {
         if (index >= input.length()) {
             return null;
         }
@@ -262,7 +262,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Returns the char at the current input index, or {@code '\0'} in case there are no more characters.
      */
-    char peek() {
+    private char peek() {
         if (index < input.length()) {
             return input.charAt(index);
         } else {
@@ -273,7 +273,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Parse zero or more space characters, including at most one newline.
      */
-    void spnl() {
+    private void spnl() {
         match(SPNL);
     }
 
@@ -546,7 +546,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse link destination, returning the string or null if no match.
      */
-    String parseLinkDestination() {
+    private String parseLinkDestination() {
         int afterDest = LinkScanner.scanLinkDestination(input, index);
         if (afterDest == -1) {
             return null;
@@ -567,7 +567,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
-    String parseLinkTitle() {
+    private String parseLinkTitle() {
         int afterTitle = LinkScanner.scanLinkTitle(input, index);
         if (afterTitle == -1) {
             return null;
