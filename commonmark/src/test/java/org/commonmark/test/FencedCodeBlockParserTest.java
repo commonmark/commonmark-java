@@ -26,14 +26,12 @@ public class FencedCodeBlockParserTest extends RenderingTestCase {
     public void backtickInfoDoesntAllowBacktick() {
         assertRendering("```info ` test\ncode\n```",
                 "<p>```info ` test\ncode</p>\n<pre><code></code></pre>\n");
-        // Note, it's unclear in the spec whether a ~~~ code block can contain ` in info or not, see:
-        // https://github.com/commonmark/CommonMark/issues/119
     }
 
     @Test
     public void backtickAndTildeCantBeMixed() {
         assertRendering("``~`\ncode\n``~`",
-                "<p><code>~` code</code>~`</p>\n");
+                "<p><code>~` code </code>~`</p>\n");
     }
 
     @Test
