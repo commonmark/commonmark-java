@@ -42,7 +42,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
                             "h1|h2|h3|h4|h5|h6|head|header|hr|html|" +
                             "iframe|" +
                             "legend|li|link|" +
-                            "main|menu|menuitem|meta|" +
+                            "main|menu|menuitem|" +
                             "nav|noframes|" +
                             "ol|optgroup|option|" +
                             "p|param|" +
