@@ -453,12 +453,11 @@ public class DocumentParser implements ParserState {
 
         if (old instanceof ParagraphParser) {
             ParagraphParser paragraphParser = (ParagraphParser) old;
-            // TODO: adjust comment?
             // Collect any link reference definitions. Note that replacing the active block parser is done after a
-            // block parser got the current paragraph content using MatchedBlockParser#getContentString. In our
-            // implementation of that, we strip link reference definitions from the paragraph content before we give it
-            // to the block parser. We want to keep them. If no replacement happens, we collect the definitions as part
-            // of finalizing paragraph blocks.
+            // block parser got the current paragraph content using MatchedBlockParser#getContentString. In case the
+            // paragraph started with link reference definitions, we parse and strip them before the block parser gets
+            // the content. We want to keep them.
+            // If no replacement happens, we collect the definitions as part of finalizing paragraph blocks.
             addDefinitionsFrom(paragraphParser);
         }
 
