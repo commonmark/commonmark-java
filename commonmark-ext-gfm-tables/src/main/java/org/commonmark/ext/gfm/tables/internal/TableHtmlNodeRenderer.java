@@ -1,16 +1,12 @@
 package org.commonmark.ext.gfm.tables.internal;
 
-import java.util.Collections;
-import java.util.Map;
-
-import org.commonmark.ext.gfm.tables.TableBlock;
-import org.commonmark.ext.gfm.tables.TableBody;
-import org.commonmark.ext.gfm.tables.TableCell;
-import org.commonmark.ext.gfm.tables.TableHead;
-import org.commonmark.ext.gfm.tables.TableRow;
+import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class TableHtmlNodeRenderer extends TableNodeRenderer {
 
@@ -56,9 +52,11 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
 
     protected void renderCell(TableCell tableCell) {
         String tagName = tableCell.isHeader() ? "th" : "td";
+        htmlWriter.line();
         htmlWriter.tag(tagName, getCellAttributes(tableCell, tagName));
         renderChildren(tableCell);
         htmlWriter.tag("/" + tagName);
+        htmlWriter.line();
     }
 
     private Map<String, String> getAttributes(Node node, String tagName) {
