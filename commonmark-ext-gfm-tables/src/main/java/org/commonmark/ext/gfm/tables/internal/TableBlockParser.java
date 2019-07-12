@@ -16,8 +16,8 @@ public class TableBlockParser extends AbstractBlockParser {
     private static Pattern TABLE_HEADER_SEPARATOR = Pattern.compile(
             // For single column, require at least one pipe, otherwise it's ambiguous with setext headers
             "\\|" + COL + "\\|?\\s*" + "|" +
-            COL + "\\|\\s*" + "|" +
-            "\\|?" + "(?:" + COL + "\\|)+" + COL + "\\|?\\s*");
+                    COL + "\\|\\s*" + "|" +
+                    "\\|?" + "(?:" + COL + "\\|)+" + COL + "\\|?\\s*");
 
     private final TableBlock block = new TableBlock();
     private final List<CharSequence> rowLines = new ArrayList<>();
@@ -27,6 +27,11 @@ public class TableBlockParser extends AbstractBlockParser {
 
     private TableBlockParser(CharSequence headerLine) {
         rowLines.add(headerLine);
+    }
+
+    @Override
+    public boolean canHaveLazyContinuationLines() {
+        return true;
     }
 
     @Override

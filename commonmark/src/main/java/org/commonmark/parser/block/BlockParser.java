@@ -15,6 +15,17 @@ public interface BlockParser {
      */
     boolean isContainer();
 
+    /**
+     * Return true if the block can have lazy continuation lines.
+     * <p>
+     * Lazy continuation lines are lines that were rejected by this {@link #tryContinue(ParserState)} but didn't match
+     * any other block parsers either.
+     * <p>
+     * If true is returned here, those lines will get added via {@link #addLine(CharSequence)}. For false, the block is
+     * closed instead.
+     */
+    boolean canHaveLazyContinuationLines();
+
     boolean canContain(Block childBlock);
 
     Block getBlock();

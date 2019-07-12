@@ -11,6 +11,11 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     @Override
+    public boolean canHaveLazyContinuationLines() {
+        return false;
+    }
+
+    @Override
     public boolean canContain(Block childBlock) {
         return false;
     }

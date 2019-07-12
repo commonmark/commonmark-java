@@ -254,7 +254,7 @@ public class DocumentParser implements ParserState {
 
         // First check for a lazy paragraph continuation:
         if (!allClosed && !isBlank() &&
-                getActiveBlockParser() instanceof ParagraphParser) {
+                getActiveBlockParser().canHaveLazyContinuationLines()) {
             // lazy paragraph continuation
             addLine();
 
