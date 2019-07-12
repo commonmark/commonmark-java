@@ -23,7 +23,6 @@ public class InlineParserImpl implements InlineParser {
     private static final String CDATA = "<!\\[CDATA\\[[\\s\\S]*?\\]\\]>";
     private static final String HTMLTAG = "(?:" + Parsing.OPENTAG + "|" + Parsing.CLOSETAG + "|" + HTMLCOMMENT
             + "|" + PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
-    private static final String ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
 
     private static final String ASCII_PUNCTUATION = "!\"#\\$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~";
     private static final Pattern PUNCTUATION = Pattern
@@ -33,7 +32,7 @@ public class InlineParserImpl implements InlineParser {
 
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
-    private static final Pattern ENTITY_HERE = Pattern.compile('^' + ENTITY, Pattern.CASE_INSENSITIVE);
+    private static final Pattern ENTITY_HERE = Pattern.compile('^' + Escaping.ENTITY, Pattern.CASE_INSENSITIVE);
 
     private static final Pattern TICKS = Pattern.compile("`+");
 
