@@ -9,19 +9,12 @@ public class Escaping {
 
     public static final String ESCAPABLE = "[!\"#$%&\'()*+,./:;<=>?@\\[\\\\\\]^_`{|}~-]";
 
-    private static final String ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
+    public static final String ENTITY = "&(?:#x[a-f0-9]{1,6}|#[0-9]{1,7}|[a-z][a-z0-9]{1,31});";
 
     private static final Pattern BACKSLASH_OR_AMP = Pattern.compile("[\\\\&]");
 
     private static final Pattern ENTITY_OR_ESCAPED_CHAR =
             Pattern.compile("\\\\" + ESCAPABLE + '|' + ENTITY, Pattern.CASE_INSENSITIVE);
-
-    private static final String XML_SPECIAL = "[&<>\"]";
-
-    private static final Pattern XML_SPECIAL_RE = Pattern.compile(XML_SPECIAL);
-
-    private static final Pattern XML_SPECIAL_OR_ENTITY =
-            Pattern.compile(ENTITY + '|' + XML_SPECIAL, Pattern.CASE_INSENSITIVE);
 
     // From RFC 3986 (see "reserved", "unreserved") except don't escape '[' or ']' to be compatible with JS encodeURI
     private static final Pattern ESCAPE_IN_URI =
@@ -31,28 +24,6 @@ public class Escaping {
             new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     private static final Pattern WHITESPACE = Pattern.compile("[ \t\r\n]+");
-
-    private static final Replacer UNSAFE_CHAR_REPLACER = new Replacer() {
-        @Override
-        public void replace(String input, StringBuilder sb) {
-            switch (input) {
-                case "&":
-                    sb.append("&amp;");
-                    break;
-                case "<":
-                    sb.append("&lt;");
-                    break;
-                case ">":
-                    sb.append("&gt;");
-                    break;
-                case "\"":
-                    sb.append("&quot;");
-                    break;
-                default:
-                    sb.append(input);
-            }
-        }
-    };
 
     private static final Replacer UNESCAPE_REPLACER = new Replacer() {
         @Override
@@ -88,9 +59,41 @@ public class Escaping {
         }
     };
 
-    public static String escapeHtml(String input, boolean preserveEntities) {
-        Pattern p = preserveEntities ? XML_SPECIAL_OR_ENTITY : XML_SPECIAL_RE;
-        return replaceAll(p, input, UNSAFE_CHAR_REPLACER);
+    public static String escapeHtml(String input) {
+        // Avoid building a new string in the majority of cases (nothing to escape)
+        StringBuilder sb = null;
+
+        loop:
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            String replacement;
+            switch (c) {
+                case '&':
+                    replacement = "&amp;";
+                    break;
+                case '<':
+                    replacement = "&lt;";
+                    break;
+                case '>':
+                    replacement = "&gt;";
+                    break;
+                case '\"':
+                    replacement = "&quot;";
+                    break;
+                default:
+                    if (sb != null) {
+                        sb.append(c);
+                    }
+                    continue loop;
+            }
+            if (sb == null) {
+                sb = new StringBuilder();
+                sb.append(input, 0, i);
+            }
+            sb.append(replacement);
+        }
+
+        return sb != null ? sb.toString() : input;
     }
 
     /**
@@ -109,9 +112,14 @@ public class Escaping {
     }
 
     public static String normalizeReference(String input) {
-        // Strip '[' and ']', then trim
-        String stripped = input.substring(1, input.length() - 1).trim();
-        String lowercase = stripped.toLowerCase(Locale.ROOT);
+        // Strip '[' and ']'
+        String stripped = input.substring(1, input.length() - 1);
+        return normalizeLabelContent(stripped);
+    }
+
+    public static String normalizeLabelContent(String input) {
+        String trimmed = input.trim();
+        String lowercase = trimmed.toLowerCase(Locale.ROOT);
         return WHITESPACE.matcher(lowercase).replaceAll(" ");
     }
 

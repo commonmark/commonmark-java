@@ -114,12 +114,13 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         assertRendering("[foo](\\))", "<p><a href=\")\">foo</a></p>\n");
         // ` ` is not escapable, so the backslash is a literal backslash and there's an optional space at the end
         assertRendering("[foo](\\ )", "<p><a href=\"\\\">foo</a></p>\n");
-        // Backslash escapes `>`, so it's not a `(<...>)` link, but a `(...)` link instead
-        assertRendering("[foo](<\\>)", "<p><a href=\"&lt;&gt;\">foo</a></p>\n");
         // Backslash is a literal, so valid
         assertRendering("[foo](<a\\b>)", "<p><a href=\"a\\b\">foo</a></p>\n");
         // Backslash escapes `>` but there's another `>`, valid
         assertRendering("[foo](<a\\>>)", "<p><a href=\"a&gt;\">foo</a></p>\n");
+
+        // This is a tricky one. There's `<` so we try to parse it as a `<` link but fail.
+        assertRendering("[foo](<\\>)", "<p>[foo](&lt;&gt;)</p>\n");
     }
 
     // commonmark/CommonMark#468
@@ -137,5 +138,28 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     @Test
     public void emphasisMultipleOf3Rule() {
         assertRendering("a***b* c*", "<p>a*<em><em>b</em> c</em></p>\n");
+    }
+
+    @Test
+    public void deeplyIndentedList() {
+        assertRendering("* one\n" +
+                        "  * two\n" +
+                        "    * three\n" +
+                        "      * four",
+                "<ul>\n" +
+                        "<li>one\n" +
+                        "<ul>\n" +
+                        "<li>two\n" +
+                        "<ul>\n" +
+                        "<li>three\n" +
+                        "<ul>\n" +
+                        "<li>four</li>\n" +
+                        "</ul>\n" +
+                        "</li>\n" +
+                        "</ul>\n" +
+                        "</li>\n" +
+                        "</ul>\n" +
+                        "</li>\n" +
+                        "</ul>\n");
     }
 }

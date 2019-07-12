@@ -205,7 +205,7 @@ public class ListBlockParser extends AbstractBlockParser {
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             BlockParser matched = matchedBlockParser.getMatchedBlockParser();
 
-            if (state.getIndent() >= Parsing.CODE_BLOCK_INDENT && !(matched instanceof ListBlockParser)) {
+            if (state.getIndent() >= Parsing.CODE_BLOCK_INDENT) {
                 return BlockStart.none();
             }
             int markerIndex = state.getNextNonSpaceIndex();

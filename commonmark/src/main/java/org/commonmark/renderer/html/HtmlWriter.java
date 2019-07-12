@@ -25,7 +25,7 @@ public class HtmlWriter {
     }
 
     public void text(String text) {
-        append(Escaping.escapeHtml(text, false));
+        append(Escaping.escapeHtml(text));
     }
 
     public void tag(String name) {
@@ -42,9 +42,9 @@ public class HtmlWriter {
         if (attrs != null && !attrs.isEmpty()) {
             for (Map.Entry<String, String> attrib : attrs.entrySet()) {
                 append(" ");
-                append(Escaping.escapeHtml(attrib.getKey(), true));
+                append(Escaping.escapeHtml(attrib.getKey()));
                 append("=\"");
-                append(Escaping.escapeHtml(attrib.getValue(), true));
+                append(Escaping.escapeHtml(attrib.getValue()));
                 append("\"");
             }
         }

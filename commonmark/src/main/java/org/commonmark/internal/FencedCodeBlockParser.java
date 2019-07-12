@@ -102,17 +102,13 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
             }
         }
         if (backticks >= 3 && tildes == 0) {
-            // spec: The info string may not contain any backtick characters.
+            // spec: If the info string comes after a backtick fence, it may not contain any backtick characters.
             if (Parsing.find('`', line, index + backticks) != -1) {
                 return null;
             }
             return new FencedCodeBlockParser('`', backticks, indent);
         } else if (tildes >= 3 && backticks == 0) {
-            // This follows commonmark.js but the spec is unclear about this:
-            // https://github.com/commonmark/CommonMark/issues/119
-            if (Parsing.find('~', line, index + tildes) != -1) {
-                return null;
-            }
+            // spec: Info strings for tilde code blocks can contain backticks and tildes
             return new FencedCodeBlockParser('~', tildes, indent);
         } else {
             return null;

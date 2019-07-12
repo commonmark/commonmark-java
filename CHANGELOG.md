@@ -7,7 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 with the exception that 0.x versions can break between minor versions.
 
 ## Unreleased
+### Added
+- `InlineParserContext.getLinkReferenceDefinition` was added to allow
+  custom inline parsers to look up definitions for reference links.
 ### Changed
+- Link reference definition parsing has been changed according to the
+  spec: Definitions can now be in setext headings too.
 - Check non-null arguments early and provide a nicer message
 
 ## [0.12.1] - 2018-11-13

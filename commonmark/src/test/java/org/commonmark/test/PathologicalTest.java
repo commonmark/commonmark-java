@@ -106,4 +106,18 @@ public class PathologicalTest extends CoreRenderingTestCase {
                 repeat("*", 10000) + "\n",
                 "<hr />\n");
     }
+
+    @Test
+    public void backslashInLink() {
+        // See https://github.com/commonmark/commonmark.js/issues/157
+        assertRendering("[" + repeat("\\", x) + "\n",
+                "<p>" + "[" + repeat("\\", x / 2) + "</p>\n");
+    }
+
+    @Test
+    public void unclosedInlineLinks() {
+        // See https://github.com/commonmark/commonmark.js/issues/129
+        assertRendering(repeat("[](", x) + "\n",
+                "<p>" + repeat("[](", x) + "</p>\n");
+    }
 }

@@ -33,7 +33,9 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
     @Override
     public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
         // "multiple of 3" rule for internal delimiter runs
-        if ((opener.canClose() || closer.canOpen()) && (opener.originalLength() + closer.originalLength()) % 3 == 0) {
+        if ((opener.canClose() || closer.canOpen()) &&
+                closer.originalLength() % 3 != 0 &&
+                (opener.originalLength() + closer.originalLength()) % 3 == 0) {
             return 0;
         }
         // calculate actual number of delimiters used from this closer

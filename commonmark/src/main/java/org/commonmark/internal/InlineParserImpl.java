@@ -4,25 +4,25 @@ import org.commonmark.internal.inline.AsteriskDelimiterProcessor;
 import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
+import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InlineParserImpl implements InlineParser, ReferenceParser {
+public class InlineParserImpl implements InlineParser {
 
-    private static final String ESCAPED_CHAR = "\\\\" + Escaping.ESCAPABLE;
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
     private static final String DECLARATION = "<![A-Z]+\\s+[^>]*>";
     private static final String CDATA = "<!\\[CDATA\\[[\\s\\S]*?\\]\\]>";
     private static final String HTMLTAG = "(?:" + Parsing.OPENTAG + "|" + Parsing.CLOSETAG + "|" + HTMLCOMMENT
             + "|" + PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
-    private static final String ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
 
     private static final String ASCII_PUNCTUATION = "!\"#\\$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~";
     private static final Pattern PUNCTUATION = Pattern
@@ -30,20 +30,9 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
     private static final Pattern HTML_TAG = Pattern.compile('^' + HTMLTAG, Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern LINK_TITLE = Pattern.compile(
-            "^(?:\"(" + ESCAPED_CHAR + "|[^\"\\x00])*\"" +
-                    '|' +
-                    "'(" + ESCAPED_CHAR + "|[^'\\x00])*'" +
-                    '|' +
-                    "\\((" + ESCAPED_CHAR + "|[^)\\x00])*\\))");
-
-    private static final Pattern LINK_DESTINATION_BRACES = Pattern.compile("^(?:[<](?:[^<> \\t\\n\\\\]|\\\\.)*[>])");
-
-    private static final Pattern LINK_LABEL = Pattern.compile("^\\[(?:[^\\\\\\[\\]]|\\\\.)*\\]");
-
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
-    private static final Pattern ENTITY_HERE = Pattern.compile('^' + ENTITY, Pattern.CASE_INSENSITIVE);
+    private static final Pattern ENTITY_HERE = Pattern.compile('^' + Escaping.ENTITY, Pattern.CASE_INSENSITIVE);
 
     private static final Pattern TICKS = Pattern.compile("`+");
 
@@ -63,16 +52,10 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
     private static final Pattern FINAL_SPACE = Pattern.compile(" *$");
 
-    private static final Pattern LINE_END = Pattern.compile("^ *(?:\n|$)");
-
     private final BitSet specialCharacters;
     private final BitSet delimiterCharacters;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
-
-    /**
-     * Link references by ID, needs to be built up using parseReference before calling parse.
-     */
-    private Map<String, Link> referenceMap = new HashMap<>();
+    private final InlineParserContext context;
 
     private String input;
     private int index;
@@ -88,10 +71,12 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      */
     private Bracket lastBracket;
 
-    public InlineParserImpl(List<DelimiterProcessor> delimiterProcessors) {
-        this.delimiterProcessors = calculateDelimiterProcessors(delimiterProcessors);
+    public InlineParserImpl(InlineParserContext inlineParserContext) {
+        this.delimiterProcessors = calculateDelimiterProcessors(inlineParserContext.getCustomDelimiterProcessors());
         this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
         this.specialCharacters = calculateSpecialCharacters(delimiterCharacters);
+
+        this.context = inlineParserContext;
     }
 
     public static BitSet calculateDelimiterCharacters(Set<Character> characters) {
@@ -161,10 +146,7 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      */
     @Override
     public void parse(String content, Node block) {
-        this.input = content.trim();
-        this.index = 0;
-        this.lastDelimiter = null;
-        this.lastBracket = null;
+        reset(content.trim());
 
         Node previous = null;
         while (true) {
@@ -181,79 +163,13 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
         mergeChildTextNodes(block);
     }
 
-    /**
-     * Attempt to parse a link reference, modifying the internal reference map.
-     */
-    @Override
-    public int parseReference(String s) {
-        this.input = s;
+    void reset(String content) {
+        this.input = content;
         this.index = 0;
-        String dest;
-        String title;
-        int matchChars;
-        int startIndex = index;
-
-        // label:
-        matchChars = parseLinkLabel();
-        if (matchChars == 0) {
-            return 0;
-        }
-
-        String rawLabel = input.substring(0, matchChars);
-
-        // colon:
-        if (peek() != ':') {
-            return 0;
-        }
-        index++;
-
-        // link url
-        spnl();
-
-        dest = parseLinkDestination();
-        if (dest == null || dest.length() == 0) {
-            return 0;
-        }
-
-        int beforeTitle = index;
-        spnl();
-        title = parseLinkTitle();
-        if (title == null) {
-            // rewind before spaces
-            index = beforeTitle;
-        }
-
-        boolean atLineEnd = true;
-        if (index != input.length() && match(LINE_END) == null) {
-            if (title == null) {
-                atLineEnd = false;
-            } else {
-                // the potential title we found is not at the line end,
-                // but it could still be a legal link reference if we
-                // discard the title
-                title = null;
-                // rewind before spaces
-                index = beforeTitle;
-                // and instead check if the link URL is at the line end
-                atLineEnd = match(LINE_END) != null;
-            }
-        }
-
-        if (!atLineEnd) {
-            return 0;
-        }
-
-        String normalizedLabel = Escaping.normalizeReference(rawLabel);
-        if (normalizedLabel.isEmpty()) {
-            return 0;
-        }
-
-        if (!referenceMap.containsKey(normalizedLabel)) {
-            Link link = new Link(dest, title);
-            referenceMap.put(normalizedLabel, link);
-        }
-        return index - startIndex;
+        this.lastDelimiter = null;
+        this.lastBracket = null;
     }
+
 
     private Text text(String text, int beginIndex, int endIndex) {
         return new Text(text.substring(beginIndex, endIndex));
@@ -419,8 +335,18 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             if (matched.equals(ticks)) {
                 Code node = new Code();
                 String content = input.substring(afterOpenTicks, index - ticks.length());
-                String literal = WHITESPACE.matcher(content.trim()).replaceAll(" ");
-                node.setLiteral(literal);
+                content = content.replace('\n', ' ');
+
+                // spec: If the resulting string both begins and ends with a space character, but does not consist
+                // entirely of space characters, a single space character is removed from the front and back.
+                if (content.length() >= 3 &&
+                        content.charAt(0) == ' ' &&
+                        content.charAt(content.length() - 1) == ' ' &&
+                        Parsing.hasNonSpace(content)) {
+                    content = content.substring(1, content.length() - 1);
+                }
+
+                node.setLiteral(content);
                 return node;
             }
         }
@@ -542,7 +468,8 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
 
             // See if there's a link label like `[bar]` or `[]`
             int beforeLabel = index;
-            int labelLength = parseLinkLabel();
+            parseLinkLabel();
+            int labelLength = index - beforeLabel;
             String ref = null;
             if (labelLength > 2) {
                 ref = input.substring(beforeLabel, beforeLabel + labelLength);
@@ -554,10 +481,11 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
             }
 
             if (ref != null) {
-                Link link = referenceMap.get(Escaping.normalizeReference(ref));
-                if (link != null) {
-                    dest = link.getDestination();
-                    title = link.getTitle();
+                String label = Escaping.normalizeReference(ref);
+                LinkReferenceDefinition definition = context.getLinkReferenceDefinition(label);
+                if (definition != null) {
+                    dest = definition.getDestination();
+                    title = definition.getTitle();
                     isLinkOrImage = true;
                 }
             }
@@ -618,83 +546,58 @@ public class InlineParserImpl implements InlineParser, ReferenceParser {
      * Attempt to parse link destination, returning the string or null if no match.
      */
     private String parseLinkDestination() {
-        String res = match(LINK_DESTINATION_BRACES);
-        if (res != null) { // chop off surrounding <..>:
-            if (res.length() == 2) {
-                return "";
-            } else {
-                return Escaping.unescapeString(res.substring(1, res.length() - 1));
-            }
-        } else {
-            int startIndex = index;
-            parseLinkDestinationWithBalancedParens();
-            return Escaping.unescapeString(input.substring(startIndex, index));
+        int afterDest = LinkScanner.scanLinkDestination(input, index);
+        if (afterDest == -1) {
+            return null;
         }
-    }
 
-    private void parseLinkDestinationWithBalancedParens() {
-        int parens = 0;
-        while (true) {
-            char c = peek();
-            switch (c) {
-                case '\0':
-                    return;
-                case '\\':
-                    // check if we have an escapable character
-                    if (index + 1 < input.length() && ESCAPABLE.matcher(input.substring(index + 1, index + 2)).matches()) {
-                        // skip over the escaped character (after switch)
-                        index++;
-                        break;
-                    }
-                    // otherwise, we treat this as a literal backslash
-                    break;
-                case '(':
-                    parens++;
-                    break;
-                case ')':
-                    if (parens == 0) {
-                        return;
-                    } else {
-                        parens--;
-                    }
-                    break;
-                case ' ':
-                    // ASCII space
-                    return;
-                default:
-                    // or control character
-                    if (Character.isISOControl(c)) {
-                        return;
-                    }
-            }
-            index++;
+        String dest;
+        if (peek() == '<') {
+            // chop off surrounding <..>:
+            dest = input.substring(index + 1, afterDest - 1);
+        } else {
+            dest = input.substring(index, afterDest);
         }
+
+        index = afterDest;
+        return Escaping.unescapeString(dest);
     }
 
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
     private String parseLinkTitle() {
-        String title = match(LINK_TITLE);
-        if (title != null) {
-            // chop off quotes from title and unescape:
-            return Escaping.unescapeString(title.substring(1, title.length() - 1));
-        } else {
+        int afterTitle = LinkScanner.scanLinkTitle(input, index);
+        if (afterTitle == -1) {
             return null;
         }
+
+        // chop off ', " or parens
+        String title = input.substring(index + 1, afterTitle - 1);
+        index = afterTitle;
+        return Escaping.unescapeString(title);
     }
 
     /**
      * Attempt to parse a link label, returning number of characters parsed.
      */
-    private int parseLinkLabel() {
-        String m = match(LINK_LABEL);
-        // Spec says "A link label can have at most 999 characters inside the square brackets"
-        if (m == null || m.length() > 1001) {
+    int parseLinkLabel() {
+        if (index >= input.length() || input.charAt(index) != '[') {
             return 0;
-        } else {
-            return m.length();
         }
+
+        int startContent = index + 1;
+        int endContent = LinkScanner.scanLinkLabelContent(input, startContent);
+        // spec: A link label can have at most 999 characters inside the square brackets.
+        int contentLength = endContent - startContent;
+        if (endContent == -1 || contentLength > 999) {
+            return 0;
+        }
+        if (endContent >= input.length() || input.charAt(endContent) != ']') {
+            return 0;
+        }
+        index = endContent + 1;
+        return contentLength + 2;
     }
 
     /**

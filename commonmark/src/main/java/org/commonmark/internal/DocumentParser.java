@@ -3,7 +3,9 @@ package org.commonmark.internal;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.block.*;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,15 +61,20 @@ public class DocumentParser implements ParserState {
     private boolean blank;
 
     private final List<BlockParserFactory> blockParserFactories;
-    private final InlineParser inlineParser;
+    private final InlineParserFactory inlineParserFactory;
+    private final List<DelimiterProcessor> delimiterProcessors;
     private final DocumentBlockParser documentBlockParser;
+    private final Map<String, LinkReferenceDefinition> definitions = new LinkedHashMap<>();
 
     private List<BlockParser> activeBlockParsers = new ArrayList<>();
-    private Set<BlockParser> allBlockParsers = new HashSet<>();
+    // LinkedHashSet to have a deterministic order
+    private Set<BlockParser> allBlockParsers = new LinkedHashSet<>();
 
-    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParser inlineParser) {
+    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
+                          List<DelimiterProcessor> delimiterProcessors) {
         this.blockParserFactories = blockParserFactories;
-        this.inlineParser = inlineParser;
+        this.inlineParserFactory = inlineParserFactory;
+        this.delimiterProcessors = delimiterProcessors;
 
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(this.documentBlockParser);
@@ -233,7 +240,7 @@ public class DocumentParser implements ParserState {
             }
 
             if (blockStart.isReplaceActiveBlockParser()) {
-                removeActiveBlockParser();
+                prepareActiveBlockParserForReplacement();
             }
 
             for (BlockParser newBlockParser : blockStart.getBlockParsers()) {
@@ -386,10 +393,20 @@ public class DocumentParser implements ParserState {
 
         blockParser.closeBlock();
 
-        if (blockParser instanceof ParagraphParser
-                && inlineParser instanceof ReferenceParser) {
+        if (blockParser instanceof ParagraphParser) {
             ParagraphParser paragraphParser = (ParagraphParser) blockParser;
-            paragraphParser.closeBlock((ReferenceParser) inlineParser);
+            // TODO: Insert resulting nodes into AST (before paragraph node)
+            addDefinitionsFrom(paragraphParser);
+        }
+    }
+
+    private void addDefinitionsFrom(ParagraphParser paragraphParser) {
+        for (LinkReferenceDefinition definition : paragraphParser.getDefinitions()) {
+            String label = definition.getLabel();
+            // spec: When there are multiple matching link reference definitions, the first is used
+            if (!definitions.containsKey(label)) {
+                definitions.put(label, definition);
+            }
         }
     }
 
@@ -397,6 +414,9 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
+        InlineParserContextImpl context = new InlineParserContextImpl(delimiterProcessors, definitions);
+        InlineParser inlineParser = inlineParserFactory.create(context);
+
         for (BlockParser blockParser : allBlockParsers) {
             blockParser.parseInlines(inlineParser);
         }
@@ -426,10 +446,20 @@ public class DocumentParser implements ParserState {
         activeBlockParsers.remove(activeBlockParsers.size() - 1);
     }
 
-    private void removeActiveBlockParser() {
+    private void prepareActiveBlockParserForReplacement() {
         BlockParser old = getActiveBlockParser();
         deactivateBlockParser();
         allBlockParsers.remove(old);
+
+        if (old instanceof ParagraphParser) {
+            ParagraphParser paragraphParser = (ParagraphParser) old;
+            // Collect any link reference definitions. Note that replacing the active block parser is done after a
+            // block parser got the current paragraph content using MatchedBlockParser#getContentString. In case the
+            // paragraph started with link reference definitions, we parse and strip them before the block parser gets
+            // the content. We want to keep them.
+            // If no replacement happens, we collect the definitions as part of finalizing paragraph blocks.
+            addDefinitionsFrom(paragraphParser);
+        }
 
         old.getBlock().unlink();
     }
@@ -467,7 +497,12 @@ public class DocumentParser implements ParserState {
         public CharSequence getParagraphContent() {
             if (matchedBlockParser instanceof ParagraphParser) {
                 ParagraphParser paragraphParser = (ParagraphParser) matchedBlockParser;
-                return paragraphParser.getContentString();
+                CharSequence content = paragraphParser.getContentString();
+                if (content.length() == 0) {
+                    return null;
+                }
+
+                return content;
             }
             return null;
         }

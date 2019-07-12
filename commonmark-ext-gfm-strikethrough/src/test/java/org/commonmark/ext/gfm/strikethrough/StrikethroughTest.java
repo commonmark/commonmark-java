@@ -44,7 +44,7 @@ public class StrikethroughTest extends RenderingTestCase {
 
     @Test
     public void threeInnerThree() {
-        assertRendering("~~~foo~~~", "<p>~<del>foo</del>~</p>\n");
+        assertRendering("a ~~~foo~~~", "<p>a ~<del>foo</del>~</p>\n");
     }
 
     @Test

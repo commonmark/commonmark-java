@@ -51,6 +51,15 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void attributeEscaping() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("&colon;");
+        paragraph.appendChild(link);
+        assertEquals("<p><a href=\"&amp;colon;\"></a></p>\n", defaultRenderer().render(paragraph));
+    }
+
+    @Test
     public void percentEncodeUrlDisabled() {
         assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo&amp;bar)")));
         assertEquals("<p><a href=\"ä\">a</a></p>\n", defaultRenderer().render(parse("[a](ä)")));

@@ -52,18 +52,18 @@ public class DelimiterProcessorTest extends RenderingTestCase {
     @Test
     public void multipleDelimitersWithDifferentLengths() {
         Parser parser = Parser.builder()
-                .customDelimiterProcessor(new OneTildeDelimiterProcessor())
-                .customDelimiterProcessor(new TwoTildesDelimiterProcessor())
+                .customDelimiterProcessor(new OneDelimiterProcessor())
+                .customDelimiterProcessor(new TwoDelimiterProcessor())
                 .build();
-        assertEquals("<p>(1)one(/1) (2)two(/2)</p>\n", RENDERER.render(parser.parse("~one~ ~~two~~")));
-        assertEquals("<p>(1)(2)both(/2)(/1)</p>\n", RENDERER.render(parser.parse("~~~both~~~")));
+        assertEquals("<p>(1)one(/1) (2)two(/2)</p>\n", RENDERER.render(parser.parse("+one+ ++two++")));
+        assertEquals("<p>(1)(2)both(/2)(/1)</p>\n", RENDERER.render(parser.parse("+++both+++")));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void multipleDelimitersWithSameLength() {
         Parser.builder()
-                .customDelimiterProcessor(new OneTildeDelimiterProcessor())
-                .customDelimiterProcessor(new OneTildeDelimiterProcessor())
+                .customDelimiterProcessor(new OneDelimiterProcessor())
+                .customDelimiterProcessor(new OneDelimiterProcessor())
                 .build();
     }
 
@@ -180,16 +180,16 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         }
     }
 
-    private static class OneTildeDelimiterProcessor implements DelimiterProcessor {
+    private static class OneDelimiterProcessor implements DelimiterProcessor {
 
         @Override
         public char getOpeningCharacter() {
-            return '~';
+            return '+';
         }
 
         @Override
         public char getClosingCharacter() {
-            return '~';
+            return '+';
         }
 
         @Override
@@ -209,16 +209,16 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         }
     }
 
-    private static class TwoTildesDelimiterProcessor implements DelimiterProcessor {
+    private static class TwoDelimiterProcessor implements DelimiterProcessor {
 
         @Override
         public char getOpeningCharacter() {
-            return '~';
+            return '+';
         }
 
         @Override
         public char getClosingCharacter() {
-            return '~';
+            return '+';
         }
 
         @Override

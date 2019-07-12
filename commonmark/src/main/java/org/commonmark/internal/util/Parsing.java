@@ -50,6 +50,12 @@ public class Parsing {
         return findNonSpace(s, 0) == -1;
     }
 
+    public static boolean hasNonSpace(CharSequence s) {
+        int length = s.length();
+        int skipped = skip(' ', s, 0, length);
+        return skipped != length;
+    }
+
     public static boolean isLetter(CharSequence s, int index) {
         int codePoint = Character.codePointAt(s, index);
         return Character.isLetter(codePoint);
@@ -60,6 +66,47 @@ public class Parsing {
             switch (s.charAt(index)) {
                 case ' ':
                 case '\t':
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isEscapable(CharSequence s, int index) {
+        if (index < s.length()) {
+            switch (s.charAt(index)) {
+                case '!':
+                case '"':
+                case '#':
+                case '$':
+                case '%':
+                case '&':
+                case '\'':
+                case '(':
+                case ')':
+                case '*':
+                case '+':
+                case ',':
+                case '-':
+                case '.':
+                case '/':
+                case ':':
+                case ';':
+                case '<':
+                case '=':
+                case '>':
+                case '?':
+                case '@':
+                case '[':
+                case '\\':
+                case ']':
+                case '^':
+                case '_':
+                case '`':
+                case '{':
+                case '|':
+                case '}':
+                case '~':
                     return true;
             }
         }

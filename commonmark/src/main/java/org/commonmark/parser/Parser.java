@@ -2,6 +2,7 @@ package org.commonmark.parser;
 
 import org.commonmark.Extension;
 import org.commonmark.internal.DocumentParser;
+import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.BlockParserFactory;
@@ -10,6 +11,7 @@ import org.commonmark.parser.delimiter.DelimiterProcessor;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -32,12 +34,14 @@ public class Parser {
 
     private Parser(Builder builder) {
         this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.enabledBlockTypes);
-        this.inlineParserFactory = builder.inlineParserFactory;
+        this.inlineParserFactory = builder.getInlineParserFactory();
         this.postProcessors = builder.postProcessors;
         this.delimiterProcessors = builder.delimiterProcessors;
 
-        // Try to construct an inline parser. This might raise exceptions in case of invalid configuration.
-        getInlineParser();
+        // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
+        // detect as soon as possible.
+        this.inlineParserFactory.create(new InlineParserContextImpl(delimiterProcessors,
+                Collections.<String, LinkReferenceDefinition>emptyMap()));
     }
 
     /**
@@ -61,8 +65,7 @@ public class Parser {
         if (input == null) {
             throw new NullPointerException("input must not be null");
         }
-        InlineParser inlineParser = getInlineParser();
-        DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
+        DocumentParser documentParser = createDocumentParser();
         Node document = documentParser.parse(input);
         return postProcess(document);
     }
@@ -89,19 +92,14 @@ public class Parser {
         if (input == null) {
             throw new NullPointerException("input must not be null");
         }
-        InlineParser inlineParser = getInlineParser();
-        DocumentParser documentParser = new DocumentParser(blockParserFactories, inlineParser);
+
+        DocumentParser documentParser = createDocumentParser();
         Node document = documentParser.parse(input);
         return postProcess(document);
     }
 
-    private InlineParser getInlineParser() {
-        if (this.inlineParserFactory == null) {
-            return new InlineParserImpl(delimiterProcessors);
-        } else {
-            CustomInlineParserContext inlineParserContext = new CustomInlineParserContext(delimiterProcessors);
-            return this.inlineParserFactory.create(inlineParserContext);
-        }
+    private DocumentParser createDocumentParser() {
+        return new DocumentParser(blockParserFactories, inlineParserFactory, delimiterProcessors);
     }
 
     private Node postProcess(Node document) {
@@ -109,20 +107,6 @@ public class Parser {
             document = postProcessor.process(document);
         }
         return document;
-    }
-
-    private class CustomInlineParserContext implements InlineParserContext {
-
-        private List<DelimiterProcessor> delimiterProcessors;
-
-        CustomInlineParserContext(List<DelimiterProcessor> delimiterProcessors) {
-            this.delimiterProcessors = delimiterProcessors;
-        }
-
-        @Override
-        public List<DelimiterProcessor> getCustomDelimiterProcessors() {
-            return delimiterProcessors;
-        }
     }
 
     /**
@@ -133,7 +117,7 @@ public class Parser {
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
-        private InlineParserFactory inlineParserFactory = null;
+        private InlineParserFactory inlineParserFactory;
 
         /**
          * @return the configured {@link Parser}
@@ -260,6 +244,18 @@ public class Parser {
         public Builder inlineParserFactory(InlineParserFactory inlineParserFactory) {
             this.inlineParserFactory = inlineParserFactory;
             return this;
+        }
+
+        private InlineParserFactory getInlineParserFactory() {
+            if (inlineParserFactory != null) {
+                return inlineParserFactory;
+            }
+            return new InlineParserFactory() {
+                @Override
+                public InlineParser create(InlineParserContext inlineParserContext) {
+                    return new InlineParserImpl(inlineParserContext);
+                }
+            };
         }
     }
 
