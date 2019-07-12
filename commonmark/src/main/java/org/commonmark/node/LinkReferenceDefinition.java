@@ -1,8 +1,5 @@
 package org.commonmark.node;
 
-// TODO: We're currently not adding these to the document.
-//  But that would be very useful for being able to render Nodes back to Markdown, see #98.
-
 /**
  * A link reference definition, e.g.:
  * <pre><code>

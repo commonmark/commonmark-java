@@ -391,17 +391,18 @@ public class DocumentParser implements ParserState {
             deactivateBlockParser();
         }
 
-        blockParser.closeBlock();
-
         if (blockParser instanceof ParagraphParser) {
-            ParagraphParser paragraphParser = (ParagraphParser) blockParser;
-            // TODO: Insert resulting nodes into AST (before paragraph node)
-            addDefinitionsFrom(paragraphParser);
+            addDefinitionsFrom((ParagraphParser) blockParser);
         }
+
+        blockParser.closeBlock();
     }
 
     private void addDefinitionsFrom(ParagraphParser paragraphParser) {
         for (LinkReferenceDefinition definition : paragraphParser.getDefinitions()) {
+            // Add nodes into document before paragraph.
+            paragraphParser.getBlock().insertBefore(definition);
+
             String label = definition.getLabel();
             // spec: When there are multiple matching link reference definitions, the first is used
             if (!definitions.containsKey(label)) {

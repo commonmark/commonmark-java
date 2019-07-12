@@ -8,6 +8,8 @@ with the exception that 0.x versions can break between minor versions.
 
 ## Unreleased
 ### Added
+- `LinkReferenceDefinition` nodes are now part of the document (not
+  rendered by default).
 - `InlineParserContext.getLinkReferenceDefinition` was added to allow
   custom inline parsers to look up definitions for reference links.
 ### Changed
