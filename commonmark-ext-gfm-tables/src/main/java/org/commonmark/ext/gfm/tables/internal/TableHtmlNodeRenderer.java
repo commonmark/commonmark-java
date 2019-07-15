@@ -35,6 +35,10 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
     }
 
     protected void renderBody(TableBody tableBody) {
+        // gfm-spec: If there are no rows in the body, no `<tbody>` is generated in HTML output
+        if (tableBody.getFirstChild() == null) {
+            return;
+        }
         htmlWriter.line();
         htmlWriter.tag("tbody", getAttributes(tableBody, "tbody"));
         renderChildren(tableBody);
