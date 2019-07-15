@@ -16,6 +16,11 @@ public class ParagraphParser extends AbstractBlockParser {
     private LinkReferenceDefinitionParser linkReferenceDefinitionParser = new LinkReferenceDefinitionParser();
 
     @Override
+    public boolean canHaveLazyContinuationLines() {
+        return true;
+    }
+
+    @Override
     public Block getBlock() {
         return block;
     }

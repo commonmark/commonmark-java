@@ -1,13 +1,13 @@
 package org.commonmark.ext.gfm.tables;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Set;
 
 public class TablesTextContentTest extends RenderingTestCase {
 
@@ -42,9 +42,6 @@ public class TablesTextContentTest extends RenderingTestCase {
 
         // Pipe required on separator
         assertRendering("|Abc\n---\n|1", "|Abc\n|1");
-
-        // Pipe required on body
-        assertRendering("|Abc\n|---\n1\n", "Abc\n\n1");
     }
 
     @Test
@@ -80,11 +77,6 @@ public class TablesTextContentTest extends RenderingTestCase {
     @Test
     public void escapedPipe() {
         assertRendering("Abc|Def\n---|---\n1\\|2|20", "Abc| Def\n1|2| 20\n");
-    }
-
-    @Test
-    public void escapedBackslash() {
-        assertRendering("Abc|Def\n---|---\n1\\\\|2", "Abc| Def\n1\\| 2\n");
     }
 
     @Test
@@ -136,8 +128,8 @@ public class TablesTextContentTest extends RenderingTestCase {
     }
 
     @Test
-    public void tableEndWithoutEmptyLine() {
-        assertRendering("Abc|Def\n---|---\n1|2\ntable, you are over", "Abc| Def\n1| 2\n\ntable, you are over");
+    public void tableWithLazyContinuationLine() {
+        assertRendering("Abc|Def\n---|---\n1|2\nlazy", "Abc| Def\n1| 2\nlazy| \n");
     }
 
     @Override

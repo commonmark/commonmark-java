@@ -8,25 +8,24 @@ import org.commonmark.parser.block.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class TableBlockParser extends AbstractBlockParser {
 
-    private static String COL = "\\s*:?-{1,}:?\\s*";
-    private static Pattern TABLE_HEADER_SEPARATOR = Pattern.compile(
-            // For single column, require at least one pipe, otherwise it's ambiguous with setext headers
-            "\\|" + COL + "\\|?\\s*" + "|" +
-            COL + "\\|\\s*" + "|" +
-            "\\|?" + "(?:" + COL + "\\|)+" + COL + "\\|?\\s*");
-
     private final TableBlock block = new TableBlock();
-    private final List<CharSequence> rowLines = new ArrayList<>();
+    private final List<CharSequence> bodyLines = new ArrayList<>();
+    private final List<TableCell.Alignment> columns;
+    private final List<String> headerCells;
 
     private boolean nextIsSeparatorLine = true;
-    private String separatorLine = "";
 
-    private TableBlockParser(CharSequence headerLine) {
-        rowLines.add(headerLine);
+    private TableBlockParser(List<TableCell.Alignment> columns, List<String> headerCells) {
+        this.columns = columns;
+        this.headerCells = headerCells;
+    }
+
+    @Override
+    public boolean canHaveLazyContinuationLines() {
+        return true;
     }
 
     @Override
@@ -47,62 +46,58 @@ public class TableBlockParser extends AbstractBlockParser {
     public void addLine(CharSequence line) {
         if (nextIsSeparatorLine) {
             nextIsSeparatorLine = false;
-            separatorLine = line.toString();
         } else {
-            rowLines.add(line);
+            bodyLines.add(line);
         }
     }
 
     @Override
     public void parseInlines(InlineParser inlineParser) {
-        Node section = new TableHead();
-        block.appendChild(section);
+        int headerColumns = headerCells.size();
 
-        List<TableCell.Alignment> alignments = parseAlignment(separatorLine);
+        Node head = new TableHead();
+        block.appendChild(head);
 
-        int headerColumns = -1;
-        boolean header = true;
-        for (CharSequence rowLine : rowLines) {
+        TableRow headerRow = new TableRow();
+        head.appendChild(headerRow);
+        for (int i = 0; i < headerColumns; i++) {
+            String cell = headerCells.get(i);
+            TableCell tableCell = parseCell(cell, i, inlineParser);
+            tableCell.setHeader(true);
+            headerRow.appendChild(tableCell);
+        }
+
+        Node body = null;
+        for (CharSequence rowLine : bodyLines) {
             List<String> cells = split(rowLine);
-            TableRow tableRow = new TableRow();
-
-            if (headerColumns == -1) {
-                headerColumns = cells.size();
-            }
+            TableRow row = new TableRow();
 
             // Body can not have more columns than head
             for (int i = 0; i < headerColumns; i++) {
                 String cell = i < cells.size() ? cells.get(i) : "";
-                TableCell.Alignment alignment = i < alignments.size() ? alignments.get(i) : null;
-                TableCell tableCell = new TableCell();
-                tableCell.setHeader(header);
-                tableCell.setAlignment(alignment);
-                inlineParser.parse(cell.trim(), tableCell);
-                tableRow.appendChild(tableCell);
+                TableCell tableCell = parseCell(cell, i, inlineParser);
+                row.appendChild(tableCell);
             }
 
-            section.appendChild(tableRow);
-
-            if (header) {
-                // Format allows only one row in head
-                header = false;
-                section = new TableBody();
-                block.appendChild(section);
+            if (body == null) {
+                // It's valid to have a table without body. In that case, don't add an empty TableBody node.
+                body = new TableBody();
+                block.appendChild(body);
             }
+            body.appendChild(row);
         }
     }
 
-    private static List<TableCell.Alignment> parseAlignment(String separatorLine) {
-        List<String> parts = split(separatorLine);
-        List<TableCell.Alignment> alignments = new ArrayList<>();
-        for (String part : parts) {
-            String trimmed = part.trim();
-            boolean left = trimmed.startsWith(":");
-            boolean right = trimmed.endsWith(":");
-            TableCell.Alignment alignment = getAlignment(left, right);
-            alignments.add(alignment);
+    private TableCell parseCell(String cell, int column, InlineParser inlineParser) {
+        TableCell tableCell = new TableCell();
+
+        if (column < columns.size()) {
+            tableCell.setAlignment(columns.get(column));
         }
-        return alignments;
+
+        inlineParser.parse(cell.trim(), tableCell);
+
+        return tableCell;
     }
 
     private static List<String> split(CharSequence input) {
@@ -112,32 +107,104 @@ public class TableBlockParser extends AbstractBlockParser {
         }
         List<String> cells = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        boolean escape = false;
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-            if (escape) {
-                escape = false;
-                sb.append(c);
-            } else {
-                switch (c) {
-                    case '\\':
-                        escape = true;
-                        // Removing the escaping '\' is handled by the inline parser later, so add it to cell
-                        sb.append(c);
-                        break;
-                    case '|':
-                        cells.add(sb.toString());
-                        sb.setLength(0);
-                        break;
-                    default:
-                        sb.append(c);
-                }
+            switch (c) {
+                case '\\':
+                    if (i + 1 < line.length() && line.charAt(i + 1) == '|') {
+                        // Pipe is special for table parsing. An escaped pipe doesn't result in a new cell, but is
+                        // passed down to inline parsing as an unescaped pipe. Note that that applies even for the `\|`
+                        // in an input like `\\|` - in other words, table parsing doesn't support escaping backslashes.
+                        sb.append('|');
+                        i++;
+                    } else {
+                        // Preserve backslash before other characters or at end of line.
+                        sb.append('\\');
+                    }
+                    break;
+                case '|':
+                    cells.add(sb.toString());
+                    sb.setLength(0);
+                    break;
+                default:
+                    sb.append(c);
             }
         }
         if (sb.length() > 0) {
             cells.add(sb.toString());
         }
         return cells;
+    }
+
+    // Examples of valid separators:
+    //
+    // |-
+    // -|
+    // |-|
+    // -|-
+    // |-|-|
+    // --- | ---
+    private static List<TableCell.Alignment> parseSeparator(CharSequence s) {
+        List<TableCell.Alignment> columns = new ArrayList<>();
+        int pipes = 0;
+        boolean valid = false;
+        int i = 0;
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '|':
+                    i++;
+                    pipes++;
+                    if (pipes > 1) {
+                        // More than one adjacent pipe not allowed
+                        return null;
+                    }
+                    // Need at lest one pipe, even for a one column table
+                    valid = true;
+                    break;
+                case '-':
+                case ':':
+                    if (pipes == 0 && !columns.isEmpty()) {
+                        // Need a pipe after the first column (first column doesn't need to start with one)
+                        return null;
+                    }
+                    boolean left = false;
+                    boolean right = false;
+                    if (c == ':') {
+                        left = true;
+                        i++;
+                    }
+                    boolean haveDash = false;
+                    while (i < s.length() && s.charAt(i) == '-') {
+                        i++;
+                        haveDash = true;
+                    }
+                    if (!haveDash) {
+                        // Need at least one dash
+                        return null;
+                    }
+                    if (i < s.length() && s.charAt(i) == ':') {
+                        right = true;
+                        i++;
+                    }
+                    columns.add(getAlignment(left, right));
+                    // Next, need another pipe
+                    pipes = 0;
+                    break;
+                case ' ':
+                case '\t':
+                    // White space is allowed between pipes and columns
+                    i++;
+                    break;
+                default:
+                    // Any other character is invalid
+                    return null;
+            }
+        }
+        if (!valid) {
+            return null;
+        }
+        return columns;
     }
 
     private static TableCell.Alignment getAlignment(boolean left, boolean right) {
@@ -160,11 +227,11 @@ public class TableBlockParser extends AbstractBlockParser {
             CharSequence paragraph = matchedBlockParser.getParagraphContent();
             if (paragraph != null && paragraph.toString().contains("|") && !paragraph.toString().contains("\n")) {
                 CharSequence separatorLine = line.subSequence(state.getIndex(), line.length());
-                if (TABLE_HEADER_SEPARATOR.matcher(separatorLine).matches()) {
-                    List<String> headParts = split(paragraph);
-                    List<String> separatorParts = split(separatorLine);
-                    if (separatorParts.size() >= headParts.size()) {
-                        return BlockStart.of(new TableBlockParser(paragraph))
+                List<TableCell.Alignment> columns = parseSeparator(separatorLine);
+                if (columns != null && !columns.isEmpty()) {
+                    List<String> headerCells = split(paragraph);
+                    if (columns.size() >= headerCells.size()) {
+                        return BlockStart.of(new TableBlockParser(columns, headerCells))
                                 .atIndex(state.getIndex())
                                 .replaceActiveBlockParser();
                     }

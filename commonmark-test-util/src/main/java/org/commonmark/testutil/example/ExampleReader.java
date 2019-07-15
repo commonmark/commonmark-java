@@ -14,12 +14,15 @@ import java.util.regex.Pattern;
 public class ExampleReader {
 
     private static final Pattern SECTION_PATTERN = Pattern.compile("#{1,6} *(.*)");
+    private static final String EXAMPLE_START_MARKER = "```````````````````````````````` example";
 
     private final InputStream inputStream;
     private final String filename;
 
     private State state = State.BEFORE;
     private String section;
+    // The gfm spec has additional text after the example marker for their additions, e.g. "table"
+    private String info = "";
     private StringBuilder source;
     private StringBuilder html;
     private int exampleNumber = 0;
@@ -70,7 +73,8 @@ public class ExampleReader {
                     section = matcher.group(1);
                     exampleNumber = 0;
                 }
-                if (line.equals("```````````````````````````````` example")) {
+                if (line.startsWith(EXAMPLE_START_MARKER)) {
+                    info = line.substring(EXAMPLE_START_MARKER.length()).trim();
                     state = State.SOURCE;
                     exampleNumber++;
                 }
@@ -87,7 +91,7 @@ public class ExampleReader {
             case HTML:
                 if (line.equals("````````````````````````````````")) {
                     state = State.BEFORE;
-                    examples.add(new Example(filename, section, exampleNumber,
+                    examples.add(new Example(filename, section, info, exampleNumber,
                             source.toString(), html.toString()));
                     resetContents();
                 } else {
