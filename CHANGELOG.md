@@ -13,8 +13,15 @@ with the exception that 0.x versions can break between minor versions.
 - `InlineParserContext.getLinkReferenceDefinition` was added to allow
   custom inline parsers to look up definitions for reference links.
 ### Changed
-- Link reference definition parsing has been changed according to the
-  spec: Definitions can now be in setext headings too.
+- Update to CommonMark spec 0.29 (#156):
+  - Change how newlines/spaces are handled in inline code
+  - Info strings for tilde code blocks can contain backticks and tildes
+  - Allow spaces inside link destinations in pointy brackets
+  - Disallow link destination beginning with `<` unless it is inside `<..>`
+  - Disallow unescaped '(' in link title in parens
+  - Disallow indenting list item marker by more than 3 spaces
+  - No longer treat `<meta>` as a block tag
+  - Link reference definitions can now be in setext headings too
 - Tables extension: Changes to match GitHub implementation:
   - Escaping now only considers pipe characters when parsing tables:
     `\|` results in a literal `|` instead of a column, everything else
@@ -24,6 +31,10 @@ with the exception that 0.x versions can break between minor versions.
   - For tables without a body, `<tbody>` is no longer rendered in HTML
   - See https://github.github.com/gfm/#tables-extension- for details
 - Check non-null arguments early and provide a nicer message
+### Fixed
+- Fix incorrectly preserving HTML entities when rendering attributes
+- Fix pathological case with input `[\\\\...` (a lot of backslashes)
+- Fix pathological case with input `[]([]([](...`
 
 ## [0.12.1] - 2018-11-13
 ### Changed
