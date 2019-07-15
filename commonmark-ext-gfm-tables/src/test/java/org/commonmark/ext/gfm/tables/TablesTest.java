@@ -57,8 +57,25 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
-    public void separatorCanNotHaveLeadingSpaceThenPipe() {
-        assertRendering("Abc|Def\n |---|---", "<p>Abc|Def\n|---|---</p>\n");
+    public void separatorCanHaveLeadingSpaceThenPipe() {
+        assertRendering("Abc|Def\n |---|---", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "</table>\n");
+    }
+
+    @Test
+    public void separatorCanNotHaveAdjacentPipes() {
+        assertRendering("Abc|Def\n---||---", "<p>Abc|Def\n---||---</p>\n");
+    }
+
+    @Test
+    public void separatorNeedsPipes() {
+        assertRendering("Abc|Def\n|--- ---", "<p>Abc|Def\n|--- ---</p>\n");
     }
 
     @Test
