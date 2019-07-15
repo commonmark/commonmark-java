@@ -25,6 +25,8 @@ public class SpecBenchmark {
     private static final Parser PARSER = Parser.builder().build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
 
+    private static final Node SPEC_NODE = PARSER.parse(SPEC);
+
     public static void main(String[] args) throws Exception {
         Options options = new OptionsBuilder()
                 .parent(new CommandLineOptions(args))
@@ -51,6 +53,11 @@ public class SpecBenchmark {
     @Benchmark
     public long parseAndRenderExamples() {
         return parseAndRender(SPEC_EXAMPLES);
+    }
+
+    @Benchmark
+    public long renderWholeSpec() {
+        return RENDERER.render(SPEC_NODE).length();
     }
 
     private static long parseAndRender(List<String> examples) {

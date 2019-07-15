@@ -13,6 +13,9 @@ with the exception that 0.x versions can break between minor versions.
 - `InlineParserContext.getLinkReferenceDefinition` was added to allow
   custom inline parsers to look up definitions for reference links.
 ### Changed
+- Performance improvements compared to previous version:
+  - Parsing 7-10% faster
+  - HTML rendering 105% faster - or in other words, twice as fast!
 - Update to CommonMark spec 0.29 (#156):
   - Change how newlines/spaces are handled in inline code
   - Info strings for tilde code blocks can contain backticks and tildes
