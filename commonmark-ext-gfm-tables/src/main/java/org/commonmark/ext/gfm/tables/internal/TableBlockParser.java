@@ -117,26 +117,27 @@ public class TableBlockParser extends AbstractBlockParser {
         }
         List<String> cells = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        boolean escape = false;
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-            if (escape) {
-                escape = false;
-                sb.append(c);
-            } else {
-                switch (c) {
-                    case '\\':
-                        escape = true;
-                        // Removing the escaping '\' is handled by the inline parser later, so add it to cell
-                        sb.append(c);
-                        break;
-                    case '|':
-                        cells.add(sb.toString());
-                        sb.setLength(0);
-                        break;
-                    default:
-                        sb.append(c);
-                }
+            switch (c) {
+                case '\\':
+                    if (i + 1 < line.length() && line.charAt(i + 1) == '|') {
+                        // Pipe is special for table parsing. An escaped pipe doesn't result in a new cell, but is
+                        // passed down to inline parsing as an unescaped pipe. Note that that applies even for the `\|`
+                        // in an input like `\\|` - in other words, table parsing doesn't support escaping backslashes.
+                        sb.append('|');
+                        i++;
+                    } else {
+                        // Preserve backslash before other characters or at end of line.
+                        sb.append('\\');
+                    }
+                    break;
+                case '|':
+                    cells.add(sb.toString());
+                    sb.setLength(0);
+                    break;
+                default:
+                    sb.append(c);
             }
         }
         if (sb.length() > 0) {

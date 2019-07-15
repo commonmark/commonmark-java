@@ -238,6 +238,9 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void escapedBackslash() {
+        // This is a bit weird in the GFM spec IMO. `1\\|2` looks like an escaped backslash, followed by a pipe
+        // (so two cells). Instead, the `\|` is parsed as an escaped pipe first, so just a single cell. The inline
+        // parser then gets `1\|2` which renders as `1|2`.
         assertRendering("Abc|Def\n---|---\n1\\\\|2", "<table>\n" +
                 "<thead>\n" +
                 "<tr>\n" +
@@ -247,8 +250,46 @@ public class TablesTest extends RenderingTestCase {
                 "</thead>\n" +
                 "<tbody>\n" +
                 "<tr>\n" +
-                "<td>1\\</td>\n" +
-                "<td>2</td>\n" +
+                "<td>1|2</td>\n" +
+                "<td></td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
+    public void escapedOther() {
+        // This is a tricky one. For \`, we don't want to remove the backslash when we parse the table, otherwise
+        // inline parsing is wrong. So we have to be careful where we do/don't consume the backslash.
+        assertRendering("Abc|Def\n---|---\n1|\\`not code`", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>`not code`</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
+    public void backslashAtEnd() {
+        assertRendering("Abc|Def\n---|---\n1|2\\", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2\\</td>\n" +
                 "</tr>\n" +
                 "</tbody>\n" +
                 "</table>\n");

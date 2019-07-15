@@ -80,11 +80,6 @@ public class TablesTextContentTest extends RenderingTestCase {
     }
 
     @Test
-    public void escapedBackslash() {
-        assertRendering("Abc|Def\n---|---\n1\\\\|2", "Abc| Def\n1\\| 2\n");
-    }
-
-    @Test
     public void alignLeft() {
         assertRendering("Abc|Def\n:---|---\n1|2", "Abc| Def\n1| 2\n");
     }
