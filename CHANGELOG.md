@@ -22,6 +22,7 @@ with the exception that 0.x versions can break between minor versions.
   - Table body can now contain lazy continuation lines (without `|`).
     An empty line or another block is needed to interrupt the table.
   - For tables without a body, `<tbody>` is no longer rendered in HTML
+  - See https://github.github.com/gfm/#tables-extension- for details
 - Check non-null arguments early and provide a nicer message
 
 ## [0.12.1] - 2018-11-13
