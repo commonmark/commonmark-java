@@ -33,7 +33,7 @@ Coordinates for core library (see all on [Maven Central]):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.12.1</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -227,7 +227,7 @@ First, add an additional dependency (see [Maven Central] for others):
 <dependency>
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-ext-gfm-tables</artifactId>
-    <version>0.12.1</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -328,7 +328,7 @@ See CONTRIBUTING.md file.
 License
 -------
 
-Copyright (c) 2015-2018 Atlassian and others.
+Copyright (c) 2015-2019 Atlassian and others.
 
 BSD (2-clause) licensed, see LICENSE.txt file.
 
