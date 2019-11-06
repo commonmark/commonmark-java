@@ -9,7 +9,7 @@ import org.commonmark.renderer.Renderer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextContentRenderer implements Renderer {
+public class TextContentRenderer implements Renderer<Appendable, String> {
 
     private final boolean stripNewlines;
 

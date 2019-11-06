@@ -23,7 +23,7 @@ import java.util.Map;
  * renderer.render(node);
  * </code></pre>
  */
-public class HtmlRenderer implements Renderer {
+public class HtmlRenderer implements Renderer<Appendable, String> {
 
     private final String softbreak;
     private final boolean escapeHtml;
