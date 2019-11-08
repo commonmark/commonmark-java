@@ -184,7 +184,7 @@ public class InlineParserImpl implements InlineParser {
      * On success, return the new inline node.
      * On failure, return null.
      */
-    protected Node parseInline(Node previous) {
+    private Node parseInline(Node previous) {
         char c = peek();
         if (c == '\0') {
             return null;
@@ -243,7 +243,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * If RE matches at current index in the input, advance index and return the match; otherwise return null.
      */
-    protected String match(Pattern re) {
+    private String match(Pattern re) {
         if (index >= input.length()) {
             return null;
         }
@@ -257,7 +257,7 @@ public class InlineParserImpl implements InlineParser {
             } else {
                 return null;
             }
-        } catch (Error e) {
+        } catch (StackOverflowError e) {
             return null;
         }
     }
@@ -283,7 +283,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Parse a newline. If it was preceded by two spaces, return a hard line break; otherwise a soft line break.
      */
-    protected Node parseNewline(Node previous) {
+    private Node parseNewline(Node previous) {
         index++; // assume we're at a \n
 
         // Check previous text for trailing spaces.
@@ -310,7 +310,7 @@ public class InlineParserImpl implements InlineParser {
      * Parse a backslash-escaped special character, adding either the escaped  character, a hard line break
      * (if the backslash is followed by a newline), or a literal backslash to the block's children.
      */
-    protected Node parseBackslash() {
+    private Node parseBackslash() {
         index++;
         Node node;
         if (peek() == '\n') {
@@ -328,7 +328,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse backticks, returning either a backtick code span or a literal sequence of backticks.
      */
-    protected Node parseBackticks() {
+    private Node parseBackticks() {
         String ticks = match(TICKS_HERE);
         if (ticks == null) {
             return null;
@@ -362,7 +362,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
-    protected Node parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
+    private Node parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
         DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar);
         if (res == null) {
             return null;
@@ -387,7 +387,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Add open bracket to delimiter stack and add a text node to block's children.
      */
-    protected Node parseOpenBracket() {
+    private Node parseOpenBracket() {
         int startIndex = index;
         index++;
 
@@ -403,7 +403,7 @@ public class InlineParserImpl implements InlineParser {
      * If next character is [, and ! delimiter to delimiter stack and add a text node to block's children.
      * Otherwise just add a text node.
      */
-    protected Node parseBang() {
+    private Node parseBang() {
         int startIndex = index;
         index++;
         if (peek() == '[') {
@@ -424,7 +424,7 @@ public class InlineParserImpl implements InlineParser {
      * Try to match close bracket against an opening in the delimiter stack. Return either a link or image, or a
      * plain [ character. If there is a matching delimiter, remove it from the delimiter stack.
      */
-    protected Node parseCloseBracket() {
+    private Node parseCloseBracket() {
         index++;
         int startIndex = index;
 
@@ -607,7 +607,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse an autolink (URL or email in pointy brackets).
      */
-    protected Node parseAutolink() {
+    private Node parseAutolink() {
         String m;
         if ((m = match(EMAIL_AUTOLINK)) != null) {
             String dest = m.substring(1, m.length() - 1);
@@ -627,7 +627,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse inline HTML.
      */
-    protected Node parseHtmlInline() {
+    private Node parseHtmlInline() {
         String m = match(HTML_TAG);
         if (m != null) {
             HtmlInline node = new HtmlInline();
@@ -641,7 +641,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Attempt to parse a HTML style entity.
      */
-    protected Node parseEntity() {
+    private Node parseEntity() {
         String m;
         if ((m = match(ENTITY_HERE)) != null) {
             return text(Html5Entities.entityToString(m));
@@ -653,7 +653,7 @@ public class InlineParserImpl implements InlineParser {
     /**
      * Parse a run of ordinary characters, or a single character with a special meaning in markdown, as a plain string.
      */
-    protected Node parseString() {
+    private Node parseString() {
         int begin = index;
         int length = input.length();
         while (index != length) {
