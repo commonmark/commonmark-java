@@ -267,7 +267,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         Node parent = paragraph.getParent();
         if (parent != null) {
             Node gramps = parent.getParent();
-            if (gramps != null && gramps instanceof ListBlock) {
+            if (gramps instanceof ListBlock) {
                 ListBlock list = (ListBlock) gramps;
                 return list.isTight();
             }
