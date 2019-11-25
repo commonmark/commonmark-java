@@ -247,13 +247,17 @@ public class InlineParserImpl implements InlineParser {
         if (index >= input.length()) {
             return null;
         }
-        Matcher matcher = re.matcher(input);
-        matcher.region(index, input.length());
-        boolean m = matcher.find();
-        if (m) {
-            index = matcher.end();
-            return matcher.group();
-        } else {
+        try {
+            Matcher matcher = re.matcher(input);
+            matcher.region(index, input.length());
+            boolean m = matcher.find();
+            if (m) {
+                index = matcher.end();
+                return matcher.group();
+            } else {
+                return null;
+            }
+        } catch (StackOverflowError e) {
             return null;
         }
     }
