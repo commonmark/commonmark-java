@@ -60,6 +60,39 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void unsafeShouldNotEscapeDangerousProtocols() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("javascript:alert(5);");
+        paragraph.appendChild(link);
+        assertEquals("<p><a href=\"javascript:alert(5);\"></a></p>\n", unsafeRenderer().render(paragraph));
+    }
+
+    @Test
+    public void safeShouldSetRelNoFollow() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("/exampleUrl");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"/exampleUrl\"></a></p>\n", safeRenderer().render(paragraph));
+
+        paragraph = new Paragraph();
+        link = new Link();
+        link.setDestination("https://google.com");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n", safeRenderer().render(paragraph));
+    }
+
+    @Test
+    public void safeShouldEscapeDangerousProtocols() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("javascript:alert(5);");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", safeRenderer().render(paragraph));
+    }
+
+    @Test
     public void percentEncodeUrlDisabled() {
         assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo&amp;bar)")));
         assertEquals("<p><a href=\"ä\">a</a></p>\n", defaultRenderer().render(parse("[a](ä)")));
@@ -265,6 +298,14 @@ public class HtmlRendererTest {
 
     private static HtmlRenderer htmlAllowingRenderer() {
         return HtmlRenderer.builder().escapeHtml(false).build();
+    }
+
+    private static HtmlRenderer safeRenderer() {
+        return HtmlRenderer.builder().safe(true).urlSanitizer(new DefaultUrlSanitizer()).build();
+    }
+
+    private static HtmlRenderer unsafeRenderer() {
+        return HtmlRenderer.builder().safe(false).build();
     }
 
     private static HtmlRenderer htmlEscapingRenderer() {
