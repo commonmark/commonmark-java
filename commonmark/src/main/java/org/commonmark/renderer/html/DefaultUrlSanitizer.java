@@ -14,14 +14,6 @@ import java.util.Set;
 public class DefaultUrlSanitizer implements UrlSanitizer {
     private Set<String> protocols;
 
-    private static final long HTML_SPACE_CHAR_BITMASK =
-            (1L << ' ')
-                    | (1L << '\t')
-                    | (1L << '\n')
-                    | (1L << '\u000c')
-                    | (1L << '\r');
-
-
     public DefaultUrlSanitizer() {
         this(Arrays.asList("http", "https", "mailto"));
     }
