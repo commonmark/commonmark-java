@@ -60,36 +60,36 @@ public class HtmlRendererTest {
     }
 
     @Test
-    public void unsafeShouldNotEscapeDangerousProtocols() {
+    public void rawUrlsShouldNotFilterDangerousProtocols() {
         Paragraph paragraph = new Paragraph();
         Link link = new Link();
         link.setDestination("javascript:alert(5);");
         paragraph.appendChild(link);
-        assertEquals("<p><a href=\"javascript:alert(5);\"></a></p>\n", unsafeRenderer().render(paragraph));
+        assertEquals("<p><a href=\"javascript:alert(5);\"></a></p>\n", rawUrlsRenderer().render(paragraph));
     }
 
     @Test
-    public void safeShouldSetRelNoFollow() {
+    public void sanitizedUrlsShouldSetRelNoFollow() {
         Paragraph paragraph = new Paragraph();
         Link link = new Link();
         link.setDestination("/exampleUrl");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"/exampleUrl\"></a></p>\n", safeRenderer().render(paragraph));
+        assertEquals("<p><a rel=\"nofollow\" href=\"/exampleUrl\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
 
         paragraph = new Paragraph();
         link = new Link();
         link.setDestination("https://google.com");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n", safeRenderer().render(paragraph));
+        assertEquals("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
     }
 
     @Test
-    public void safeShouldEscapeDangerousProtocols() {
+    public void sanitizedUrlsShouldFilterDangerousProtocols() {
         Paragraph paragraph = new Paragraph();
         Link link = new Link();
         link.setDestination("javascript:alert(5);");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", safeRenderer().render(paragraph));
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
     }
 
     @Test
@@ -300,12 +300,12 @@ public class HtmlRendererTest {
         return HtmlRenderer.builder().escapeHtml(false).build();
     }
 
-    private static HtmlRenderer safeRenderer() {
-        return HtmlRenderer.builder().safe(true).urlSanitizer(new DefaultUrlSanitizer()).build();
+    private static HtmlRenderer sanitizeUrlsRenderer() {
+        return HtmlRenderer.builder().sanitizeUrls(true).urlSanitizer(new DefaultUrlSanitizer()).build();
     }
 
-    private static HtmlRenderer unsafeRenderer() {
-        return HtmlRenderer.builder().safe(false).build();
+    private static HtmlRenderer rawUrlsRenderer() {
+        return HtmlRenderer.builder().sanitizeUrls(false).build();
     }
 
     private static HtmlRenderer htmlEscapingRenderer() {

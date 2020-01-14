@@ -51,11 +51,11 @@ public interface HtmlNodeRendererContext {
      *
      * @return true if the {@link UrlSanitizer} should be used.
      */
-    boolean shouldBeSafe();
+    boolean shouldSanitizeUrls();
 
     /**
      *
-     * @return Sanitizer to use for securing {@link Link} href and {@link Image} src if safe is true.
+     * @return Sanitizer to use for securing {@link Link} href and {@link Image} src if sanitizeUrls is true.
      */
     UrlSanitizer urlSanitizer();
 }

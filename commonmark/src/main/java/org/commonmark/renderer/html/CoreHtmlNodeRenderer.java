@@ -143,7 +143,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         Map<String, String> attrs = new LinkedHashMap<>();
         String url = link.getDestination();
 
-        if (context.shouldBeSafe()) {
+        if (context.shouldSanitizeUrls()) {
             url = context.urlSanitizer().sanitizeLinkUrl(url);
             attrs.put("rel", "nofollow");
         }
@@ -185,7 +185,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         String altText = altTextVisitor.getAltText();
 
         Map<String, String> attrs = new LinkedHashMap<>();
-        if (context.shouldBeSafe()) {
+        if (context.shouldSanitizeUrls()) {
             url = context.urlSanitizer().sanitizeImageUrl(url);
         }
         attrs.put("src", url);

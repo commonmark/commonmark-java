@@ -29,7 +29,7 @@ public class HtmlRenderer implements Renderer {
 
     private final String softbreak;
     private final boolean escapeHtml;
-    private final boolean safe;
+    private final boolean sanitizeUrls;
     private final UrlSanitizer urlSanitizer;
     private final boolean percentEncodeUrls;
     private final List<AttributeProviderFactory> attributeProviderFactories;
@@ -38,7 +38,7 @@ public class HtmlRenderer implements Renderer {
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
-        this.safe = builder.safe;
+        this.sanitizeUrls = builder.sanitizeUrls;
         this.percentEncodeUrls = builder.percentEncodeUrls;
         this.urlSanitizer = builder.urlSanitizer;
         this.attributeProviderFactories = new ArrayList<>(builder.attributeProviderFactories);
@@ -89,7 +89,7 @@ public class HtmlRenderer implements Renderer {
 
         private String softbreak = "\n";
         private boolean escapeHtml = false;
-        private boolean safe = false;
+        private boolean sanitizeUrls = false;
         private UrlSanitizer urlSanitizer = new DefaultUrlSanitizer();
         private boolean percentEncodeUrls = false;
         private List<AttributeProviderFactory> attributeProviderFactories = new ArrayList<>();
@@ -133,19 +133,19 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
-         * Whether {@link Image} src and {@link Link} href should be filtered, defaults to {@code false}.
+         * Whether {@link Image} src and {@link Link} href should be sanitized, defaults to {@code false}.
          * <p>
          *
-         * @param safe true for filtering, false for preserving raw attribute
+         * @param sanitizeUrls true for sanitization, false for preserving raw attribute
          * @return {@code this}
          */
-        public Builder safe(boolean safe) {
-            this.safe = safe;
+        public Builder sanitizeUrls(boolean sanitizeUrls) {
+            this.sanitizeUrls = sanitizeUrls;
             return this;
         }
 
         /**
-         * {@link UrlSanitizer} used to filter URL's if safe is true.
+         * {@link UrlSanitizer} used to filter URL's if sanitizeUrls is true.
          * <p>
          *
          * @param urlSanitizer Filterer used to filter {@link Image} src and {@link Link}.
@@ -260,8 +260,8 @@ public class HtmlRenderer implements Renderer {
         }
 
         @Override
-        public boolean shouldBeSafe() {
-            return safe;
+        public boolean shouldSanitizeUrls() {
+            return sanitizeUrls;
         }
 
         @Override
