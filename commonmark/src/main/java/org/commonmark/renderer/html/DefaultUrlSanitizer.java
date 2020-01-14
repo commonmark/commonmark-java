@@ -1,7 +1,9 @@
 package org.commonmark.renderer.html;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -10,7 +12,7 @@ import java.util.Collection;
  * Implementation based on https://github.com/OWASP/java-html-sanitizer/blob/f07e44b034a45d94d6fd010279073c38b6933072/src/main/java/org/owasp/html/FilterUrlByProtocolAttributePolicy.java
  */
 public class DefaultUrlSanitizer implements UrlSanitizer {
-    private Collection<String> protocols;
+    private Set<String> protocols;
 
     private static final long HTML_SPACE_CHAR_BITMASK =
             (1L << ' ')
@@ -21,15 +23,11 @@ public class DefaultUrlSanitizer implements UrlSanitizer {
 
 
     public DefaultUrlSanitizer() {
-        this(new ArrayList<String>() {{
-            add("http");
-            add("https");
-            add("mailto");
-        }});
+        this(Arrays.asList("http", "https", "mailto"));
     }
 
     public DefaultUrlSanitizer(Collection<String> protocols) {
-        this.protocols = protocols;
+        this.protocols = new HashSet<>(protocols);
     }
 
     @Override
@@ -78,6 +76,16 @@ public class DefaultUrlSanitizer implements UrlSanitizer {
     }
 
     private boolean isHtmlSpace(int ch) {
-        return ch <= 0x20 && (HTML_SPACE_CHAR_BITMASK & (1L << ch)) != 0;
+        switch (ch) {
+            case ' ':
+            case '\t':
+            case '\n':
+            case '\u000c':
+            case '\r':
+                return true;
+            default:
+                return false;
+
+        }
     }
 }

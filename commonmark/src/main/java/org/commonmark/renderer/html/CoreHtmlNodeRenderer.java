@@ -185,7 +185,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         String altText = altTextVisitor.getAltText();
 
         Map<String, String> attrs = new LinkedHashMap<>();
-        if(context.shouldBeSafe()) {
+        if (context.shouldBeSafe()) {
             url = context.urlSanitizer().sanitizeImageUrl(url);
         }
         attrs.put("src", url);
