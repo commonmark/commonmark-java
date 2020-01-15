@@ -178,7 +178,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(Image image) {
-        String url = context.encodeUrl(image.getDestination());
+        String url = image.getDestination();
 
         AltTextVisitor altTextVisitor = new AltTextVisitor();
         image.accept(altTextVisitor);
@@ -188,7 +188,8 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         if (context.shouldSanitizeUrls()) {
             url = context.urlSanitizer().sanitizeImageUrl(url);
         }
-        attrs.put("src", url);
+
+        attrs.put("src", context.encodeUrl(url));
         attrs.put("alt", altText);
         if (image.getTitle() != null) {
             attrs.put("title", image.getTitle());
