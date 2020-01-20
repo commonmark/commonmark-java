@@ -141,7 +141,14 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     @Override
     public void visit(Link link) {
         Map<String, String> attrs = new LinkedHashMap<>();
-        String url = context.encodeUrl(link.getDestination());
+        String url = link.getDestination();
+
+        if (context.shouldSanitizeUrls()) {
+            url = context.urlSanitizer().sanitizeLinkUrl(url);
+            attrs.put("rel", "nofollow");
+        }
+
+        url = context.encodeUrl(url);
         attrs.put("href", url);
         if (link.getTitle() != null) {
             attrs.put("title", link.getTitle());
@@ -171,14 +178,18 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(Image image) {
-        String url = context.encodeUrl(image.getDestination());
+        String url = image.getDestination();
 
         AltTextVisitor altTextVisitor = new AltTextVisitor();
         image.accept(altTextVisitor);
         String altText = altTextVisitor.getAltText();
 
         Map<String, String> attrs = new LinkedHashMap<>();
-        attrs.put("src", url);
+        if (context.shouldSanitizeUrls()) {
+            url = context.urlSanitizer().sanitizeImageUrl(url);
+        }
+
+        attrs.put("src", context.encodeUrl(url));
         attrs.put("alt", altText);
         if (image.getTitle() != null) {
             attrs.put("title", image.getTitle());

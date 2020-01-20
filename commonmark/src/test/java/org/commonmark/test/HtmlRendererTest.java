@@ -60,6 +60,39 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void rawUrlsShouldNotFilterDangerousProtocols() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("javascript:alert(5);");
+        paragraph.appendChild(link);
+        assertEquals("<p><a href=\"javascript:alert(5);\"></a></p>\n", rawUrlsRenderer().render(paragraph));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldSetRelNoFollow() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("/exampleUrl");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"/exampleUrl\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+
+        paragraph = new Paragraph();
+        link = new Link();
+        link.setDestination("https://google.com");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldFilterDangerousProtocols() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("javascript:alert(5);");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+    }
+
+    @Test
     public void percentEncodeUrlDisabled() {
         assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo&amp;bar)")));
         assertEquals("<p><a href=\"ä\">a</a></p>\n", defaultRenderer().render(parse("[a](ä)")));
@@ -265,6 +298,14 @@ public class HtmlRendererTest {
 
     private static HtmlRenderer htmlAllowingRenderer() {
         return HtmlRenderer.builder().escapeHtml(false).build();
+    }
+
+    private static HtmlRenderer sanitizeUrlsRenderer() {
+        return HtmlRenderer.builder().sanitizeUrls(true).urlSanitizer(new DefaultUrlSanitizer()).build();
+    }
+
+    private static HtmlRenderer rawUrlsRenderer() {
+        return HtmlRenderer.builder().sanitizeUrls(false).build();
     }
 
     private static HtmlRenderer htmlEscapingRenderer() {

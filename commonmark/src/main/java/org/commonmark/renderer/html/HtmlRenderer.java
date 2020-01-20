@@ -5,6 +5,8 @@ import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.HtmlInline;
+import org.commonmark.node.Link;
+import org.commonmark.node.Image;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.Renderer;
@@ -27,6 +29,8 @@ public class HtmlRenderer implements Renderer {
 
     private final String softbreak;
     private final boolean escapeHtml;
+    private final boolean sanitizeUrls;
+    private final UrlSanitizer urlSanitizer;
     private final boolean percentEncodeUrls;
     private final List<AttributeProviderFactory> attributeProviderFactories;
     private final List<HtmlNodeRendererFactory> nodeRendererFactories;
@@ -34,7 +38,9 @@ public class HtmlRenderer implements Renderer {
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
+        this.sanitizeUrls = builder.sanitizeUrls;
         this.percentEncodeUrls = builder.percentEncodeUrls;
+        this.urlSanitizer = builder.urlSanitizer;
         this.attributeProviderFactories = new ArrayList<>(builder.attributeProviderFactories);
 
         this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
@@ -83,6 +89,8 @@ public class HtmlRenderer implements Renderer {
 
         private String softbreak = "\n";
         private boolean escapeHtml = false;
+        private boolean sanitizeUrls = false;
+        private UrlSanitizer urlSanitizer = new DefaultUrlSanitizer();
         private boolean percentEncodeUrls = false;
         private List<AttributeProviderFactory> attributeProviderFactories = new ArrayList<>();
         private List<HtmlNodeRendererFactory> nodeRendererFactories = new ArrayList<>();
@@ -121,6 +129,30 @@ public class HtmlRenderer implements Renderer {
          */
         public Builder escapeHtml(boolean escapeHtml) {
             this.escapeHtml = escapeHtml;
+            return this;
+        }
+
+        /**
+         * Whether {@link Image} src and {@link Link} href should be sanitized, defaults to {@code false}.
+         * <p>
+         *
+         * @param sanitizeUrls true for sanitization, false for preserving raw attribute
+         * @return {@code this}
+         */
+        public Builder sanitizeUrls(boolean sanitizeUrls) {
+            this.sanitizeUrls = sanitizeUrls;
+            return this;
+        }
+
+        /**
+         * {@link UrlSanitizer} used to filter URL's if sanitizeUrls is true.
+         * <p>
+         *
+         * @param urlSanitizer Filterer used to filter {@link Image} src and {@link Link}.
+         * @return {@code this}
+         */
+        public Builder urlSanitizer(UrlSanitizer urlSanitizer) {
+            this.urlSanitizer = urlSanitizer;
             return this;
         }
 
@@ -225,6 +257,16 @@ public class HtmlRenderer implements Renderer {
         @Override
         public boolean shouldEscapeHtml() {
             return escapeHtml;
+        }
+
+        @Override
+        public boolean shouldSanitizeUrls() {
+            return sanitizeUrls;
+        }
+
+        @Override
+        public UrlSanitizer urlSanitizer() {
+            return urlSanitizer;
         }
 
         @Override
