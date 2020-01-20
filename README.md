@@ -67,12 +67,17 @@ renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
 ```
 
 This uses the parser and renderer with default options. Both builders have
-methods for configuring their behavior, e.g. calling `escapeHtml(true)` on
-`HtmlRenderer` will escape raw HTML tags and blocks. For all available
-options, see methods on the builders.
+methods for configuring their behavior:
 
-Note that this library doesn't try to sanitize the resulting HTML; that is
-the responsibility of the caller.
+* `escapeHtml(true)` on `HtmlRenderer` will escape raw HTML tags and blocks.
+* `sanitizeUrls(true)` on `HtmlRenderer` will strip potentially unsafe URLs
+  from `<a>` and `<img>` tags
+* For all available options, see methods on the builders.
+
+Note that this library doesn't try to sanitize the resulting HTML with regards
+to which tags are allowed, etc. That is the responsibility of the caller, and
+if you expose the resulting HTML, you probably want to run a sanitizer on it
+after this.
 
 For rendering to plain text, there's also a `TextContentRenderer` with
 a very similar API.
