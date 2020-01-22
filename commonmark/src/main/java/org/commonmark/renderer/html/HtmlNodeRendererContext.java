@@ -1,7 +1,7 @@
 package org.commonmark.renderer.html;
 
-import org.commonmark.node.Link;
 import org.commonmark.node.Image;
+import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 
 import java.util.Map;
@@ -48,14 +48,14 @@ public interface HtmlNodeRendererContext {
     boolean shouldEscapeHtml();
 
     /**
-     *
      * @return true if the {@link UrlSanitizer} should be used.
+     * @since 0.14.0
      */
     boolean shouldSanitizeUrls();
 
     /**
-     *
-     * @return Sanitizer to use for securing {@link Link} href and {@link Image} src if sanitizeUrls is true.
+     * @return Sanitizer to use for securing {@link Link} href and {@link Image} src if {@link #shouldSanitizeUrls()} is true.
+     * @since 0.14.0
      */
     UrlSanitizer urlSanitizer();
 }

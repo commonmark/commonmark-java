@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.14.0] - 2020-01-22
+### Added
+- Add `sanitizeUrls` to `HtmlRenderer.Builder` to enable sanitizing URLs
+  of `<a>` and `<img>` tags. Sanitizing logic can be customized via
+  `urlSanitizer`. Thanks @VandorpeDavid
+
 ## [0.13.1] - 2019-11-25
 ### Fixed
 - Fix potential `StackOverflowError` for regular expressions used in the
@@ -263,6 +269,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.14.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.13.1...commonmark-parent-0.14.0
 [0.13.1]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.13.0...commonmark-parent-0.13.1
 [0.13.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.12.1...commonmark-parent-0.13.0
 [0.12.1]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.11.0...commonmark-parent-0.12.1

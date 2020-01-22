@@ -3,11 +3,7 @@ package org.commonmark.renderer.html;
 import org.commonmark.Extension;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.internal.util.Escaping;
-import org.commonmark.node.HtmlBlock;
-import org.commonmark.node.HtmlInline;
-import org.commonmark.node.Link;
-import org.commonmark.node.Image;
-import org.commonmark.node.Node;
+import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.Renderer;
 
@@ -134,10 +130,10 @@ public class HtmlRenderer implements Renderer {
 
         /**
          * Whether {@link Image} src and {@link Link} href should be sanitized, defaults to {@code false}.
-         * <p>
          *
          * @param sanitizeUrls true for sanitization, false for preserving raw attribute
          * @return {@code this}
+         * @since 0.14.0
          */
         public Builder sanitizeUrls(boolean sanitizeUrls) {
             this.sanitizeUrls = sanitizeUrls;
@@ -145,11 +141,11 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
-         * {@link UrlSanitizer} used to filter URL's if sanitizeUrls is true.
-         * <p>
+         * {@link UrlSanitizer} used to filter URL's if {@link #sanitizeUrls} is true.
          *
          * @param urlSanitizer Filterer used to filter {@link Image} src and {@link Link}.
          * @return {@code this}
+         * @since 0.14.0
          */
         public Builder urlSanitizer(UrlSanitizer urlSanitizer) {
             this.urlSanitizer = urlSanitizer;
