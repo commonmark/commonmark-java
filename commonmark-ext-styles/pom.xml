@@ -11,10 +11,6 @@
     <name>commonmark-java extension for styles</name>
     <description>commonmark-java extension for adding style details to images</description>
 
-    <properties>
-        <autolink.version>0.10.0</autolink.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
