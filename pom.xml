@@ -26,6 +26,7 @@
         <module>commonmark-ext-gfm-tables</module>
         <module>commonmark-ext-heading-anchor</module>
         <module>commonmark-ext-ins</module>
+        <module>commonmark-ext-styles</module>
         <module>commonmark-ext-yaml-front-matter</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>
