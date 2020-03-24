@@ -22,7 +22,7 @@ public class StylesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
     private StylesExtension() {
     }
 
-    static Extension create() {
+    public static Extension create() {
         return new StylesExtension();
     }
 

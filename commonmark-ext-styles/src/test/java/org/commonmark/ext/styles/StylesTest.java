@@ -92,6 +92,14 @@ public class StylesTest extends RenderingTestCase {
                 "<p><img src=\"/url\" alt=\"foo \u00E4\" height=\"99\" width=\"100\" /></p>\n");
     }
 
+    @Test
+    public void textNodesAreUnchanged() {
+        assertRendering("This is some text with random styles immediately afterwards{height=20}\n",
+                "<p>This is some text with random styles immediately afterwards</p>\n");
+        assertRendering("This is some text with random styles after a space {width=100px}\n",
+                "<p>This is some text with random styles after a space </p>\n");
+    }
+
     @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));

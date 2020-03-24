@@ -319,6 +319,17 @@ document start here
 
 Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`.
 
+### Styles
+
+Adds support for specifying style details (specifically height and width) for images.
+
+The style elements are given as key=value pairs inside curly braces after the node to which they apply, for example:
+```
+![text](/url.png){height=5 width=6}
+```
+
+Use class `StylesExtension` in artifact `commonmark-ext-styles`.
+
 See also
 --------
 
