@@ -23,7 +23,7 @@ public class StylesTest extends RenderingTestCase {
         assertRendering("![text](/url.png){height=5 width=6}",
                 "<p><img src=\"/url.png\" alt=\"text\" height=\"5\" width=\"6\" /></p>\n");
 
-        assertRendering("![text](/url.png){height=99px width=100px}",
+        assertRendering("![text](/url.png){height=99px   width=100px}",
                 "<p><img src=\"/url.png\" alt=\"text\" height=\"99px\" width=\"100px\" /></p>\n");
 
         assertRendering("![text](/url.png){width=100 height=100}",
@@ -51,8 +51,13 @@ public class StylesTest extends RenderingTestCase {
     }
 
     @Test
-    public void unsupportedStyleNamesAreRemoved() {
-        assertRendering("![text](/url.png){j=502 K=101 img=2 url=5}", "<p><img src=\"/url.png\" alt=\"text\" /></p>\n");
+    public void unsupportedStyleNamesAreLeftUnchanged() {
+        assertRendering("![text](/url.png){j=502 K=101 img=2 url=5}",
+                "<p><img src=\"/url.png\" alt=\"text\" />{j=502 K=101 img=2 url=5}</p>\n");
+        assertRendering("![foo](/url.png){height=3 invalid}\n",
+                "<p><img src=\"/url.png\" alt=\"foo\" />{height=3 invalid}</p>\n");
+        assertRendering("![foo](/url.png){height=3 *test*}\n",
+                "<p><img src=\"/url.png\" alt=\"foo\" />{height=3 <em>test</em>}</p>\n");
     }
 
     @Test
@@ -94,10 +99,10 @@ public class StylesTest extends RenderingTestCase {
 
     @Test
     public void textNodesAreUnchanged() {
-        assertRendering("This is some text with random styles immediately afterwards{height=20}\n",
-                "<p>This is some text with random styles immediately afterwards</p>\n");
-        assertRendering("This is some text with random styles after a space {width=100px}\n",
-                "<p>This is some text with random styles after a space </p>\n");
+        assertRendering("x{height=3 width=4}\n", "<p>x{height=3 width=4}</p>\n");
+        assertRendering("x {height=3 width=4}\n", "<p>x {height=3 width=4}</p>\n");
+        assertRendering("\\documentclass[12pt]{article}\n", "<p>\\documentclass[12pt]{article}</p>\n");
+        assertRendering("some *text*{height=3 width=4}\n", "<p>some <em>text</em>{height=3 width=4}</p>\n");
     }
 
     @Override

@@ -11,10 +11,6 @@ import java.util.*;
 
 public class StylesAttributeProvider implements AttributeProvider {
 
-    // Only allow a defined set of styles to be used.
-    private static final Set<String> SUPPORTED_STYLES = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList("width", "height")));
-
     private StylesAttributeProvider() {
     }
 
@@ -30,11 +26,9 @@ public class StylesAttributeProvider implements AttributeProvider {
                 public void visit(CustomNode node) {
                     if (node instanceof Styles) {
                         Styles styles = (Styles) node;
-                        for (String s: styles.getStyles().split(" ")) {
+                        for (String s : styles.getStyles().split("\\s+")) {
                             String[] attribute = s.split("=");
-                            if (SUPPORTED_STYLES.contains(attribute[0].toLowerCase())) {
-                                attributes.put(attribute[0], attribute[1]);
-                            }
+                            attributes.put(attribute[0], attribute[1]);
                         }
                         // Now that we have used the styles we remove the node.
                         styles.unlink();
