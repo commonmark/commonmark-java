@@ -97,6 +97,11 @@
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-image-attributes</artifactId>
+                <version>0.14.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-ins</artifactId>
                 <version>0.14.1-SNAPSHOT</version>
             </dependency>
