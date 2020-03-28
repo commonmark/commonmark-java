@@ -34,6 +34,10 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
+            <artifactId>commonmark-ext-image-attributes</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.commonmark</groupId>
             <artifactId>commonmark-ext-yaml-front-matter</artifactId>
         </dependency>
 

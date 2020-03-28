@@ -2,6 +2,7 @@ package org.commonmark.integration;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
+import org.commonmark.ext.image.attributes.ImageAttributesExtension;
 import org.commonmark.ext.ins.InsExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -21,6 +22,7 @@ public class SpecIntegrationTest extends SpecTestCase {
 
     private static final List<Extension> EXTENSIONS = Arrays.asList(
             AutolinkExtension.create(),
+            ImageAttributesExtension.create(),
             InsExtension.create(),
             StrikethroughExtension.create(),
             TablesExtension.create(),
@@ -74,6 +76,9 @@ public class SpecIntegrationTest extends SpecTestCase {
         // YAML front matter block
         m.put("---\nFoo\n---\nBar\n---\nBaz\n", "<h2>Bar</h2>\n<p>Baz</p>\n");
         m.put("---\n---\n", "");
+
+        // Image attributes
+        m.put("![text](/url.png){height=5 width=6}", "<img src=\"/url.png\" alt=\"text\" height=\"5\" width=\"6\" />");
 
         return m;
     }
