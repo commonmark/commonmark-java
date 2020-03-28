@@ -1,6 +1,6 @@
-package org.commonmark.ext.styles.internal;
+package org.commonmark.ext.image.attributes.internal;
 
-import org.commonmark.ext.styles.Styles;
+import org.commonmark.ext.image.attributes.ImageAttributes;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Image;
@@ -9,13 +9,13 @@ import org.commonmark.renderer.html.AttributeProvider;
 
 import java.util.*;
 
-public class StylesAttributeProvider implements AttributeProvider {
+public class ImageAttributesAttributeProvider implements AttributeProvider {
 
-    private StylesAttributeProvider() {
+    private ImageAttributesAttributeProvider() {
     }
 
-    public static StylesAttributeProvider create() {
-        return new StylesAttributeProvider();
+    public static ImageAttributesAttributeProvider create() {
+        return new ImageAttributesAttributeProvider();
     }
 
     @Override
@@ -24,14 +24,14 @@ public class StylesAttributeProvider implements AttributeProvider {
             node.accept(new AbstractVisitor() {
                 @Override
                 public void visit(CustomNode node) {
-                    if (node instanceof Styles) {
-                        Styles styles = (Styles) node;
-                        for (String s : styles.getStyles().split("\\s+")) {
+                    if (node instanceof ImageAttributes) {
+                        ImageAttributes imageAttributes = (ImageAttributes) node;
+                        for (String s : imageAttributes.getAttributes().split("\\s+")) {
                             String[] attribute = s.split("=");
                             attributes.put(attribute[0], attribute[1]);
                         }
-                        // Now that we have used the styles we remove the node.
-                        styles.unlink();
+                        // Now that we have used the image attributes we remove the node.
+                        imageAttributes.unlink();
                     }
                 }
             });

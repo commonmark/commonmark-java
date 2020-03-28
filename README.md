@@ -319,11 +319,12 @@ document start here
 
 Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`.
 
-### Styles
+### Image Attributes
 
-Adds support for specifying style details (specifically height and width) for images.
+Adds support for specifying attributes (specifically height and width) for images.
 
-The style elements are given as `key=value` pairs inside curly braces `{ }` after the node to which they apply, for example:
+The attribute elements are given as `key=value` pairs inside curly braces `{ }` after the image node to which they apply,
+for example:
 ```
 ![text](/url.png){height=5 width=6}
 ```
@@ -332,10 +333,10 @@ will be rendered as:
 <img src="/url.png" alt="text" height="5" width="6" />
 ```
 
-Use class `StylesExtension` in artifact `commonmark-ext-styles`.
+Use class `StylesExtension` in artifact `commonmark-ext-image-attributes`.
 
-Note: since this extension uses curly braces `{` `}` as its delimiters (in `StylesDelimiterProcessor`), this means that other delimiter
-processors *cannot* use curly braces for delimiting.
+Note: since this extension uses curly braces `{` `}` as its delimiters (in `StylesDelimiterProcessor`), this means that
+other delimiter processors *cannot* use curly braces for delimiting.
 
 See also
 --------

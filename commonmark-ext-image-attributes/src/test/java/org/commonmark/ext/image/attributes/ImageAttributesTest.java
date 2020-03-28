@@ -1,4 +1,4 @@
-package org.commonmark.ext.styles;
+package org.commonmark.ext.image.attributes;
 
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
@@ -9,9 +9,9 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Set;
 
-public class StylesTest extends RenderingTestCase {
+public class ImageAttributesTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(StylesExtension.create());
+    private static final Set<Extension> EXTENSIONS = Collections.singleton(ImageAttributesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 

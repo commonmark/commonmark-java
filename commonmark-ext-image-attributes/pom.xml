@@ -7,9 +7,9 @@
         <version>0.14.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>commonmark-ext-styles</artifactId>
-    <name>commonmark-java extension for styles</name>
-    <description>commonmark-java extension for adding style details to images</description>
+    <artifactId>commonmark-ext-image-attributes</artifactId>
+    <name>commonmark-java extension for image attributes</name>
+    <description>commonmark-java extension for adding attributes to images</description>
 
     <dependencies>
         <dependency>
@@ -32,7 +32,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Automatic-Module-Name>org.commonmark.ext.styles</Automatic-Module-Name>
+                            <Automatic-Module-Name>org.commonmark.ext.image.attributes</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
                 </configuration>
