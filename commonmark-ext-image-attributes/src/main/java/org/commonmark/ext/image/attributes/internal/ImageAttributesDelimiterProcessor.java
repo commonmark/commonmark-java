@@ -43,7 +43,7 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
             boolean canApply = true;
             List<Node> toUnlink = new ArrayList<>();
 
-            StringBuilder attributesString = new StringBuilder();
+            Map<String, String> attributesMap = new LinkedHashMap<>();
             Node tmp = opener.getNext();
             while (tmp != null && tmp != closer) {
                 Node next = tmp.getNext();
@@ -53,7 +53,7 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
                     for (String s : attributes.split("\\s+")) {
                         String[] attribute = s.split("=");
                         if (attribute.length > 1 && SUPPORTED_ATTRIBUTES.contains(attribute[0].toLowerCase())) {
-                            attributesString.append(((Text) tmp).getLiteral());
+                            attributesMap.put(attribute[0], attribute[1]);
                             // The tmp node can be unlinked, as we have retrieved its value.
                             toUnlink.add(tmp);
                         } else {
@@ -77,8 +77,8 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
                     node.unlink();
                 }
 
-                if (attributesString.length() > 0) {
-                    ImageAttributes imageAttributes = new ImageAttributes(attributesString.toString());
+                if (attributesMap.size() > 0) {
+                    ImageAttributes imageAttributes = new ImageAttributes(attributesMap);
 
                     // The new node is added as a child of the image node to which the attributes apply.
                     Node nodeToStyle = opener.getPrevious();
