@@ -28,7 +28,9 @@ public class ImageAttributesAttributeProvider implements AttributeProvider {
                         ImageAttributes imageAttributes = (ImageAttributes) node;
                         for (String s : imageAttributes.getAttributes().split("\\s+")) {
                             String[] attribute = s.split("=");
-                            attributes.put(attribute[0], attribute[1]);
+                            if (attribute.length > 1) {
+                                attributes.put(attribute[0], attribute[1]);
+                            }
                         }
                         // Now that we have used the image attributes we remove the node.
                         imageAttributes.unlink();

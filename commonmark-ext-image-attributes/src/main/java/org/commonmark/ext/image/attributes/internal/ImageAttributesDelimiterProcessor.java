@@ -52,8 +52,7 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
                     String attributes = ((Text) tmp).getLiteral();
                     for (String s : attributes.split("\\s+")) {
                         String[] attribute = s.split("=");
-                        // Check if the attribute is in SUPPORTED_STYLES.
-                        if (SUPPORTED_ATTRIBUTES.contains(attribute[0].toLowerCase())) {
+                        if (attribute.length > 1 && SUPPORTED_ATTRIBUTES.contains(attribute[0].toLowerCase())) {
                             attributesString.append(((Text) tmp).getLiteral());
                             // The tmp node can be unlinked, as we have retrieved its value.
                             toUnlink.add(tmp);
@@ -97,35 +96,5 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
             opener.getPrevious().insertAfter(new Text("" + getOpeningCharacter()));
         }
         closer.getParent().appendChild(new Text("" + getClosingCharacter()));
-    }
-
-    /**
-     * Check that the attributes can be applied to the previous node.
-     * @param opener the text node that contained the opening delimiter
-     * @param closer the text node that contained the closing delimiter
-     * @return true if the previous node is an Image and the attributes are in the set of {@link #SUPPORTED_ATTRIBUTES}
-     */
-    private boolean canApply(Text opener, Text closer) {
-        if (!(opener.getPrevious() instanceof Image)) {
-            return false;
-        }
-
-        Node tmp = opener.getNext();
-        while (tmp != null && tmp != closer) {
-            Node next = tmp.getNext();
-            if (tmp instanceof Text) {
-                String styles = ((Text) tmp).getLiteral();
-                for (String s : styles.split("\\s+")) {
-                    String[] attribute = s.split("=");
-                    if (!SUPPORTED_ATTRIBUTES.contains(attribute[0].toLowerCase())) {
-                        return false;
-                    }
-                }
-            } else {
-                return false;
-            }
-            tmp = next;
-        }
-        return true;
     }
 }

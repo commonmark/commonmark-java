@@ -61,6 +61,12 @@ public class ImageAttributesTest extends RenderingTestCase {
     }
 
     @Test
+    public void styleWithNoValueIsIgnored() {
+        assertRendering("![text](/url.png){height}",
+                "<p><img src=\"/url.png\" alt=\"text\" />{height}</p>\n");
+    }
+
+    @Test
     public void repeatedStyleNameUsesFinalOne() {
         assertRendering("![text](/url.png){height=4 height=5 width=1 height=6}",
                 "<p><img src=\"/url.png\" alt=\"text\" height=\"6\" width=\"1\" /></p>\n");    }
