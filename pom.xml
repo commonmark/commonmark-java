@@ -27,6 +27,7 @@
         <module>commonmark-ext-heading-anchor</module>
         <module>commonmark-ext-image-attributes</module>
         <module>commonmark-ext-ins</module>
+        <module>commonmark-ext-task-list-items</module>
         <module>commonmark-ext-yaml-front-matter</module>
         <module>commonmark-integration-test</module>
         <module>commonmark-test-util</module>
@@ -118,6 +119,11 @@
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-heading-anchor</artifactId>
+                <version>0.14.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-task-list-items</artifactId>
                 <version>0.14.1-SNAPSHOT</version>
             </dependency>
             <dependency>
