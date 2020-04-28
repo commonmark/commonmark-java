@@ -26,9 +26,8 @@ public class ImageAttributesAttributeProvider implements AttributeProvider {
                 public void visit(CustomNode node) {
                     if (node instanceof ImageAttributes) {
                         ImageAttributes imageAttributes = (ImageAttributes) node;
-                        Map<String, String> attributesMap = imageAttributes.getAttributes();
-                        for (String key : attributesMap.keySet()) {
-                            attributes.put(key, attributesMap.get(key));
+                        for (Map.Entry<String, String> entry : imageAttributes.getAttributes().entrySet()) {
+                            attributes.put(entry.getKey(), entry.getValue());
                         }
                         // Now that we have used the image attributes we remove the node.
                         imageAttributes.unlink();
