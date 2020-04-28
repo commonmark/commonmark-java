@@ -7,6 +7,7 @@ import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,13 +29,13 @@ public class TaskListItemHtmlNodeRenderer implements NodeRenderer {
     @Override
     public void render(Node node) {
         if (node instanceof TaskListItemMarker) {
-            Map<String, String> attributes = context.extendAttributes(node, "input", Collections.<String, String>emptyMap());
+            Map<String, String> attributes = new LinkedHashMap<>();
             attributes.put("type", "checkbox");
             attributes.put("disabled", "");
             if (((TaskListItemMarker) node).isChecked()) {
                 attributes.put("checked", "");
             }
-            html.tag("input", attributes);
+            html.tag("input", context.extendAttributes(node, "input", attributes));
             // Add a space after the input tag (as the next text node has been trimmed)
             html.text(" ");
             renderChildren(node);

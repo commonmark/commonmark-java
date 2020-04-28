@@ -93,13 +93,7 @@ public class TaskListItemsTest extends RenderingTestCase {
         assertRendering("+ {x} sorry not sorry\n", "<ul>\n<li>{x} sorry not sorry</li>\n</ul>\n");
         assertRendering("+ [[x]] nooo\n", "<ul>\n<li>[[x]] nooo</li>\n</ul>\n");
         assertRendering("+ text before [x] is not a task\n", "<ul>\n<li>text before [x] is not a task</li>\n</ul>\n");
-    }
-
-    @Test
-    public void withoutText() {
-        assertRendering("* [x] \n" +
-                        "* [ ] \n",
-                "<ul>\n<li>" + HTML_CHECKED + " </li>\n<li>" + HTML_UNCHECKED + " </li>\n</ul>\n");
+        assertRendering("* [x]  \n* [ ]  \n", "<ul>\n<li>[x]</li>\n<li>[ ]</li>\n</ul>\n");
     }
 
     @Override

@@ -2,10 +2,7 @@ package org.commonmark.ext.task.list.items;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.task.list.items.internal.TaskListItemHtmlNodeRenderer;
-import org.commonmark.ext.task.list.items.internal.TaskListItemInlineParser;
-import org.commonmark.parser.InlineParser;
-import org.commonmark.parser.InlineParserContext;
-import org.commonmark.parser.InlineParserFactory;
+import org.commonmark.ext.task.list.items.internal.TaskListItemPostProcessor;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
@@ -31,13 +28,7 @@ public class TaskListItemsExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        parserBuilder.inlineParserFactory(new InlineParserFactory() {
-
-            @Override
-            public InlineParser create(InlineParserContext inlineParserContext) {
-                return new TaskListItemInlineParser(inlineParserContext);
-            }
-        });
+        parserBuilder.postProcessor(new TaskListItemPostProcessor());
     }
 
     @Override
