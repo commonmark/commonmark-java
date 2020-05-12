@@ -93,6 +93,75 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void sanitizedUrlsShouldFilterInvalidHexHtmlReferences() {
+        String invalidHexEncodedLink = "&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29";
+        Paragraph paragraphWithHexEncoding = new Paragraph();
+        Link linkWithHexEncoding = new Link();
+        linkWithHexEncoding.setDestination(invalidHexEncodedLink);
+        paragraphWithHexEncoding.appendChild(linkWithHexEncoding);
+
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraphWithHexEncoding));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldFilterInvalidDecimalHtmlReferences() {
+        String invalidDecimalEncodedLink = "&#106&#97&#118&#97&#115&#99&#114&#105&#112&#116&#58&#97&#108&#101&#114&#116&#40&#39&#88&#83&#83&#39&#41";
+        Paragraph paragraphWithDecimalEncoding = new Paragraph();
+        Link linkWithDecimalEncoding = new Link();
+        linkWithDecimalEncoding.setDestination(invalidDecimalEncodedLink);
+        paragraphWithDecimalEncoding.appendChild(linkWithDecimalEncoding);
+
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraphWithDecimalEncoding));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldFilterInvalidDecimalHtmlReferencesWithPadding() {
+        String invalidDecimalEncodedLink = "&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041";
+        Paragraph paragraphWithDecimalEncoding = new Paragraph();
+        Link linkWithDecimalEncoding = new Link();
+        linkWithDecimalEncoding.setDestination(invalidDecimalEncodedLink);
+        paragraphWithDecimalEncoding.appendChild(linkWithDecimalEncoding);
+
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraphWithDecimalEncoding));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldFilterEmbeddedEncodedTab() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("&#x6A&#x61&#x09&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldFilterEmbeddedNewLine() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("&#x6A&#x61&#x0A&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldFilterNullCharacters() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("&#x6A&#x61&#x00&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+    }
+
+    @Test
+    public void sanitizedUrlsShouldFilterInvalidCharacters() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("&#x6A&#x09&#x61&#x00&#x76&#x61&#x0A&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+    }
+
+    @Test
     public void percentEncodeUrlDisabled() {
         assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo&amp;bar)")));
         assertEquals("<p><a href=\"ä\">a</a></p>\n", defaultRenderer().render(parse("[a](ä)")));
