@@ -338,6 +338,29 @@ Use class `StylesExtension` in artifact `commonmark-ext-image-attributes`.
 Note: since this extension uses curly braces `{` `}` as its delimiters (in `StylesDelimiterProcessor`), this means that
 other delimiter processors *cannot* use curly braces for delimiting.
 
+### Task List Items
+
+Adds support for tasks as list items.
+
+A task can be represented as a list item where the first non-whitespace character is a left bracket `[`, then a single
+whitespace character or the letter `x` in lowercase or uppercase, then a right bracket `]` followed by at least one
+whitespace before any other content.
+
+For example:
+```
+- [ ] task #1
+- [x] task #2
+```
+will be rendered as:
+```
+<ul>
+<li><input type="checkbox" disabled=""> task #1</li>
+<li><input type="checkbox" disabled="" checked=""> task #2</li>
+</ul>
+```
+
+Use class `TaskListItemsExtension` in artifact `commonmark-ext-task-list-items`.
+
 See also
 --------
 
