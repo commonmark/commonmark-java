@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.15.0] - 2020-05-15
+### Added
+- Extension for width/height attributes for images, thanks @dohertyfjatl
+  - Syntax: `![text](/url.png){width=640 height=480}`
+  - Use class `ImageAttributesExtension` in artifact `commonmark-ext-image-attributes`
+- Extension for task lists (GitHub-style), thanks @dohertyfjatl
+  - Syntax:
+    ```
+    - [x] task #1` 
+    - [ ] task #2` 
+    ```
+  - Use class `TaskListItemsExtension` in artifact `commonmark-ext-task-list-items`
+
 ## [0.14.0] - 2020-01-22
 ### Added
 - Add `sanitizeUrls` to `HtmlRenderer.Builder` to enable sanitizing URLs
@@ -269,6 +282,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.15.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.14.0...commonmark-parent-0.15.0
 [0.14.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.13.1...commonmark-parent-0.14.0
 [0.13.1]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.13.0...commonmark-parent-0.13.1
 [0.13.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.12.1...commonmark-parent-0.13.0

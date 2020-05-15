@@ -326,14 +326,14 @@ Adds support for specifying attributes (specifically height and width) for image
 The attribute elements are given as `key=value` pairs inside curly braces `{ }` after the image node to which they apply,
 for example:
 ```
-![text](/url.png){height=5 width=6}
+![text](/url.png){width=640 height=480}
 ```
 will be rendered as:
 ```
-<img src="/url.png" alt="text" height="5" width="6" />
+<img src="/url.png" alt="text" width="640" height="480" />
 ```
 
-Use class `StylesExtension` in artifact `commonmark-ext-image-attributes`.
+Use class `ImageAttributesExtension` in artifact `commonmark-ext-image-attributes`.
 
 Note: since this extension uses curly braces `{` `}` as its delimiters (in `StylesDelimiterProcessor`), this means that
 other delimiter processors *cannot* use curly braces for delimiting.
