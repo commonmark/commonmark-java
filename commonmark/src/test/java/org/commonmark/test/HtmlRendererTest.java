@@ -51,6 +51,13 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void characterReferencesWithoutSemicolonsShouldNotBeParsedShouldBeEscaped() {
+        String input = "[example](&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29)";
+        String rendered = defaultRenderer().render(parse(input));
+        assertEquals("<p><a href=\"&amp;#x6A&amp;#x61&amp;#x76&amp;#x61&amp;#x73&amp;#x63&amp;#x72&amp;#x69&amp;#x70&amp;#x74&amp;#x3A&amp;#x61&amp;#x6C&amp;#x65&amp;#x72&amp;#x74&amp;#x28&amp;#x27&amp;#x58&amp;#x53&amp;#x53&amp;#x27&amp;#x29\">example</a></p>\n", rendered);
+    }
+
+    @Test
     public void attributeEscaping() {
         Paragraph paragraph = new Paragraph();
         Link link = new Link();
