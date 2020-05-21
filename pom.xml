@@ -205,7 +205,8 @@
 
     <scm>
         <connection>scm:git:git@github.com:atlassian/commonmark-java.git</connection>
-        <developerConnection>scm:git:git@github.com:atlassian/commonmark-java.git</developerConnection>
+        <!-- Push URL is used for pushing commits and tag when doing a release on internal systems, see https://maven.apache.org/scm/git.html -->
+        <developerConnection>scm:git:[fetch=]git@github.com:atlassian/commonmark-java.git[push=]git@bitbucket.org:atlassian/commonmark-java.git</developerConnection>
         <url>https://github.com/atlassian/commonmark-java</url>
         <tag>HEAD</tag>
     </scm>
