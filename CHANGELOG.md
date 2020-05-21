@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## [0.15.0] - 2020-05-15
+## [0.15.0] - 2020-05-21
 ### Added
 - Extension for width/height attributes for images, thanks @dohertyfjatl
   - Syntax: `![text](/url.png){width=640 height=480}`
