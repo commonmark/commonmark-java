@@ -16,6 +16,8 @@ import org.commonmark.renderer.html.HtmlRenderer;
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
  * {@link HtmlRenderer.Builder#extensions(Iterable)}).
  * </p>
+ *
+ * @since 0.15.0
  */
 public class TaskListItemsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
 
