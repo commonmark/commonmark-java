@@ -4,6 +4,7 @@ import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
@@ -17,6 +18,8 @@ public class InsTest extends RenderingTestCase {
     private static final Set<Extension> EXTENSIONS = Collections.singleton(InsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer CONTENT_RENDERER = TextContentRenderer.builder()
+            .extensions(EXTENSIONS).build();
 
     @Test
     public void onePlusIsNotEnough() {
@@ -78,6 +81,12 @@ public class InsTest extends RenderingTestCase {
         Ins ins = (Ins) document.getFirstChild().getFirstChild();
         assertEquals("++", ins.getOpeningDelimiter());
         assertEquals("++", ins.getClosingDelimiter());
+    }
+
+    @Test
+    public void textContentRenderer() {
+        Node document = PARSER.parse("++foo++");
+        assertEquals("foo", CONTENT_RENDERER.render(document));
     }
 
     @Override
