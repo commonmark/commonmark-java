@@ -11,7 +11,7 @@
 
     <groupId>com.atlassian.commonmark</groupId>
     <artifactId>commonmark-parent</artifactId>
-    <version>0.15.1-SNAPSHOT</version>
+    <version>0.15.1</version>
     <name>commonmark-java parent</name>
     <description>
         Java implementation of CommonMark, a specification of the Markdown format for turning plain text into formatted
@@ -89,52 +89,52 @@
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-autolink</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-image-attributes</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-ins</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-tables</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-heading-anchor</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-task-list-items</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-ext-yaml-front-matter</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark-test-util</artifactId>
-                <version>0.15.1-SNAPSHOT</version>
+                <version>0.15.1</version>
             </dependency>
 
             <!-- Common test dependencies -->
@@ -208,7 +208,7 @@
         <!-- Push URL is used for pushing commits and tag when doing a release on internal systems, see https://maven.apache.org/scm/git.html -->
         <developerConnection>scm:git:[fetch=]git@github.com:atlassian/commonmark-java.git[push=]git@bitbucket.org:atlassian/commonmark-java.git</developerConnection>
         <url>https://github.com/atlassian/commonmark-java</url>
-        <tag>HEAD</tag>
+        <tag>commonmark-parent-0.15.1</tag>
     </scm>
 
 </project>
