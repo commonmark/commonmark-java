@@ -8,6 +8,7 @@ Java library for parsing and rendering [Markdown] text according to the
 [![javadoc](https://www.javadoc.io/badge/com.atlassian.commonmark/commonmark.svg?color=blue)](https://www.javadoc.io/doc/com.atlassian.commonmark/commonmark)
 [![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
 [![codecov](https://codecov.io/gh/atlassian/commonmark-java/branch/master/graph/badge.svg)](https://codecov.io/gh/atlassian/commonmark-java)
+[![SourceSpy Dashboard](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/atlassiancommonmarkjava/)
 
 Introduction
 ------------
@@ -370,7 +371,7 @@ See also
 Contributing
 ------------
 
-See CONTRIBUTING.md file.
+See [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 License
 -------

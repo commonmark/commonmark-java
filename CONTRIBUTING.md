@@ -16,6 +16,14 @@ existing issues with label "help wanted".
 For bigger changes, make sure you start a discussion first by creating
 an issue and explaining the intended change.
 
+The [sourcespy dashboard](https://sourcespy.com/github/atlassiancommonmarkjava/)
+provides a high level overview of the repository including
+[class diagram](https://sourcespy.com/github/atlassiancommonmarkjava/xx-omodel-.html),
+[module dependencies](https://sourcespy.com/github/atlassiancommonmarkjava/xx-omodulesc-.html),
+[module hierarchy](https://sourcespy.com/github/atlassiancommonmarkjava/xx-omodules-.html),
+[external libraries](https://sourcespy.com/github/atlassiancommonmarkjava/xx-ojavalibs-.html),
+and other components of the system.
+
 CLA
 ---
 
