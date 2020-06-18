@@ -22,4 +22,6 @@ public interface InlineParserContext {
      * @return the definition if one exists, {@code null} otherwise
      */
     LinkReferenceDefinition getLinkReferenceDefinition(String label);
+
+    List<InlineParser.NodeExtension> nodeExtensions();
 }

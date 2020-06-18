@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +24,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -120,6 +123,21 @@ public class ParserTest {
         String input = "**bold** **bold** ~~strikethrough~~";
 
         assertThat(parser.parse(input).getFirstChild().getFirstChild(), instanceOf(ThematicBreak.class));
+    }
+
+    @Test
+    public void convertLineToCustomNodeByNodeExtensionHandler() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(new InlineBreakdown(new Image()));
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+        String input = "some text to be converted to image node by node extension handler";
+
+        Node document = parser.parse(input);
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Image.class));
     }
 
     @Test

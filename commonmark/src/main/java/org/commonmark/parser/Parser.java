@@ -31,17 +31,20 @@ public class Parser {
     private final List<DelimiterProcessor> delimiterProcessors;
     private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
+    private final List<InlineParser.NodeExtension> nodeExtensions;
 
     private Parser(Builder builder) {
         this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.enabledBlockTypes);
         this.inlineParserFactory = builder.getInlineParserFactory();
         this.postProcessors = builder.postProcessors;
         this.delimiterProcessors = builder.delimiterProcessors;
+        this.nodeExtensions = builder.nodeExtensions;
 
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
         this.inlineParserFactory.create(new InlineParserContextImpl(delimiterProcessors,
-                Collections.<String, LinkReferenceDefinition>emptyMap()));
+                Collections.<String, LinkReferenceDefinition>emptyMap(),
+                nodeExtensions));
     }
 
     /**
@@ -99,7 +102,7 @@ public class Parser {
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, delimiterProcessors);
+        return new DocumentParser(blockParserFactories, inlineParserFactory, delimiterProcessors, nodeExtensions);
     }
 
     private Node postProcess(Node document) {
@@ -115,6 +118,7 @@ public class Parser {
     public static class Builder {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
+        private final List<InlineParser.NodeExtension> nodeExtensions = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
         private InlineParserFactory inlineParserFactory;
@@ -256,6 +260,11 @@ public class Parser {
                     return new InlineParserImpl(inlineParserContext);
                 }
             };
+        }
+
+        public Builder nodeExtension(InlineParser.NodeExtension nodeExtension) {
+            this.nodeExtensions.add(nodeExtension);
+            return this;
         }
     }
 

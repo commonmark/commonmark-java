@@ -6,12 +6,26 @@ import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.node.*;
+import org.commonmark.node.Code;
+import org.commonmark.node.HardLineBreak;
+import org.commonmark.node.HtmlInline;
+import org.commonmark.node.Image;
+import org.commonmark.node.Link;
+import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.node.Node;
+import org.commonmark.node.SoftLineBreak;
+import org.commonmark.node.Text;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +70,7 @@ public class InlineParserImpl implements InlineParser {
     private final BitSet delimiterCharacters;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final InlineParserContext context;
+    private final List<NodeExtension> nodeExtensions;
 
     private String input;
     private int index;
@@ -77,6 +92,7 @@ public class InlineParserImpl implements InlineParser {
         this.specialCharacters = calculateSpecialCharacters(delimiterCharacters);
 
         this.context = inlineParserContext;
+        this.nodeExtensions = inlineParserContext.nodeExtensions();
     }
 
     public static BitSet calculateDelimiterCharacters(Set<Character> characters) {
@@ -147,6 +163,11 @@ public class InlineParserImpl implements InlineParser {
     @Override
     public void parse(String content, Node block) {
         reset(content.trim());
+
+        List<Node> nodes = customNodesByExtensions();
+        for (Node node : nodes) {
+            block.appendChild(node);
+        }
 
         Node previous = null;
         while (true) {
@@ -382,6 +403,41 @@ public class InlineParserImpl implements InlineParser {
         }
 
         return node;
+    }
+
+    /**
+     * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
+     */
+    private List<Node> customNodesByExtensions() {
+//        DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar);
+//        if (res == null) {
+//            return null;
+//        }
+//        int length = res.count;
+        int startIndex = index;
+//
+//        index += length;
+        List<Node> nodes = new ArrayList<>();
+
+        for (NodeExtension nodeExtension : nodeExtensions) {
+            List<NodeExtension.InlineBreakdown> inlineBreakdowns = nodeExtension.lookup(input);
+
+            for (NodeExtension.InlineBreakdown breakdown : inlineBreakdowns) {
+                nodes.add(breakdown.getNode());
+            }
+        }
+
+//        Text node = text(input);
+
+        // Add entry to stack for this opener
+//        lastDelimiter = new Delimiter(node, delimiterChar, res.canOpen, res.canClose, lastDelimiter);
+//        lastDelimiter.length = length;
+//        lastDelimiter.originalLength = length;
+//        if (lastDelimiter.previous != null) {
+//            lastDelimiter.previous.next = lastDelimiter;
+//        }
+
+        return nodes;
     }
 
     /**

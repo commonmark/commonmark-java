@@ -63,6 +63,7 @@ public class DocumentParser implements ParserState {
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserFactory inlineParserFactory;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final List<InlineParser.NodeExtension> nodeExtensions;
     private final DocumentBlockParser documentBlockParser;
     private final Map<String, LinkReferenceDefinition> definitions = new LinkedHashMap<>();
 
@@ -71,10 +72,12 @@ public class DocumentParser implements ParserState {
     private Set<BlockParser> allBlockParsers = new LinkedHashSet<>();
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
-                          List<DelimiterProcessor> delimiterProcessors) {
+                          List<DelimiterProcessor> delimiterProcessors,
+                          List<InlineParser.NodeExtension> nodeExtensions) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.delimiterProcessors = delimiterProcessors;
+        this.nodeExtensions = nodeExtensions;
 
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(this.documentBlockParser);
@@ -415,7 +418,7 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        InlineParserContextImpl context = new InlineParserContextImpl(delimiterProcessors, definitions);
+        InlineParserContextImpl context = new InlineParserContextImpl(delimiterProcessors, definitions, nodeExtensions);
         InlineParser inlineParser = inlineParserFactory.create(context);
 
         for (BlockParser blockParser : allBlockParsers) {
