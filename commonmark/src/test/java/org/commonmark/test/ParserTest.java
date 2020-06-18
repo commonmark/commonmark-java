@@ -128,13 +128,12 @@ public class ParserTest {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(new InlineBreakdown(new Image(), 0, 64));
+                return singletonList(new InlineBreakdown(new Image(), 0, 8));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
-        String input = "some text to be converted to image node by node extension handler";
 
-        Node document = parser.parse(input);
+        Node document = parser.parse("some text");
         assertThat(document.getFirstChild().getFirstChild(), instanceOf(Image.class));
     }
 
@@ -147,11 +146,11 @@ public class ParserTest {
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
-        String input = "CONVERTED_TO_IMAGE some";
 
-        Node document = parser.parse(input);
+        Node document = parser.parse("CONVERTED_TO_IMAGE some");
         assertThat(document.getFirstChild().getFirstChild(), instanceOf(Image.class));
         assertThat(document.getFirstChild().getLastChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getLastChild()), equalTo(" some"));
     }
 
     @Test
@@ -163,10 +162,10 @@ public class ParserTest {
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
-        String input = "some CONVERTED_TO_IMAGE";
 
-        Node document = parser.parse(input);
+        Node document = parser.parse("some CONVERTED_TO_IMAGE");
         assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some "));
         assertThat(document.getFirstChild().getLastChild(), instanceOf(Image.class));
     }
 
@@ -182,6 +181,8 @@ public class ParserTest {
 
     // test to guarantee customExtension priority over DelimiterProcessor
 
+
+    // benchmark with custom vs without custom
 
 
 
@@ -217,7 +218,14 @@ public class ParserTest {
             assertThat(n, notNullValue());
             n = n.getFirstChild();
         }
-        return ((Text) n).getLiteral();
+        return getLiteral(n);
+    }
+
+    private String getLiteral(Node node) {
+        if (node instanceof Text) {
+            return ((Text)node).getLiteral();
+        }
+        return node.toString();
     }
 
     private static class DashBlock extends CustomBlock {
