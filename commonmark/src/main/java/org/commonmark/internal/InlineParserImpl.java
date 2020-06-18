@@ -19,6 +19,7 @@ import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -164,14 +165,22 @@ public class InlineParserImpl implements InlineParser {
     public void parse(String content, Node block) {
         reset(content.trim());
 
-        List<Node> nodes = customNodesByExtensions();
-        for (Node node : nodes) {
-            block.appendChild(node);
+        boolean[] filledIndex = new boolean[input.length()];
+        HashMap<Integer, Node> nodeExtensionsByBeginIndex = new HashMap<>();
+        ArrayDeque<NodeExtension.InlineBreakdown> customNodes = new ArrayDeque<>();
+
+        for (NodeExtension.InlineBreakdown inlineBreakdownNode : customNodesByExtensions()) {
+            customNodes.push(inlineBreakdownNode);
+            nodeExtensionsByBeginIndex.put(inlineBreakdownNode.getBeginIndex(), inlineBreakdownNode.getNode());
+
+            for (int i = inlineBreakdownNode.getBeginIndex(); i <= inlineBreakdownNode.getEndIndex(); i++) {
+                filledIndex[i] = true;
+            }
         }
 
         Node previous = null;
         while (true) {
-            Node node = parseInline(previous);
+            Node node = parseInline(previous, filledIndex, nodeExtensionsByBeginIndex, customNodes);
             previous = node;
             if (node != null) {
                 block.appendChild(node);
@@ -205,13 +214,28 @@ public class InlineParserImpl implements InlineParser {
      * On success, return the new inline node.
      * On failure, return null.
      */
-    private Node parseInline(Node previous) {
+    private Node parseInline(Node previous, boolean[] filledIndex, Map<Integer, Node> nodeExtensionsByBeginIndex,
+                             ArrayDeque<NodeExtension.InlineBreakdown> customNodes) {
+        Node node = nodeExtensionsByBeginIndex.get(index);
+        if (node != null) {
+            customNodes.pollFirst();
+            index++;
+            return node;
+        }
+
+        while (index < filledIndex.length && filledIndex[index]) {
+            index++;
+        }
+
+        int nextBeginIndexForCustomNode = customNodes.isEmpty()
+                ? input.length()
+                : customNodes.getFirst().getBeginIndex();
+
         char c = peek();
         if (c == '\0') {
             return null;
         }
 
-        Node node;
         switch (c) {
             case '\n':
                 node = parseNewline(previous);
@@ -246,7 +270,7 @@ public class InlineParserImpl implements InlineParser {
                     DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
                     node = parseDelimiters(delimiterProcessor, c);
                 } else {
-                    node = parseString();
+                    node = parseString(Math.min(nextBeginIndexForCustomNode, input.length()));
                 }
                 break;
         }
@@ -405,37 +429,12 @@ public class InlineParserImpl implements InlineParser {
         return node;
     }
 
-    /**
-     * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
-     */
-    private List<Node> customNodesByExtensions() {
-//        DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar);
-//        if (res == null) {
-//            return null;
-//        }
-//        int length = res.count;
-        int startIndex = index;
-//
-//        index += length;
-        List<Node> nodes = new ArrayList<>();
+    private List<NodeExtension.InlineBreakdown> customNodesByExtensions() {
+        List<NodeExtension.InlineBreakdown> nodes = new ArrayList<>();
 
         for (NodeExtension nodeExtension : nodeExtensions) {
-            List<NodeExtension.InlineBreakdown> inlineBreakdowns = nodeExtension.lookup(input);
-
-            for (NodeExtension.InlineBreakdown breakdown : inlineBreakdowns) {
-                nodes.add(breakdown.getNode());
-            }
+            nodes.addAll(nodeExtension.lookup(input));
         }
-
-//        Text node = text(input);
-
-        // Add entry to stack for this opener
-//        lastDelimiter = new Delimiter(node, delimiterChar, res.canOpen, res.canClose, lastDelimiter);
-//        lastDelimiter.length = length;
-//        lastDelimiter.originalLength = length;
-//        if (lastDelimiter.previous != null) {
-//            lastDelimiter.previous.next = lastDelimiter;
-//        }
 
         return nodes;
     }
@@ -708,10 +707,10 @@ public class InlineParserImpl implements InlineParser {
 
     /**
      * Parse a run of ordinary characters, or a single character with a special meaning in markdown, as a plain string.
+     * @param length
      */
-    private Node parseString() {
+    private Node parseString(int length) {
         int begin = index;
-        int length = input.length();
         while (index != length) {
             if (specialCharacters.get(input.charAt(index))) {
                 break;

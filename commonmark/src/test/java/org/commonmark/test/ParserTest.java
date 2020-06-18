@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
@@ -130,7 +128,7 @@ public class ParserTest {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(new InlineBreakdown(new Image()));
+                return singletonList(new InlineBreakdown(new Image(), 0, 64));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
@@ -139,6 +137,53 @@ public class ParserTest {
         Node document = parser.parse(input);
         assertThat(document.getFirstChild().getFirstChild(), instanceOf(Image.class));
     }
+
+    @Test
+    public void convertLineByNodeExtensionWithCustomNodeInTheLineBegin() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(new InlineBreakdown(new Image(), 0, 17));
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+        String input = "CONVERTED_TO_IMAGE some";
+
+        Node document = parser.parse(input);
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Image.class));
+        assertThat(document.getFirstChild().getLastChild(), instanceOf(Text.class));
+    }
+
+    @Test
+    public void convertLineByNodeExtensionWithCustomNodeInTheLineEnd() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(new InlineBreakdown(new Image(), 5, 22));
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+        String input = "some CONVERTED_TO_IMAGE";
+
+        Node document = parser.parse(input);
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
+        assertThat(document.getFirstChild().getLastChild(), instanceOf(Image.class));
+    }
+
+    // test custom in the middle of text // some CONVERTED_TO_IMAGE foo NEW_TO_IMAGE too
+
+    // test more then one in the same line
+
+    // test wrong begin/end index by the extension parser
+
+    // guarantee sort List<InlineBreakdown> by beginIndex
+
+    // test more then one extension registered
+
+    // test to guarantee customExtension priority over DelimiterProcessor
+
+
+
 
     @Test
     public void threading() throws Exception {

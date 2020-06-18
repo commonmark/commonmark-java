@@ -19,16 +19,26 @@ public interface InlineParser {
         List<InlineBreakdown> lookup(String inline);
 
         class InlineBreakdown {
-            int startIndex;
-            int endIndex;
-            Node node;
+            private final Node node;
+            private final int beginIndex;
+            private final int endIndex;
 
-            public InlineBreakdown(Node node) {
+            public InlineBreakdown(Node node, int beginIndex, int endIndex) {
                 this.node = node;
+                this.beginIndex = beginIndex;
+                this.endIndex = endIndex;
             }
 
             public Node getNode() {
                 return this.node;
+            }
+
+            public int getBeginIndex() {
+                return beginIndex;
+            }
+
+            public int getEndIndex() {
+                return endIndex;
             }
         }
     }
