@@ -1,6 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.node.*;
+import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
@@ -12,10 +13,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class UsageExampleTest {
 
@@ -59,6 +65,28 @@ public class UsageExampleTest {
 
         Node document = parser.parse("![text](/url.png)");
         assertEquals("<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n",
+                renderer.render(document));
+    }
+
+    @Test
+    public void customizeNodeImageFromDifferentTextSyntax() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(InlineBreakdown.of(new Image("/url.png", "image"), 10, 25));
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+        HtmlRenderer renderer = HtmlRenderer.builder()
+                .attributeProviderFactory(new AttributeProviderFactory() {
+                    public AttributeProvider create(AttributeProviderContext context) {
+                        return new ImageAttributeProvider();
+                    }
+                })
+                .build();
+
+        Node document = parser.parse("Some text ~image~/url.png");
+        assertEquals("<p>Some text <img src=\"/url.png\" alt=\"\" title=\"image\" class=\"border\" /></p>\n",
                 renderer.render(document));
     }
 

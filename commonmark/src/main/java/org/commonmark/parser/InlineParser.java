@@ -15,8 +15,17 @@ public interface InlineParser {
      */
     void parse(String input, Node node);
 
+    /**
+     *  Extension for inline content
+     */
     interface NodeExtension {
-        List<InlineBreakdown> lookup(String inline);
+        /**
+         * The listing contains the all nodes that should be applied to this current line with the respective line positions
+         *
+         * @param input is the content to be parsed as custom nodes
+         * @return list of nodes with their location in the current line
+         */
+        List<InlineBreakdown> lookup(String input);
 
         class InlineBreakdown {
             public static final InlineBreakdown EMPTY =
@@ -43,6 +52,16 @@ public interface InlineParser {
                 return endIndex;
             }
 
+
+            /**
+             * Inline Object to provide the {@code node} and node's line position
+             * @param node such as the {@code Image}, {@code Link}, etc.
+             * @param beginIndex as String.subString usage, the beginning index, inclusive.
+             * @param endIndex as String.subString usage, the ending index, exclusive.
+             * @exception  IllegalArgumentException  if the {@code endIndex} < {@code beginIndex}
+             * @return {@code InlineBreakdown} built,
+             *          if {@code beginIndex} == {@code endIndex} it will considered empty object
+             */
             public static InlineBreakdown of(Node node, int beginIndex, int endIndex) {
                 if (endIndex < beginIndex){
                     throw new IllegalArgumentException("beginIndex "+ beginIndex +" must be greater then endIndex " + endIndex);
