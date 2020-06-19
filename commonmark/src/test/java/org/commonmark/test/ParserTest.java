@@ -348,6 +348,26 @@ public class ParserTest {
     }
 
     @Test
+    public void convertLineByNodeExtensionShouldIgnoreTheNextComponentIfStartingEqualTheNextOneInTheList() {
+        final Node image1 = new Image();
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                List<InlineBreakdown> inlinesBreakdown = new ArrayList<>();
+                inlinesBreakdown.add(InlineBreakdown.of(image1, 0, 3));
+                inlinesBreakdown.add(InlineBreakdown.of(new Image(), 0, 4));
+                return inlinesBreakdown;
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+
+        Node document = parser.parse("foo jack some");
+        assertThat(document.getFirstChild().getFirstChild(), equalTo(image1));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild().getNext()),
+                equalTo(" jack some"));
+    }
+
+    @Test
     public void threading() throws Exception {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
