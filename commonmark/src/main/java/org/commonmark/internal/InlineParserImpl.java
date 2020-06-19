@@ -213,15 +213,17 @@ public class InlineParserImpl implements InlineParser {
         NodeExtension.InlineBreakdown inlineBreakdown = customNodes.isEmpty()
                 ? NodeExtension.InlineBreakdown.EMPTY
                 : customNodes.getFirst();
+        int nextBeginIndexForCustomNode = inlineBreakdown.getBeginIndex();
 
         if (inlineBreakdown.getBeginIndex() == index) {
-            while (index <= inlineBreakdown.getEndIndex()) {
+            while (index < inlineBreakdown.getEndIndex()) {
                 index++;
             }
             return customNodes.pollFirst().getNode();
+        } else if (inlineBreakdown.getBeginIndex() < index) {
+            customNodes.pollFirst();
+            nextBeginIndexForCustomNode = input.length();
         }
-
-        int nextBeginIndexForCustomNode = inlineBreakdown.getBeginIndex();
 
         char c = peek();
         if (c == '\0') {

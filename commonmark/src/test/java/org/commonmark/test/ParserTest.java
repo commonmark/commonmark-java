@@ -186,7 +186,7 @@ public class ParserTest {
     }
 
     @Test
-    public void convertLineByNodeExtensionWithCustomNodeInTheLineBeginOneSingleCharecter() {
+    public void convertLineByNodeExtensionWithCustomNodeInTheLineBeginOneSingleCharacter() {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
@@ -205,7 +205,7 @@ public class ParserTest {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(InlineBreakdown.of(new Image(), 0, 17));
+                return singletonList(InlineBreakdown.of(new Image(), 0, 18));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
@@ -221,7 +221,7 @@ public class ParserTest {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(InlineBreakdown.of(new Image(), 5, 22));
+                return singletonList(InlineBreakdown.of(new Image(), 5, 23));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
@@ -229,7 +229,7 @@ public class ParserTest {
         Node document = parser.parse("some CONVERTED_TO_IMAGE");
         assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
         assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some "));
-        assertThat(document.getFirstChild().getLastChild(), instanceOf(Image.class));
+        assertThat(document.getFirstChild().getFirstChild().getNext(), instanceOf(Image.class));
     }
 
     @Test
@@ -237,7 +237,7 @@ public class ParserTest {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(InlineBreakdown.of(new Image(), 5, 22));
+                return singletonList(InlineBreakdown.of(new Image(), 5, 23));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
@@ -258,8 +258,8 @@ public class ParserTest {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
                 List<InlineBreakdown> inlinesBreakdown = new ArrayList<>();
-                inlinesBreakdown.add(InlineBreakdown.of(image1, 5, 24));
-                inlinesBreakdown.add(InlineBreakdown.of(image2, 33, 52));
+                inlinesBreakdown.add(InlineBreakdown.of(image1, 5, 25));
+                inlinesBreakdown.add(InlineBreakdown.of(image2, 33, 53));
                 return inlinesBreakdown;
             }
         };
@@ -287,8 +287,8 @@ public class ParserTest {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
                 List<InlineBreakdown> inlinesBreakdown = new ArrayList<>();
-                inlinesBreakdown.add(InlineBreakdown.of(image2, 33, 52));
-                inlinesBreakdown.add(InlineBreakdown.of(image1, 5, 24));
+                inlinesBreakdown.add(InlineBreakdown.of(image2, 33, 53));
+                inlinesBreakdown.add(InlineBreakdown.of(image1, 5, 25));
                 return inlinesBreakdown;
             }
         };
@@ -328,8 +328,35 @@ public class ParserTest {
     }
 
     @Test
+    public void convertLineByNodeExtensionShouldIgnoreTheNextComponentIfStartingBeforeThePreviousEndIndex() {
+        final Node image1 = new Image();
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                List<InlineBreakdown> inlinesBreakdown = new ArrayList<>();
+                inlinesBreakdown.add(InlineBreakdown.of(image1, 0, 3));
+                inlinesBreakdown.add(InlineBreakdown.of(new Image(), 2, 5));
+                return inlinesBreakdown;
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+
+        Node document = parser.parse("foo jack some");
+        assertThat(document.getFirstChild().getFirstChild(), equalTo(image1));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild().getNext()),
+                equalTo(" jack some"));
+    }
+
+    @Test
     public void threading() throws Exception {
-        final Parser parser = Parser.builder().build();
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(InlineBreakdown.of(new Image("www.image", "some"), 5, 6));
+            }
+        };
+
+        final Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
         final String spec = TestResources.readAsString(TestResources.getSpec());
 
         HtmlRenderer renderer = HtmlRenderer.builder().build();
@@ -341,7 +368,7 @@ public class ParserTest {
         for (int i = 0; i < 40; i++) {
             Future<Node> future = executorService.submit(new Callable<Node>() {
                 @Override
-                public Node call() throws Exception {
+                public Node call() {
                     return parser.parse(spec);
                 }
             });
