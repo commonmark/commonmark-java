@@ -19,11 +19,13 @@ public interface InlineParser {
         List<InlineBreakdown> lookup(String inline);
 
         class InlineBreakdown {
+            public static final InlineBreakdown EMPTY =
+                    new InlineBreakdown(null, Integer.MAX_VALUE, Integer.MAX_VALUE);
             private final Node node;
             private final int beginIndex;
             private final int endIndex;
 
-            public InlineBreakdown(Node node, int beginIndex, int endIndex) {
+            private InlineBreakdown(Node node, int beginIndex, int endIndex) {
                 this.node = node;
                 this.beginIndex = beginIndex;
                 this.endIndex = endIndex;
@@ -39,6 +41,18 @@ public interface InlineParser {
 
             public int getEndIndex() {
                 return endIndex;
+            }
+
+            public static InlineBreakdown of(Node node, int beginIndex, int endIndex) {
+                if (endIndex < beginIndex){
+                    throw new IllegalArgumentException("beginIndex "+ beginIndex +" must be greater then endIndex " + endIndex);
+                }
+
+                if (beginIndex == endIndex) {
+                    return EMPTY;
+                }
+
+                return new InlineBreakdown(node, beginIndex, endIndex);
             }
         }
     }

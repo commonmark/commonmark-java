@@ -23,6 +23,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,22 +167,15 @@ public class InlineParserImpl implements InlineParser {
     public void parse(String content, Node block) {
         reset(content.trim());
 
-        boolean[] filledIndex = new boolean[input.length()];
-        HashMap<Integer, Node> nodeExtensionsByBeginIndex = new HashMap<>();
         ArrayDeque<NodeExtension.InlineBreakdown> customNodes = new ArrayDeque<>();
 
         for (NodeExtension.InlineBreakdown inlineBreakdownNode : customNodesByExtensions()) {
-            customNodes.push(inlineBreakdownNode);
-            nodeExtensionsByBeginIndex.put(inlineBreakdownNode.getBeginIndex(), inlineBreakdownNode.getNode());
-
-            for (int i = inlineBreakdownNode.getBeginIndex(); i <= inlineBreakdownNode.getEndIndex(); i++) {
-                filledIndex[i] = true;
-            }
+            customNodes.add(inlineBreakdownNode);
         }
 
         Node previous = null;
         while (true) {
-            Node node = parseInline(previous, filledIndex, nodeExtensionsByBeginIndex, customNodes);
+            Node node = parseInline(previous, customNodes);
             previous = node;
             if (node != null) {
                 block.appendChild(node);
@@ -214,28 +209,26 @@ public class InlineParserImpl implements InlineParser {
      * On success, return the new inline node.
      * On failure, return null.
      */
-    private Node parseInline(Node previous, boolean[] filledIndex, Map<Integer, Node> nodeExtensionsByBeginIndex,
-                             ArrayDeque<NodeExtension.InlineBreakdown> customNodes) {
-        Node node = nodeExtensionsByBeginIndex.get(index);
-        if (node != null) {
-            customNodes.pollFirst();
-            index++;
-            return node;
+    private Node parseInline(Node previous, ArrayDeque<NodeExtension.InlineBreakdown> customNodes) {
+        NodeExtension.InlineBreakdown inlineBreakdown = customNodes.isEmpty()
+                ? NodeExtension.InlineBreakdown.EMPTY
+                : customNodes.getFirst();
+
+        if (inlineBreakdown.getBeginIndex() == index) {
+            while (index <= inlineBreakdown.getEndIndex()) {
+                index++;
+            }
+            return customNodes.pollFirst().getNode();
         }
 
-        while (index < filledIndex.length && filledIndex[index]) {
-            index++;
-        }
-
-        int nextBeginIndexForCustomNode = customNodes.isEmpty()
-                ? input.length()
-                : customNodes.getFirst().getBeginIndex();
+        int nextBeginIndexForCustomNode = inlineBreakdown.getBeginIndex();
 
         char c = peek();
         if (c == '\0') {
             return null;
         }
 
+        Node node;
         switch (c) {
             case '\n':
                 node = parseNewline(previous);
@@ -433,9 +426,18 @@ public class InlineParserImpl implements InlineParser {
         List<NodeExtension.InlineBreakdown> nodes = new ArrayList<>();
 
         for (NodeExtension nodeExtension : nodeExtensions) {
-            nodes.addAll(nodeExtension.lookup(input));
+            List<NodeExtension.InlineBreakdown> inlineBreakdowns = nodeExtension.lookup(input);
+            if (inlineBreakdowns != null) {
+                nodes.addAll(inlineBreakdowns);
+            }
         }
 
+        Collections.sort(nodes, new Comparator<NodeExtension.InlineBreakdown>() {
+            @Override
+            public int compare(NodeExtension.InlineBreakdown node1, NodeExtension.InlineBreakdown node2) {
+                return Integer.compare(node1.getBeginIndex(), node2.getBeginIndex());
+            }
+        });
         return nodes;
     }
 

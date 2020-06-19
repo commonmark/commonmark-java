@@ -1,11 +1,24 @@
 package org.commonmark.test;
 
-import org.commonmark.node.*;
+import org.commonmark.node.Block;
+import org.commonmark.node.BulletList;
+import org.commonmark.node.CustomBlock;
+import org.commonmark.node.Heading;
+import org.commonmark.node.Image;
+import org.commonmark.node.Node;
+import org.commonmark.node.Paragraph;
+import org.commonmark.node.Text;
+import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.Parser;
-import org.commonmark.parser.block.*;
+import org.commonmark.parser.block.AbstractBlockParser;
+import org.commonmark.parser.block.AbstractBlockParserFactory;
+import org.commonmark.parser.block.BlockContinue;
+import org.commonmark.parser.block.BlockStart;
+import org.commonmark.parser.block.MatchedBlockParser;
+import org.commonmark.parser.block.ParserState;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
 import org.junit.Test;
@@ -13,7 +26,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,8 +36,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -36,7 +54,7 @@ public class ParserTest {
 
         InputStream input1 = TestResources.getSpec().openStream();
         Node document1;
-        try (InputStreamReader reader = new InputStreamReader(input1, Charset.forName("UTF-8"))) {
+        try (InputStreamReader reader = new InputStreamReader(input1, StandardCharsets.UTF_8)) {
             document1 = parser.parseReader(reader);
         }
 
@@ -128,7 +146,7 @@ public class ParserTest {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(new InlineBreakdown(new Image(), 0, 8));
+                return singletonList(InlineBreakdown.of(new Image(), 0, 8));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
@@ -138,11 +156,56 @@ public class ParserTest {
     }
 
     @Test
+    public void convertLineByNodeExtensionLeftDefaultTextIfEmptyListFromExtension() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return emptyList();
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+
+        Node document = parser.parse("some text");
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some text"));
+    }
+
+    @Test
+    public void convertLineByNodeExtensionLeftDefaultTextIfNulListFromExtension() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return null;
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+
+        Node document = parser.parse("some text");
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some text"));
+    }
+
+    @Test
+    public void convertLineByNodeExtensionWithCustomNodeInTheLineBeginOneSingleCharecter() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(InlineBreakdown.of(new Image(), 0, 1));
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+
+        Node document = parser.parse("C");
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Image.class));
+        assertThat(document.getFirstChild().getLastChild(), instanceOf(Image.class));
+    }
+
+    @Test
     public void convertLineByNodeExtensionWithCustomNodeInTheLineBegin() {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(new InlineBreakdown(new Image(), 0, 17));
+                return singletonList(InlineBreakdown.of(new Image(), 0, 17));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
@@ -158,7 +221,7 @@ public class ParserTest {
         InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
             @Override
             public List<InlineBreakdown> lookup(String inline) {
-                return singletonList(new InlineBreakdown(new Image(), 5, 22));
+                return singletonList(InlineBreakdown.of(new Image(), 5, 22));
             }
         };
         Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
@@ -169,22 +232,100 @@ public class ParserTest {
         assertThat(document.getFirstChild().getLastChild(), instanceOf(Image.class));
     }
 
-    // test custom in the middle of text // some CONVERTED_TO_IMAGE foo NEW_TO_IMAGE too
+    @Test
+    public void convertLineByNodeExtensionWithCustomNodeInTheMiddle() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(InlineBreakdown.of(new Image(), 5, 22));
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
 
-    // test more then one in the same line
+        Node document = parser.parse("some CONVERTED_TO_IMAGE second");
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some "));
+        assertThat(document.getFirstChild().getFirstChild().getNext(), instanceOf(Image.class));
+        assertThat(document.getFirstChild().getLastChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getLastChild()), equalTo(" second"));
+    }
 
-    // test wrong begin/end index by the extension parser
+    @Test
+    public void convertLineByNodeExtensionWithMoreThenOneOccurrence() {
+        final Node image1 = new Image();
+        final Node image2 = new Image();
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                List<InlineBreakdown> inlinesBreakdown = new ArrayList<>();
+                inlinesBreakdown.add(InlineBreakdown.of(image1, 5, 24));
+                inlinesBreakdown.add(InlineBreakdown.of(image2, 33, 52));
+                return inlinesBreakdown;
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
 
-    // guarantee sort List<InlineBreakdown> by beginIndex
+        Node document = parser.parse("some CONVERTED_TO_IMAGE_1 second CONVERTED_TO_IMAGE_2 third");
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some "));
+        assertThat(document.getFirstChild().getFirstChild().getNext(), equalTo(image1));
+        assertThat(document.getFirstChild().getFirstChild().getNext().getNext(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild().getNext().getNext()),
+                equalTo(" second "));
+        assertThat(document.getFirstChild().getFirstChild().getNext().getNext().getNext(), equalTo(image2));
+        assertThat(document.getFirstChild().getFirstChild().getNext().getNext().getNext().getNext(),
+                instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild().getNext().getNext().getNext().getNext()),
+                equalTo(" third"));
+    }
 
-    // test more then one extension registered
+    @Test
+    public void convertLineByNodeExtensionWithMoreThenOneOccurrenceSortingByIndex() {
+        final Node image1 = new Image();
+        final Node image2 = new Image();
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                List<InlineBreakdown> inlinesBreakdown = new ArrayList<>();
+                inlinesBreakdown.add(InlineBreakdown.of(image2, 33, 52));
+                inlinesBreakdown.add(InlineBreakdown.of(image1, 5, 24));
+                return inlinesBreakdown;
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
 
-    // test to guarantee customExtension priority over DelimiterProcessor
+        Node document = parser.parse("some CONVERTED_TO_IMAGE_1 second CONVERTED_TO_IMAGE_2 third");
+        assertThat(document.getFirstChild().getFirstChild(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some "));
+        assertThat(document.getFirstChild().getFirstChild().getNext(), equalTo(image1));
+        assertThat(document.getFirstChild().getFirstChild().getNext().getNext(), instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild().getNext().getNext()),
+                equalTo(" second "));
+        assertThat(document.getFirstChild().getFirstChild().getNext().getNext().getNext(), equalTo(image2));
+        assertThat(document.getFirstChild().getFirstChild().getNext().getNext().getNext().getNext(),
+                instanceOf(Text.class));
+        assertThat(getLiteral(document.getFirstChild().getFirstChild().getNext().getNext().getNext().getNext()),
+                equalTo(" third"));
+    }
 
+    @Test
+    public void convertLineByNodeExtensionShouldIgnoreIfBeginIndexEqualEndIndex() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                return singletonList(InlineBreakdown.of(new Image(), 5, 5));
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
 
-    // benchmark with custom vs without custom
+        Node document = parser.parse("some second");
+        assertThat(getLiteral(document.getFirstChild().getFirstChild()), equalTo("some second"));
+    }
 
-
+    @Test(expected = IllegalArgumentException.class)
+    public void convertLineByNodeExtensionShouldRaiseExceptionIfBeginIndexLessThenEndIndex() {
+        InlineParser.NodeExtension.InlineBreakdown.of(new Image(), 4, 3);
+    }
 
     @Test
     public void threading() throws Exception {
