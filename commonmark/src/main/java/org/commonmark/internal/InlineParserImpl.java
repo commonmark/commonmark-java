@@ -167,11 +167,7 @@ public class InlineParserImpl implements InlineParser {
     public void parse(String content, Node block) {
         reset(content.trim());
 
-        ArrayDeque<NodeExtension.InlineBreakdown> customNodes = new ArrayDeque<>();
-
-        for (NodeExtension.InlineBreakdown inlineBreakdownNode : customNodesByExtensions()) {
-            customNodes.add(inlineBreakdownNode);
-        }
+        ArrayDeque<NodeExtension.InlineBreakdown> customNodes = new ArrayDeque<>(customNodesByExtensions());
 
         Node previous = null;
         while (true) {
