@@ -362,6 +362,12 @@ will be rendered as:
 
 Use class `TaskListItemsExtension` in artifact `commonmark-ext-task-list-items`.
 
+### Third-party extensions
+
+You can also find other extensions in the wild:
+
+* [commonmark-ext-notifications](https://github.com/McFoggy/commonmark-ext-notifications): this extension allows to easily create notifications/admonitions paragraphs like `INFO`, `SUCCESS`, `WARNING` or `ERROR`
+
 See also
 --------
 
