@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 public class ParseBenchmark {
     private static final Parser regularParser = Parser.builder().build();
 
-    private static final InlineParser.NodeExtension nodeExtensionWithRegex = new InlineParser.NodeExtension() {
+    private static final InlineParser.NodeExtension nodeExtensionWithRegexFirst = new InlineParser.NodeExtension() {
         private final Pattern pattern = Pattern.compile("~(?<title>[a-zA-Z]+)~(?<destination>[\\/a-zA-Z.]+)");
 
         @Override
@@ -45,7 +45,31 @@ public class ParseBenchmark {
             return nodesBreakDown;
         }
     };
-    private static final Parser parserExtension = Parser.builder().nodeExtension(nodeExtensionWithRegex).build();
+    private static final InlineParser.NodeExtension nodeExtensionWithRegexSecond = new InlineParser.NodeExtension() {
+        private final Pattern pattern = Pattern.compile("(?<destination>[\\/a-zA-Z.]+)\\|(?<title>[a-zA-Z]+)");
+
+        @Override
+        public List<InlineBreakdown> lookup(String inline) {
+            List<InlineBreakdown> nodesBreakDown = new ArrayList<>();
+
+            Matcher matcher = pattern.matcher(inline);
+            while (matcher.find()) {
+                nodesBreakDown.add(InlineBreakdown.of(
+                        new Image(matcher.group("destination"), matcher.group("title")),
+                        matcher.start(),
+                        matcher.end()));
+            }
+            return nodesBreakDown;
+        }
+    };
+    private static final Parser parserOneExtension = Parser.builder()
+            .nodeExtension(nodeExtensionWithRegexFirst)
+            .build();
+
+    private static final Parser parserTwoExtensions = Parser.builder()
+            .nodeExtension(nodeExtensionWithRegexFirst)
+            .nodeExtension(nodeExtensionWithRegexSecond)
+            .build();
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -57,11 +81,16 @@ public class ParseBenchmark {
 
     @Benchmark
     public Node parseImageRegularUsage() {
-        return regularParser.parse("![text](/url.png)");
+        return regularParser.parse("Some text ![text](/url.png) another point ![text](/url.png)");
     }
 
     @Benchmark
     public Node parseImageByNodeExtension() {
-        return parserExtension.parse("Some text ~image~/url.png");
+        return parserOneExtension.parse("Some text ~image~/url.png another point ~image~/url.png");
+    }
+
+    @Benchmark
+    public Node parseImageByTwoNodeExtension() {
+        return parserTwoExtensions.parse("Some text /url.png|something another point ~image~/url.png");
     }
 }
