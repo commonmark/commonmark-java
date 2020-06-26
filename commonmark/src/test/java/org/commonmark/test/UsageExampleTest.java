@@ -12,10 +12,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -87,6 +90,41 @@ public class UsageExampleTest {
 
         Node document = parser.parse("Some text ~image~/url.png");
         assertEquals("<p>Some text <img src=\"/url.png\" alt=\"\" title=\"image\" class=\"border\" /></p>\n",
+                renderer.render(document));
+    }
+
+    @Test
+    public void customizeNodesFromDifferentTextSyntaxUsingRegex() {
+        InlineParser.NodeExtension nodeExtension = new InlineParser.NodeExtension() {
+            Pattern pattern = Pattern.compile("~(?<title>[a-zA-Z]+)~(?<destination>[\\/a-zA-Z.]+)");
+
+            @Override
+            public List<InlineBreakdown> lookup(String inline) {
+                List<InlineBreakdown> nodesBreakDown = new ArrayList<>();
+
+                Matcher matcher = pattern.matcher(inline);
+                while (matcher.find()) {
+                    nodesBreakDown.add(InlineBreakdown.of(
+                            new Image(matcher.group("destination"), matcher.group("title")),
+                            matcher.start(),
+                            matcher.end()));
+                }
+                return nodesBreakDown;
+            }
+        };
+        Parser parser = Parser.builder().nodeExtension(nodeExtension).build();
+        HtmlRenderer renderer = HtmlRenderer.builder()
+                .attributeProviderFactory(new AttributeProviderFactory() {
+                    public AttributeProvider create(AttributeProviderContext context) {
+                        return new ImageAttributeProvider();
+                    }
+                })
+                .build();
+
+        Node document = parser.parse("Some text ~image~/url.png anything ~SOME~/other.jpg the third one ~some~/other");
+        assertEquals("<p>Some text <img src=\"/url.png\" alt=\"\" title=\"image\" class=\"border\" /> " +
+                        "anything <img src=\"/other.jpg\" alt=\"\" title=\"SOME\" class=\"border\" /> " +
+                        "the third one <img src=\"/other\" alt=\"\" title=\"some\" class=\"border\" /></p>\n",
                 renderer.render(document));
     }
 
