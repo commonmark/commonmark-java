@@ -7,6 +7,7 @@ import org.commonmark.experimental.identifier.SingleSymbolContainerIdentifier;
 import org.commonmark.experimental.identifier.SingleSymbolContainerPattern;
 import org.commonmark.experimental.identifier.StartSymbolIdentifier;
 import org.commonmark.experimental.identifier.StartSymbolPattern;
+import org.commonmark.node.Node;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,9 +22,11 @@ public class InlineParserImplMultipleNodesSetupTest {
     private NodeCreator nodeCreatorTwo;
 
     private NodeSetup literalNodeSetup;
+    private Node nodeParent;
 
     @Before
     public void setUp() {
+        nodeParent = mock(Node.class);
         nodeCreatorOne = mock(NodeCreator.class);
         nodeCreatorTwo = mock(NodeCreator.class);
 
@@ -35,7 +38,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     public void shouldConsiderTwoNodesSetup() {
         setupParser(new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('*')),
                 new StartSymbolIdentifier(new StartSymbolPattern('@')))
-                .readLine("*image.gif* @second");
+                .parse("*image.gif* @second", nodeParent);
 
         verify(nodeCreatorOne).build(eq("*image.gif*"), eq((InternalBlocks[]) null));
         verify(nodeCreatorTwo).build(eq("@second"), eq((InternalBlocks[]) null));
@@ -45,7 +48,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     public void shouldConsiderTwoNodeSetupWithSameStartSymbolAndSamePriorityTheFirstToAdded() {
         setupParser(0, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('*')),
                 0, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('*')))
-                .readLine("*image.gif*");
+                .parse("*image.gif*", nodeParent);
 
         verify(nodeCreatorOne).build(eq("*image.gif*"), eq((InternalBlocks[]) null));
         verifyNoInteractions(nodeCreatorTwo);
@@ -55,7 +58,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     public void shouldConsiderTwoNodeSetupWithSameStartSymbolWinningTheHighPriority() {
         setupParser(0, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')),
                 10, new RepeatableSymbolContainerIdentifier(new RepeatableSymbolContainerPattern('~', 2)))
-                .readLine("~image.gif~ ~~second.jpg~~");
+                .parse("~image.gif~ ~~second.jpg~~", nodeParent);
 
         verify(nodeCreatorOne).build(eq("~image.gif~"), eq((InternalBlocks[]) null));
         verify(nodeCreatorTwo).build(eq("~~second.jpg~~"), eq((InternalBlocks[]) null));
@@ -65,7 +68,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     public void shouldConsiderTheNodeSetupByPriorityForOverlapConflict() {
         setupParser(1, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('`')),
                 0, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
-                .readLine("`the ~image.gif~ here`");
+                .parse("`the ~image.gif~ here`", nodeParent);
 
         verify(nodeCreatorOne).build(eq("`the ~image.gif~ here`"), eq((InternalBlocks[]) null));
         verifyNoInteractions(nodeCreatorTwo);
@@ -75,7 +78,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     public void shouldConsiderTheNodeSetupByPriorityForLineConflictForInternalComponent() {
         setupParser(0, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('`')),
                 1, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
-                .readLine("`the ~image.gif~ here`");
+                .parse("`the ~image.gif~ here`", nodeParent);
 
         verifyNoInteractions(nodeCreatorOne);
         verify(nodeCreatorTwo).build(eq("~image.gif~"), eq((InternalBlocks[]) null));
@@ -85,7 +88,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     public void shouldConsiderTheNodeSetupByPriorityForLineConflictForOverlapByLeftSide() {
         setupParser(1, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('`')),
                 0, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
-                .readLine("`the ~image.gif here` another~");
+                .parse("`the ~image.gif here` another~", nodeParent);
 
         verify(nodeCreatorOne).build(eq("`the ~image.gif here`"), eq((InternalBlocks[]) null));
         verifyNoInteractions(nodeCreatorTwo);
@@ -95,7 +98,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     public void shouldConsiderTheNodeSetupByPriorityForLineConflictMultipleOccurrences() {
         setupParser(1, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('`')),
                 0, new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
-                .readLine("~the `image.gif` here `second.jpg` another~");
+                .parse("~the `image.gif` here `second.jpg` another~", nodeParent);
 
         verify(nodeCreatorOne).build(eq("`image.gif`"), eq((InternalBlocks[]) null));
         verify(nodeCreatorOne).build(eq("`second.jpg`"), eq((InternalBlocks[]) null));

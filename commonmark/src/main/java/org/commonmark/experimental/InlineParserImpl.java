@@ -1,6 +1,7 @@
 package org.commonmark.experimental;
 
 import org.commonmark.node.Node;
+import org.commonmark.node.Text;
 import org.commonmark.parser.InlineParser;
 
 import java.util.ArrayList;
@@ -31,19 +32,15 @@ public class InlineParserImpl implements InlineParser {
     }
 
     @Override
-    public void parse(String input, Node node) {
-
-    }
-
-    public void readLine(String text) {
+    public void parse(String input, Node block) {
         nodeSetupActives.clear();
 
-        final int length = text.length();
+        final int length = input.length();
         final PreNode[] positionsReservedByNodePriority = new PreNode[length];
         int index = 0;
 
         while (index < length) {
-            final char character = text.charAt(index);
+            final char character = input.charAt(index);
 
             NodeGroupHandler startTrigger = nodeSetupsByCharacterTrigger.get(character);
             if (startTrigger != null) {
@@ -51,16 +48,16 @@ public class InlineParserImpl implements InlineParser {
             }
 
             for (NodeGroupHandler nodeSetupHandler : nodeSetupActives) {
-                nodeSetupHandler.check(text, character, index, positionsReservedByNodePriority);
+                nodeSetupHandler.check(input, character, index, positionsReservedByNodePriority);
             }
 
             index++;
         }
 
-        processNodesInLine(text, positionsReservedByNodePriority);
+        processNodesInLine(input, positionsReservedByNodePriority, block);
     }
 
-    private void processNodesInLine(String text, PreNode[] positionsReservedByPriority) {
+    private void processNodesInLine(String text, PreNode[] positionsReservedByPriority, Node block) {
         int index = 0;
         int lastIndexEmpty = 0;
 
@@ -69,13 +66,13 @@ public class InlineParserImpl implements InlineParser {
 
             if (preNode != null) {
                 if (lastIndexEmpty != index) {
-                    nodeSetupSingleInstance.getNodeCreator()
-                            .build(text.substring(lastIndexEmpty, index), null);
+                    block.appendChild(nodeSetupSingleInstance.getNodeCreator()
+                            .build(text.substring(lastIndexEmpty, index), null));
                 }
 
-                preNode.getNodeCreator()
+                block.appendChild(preNode.getNodeCreator()
                         .build(text.substring(preNode.getStartIndex(), preNode.getEndIndex()),
-                                preNode.getInternalBlocks());
+                                preNode.getInternalBlocks()));
 
                 lastIndexEmpty = preNode.getEndIndex();
                 index = preNode.getEndIndex();
@@ -85,8 +82,8 @@ public class InlineParserImpl implements InlineParser {
         }
 
         if (lastIndexEmpty != index) {
-            nodeSetupSingleInstance.getNodeCreator()
-                    .build(text.substring(lastIndexEmpty, index), null);
+            block.appendChild(nodeSetupSingleInstance.getNodeCreator()
+                    .build(text.substring(lastIndexEmpty, index), null));
         }
     }
 
@@ -95,8 +92,8 @@ public class InlineParserImpl implements InlineParser {
         public NodeCreator nodeCreator() {
             return new NodeCreator() {
                 @Override
-                public String build(String found, NodePatternIdentifier.InternalBlocks[] internalBlocks) {
-                    return found;
+                public Node build(String found, NodePatternIdentifier.InternalBlocks[] internalBlocks) {
+                    return new Text(found.trim());
                 }
             };
         }

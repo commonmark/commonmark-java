@@ -4,6 +4,7 @@ import org.commonmark.experimental.identifier.SingleSymbolContainerIdentifier;
 import org.commonmark.experimental.identifier.SingleSymbolContainerPattern;
 import org.commonmark.experimental.identifier.StartSymbolIdentifier;
 import org.commonmark.experimental.identifier.StartSymbolPattern;
+import org.commonmark.node.Node;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,9 +17,11 @@ public class InlineParserImplTest {
     private NodeCreator nodeCreator;
     private NodeCreator literalNodeCreator;
     private NodeSetup literalNodeSetup;
+    private Node nodeParent;
 
     @Before
     public void setUp() {
+        nodeParent = mock(Node.class);
         nodeCreator = mock(NodeCreator.class);
         literalNodeCreator = mock(NodeCreator.class);
         literalNodeSetup = mock(NodeSetup.class);
@@ -28,7 +31,7 @@ public class InlineParserImplTest {
     @Test
     public void shouldParseTextByNodeSetup() {
         setupParser(new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
-                .readLine("some ~image.gif~ text");
+                .parse("some ~image.gif~ text", nodeParent);
 
         verify(nodeCreator).build(eq("~image.gif~"), eq((NodePatternIdentifier.InternalBlocks[]) null));
     }
@@ -36,7 +39,7 @@ public class InlineParserImplTest {
     @Test
     public void shouldNoticeNodesMultipleTimes() {
         setupParser(new StartSymbolIdentifier(new StartSymbolPattern('/', '.')))
-                .readLine("/image.gif /something.jpg");
+                .parse("/image.gif /something.jpg", nodeParent);
 
         verify(nodeCreator).build(eq("/image.gif"), eq((NodePatternIdentifier.InternalBlocks[]) null));
         verify(nodeCreator).build(eq("/something.jpg"), eq((NodePatternIdentifier.InternalBlocks[]) null));
@@ -45,7 +48,7 @@ public class InlineParserImplTest {
     @Test
     public void shouldConsiderStartSymbolBetweenWords() {
         setupParser(new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
-                .readLine("~image.gif~ something~second.jpg~");
+                .parse("~image.gif~ something~second.jpg~", nodeParent);
 
         verify(nodeCreator).build(eq("~image.gif~"), eq((NodePatternIdentifier.InternalBlocks[]) null));
         verify(nodeCreator).build(eq("~second.jpg~"), eq((NodePatternIdentifier.InternalBlocks[]) null));
@@ -54,8 +57,8 @@ public class InlineParserImplTest {
     @Test
     public void shouldResetConfigurationWhenReadLineASecondTime() {
         InlineParserImpl inlineParser = setupParser(new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('*')));
-        inlineParser.readLine("some *image text");
-        inlineParser.readLine("some *second.gif* text");
+        inlineParser.parse("some *image text", nodeParent);
+        inlineParser.parse("some *second.gif* text", nodeParent);
 
         verify(nodeCreator).build(eq("*second.gif*"), eq((NodePatternIdentifier.InternalBlocks[]) null));
     }
@@ -63,7 +66,7 @@ public class InlineParserImplTest {
     @Test
     public void shouldTakeLiteralBeforeNodeFound() {
         setupParser(new StartSymbolIdentifier(new StartSymbolPattern('~')))
-                .readLine("some ~node");
+                .parse("some ~node", nodeParent);
 
         verify(literalNodeCreator).build(eq("some "), eq((NodePatternIdentifier.InternalBlocks[]) null));
     }
@@ -71,7 +74,7 @@ public class InlineParserImplTest {
     @Test
     public void shouldTakeLiteralAfterNodeFound() {
         setupParser(new StartSymbolIdentifier(new StartSymbolPattern('~')))
-                .readLine("~node after");
+                .parse("~node after", nodeParent);
 
         verify(literalNodeCreator).build(eq(" after"), eq((NodePatternIdentifier.InternalBlocks[]) null));
     }
@@ -79,7 +82,7 @@ public class InlineParserImplTest {
     @Test
     public void shouldTakeLiteralBetweenNodes() {
         setupParser(new StartSymbolIdentifier(new StartSymbolPattern('~')))
-                .readLine("~nodeone between ~nodetwo");
+                .parse("~nodeone between ~nodetwo", nodeParent);
 
         verify(literalNodeCreator).build(eq(" between "), eq((NodePatternIdentifier.InternalBlocks[]) null));
     }
@@ -87,7 +90,7 @@ public class InlineParserImplTest {
     @Test
     public void shouldTakeLiteralBetweenNodesInTheEndOfTheLine() {
         setupParser(new StartSymbolIdentifier(new StartSymbolPattern('~')))
-                .readLine(" ~nodeone between ~nodetwo after");
+                .parse(" ~nodeone between ~nodetwo after", nodeParent);
 
         verify(literalNodeCreator).build(eq(" "), eq((NodePatternIdentifier.InternalBlocks[]) null));
         verify(literalNodeCreator).build(eq(" between "), eq((NodePatternIdentifier.InternalBlocks[]) null));
