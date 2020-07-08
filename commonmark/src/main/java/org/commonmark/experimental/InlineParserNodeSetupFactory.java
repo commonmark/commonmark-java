@@ -8,13 +8,15 @@ import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 
 public class InlineParserNodeSetupFactory implements org.commonmark.parser.InlineParserFactory {
+    private static final InlineParserImpl inlineParser = InlineParserImpl.builder()
+            .nodeSetup(new ImageLogoNodeSetup())
+            .nodeSetup(new LinkNodeSetup())
+            .nodeSetup(new StrongEmphasisNodeSetup())
+            .nodeSetup(new EmphasisNodeSetup())
+            .build();
+
     @Override
     public InlineParser create(InlineParserContext inlineParserContext) {
-        return InlineParserImpl.builder()
-                .nodeSetup(new ImageLogoNodeSetup())
-                .nodeSetup(new LinkNodeSetup())
-                .nodeSetup(new StrongEmphasisNodeSetup())
-                .nodeSetup(new EmphasisNodeSetup())
-                .build();
+        return inlineParser;
     }
 }
