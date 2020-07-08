@@ -63,6 +63,27 @@ public class SingleSymbolContainerIdentifierTest {
     }
 
     @Test
+    public void shouldNotIdentifyIfSpaceAfterStartSymbol() {
+        readLine("~ some~", textIdentifier, nodePatternIdentifier);
+
+        verifyNoInteractions(nodePatternIdentifier);
+    }
+
+    @Test
+    public void shouldNotIdentifyIfSpaceBeforeEndSymbol() {
+        readLine("~some ~", textIdentifier, nodePatternIdentifier);
+
+        verifyNoInteractions(nodePatternIdentifier);
+    }
+
+    @Test
+    public void shouldIdentifyCountingAfterFirstSymbolWithSpace() {
+        readLine("~foo ~some~", textIdentifier, nodePatternIdentifier);
+
+        verify(nodePatternIdentifier).found(5, 11, null);
+    }
+
+    @Test
     public void shouldIdentifySingleCharacterIfEmptyTextBetweenCharactersWhenMinSizeZero() {
         textIdentifier = new SingleSymbolContainerIdentifier(
                 SingleSymbolContainerPattern.of('~', 0));
