@@ -3,6 +3,7 @@ package org.commonmark.experimental;
 
 import org.commonmark.node.Emphasis;
 import org.commonmark.node.Image;
+import org.commonmark.node.Link;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.StrongEmphasis;
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class InlineParserNodeSetupFactoryTest {
     private InlineParser inlineParser;
@@ -55,6 +57,15 @@ public class InlineParserNodeSetupFactoryTest {
         assertThat(paragraph.getFirstChild(), instanceOf(Image.class));
         assertThat(((Image) paragraph.getFirstChild()).getTitle(), is("foo"));
         assertThat(((Image) paragraph.getFirstChild()).getDestination(), is("/train.jpg"));
+    }
+
+    @Test
+    public void shouldNoticeLink() {
+        inlineParser.parse("[foo](a.com)", paragraph);
+
+        assertThat(paragraph.getFirstChild(), instanceOf(Link.class));
+        assertThat(((Link) paragraph.getFirstChild()).getTitle(), is("foo"));
+        assertThat(((Link) paragraph.getFirstChild()).getDestination(), is("a.com"));
     }
 
     @Test

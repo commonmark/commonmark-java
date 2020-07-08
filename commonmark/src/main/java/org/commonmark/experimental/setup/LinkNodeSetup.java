@@ -8,24 +8,23 @@ import org.commonmark.experimental.extractor.BracketContainerExtractor;
 import org.commonmark.experimental.identifier.BracketContainerIdentifier;
 import org.commonmark.experimental.identifier.BracketContainerPattern;
 import org.commonmark.experimental.identifier.BracketContainerPattern.OpenClose;
-import org.commonmark.node.Image;
+import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 
-public class ImageLogoNodeSetup implements TextNodeIdentifierSetup {
+public class LinkNodeSetup implements TextNodeIdentifierSetup {
 
-    private static final BracketContainerPattern LOGO_IMAGE_PATTERN = BracketContainerPattern.of(
-            '!',
+    private static final BracketContainerPattern LINK_PATTERN = BracketContainerPattern.of(
             OpenClose.of('[', ']'),
             OpenClose.of('(', ')'));
 
     @Override
     public TextIdentifier textIdentifier() {
-        return new BracketContainerIdentifier(LOGO_IMAGE_PATTERN);
+        return new BracketContainerIdentifier(LINK_PATTERN);
     }
 
     @Override
     public int priority() {
-        return DefaultPriority.BRACKET_PLUS_START_SYMBOL;
+        return DefaultPriority.BRACKET_SYMBOL;
     }
 
     @Override
@@ -33,8 +32,8 @@ public class ImageLogoNodeSetup implements TextNodeIdentifierSetup {
         return new NodeCreator() {
             @Override
             public Node build(String textFound, InternalBlocks[] internalBlocks) {
-                String[] content = BracketContainerExtractor.from(textFound, LOGO_IMAGE_PATTERN, internalBlocks);
-                return new Image(content[1], content[0]);
+                String[] content = BracketContainerExtractor.from(textFound, LINK_PATTERN, internalBlocks);
+                return new Link(content[1], content[0]);
             }
         };
     }
