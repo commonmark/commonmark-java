@@ -22,7 +22,7 @@ public class EmphasisNodeSetup implements TextNodeIdentifierSetup {
 
     @Override
     public int priority() {
-        return 0;
+        return DefaultPriority.DEFAULT;
     }
 
     @Override

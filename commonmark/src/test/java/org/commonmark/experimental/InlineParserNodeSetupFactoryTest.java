@@ -4,14 +4,12 @@ package org.commonmark.experimental;
 import org.commonmark.node.Emphasis;
 import org.commonmark.node.Image;
 import org.commonmark.node.LinkReferenceDefinition;
-import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
+import org.commonmark.node.StrongEmphasis;
 import org.commonmark.node.Text;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
-import org.commonmark.parser.Parser;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +18,6 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 
 public class InlineParserNodeSetupFactoryTest {
     private InlineParser inlineParser;
@@ -48,7 +45,7 @@ public class InlineParserNodeSetupFactoryTest {
         inlineParser.parse("easy test", paragraph);
 
         assertThat(paragraph.getFirstChild(), instanceOf(Text.class));
-        assertThat(((Text)paragraph.getFirstChild()).getLiteral(), is("easy test"));
+        assertThat(((Text) paragraph.getFirstChild()).getLiteral(), is("easy test"));
     }
 
     @Test
@@ -56,8 +53,8 @@ public class InlineParserNodeSetupFactoryTest {
         inlineParser.parse("![foo](/train.jpg)", paragraph);
 
         assertThat(paragraph.getFirstChild(), instanceOf(Image.class));
-        assertThat(((Image)paragraph.getFirstChild()).getTitle(), is("foo"));
-        assertThat(((Image)paragraph.getFirstChild()).getDestination(), is("/train.jpg"));
+        assertThat(((Image) paragraph.getFirstChild()).getTitle(), is("foo"));
+        assertThat(((Image) paragraph.getFirstChild()).getDestination(), is("/train.jpg"));
     }
 
     @Test
@@ -65,8 +62,18 @@ public class InlineParserNodeSetupFactoryTest {
         inlineParser.parse("This is *Sparta*", paragraph);
 
         assertThat(paragraph.getFirstChild(), instanceOf(Text.class));
-        assertThat(((Text)paragraph.getFirstChild()).getLiteral(), is("This is"));
+        assertThat(((Text) paragraph.getFirstChild()).getLiteral(), is("This is"));
         assertThat(paragraph.getFirstChild().getNext(), instanceOf(Emphasis.class));
-        assertThat(((Emphasis)paragraph.getFirstChild().getNext()).getOpeningDelimiter(), is("*"));
+        assertThat(((Emphasis) paragraph.getFirstChild().getNext()).getOpeningDelimiter(), is("*"));
+    }
+
+    @Test
+    public void shouldNoticeStrongEmphasisText() {
+        inlineParser.parse("This is **Strong**", paragraph);
+
+        assertThat(paragraph.getFirstChild(), instanceOf(Text.class));
+        assertThat(((Text) paragraph.getFirstChild()).getLiteral(), is("This is"));
+        assertThat(paragraph.getFirstChild().getNext(), instanceOf(StrongEmphasis.class));
+        assertThat(((StrongEmphasis) paragraph.getFirstChild().getNext()).getOpeningDelimiter(), is("**"));
     }
 }

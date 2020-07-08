@@ -20,7 +20,7 @@ public class RepeatableSymbolContainerIdentifierTest {
     public void setUp() {
         nodePatternIdentifier = mock(NodePatternIdentifier.class);
         textIdentifier = new RepeatableSymbolContainerIdentifier(
-                new RepeatableSymbolContainerPattern('~', 2));
+                RepeatableSymbolContainerPattern.of('~', 2));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class RepeatableSymbolContainerIdentifierTest {
     @Test
     public void supportMultipleSymbolsAsSetup() {
         textIdentifier = new RepeatableSymbolContainerIdentifier(
-                new RepeatableSymbolContainerPattern('*', 4));
+                RepeatableSymbolContainerPattern.of('*', 4));
 
         readLine("some ****image.gif**** thing **foo**", textIdentifier, nodePatternIdentifier);
 

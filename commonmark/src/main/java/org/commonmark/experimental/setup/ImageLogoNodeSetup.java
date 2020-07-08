@@ -25,7 +25,7 @@ public class ImageLogoNodeSetup implements TextNodeIdentifierSetup {
 
     @Override
     public int priority() {
-        return 0;
+        return DefaultPriority.BRACKET_SYMBOL;
     }
 
     @Override

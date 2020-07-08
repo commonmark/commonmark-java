@@ -57,7 +57,7 @@ public class InlineParserImplMultipleNodesSetupTest {
     @Test
     public void shouldConsiderTwoNodeSetupWithSameStartSymbolWinningTheHighPriority() {
         setupParser(0, new SingleSymbolContainerIdentifier(SingleSymbolContainerPattern.of('~')),
-                10, new RepeatableSymbolContainerIdentifier(new RepeatableSymbolContainerPattern('~', 2)))
+                10, new RepeatableSymbolContainerIdentifier(RepeatableSymbolContainerPattern.of('~', 2)))
                 .parse("~image.gif~ ~~second.jpg~~", nodeParent);
 
         verify(nodeCreatorOne).build(eq("~image.gif~"), eq((InternalBlocks[]) null));
