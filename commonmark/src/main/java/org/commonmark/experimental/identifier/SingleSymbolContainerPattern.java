@@ -6,13 +6,21 @@ public class SingleSymbolContainerPattern implements NodeBreakLinePattern {
     private final char symbol;
     private final int minSize;
 
-    public SingleSymbolContainerPattern(char symbol) {
+    private SingleSymbolContainerPattern(char symbol) {
         this(symbol, 1);
     }
 
-    public SingleSymbolContainerPattern(char symbol, int minSize) {
+    private SingleSymbolContainerPattern(char symbol, int minSize) {
         this.symbol = symbol;
         this.minSize = minSize;
+    }
+
+    public static SingleSymbolContainerPattern of(char symbol) {
+        return new SingleSymbolContainerPattern(symbol);
+    }
+
+    public static SingleSymbolContainerPattern of(char symbol, int minSize) {
+        return new SingleSymbolContainerPattern(symbol, minSize);
     }
 
     @Override

@@ -30,7 +30,7 @@ public class InlineParserImplTest {
 
     @Test
     public void shouldParseTextByNodeSetup() {
-        setupParser(new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
+        setupParser(new SingleSymbolContainerIdentifier(SingleSymbolContainerPattern.of('~')))
                 .parse("some ~image.gif~ text", nodeParent);
 
         verify(nodeCreator).build(eq("~image.gif~"), eq((NodePatternIdentifier.InternalBlocks[]) null));
@@ -47,7 +47,7 @@ public class InlineParserImplTest {
 
     @Test
     public void shouldConsiderStartSymbolBetweenWords() {
-        setupParser(new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~')))
+        setupParser(new SingleSymbolContainerIdentifier(SingleSymbolContainerPattern.of('~')))
                 .parse("~image.gif~ something~second.jpg~", nodeParent);
 
         verify(nodeCreator).build(eq("~image.gif~"), eq((NodePatternIdentifier.InternalBlocks[]) null));
@@ -56,7 +56,7 @@ public class InlineParserImplTest {
 
     @Test
     public void shouldResetConfigurationWhenReadLineASecondTime() {
-        InlineParserImpl inlineParser = setupParser(new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('*')));
+        InlineParserImpl inlineParser = setupParser(new SingleSymbolContainerIdentifier(SingleSymbolContainerPattern.of('*')));
         inlineParser.parse("some *image text", nodeParent);
         inlineParser.parse("some *second.gif* text", nodeParent);
 

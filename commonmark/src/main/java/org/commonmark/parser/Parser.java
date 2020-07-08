@@ -1,6 +1,7 @@
 package org.commonmark.parser;
 
 import org.commonmark.Extension;
+import org.commonmark.experimental.InlineParserNodeSetupFactory;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;

@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class BracketContainerIdentifierTest {
     private NodePatternIdentifier nodePatternIdentifier;
@@ -62,14 +62,14 @@ public class BracketContainerIdentifierTest {
     public void shouldNotIdentifyIfJustOpenBracket() {
         readLine("[i", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     @Test
     public void shouldNotIdentifyIfJustCloseBracket() {
         readLine("i]", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     @Test
@@ -101,14 +101,14 @@ public class BracketContainerIdentifierTest {
         readLine("[[i]", textIdentifier, nodePatternIdentifier);
         readLine("[[]", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     @Test
     public void shouldNotIdentifyStartInvertedWithEndSymbol() {
         readLine("][", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     @Test
@@ -178,7 +178,7 @@ public class BracketContainerIdentifierTest {
 
         readLine("[i](b()", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     @Test
@@ -187,7 +187,7 @@ public class BracketContainerIdentifierTest {
 
         readLine("(b)[i]", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     @Test
@@ -198,7 +198,7 @@ public class BracketContainerIdentifierTest {
         readLine("[i]|(b)", textIdentifier, nodePatternIdentifier);
         readLine("[i]$(b)", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     private void bracketIdentifierDoubleSymbol() {
@@ -260,7 +260,7 @@ public class BracketContainerIdentifierTest {
 
         readLine("! [i](b)", textIdentifier, nodePatternIdentifier);
 
-        verifyZeroInteractions(nodePatternIdentifier);
+        verifyNoInteractions(nodePatternIdentifier);
     }
 
     @Test

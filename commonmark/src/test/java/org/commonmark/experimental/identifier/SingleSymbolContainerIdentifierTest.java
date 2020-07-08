@@ -17,7 +17,7 @@ public class SingleSymbolContainerIdentifierTest {
     @Before
     public void setUp() {
         nodePatternIdentifier = mock(NodePatternIdentifier.class);
-        textIdentifier = new SingleSymbolContainerIdentifier(new SingleSymbolContainerPattern('~'));
+        textIdentifier = new SingleSymbolContainerIdentifier(SingleSymbolContainerPattern.of('~'));
     }
 
     @Test
@@ -65,7 +65,7 @@ public class SingleSymbolContainerIdentifierTest {
     @Test
     public void shouldIdentifySingleCharacterIfEmptyTextBetweenCharactersWhenMinSizeZero() {
         textIdentifier = new SingleSymbolContainerIdentifier(
-                new SingleSymbolContainerPattern('~', 0));
+                SingleSymbolContainerPattern.of('~', 0));
         readLine("~~", textIdentifier, nodePatternIdentifier);
 
         verify(nodePatternIdentifier).found(0, 2, null);
