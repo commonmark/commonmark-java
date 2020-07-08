@@ -14,20 +14,19 @@ public class SingleSymbolContainerIdentifier extends TextIdentifier {
 
     @Override
     public void checkByCharacter(String text, char character, int index, NodePatternIdentifier nodePatternIdentifier) {
-
-        if (startIndex == INVALID_INDEX && character == nodeBreakLinePattern.characterTrigger()) {
-            startIndex = index;
+        if (character == nodeBreakLinePattern.characterTrigger()) {
+            if (startIndex == INVALID_INDEX) {
+                startIndex = index;
+            } else if (endIndex == INVALID_INDEX) {
+                if (lastCharacter == ' ' || index - startIndex <= nodeBreakLinePattern.getMinSize()) {
+                    reset();
+                    startIndex = index;
+                } else {
+                    endIndex = index + 1;
+                }
+            }
         } else if (index == startIndex + 1 && character == ' ') {
             reset();
-        } else if (endIndex == INVALID_INDEX
-                && character == nodeBreakLinePattern.characterTrigger()
-                && index - startIndex > nodeBreakLinePattern.getMinSize()) {
-            if (lastCharacter == ' ') {
-                reset();
-                startIndex = index;
-            } else {
-                endIndex = index + 1;
-            }
         }
 
         lastCharacter = character;
