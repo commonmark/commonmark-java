@@ -92,8 +92,8 @@ public class InlineParserImpl implements InlineParser {
         public NodeCreator nodeCreator() {
             return new NodeCreator() {
                 @Override
-                public Node build(String found, NodePatternIdentifier.InternalBlocks[] internalBlocks) {
-                    return new Text(found.trim());
+                public Node build(String textFound, NodePatternIdentifier.InternalBlocks[] internalBlocks) {
+                    return new Text(textFound.trim());
                 }
             };
         }

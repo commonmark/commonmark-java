@@ -32,8 +32,8 @@ public class ImageLogoNodeSetup implements TextNodeIdentifierSetup {
     public NodeCreator nodeCreator() {
         return new NodeCreator() {
             @Override
-            public Node build(String found, InternalBlocks[] internalBlocks) {
-                String[] content = BracketContainerExtractor.from(found, LOGO_IMAGE_PATTERN, internalBlocks);
+            public Node build(String textFound, InternalBlocks[] internalBlocks) {
+                String[] content = BracketContainerExtractor.from(textFound, LOGO_IMAGE_PATTERN, internalBlocks);
                 return new Image(content[1], content[0]);
             }
         };

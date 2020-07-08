@@ -29,9 +29,9 @@ public class EmphasisNodeSetup implements TextNodeIdentifierSetup {
     public NodeCreator nodeCreator() {
         return new NodeCreator() {
             @Override
-            public Node build(String found, InternalBlocks[] internalBlocks) {
+            public Node build(String textFound, InternalBlocks[] internalBlocks) {
                 Emphasis emphasis = new Emphasis("*");
-                emphasis.appendChild(new Text(SingleSymbolContainerExtractor.from(found)));
+                emphasis.appendChild(new Text(SingleSymbolContainerExtractor.from(textFound)));
                 return emphasis;
             }
         };

@@ -8,6 +8,7 @@ public class RepeatableSymbolContainerIdentifier extends TextIdentifier {
     private final int patternSizeLessOne;
     private int countStartSymbols;
     private int countEndSymbols;
+    private char lastCharacter = INVALID_CHAR;
 
     public RepeatableSymbolContainerIdentifier(RepeatableSymbolContainerPattern nodeBreakLinePattern) {
         super(nodeBreakLinePattern);
@@ -28,10 +29,17 @@ public class RepeatableSymbolContainerIdentifier extends TextIdentifier {
             } else {
                 countStartSymbols++;
             }
-        } else if (endIndex == INVALID_INDEX && symbolMatch
-                && index - startIndex - countStartSymbols - 1 > nodeBreakLinePattern.getMinSize()) {
+        } else if (isCharacterAfterStartSymbolsSpace(character, index)) {
+            reset();
+        } else if (endIndex == INVALID_INDEX
+                && symbolMatch
+                && isContentGreaterThanMinSize(index)) {
             if (countEndSymbols == patternSizeLessOne) {
-                endIndex = index + 1;
+                if (isLastCharacterBeforeCloseSymbolSpace(text, index)) {
+                    reset();
+                } else {
+                    endIndex = index + 1;
+                }
             } else {
                 countEndSymbols++;
             }
@@ -41,6 +49,18 @@ public class RepeatableSymbolContainerIdentifier extends TextIdentifier {
             nodePatternIdentifier.found(startIndex, endIndex, null);
             reset();
         }
+    }
+
+    private boolean isLastCharacterBeforeCloseSymbolSpace(String text, int index) {
+        return text.charAt(index - patternSizeLessOne - 1) == ' ';
+    }
+
+    private boolean isContentGreaterThanMinSize(int index) {
+        return index - startIndex - countStartSymbols - 1 > nodeBreakLinePattern.getMinSize();
+    }
+
+    private boolean isCharacterAfterStartSymbolsSpace(char character, int index) {
+        return index == startIndex + patternSizeLessOne + 1 && character == ' ';
     }
 
     private void resetCounterIfSymbolDoesNotMatch(boolean symbolMatch) {
@@ -57,5 +77,6 @@ public class RepeatableSymbolContainerIdentifier extends TextIdentifier {
         super.reset();
         countStartSymbols = 0;
         countEndSymbols = 0;
+        lastCharacter = INVALID_CHAR;
     }
 }

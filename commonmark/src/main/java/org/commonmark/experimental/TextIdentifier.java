@@ -1,6 +1,7 @@
 package org.commonmark.experimental;
 
 public abstract class TextIdentifier {
+    public static final char INVALID_CHAR = '\0';
     public static final int INVALID_INDEX = Integer.MIN_VALUE;
 
     private final NodeBreakLinePattern nodeBreakLinePattern;

@@ -5,7 +5,7 @@ import org.commonmark.experimental.TextIdentifier;
 
 public class SingleSymbolContainerIdentifier extends TextIdentifier {
     private final SingleSymbolContainerPattern nodeBreakLinePattern;
-    private char lastCharacter = '\0';
+    private char lastCharacter = INVALID_CHAR;
 
     public SingleSymbolContainerIdentifier(SingleSymbolContainerPattern nodeBreakLinePattern) {
         super(nodeBreakLinePattern);
