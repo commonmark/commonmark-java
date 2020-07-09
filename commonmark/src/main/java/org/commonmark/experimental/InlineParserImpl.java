@@ -108,6 +108,11 @@ public class InlineParserImpl implements InlineParser {
             return this;
         }
 
+        public Builder nodeSetup(List<TextNodeIdentifierSetup> extensions) {
+            nodeSetups.addAll(extensions);
+            return this;
+        }
+
         public InlineParserImpl build() {
             return new InlineParserImpl(literalNodeSetupSingle(literalNodeSetup), bootParse(nodeSetups));
         }
