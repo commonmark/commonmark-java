@@ -124,14 +124,14 @@ public class InlineParserImpl implements InlineParser {
         private Map<Character, NodeGroupHandler> bootParse(List<TextNodeIdentifierSetup> nodeSetups) {
             orderHighestPriorityFirst(nodeSetups);
 
-            Map<Character, NodeGroupHandler> extensionByStartBy = new HashMap<>(nodeSetups.size());
+            Map<Character, NodeGroupHandler> nodeSetupsByStartCharacter = new HashMap<>(nodeSetups.size());
 
             for (TextNodeIdentifierSetup nodeSetup : nodeSetups) {
                 TextIdentifier textIdentifier = nodeSetup.textIdentifier();
 
                 NodeBreakLinePattern preProcessLine = textIdentifier.getNodeBreakLinePattern();
 
-                NodeGroupHandler nodeGroupHandler = extensionByStartBy.get(preProcessLine.characterTrigger());
+                NodeGroupHandler nodeGroupHandler = nodeSetupsByStartCharacter.get(preProcessLine.characterTrigger());
                 if (nodeGroupHandler == null) {
                     nodeGroupHandler = new NodeGroupHandler();
                 }
@@ -140,9 +140,9 @@ public class InlineParserImpl implements InlineParser {
                         nodeSetup.nodeCreator(),
                         nodeSetup.priority()));
 
-                extensionByStartBy.put(preProcessLine.characterTrigger(), nodeGroupHandler);
+                nodeSetupsByStartCharacter.put(preProcessLine.characterTrigger(), nodeGroupHandler);
             }
-            return extensionByStartBy;
+            return nodeSetupsByStartCharacter;
         }
 
         private void orderHighestPriorityFirst(List<TextNodeIdentifierSetup> nodeSetups) {
@@ -152,8 +152,7 @@ public class InlineParserImpl implements InlineParser {
                     return Integer.compare(o1.priority(), o2.priority());
                 }
             };
-            Comparator<TextNodeIdentifierSetup> nodeSetupComparator1 = Collections.reverseOrder(nodeSetupComparator);
-            Collections.sort(nodeSetups, nodeSetupComparator1);
+            Collections.sort(nodeSetups, Collections.reverseOrder(nodeSetupComparator));
         }
 
         public Builder literalNodeSetup(NodeSetup literalNodeSetup) {
