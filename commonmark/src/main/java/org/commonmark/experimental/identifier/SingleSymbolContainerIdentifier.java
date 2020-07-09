@@ -17,12 +17,17 @@ public class SingleSymbolContainerIdentifier extends TextIdentifier {
         if (character == nodeBreakLinePattern.characterTrigger()) {
             if (startIndex == INVALID_INDEX) {
                 startIndex = index;
-            } else if (endIndex == INVALID_INDEX) {
+            } else {
                 if (lastCharacter == ' ' || index - startIndex <= nodeBreakLinePattern.getMinSize()) {
                     reset();
                     startIndex = index;
                 } else {
                     endIndex = index + 1;
+                }
+
+                if (endIndex != INVALID_INDEX) {
+                    nodePatternIdentifier.found(startIndex, endIndex, null);
+                    reset();
                 }
             }
         } else if (index == startIndex + 1 && character == ' ') {
@@ -30,11 +35,6 @@ public class SingleSymbolContainerIdentifier extends TextIdentifier {
         }
 
         lastCharacter = character;
-
-        if (startIndex != INVALID_INDEX && endIndex != INVALID_INDEX) {
-            nodePatternIdentifier.found(startIndex, endIndex, null);
-            reset();
-        }
     }
 
     @Override

@@ -8,7 +8,6 @@ public class RepeatableSymbolContainerIdentifier extends TextIdentifier {
     private final int patternSizeLessOne;
     private int countStartSymbols;
     private int countEndSymbols;
-    private char lastCharacter = INVALID_CHAR;
 
     public RepeatableSymbolContainerIdentifier(RepeatableSymbolContainerPattern nodeBreakLinePattern) {
         super(nodeBreakLinePattern);
@@ -31,23 +30,17 @@ public class RepeatableSymbolContainerIdentifier extends TextIdentifier {
             }
         } else if (isCharacterAfterStartSymbolsSpace(character, index)) {
             reset();
-        } else if (endIndex == INVALID_INDEX
-                && symbolMatch
-                && isContentGreaterThanMinSize(index)) {
+        } else if (symbolMatch && isContentGreaterThanMinSize(index)) {
             if (countEndSymbols == patternSizeLessOne) {
-                if (isLastCharacterBeforeCloseSymbolSpace(text, index)) {
-                    reset();
-                } else {
+                if (!isLastCharacterBeforeCloseSymbolSpace(text, index)) {
                     endIndex = index + 1;
+
+                    nodePatternIdentifier.found(startIndex, endIndex, null);
                 }
+                reset();
             } else {
                 countEndSymbols++;
             }
-        }
-
-        if (startIndex != INVALID_INDEX && endIndex != INVALID_INDEX) {
-            nodePatternIdentifier.found(startIndex, endIndex, null);
-            reset();
         }
     }
 
@@ -77,6 +70,5 @@ public class RepeatableSymbolContainerIdentifier extends TextIdentifier {
         super.reset();
         countStartSymbols = 0;
         countEndSymbols = 0;
-        lastCharacter = INVALID_CHAR;
     }
 }

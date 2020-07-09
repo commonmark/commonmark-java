@@ -1,6 +1,7 @@
 package org.commonmark.experimental.identifier;
 
 import org.commonmark.experimental.NodePatternIdentifier;
+import org.commonmark.experimental.NodePatternIdentifier.InternalBlocks;
 import org.commonmark.experimental.TextIdentifier;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 public class BracketContainerIdentifier extends TextIdentifier {
     private final List<BracketContainerPattern.OpenClose> openCloses;
     private final BracketContainerPattern nodeBreakLinePattern;
-    private NodePatternIdentifier.InternalBlocks[] internalBlocks;
+    private InternalBlocks[] internalBlocks;
     private int countBrackets = 0;
     private int indexOpenClose = 0;
     private boolean nextCharacterOpenExpected = false;
@@ -20,7 +21,7 @@ public class BracketContainerIdentifier extends TextIdentifier {
         this.openCloses = nodeBreakLinePattern.getOpenCloses();
         this.nodeBreakLinePattern = nodeBreakLinePattern;
         this.currentOpenClose = openCloses.get(indexOpenClose);
-        this.internalBlocks = new NodePatternIdentifier.InternalBlocks[openCloses.size()];
+        this.internalBlocks = new InternalBlocks[openCloses.size()];
     }
 
     @Override
@@ -48,25 +49,23 @@ public class BracketContainerIdentifier extends TextIdentifier {
             countedAny = true;
         }
 
-        if (countedAny && countBrackets == 0) {
-            int startIndexGroup = indexOpenClose == 0
-                    ? 0
-                    : internalBlocks[indexOpenClose - 1].getRelativeEndIndex();
-
-            internalBlocks[indexOpenClose] = new NodePatternIdentifier.InternalBlocks(
-                    startIndexGroup,
-                    index - startIndex + 1);
-
-            if (indexOpenClose < openCloses.size() - 1) {
-                indexOpenClose++;
-                currentOpenClose = openCloses.get(indexOpenClose);
-                lastGroupClosed = true;
-            } else {
-                endIndex = index + 1;
-            }
+        if (!countedAny || countBrackets != 0) {
+            return;
         }
 
-        if (startIndex != INVALID_INDEX && endIndex != INVALID_INDEX) {
+        int startIndexGroup = indexOpenClose == 0
+                ? 0
+                : internalBlocks[indexOpenClose - 1].getRelativeEndIndex();
+
+        internalBlocks[indexOpenClose] = new InternalBlocks(startIndexGroup, index - startIndex + 1);
+
+        if (indexOpenClose < openCloses.size() - 1) {
+            indexOpenClose++;
+            currentOpenClose = openCloses.get(indexOpenClose);
+            lastGroupClosed = true;
+        } else {
+            endIndex = index + 1;
+
             nodePatternIdentifier.found(startIndex, endIndex, internalBlocks);
             reset();
         }
@@ -97,6 +96,6 @@ public class BracketContainerIdentifier extends TextIdentifier {
         this.currentOpenClose = openCloses.get(indexOpenClose);
         this.lastGroupClosed = false;
         this.nextCharacterOpenExpected = false;
-        this.internalBlocks = new NodePatternIdentifier.InternalBlocks[openCloses.size()];
+        this.internalBlocks = new InternalBlocks[openCloses.size()];
     }
 }
