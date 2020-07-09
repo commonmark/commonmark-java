@@ -23,9 +23,7 @@ public class StartSymbolIdentifier extends TextIdentifier {
                 && endIndex == INVALID_INDEX
                 && isFoundEnd(text, index)) {
             endIndex = index + 1;
-        }
 
-        if (startIndex != INVALID_INDEX && endIndex != INVALID_INDEX) {
             nodePatternIdentifier.found(startIndex, endIndex, null);
             reset();
         }
