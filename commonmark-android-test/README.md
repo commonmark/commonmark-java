@@ -28,7 +28,7 @@ sdk.dir=/path_to_android_sdk
 path.report=../report
 
 # Version number of commonmark and extensions in maven central.
-version.maven=0.15.0
+version.maven=0.15.2
 # Version number of autolink in maven central (not bundled with extension jar).
 version.maven_autolink=0.10.0
 
