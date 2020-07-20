@@ -95,6 +95,6 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
         } else {
             opener.getPrevious().insertAfter(new Text("" + getOpeningCharacter()));
         }
-        closer.getParent().appendChild(new Text("" + getClosingCharacter()));
+        closer.insertAfter(new Text("" + getClosingCharacter()));
     }
 }

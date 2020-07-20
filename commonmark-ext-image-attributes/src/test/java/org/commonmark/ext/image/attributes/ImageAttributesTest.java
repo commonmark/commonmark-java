@@ -109,6 +109,8 @@ public class ImageAttributesTest extends RenderingTestCase {
         assertRendering("x {height=3 width=4}\n", "<p>x {height=3 width=4}</p>\n");
         assertRendering("\\documentclass[12pt]{article}\n", "<p>\\documentclass[12pt]{article}</p>\n");
         assertRendering("some *text*{height=3 width=4}\n", "<p>some <em>text</em>{height=3 width=4}</p>\n");
+        assertRendering("{NN} text", "<p>{NN} text</p>\n");
+        assertRendering("{}", "<p>{}</p>\n");
     }
 
     @Override
