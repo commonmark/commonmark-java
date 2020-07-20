@@ -4,7 +4,7 @@
     <parent>
         <artifactId>commonmark-parent</artifactId>
         <groupId>com.atlassian.commonmark</groupId>
-        <version>0.15.2</version>
+        <version>0.15.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>commonmark-ext-yaml-front-matter</artifactId>
