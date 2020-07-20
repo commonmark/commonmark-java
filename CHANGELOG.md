@@ -23,8 +23,8 @@ with the exception that 0.x versions can break between minor versions.
 - Extension for task lists (GitHub-style), thanks @dohertyfjatl
   - Syntax:
     ```
-    - [x] task #1` 
-    - [ ] task #2` 
+    - [x] task #1
+    - [ ] task #2
     ```
   - Use class `TaskListItemsExtension` in artifact `commonmark-ext-task-list-items`
 
