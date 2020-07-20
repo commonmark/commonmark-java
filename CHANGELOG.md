@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.15.2] - 2020-07-20
+### Fixed
+- image-attributes extension: Fix unexpected altering of text in case
+  parsing of attributes fails, e.g. `{NN} text` -> `{NN text}`, thanks @jk1
+
 ## [0.15.1] - 2020-05-29
 ### Added
 - Add text content rendering support for `InsExtension`
@@ -286,6 +291,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.15.2]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.15.1...commonmark-parent-0.15.2
 [0.15.1]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.15.0...commonmark-parent-0.15.1
 [0.15.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.14.0...commonmark-parent-0.15.0
 [0.14.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.13.1...commonmark-parent-0.14.0
