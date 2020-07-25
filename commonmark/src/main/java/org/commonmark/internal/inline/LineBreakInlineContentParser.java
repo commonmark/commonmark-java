@@ -13,6 +13,9 @@ public class LineBreakInlineContentParser implements InlineContentParser {
 
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState, Node previous) {
+        Scanner scanner = inlineParserState.scanner();
+        scanner.skip();
+
         // Check previous text for trailing spaces.
         // The "endsWith" is an optimization to avoid an RE match in the common case.
         if (previous instanceof Text && ((Text) previous).getLiteral().endsWith(" ")) {
@@ -25,12 +28,12 @@ public class LineBreakInlineContentParser implements InlineContentParser {
                 text.setLiteral(literal.substring(0, literal.length() - spaces));
             }
             if (spaces >= 2) {
-                return ParsedInline.of(new HardLineBreak(), 1);
+                return ParsedInline.of(new HardLineBreak(), scanner.position());
             } else {
-                return ParsedInline.of(new SoftLineBreak(), 1);
+                return ParsedInline.of(new SoftLineBreak(), scanner.position());
             }
         } else {
-            return ParsedInline.of(new SoftLineBreak(), 1);
+            return ParsedInline.of(new SoftLineBreak(), scanner.position());
         }
     }
 }

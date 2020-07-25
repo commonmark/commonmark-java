@@ -11,13 +11,13 @@ public abstract class ParsedInline {
         return null;
     }
 
-    public static ParsedInline of(Node node, int consumed) {
+    public static ParsedInline of(Node node, Position position) {
         if (node == null) {
             throw new NullPointerException("node must not be null");
         }
-        if (consumed <= 0) {
-            throw new IllegalArgumentException("consumed must be greater than 0");
+        if (position == null) {
+            throw new NullPointerException("position must not be null");
         }
-        return new ParsedInlineImpl(node, consumed);
+        return new ParsedInlineImpl(node, position);
     }
 }

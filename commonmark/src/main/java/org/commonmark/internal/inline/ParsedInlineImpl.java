@@ -4,18 +4,18 @@ import org.commonmark.node.Node;
 
 public class ParsedInlineImpl extends ParsedInline {
     private final Node node;
-    private final int consumed;
+    private final Position position;
 
-    public ParsedInlineImpl(Node node, int consumed) {
+    ParsedInlineImpl(Node node, Position position) {
         this.node = node;
-        this.consumed = consumed;
+        this.position = position;
     }
 
     public Node getNode() {
         return node;
     }
 
-    public int getConsumed() {
-        return consumed;
+    public Position getPosition() {
+        return position;
     }
 }

@@ -32,10 +32,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
     private static final Pattern ENTITY_HERE = Pattern.compile('^' + Escaping.ENTITY, Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern TICKS = Pattern.compile("`+");
-
-    private static final Pattern TICKS_HERE = Pattern.compile("^`+");
-
     private static final Pattern EMAIL_AUTOLINK = Pattern
             .compile("^<([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>");
 
@@ -75,6 +71,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.inlineParsers = new HashMap<>();
         this.inlineParsers.put('\n', Collections.<InlineContentParser>singletonList(new LineBreakInlineContentParser()));
         this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
+        this.inlineParsers.put('`', Collections.<InlineContentParser>singletonList(new BackticksInlineParser()));
 
         this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
         this.specialCharacters = calculateSpecialCharacters(delimiterCharacters, inlineParsers.keySet());
@@ -94,10 +91,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         for (Character c : characters) {
             bitSet.set(c);
         }
-        bitSet.set('`');
         bitSet.set('[');
         bitSet.set(']');
-        bitSet.set('\\');
         bitSet.set('!');
         bitSet.set('<');
         bitSet.set('&');
@@ -206,7 +201,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 ParsedInline parsedInline = inlineParser.tryParse(this, previous);
                 if (parsedInline instanceof ParsedInlineImpl) {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
-                    index += parsedInlineImpl.getConsumed();
+                    index = parsedInlineImpl.getPosition().getIndex();
                     return parsedInlineImpl.getNode();
                 }
             }
@@ -214,9 +209,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         Node node;
         switch (c) {
-            case '`':
-                node = parseBackticks();
-                break;
             case '[':
                 node = parseOpenBracket();
                 break;
@@ -294,41 +286,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      */
     private void spnl() {
         match(SPNL);
-    }
-
-
-    /**
-     * Attempt to parse backticks, returning either a backtick code span or a literal sequence of backticks.
-     */
-    private Node parseBackticks() {
-        String ticks = match(TICKS_HERE);
-        if (ticks == null) {
-            return null;
-        }
-        int afterOpenTicks = index;
-        String matched;
-        while ((matched = match(TICKS)) != null) {
-            if (matched.equals(ticks)) {
-                Code node = new Code();
-                String content = input.substring(afterOpenTicks, index - ticks.length());
-                content = content.replace('\n', ' ');
-
-                // spec: If the resulting string both begins and ends with a space character, but does not consist
-                // entirely of space characters, a single space character is removed from the front and back.
-                if (content.length() >= 3 &&
-                        content.charAt(0) == ' ' &&
-                        content.charAt(content.length() - 1) == ' ' &&
-                        Parsing.hasNonSpace(content)) {
-                    content = content.substring(1, content.length() - 1);
-                }
-
-                node.setLiteral(content);
-                return node;
-            }
-        }
-        // If we got here, we didn't match a closing backtick sequence.
-        index = afterOpenTicks;
-        return text(ticks);
     }
 
     /**
