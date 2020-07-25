@@ -1,7 +1,7 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.inline.AsteriskDelimiterProcessor;
-import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
+import org.commonmark.internal.inline.Scanner;
+import org.commonmark.internal.inline.*;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.LinkScanner;
@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InlineParserImpl implements InlineParser {
+public class InlineParserImpl implements InlineParser, InlineParserState {
 
     private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
     private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
@@ -29,8 +29,6 @@ public class InlineParserImpl implements InlineParser {
             .compile("^[" + ASCII_PUNCTUATION + "\\p{Pc}\\p{Pd}\\p{Pe}\\p{Pf}\\p{Pi}\\p{Po}\\p{Ps}]");
 
     private static final Pattern HTML_TAG = Pattern.compile('^' + HTMLTAG, Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
     private static final Pattern ENTITY_HERE = Pattern.compile('^' + Escaping.ENTITY, Pattern.CASE_INSENSITIVE);
 
@@ -50,12 +48,11 @@ public class InlineParserImpl implements InlineParser {
 
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
-    private static final Pattern FINAL_SPACE = Pattern.compile(" *$");
-
     private final BitSet specialCharacters;
     private final BitSet delimiterCharacters;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final InlineParserContext context;
+    private final Map<Character, List<InlineContentParser>> inlineParsers;
 
     private String input;
     private int index;
@@ -73,10 +70,14 @@ public class InlineParserImpl implements InlineParser {
 
     public InlineParserImpl(InlineParserContext inlineParserContext) {
         this.delimiterProcessors = calculateDelimiterProcessors(inlineParserContext.getCustomDelimiterProcessors());
-        this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
-        this.specialCharacters = calculateSpecialCharacters(delimiterCharacters);
 
         this.context = inlineParserContext;
+        this.inlineParsers = new HashMap<>();
+        this.inlineParsers.put('\n', Collections.<InlineContentParser>singletonList(new LineBreakInlineContentParser()));
+        this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
+
+        this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
+        this.specialCharacters = calculateSpecialCharacters(delimiterCharacters, inlineParsers.keySet());
     }
 
     public static BitSet calculateDelimiterCharacters(Set<Character> characters) {
@@ -87,10 +88,12 @@ public class InlineParserImpl implements InlineParser {
         return bitSet;
     }
 
-    public static BitSet calculateSpecialCharacters(BitSet delimiterCharacters) {
+    public static BitSet calculateSpecialCharacters(BitSet delimiterCharacters, Set<Character> characters) {
         BitSet bitSet = new BitSet();
         bitSet.or(delimiterCharacters);
-        bitSet.set('\n');
+        for (Character c : characters) {
+            bitSet.set(c);
+        }
         bitSet.set('`');
         bitSet.set('[');
         bitSet.set(']');
@@ -106,6 +109,12 @@ public class InlineParserImpl implements InlineParser {
         addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()), map);
         addDelimiterProcessors(delimiterProcessors, map);
         return map;
+    }
+
+    // TODO: The implementation shouldn't be public
+    @Override
+    public Scanner scanner() {
+        return new Scanner(input, index);
     }
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
@@ -190,14 +199,21 @@ public class InlineParserImpl implements InlineParser {
             return null;
         }
 
+        List<InlineContentParser> inlineParsers = this.inlineParsers.get(c);
+        if (inlineParsers != null) {
+            for (InlineContentParser inlineParser : inlineParsers) {
+                // TODO: Should we pass the whole previous node or can we make the API surface smaller?
+                ParsedInline parsedInline = inlineParser.tryParse(this, previous);
+                if (parsedInline instanceof ParsedInlineImpl) {
+                    ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
+                    index += parsedInlineImpl.getConsumed();
+                    return parsedInlineImpl.getNode();
+                }
+            }
+        }
+
         Node node;
         switch (c) {
-            case '\n':
-                node = parseNewline(previous);
-                break;
-            case '\\':
-                node = parseBackslash();
-                break;
             case '`':
                 node = parseBackticks();
                 break;
@@ -280,50 +296,6 @@ public class InlineParserImpl implements InlineParser {
         match(SPNL);
     }
 
-    /**
-     * Parse a newline. If it was preceded by two spaces, return a hard line break; otherwise a soft line break.
-     */
-    private Node parseNewline(Node previous) {
-        index++; // assume we're at a \n
-
-        // Check previous text for trailing spaces.
-        // The "endsWith" is an optimization to avoid an RE match in the common case.
-        if (previous instanceof Text && ((Text) previous).getLiteral().endsWith(" ")) {
-            Text text = (Text) previous;
-            String literal = text.getLiteral();
-            Matcher matcher = FINAL_SPACE.matcher(literal);
-            int spaces = matcher.find() ? matcher.end() - matcher.start() : 0;
-            if (spaces > 0) {
-                text.setLiteral(literal.substring(0, literal.length() - spaces));
-            }
-            if (spaces >= 2) {
-                return new HardLineBreak();
-            } else {
-                return new SoftLineBreak();
-            }
-        } else {
-            return new SoftLineBreak();
-        }
-    }
-
-    /**
-     * Parse a backslash-escaped special character, adding either the escaped  character, a hard line break
-     * (if the backslash is followed by a newline), or a literal backslash to the block's children.
-     */
-    private Node parseBackslash() {
-        index++;
-        Node node;
-        if (peek() == '\n') {
-            node = new HardLineBreak();
-            index++;
-        } else if (index < input.length() && ESCAPABLE.matcher(input.substring(index, index + 1)).matches()) {
-            node = text(input, index, index + 1);
-            index++;
-        } else {
-            node = text("\\");
-        }
-        return node;
-    }
 
     /**
      * Attempt to parse backticks, returning either a backtick code span or a literal sequence of backticks.
