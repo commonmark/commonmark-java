@@ -32,12 +32,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
     private static final Pattern ENTITY_HERE = Pattern.compile('^' + Escaping.ENTITY, Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern EMAIL_AUTOLINK = Pattern
-            .compile("^<([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>");
-
-    private static final Pattern AUTOLINK = Pattern
-            .compile("^<[a-zA-Z][a-zA-Z0-9.+-]{1,31}:[^<>\u0000-\u0020]*>");
-
     private static final Pattern SPNL = Pattern.compile("^ *(?:\n *)?");
 
     private static final Pattern UNICODE_WHITESPACE_CHAR = Pattern.compile("^[\\p{Zs}\t\r\n\f]");
@@ -72,6 +66,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.inlineParsers.put('\n', Collections.<InlineContentParser>singletonList(new LineBreakInlineContentParser()));
         this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
         this.inlineParsers.put('`', Collections.<InlineContentParser>singletonList(new BackticksInlineParser()));
+        this.inlineParsers.put('<', Collections.<InlineContentParser>singletonList(new AutolinkInlineParser()));
 
         this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
         this.specialCharacters = calculateSpecialCharacters(delimiterCharacters, inlineParsers.keySet());
@@ -219,10 +214,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 node = parseCloseBracket();
                 break;
             case '<':
-                node = parseAutolink();
-                if (node == null) {
-                    node = parseHtmlInline();
-                }
+                node = parseHtmlInline();
                 break;
             case '&':
                 node = parseEntity();
@@ -531,26 +523,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
         index = endContent + 1;
         return contentLength + 2;
-    }
-
-    /**
-     * Attempt to parse an autolink (URL or email in pointy brackets).
-     */
-    private Node parseAutolink() {
-        String m;
-        if ((m = match(EMAIL_AUTOLINK)) != null) {
-            String dest = m.substring(1, m.length() - 1);
-            Link node = new Link("mailto:" + dest, null);
-            node.appendChild(new Text(dest));
-            return node;
-        } else if ((m = match(AUTOLINK)) != null) {
-            String dest = m.substring(1, m.length() - 1);
-            Link node = new Link(dest, null);
-            node.appendChild(new Text(dest));
-            return node;
-        } else {
-            return null;
-        }
     }
 
     /**
