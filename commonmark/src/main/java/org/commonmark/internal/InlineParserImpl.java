@@ -5,7 +5,6 @@ import org.commonmark.internal.inline.*;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.LinkScanner;
-import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
@@ -17,18 +16,9 @@ import java.util.regex.Pattern;
 
 public class InlineParserImpl implements InlineParser, InlineParserState {
 
-    private static final String HTMLCOMMENT = "<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->";
-    private static final String PROCESSINGINSTRUCTION = "[<][?].*?[?][>]";
-    private static final String DECLARATION = "<![A-Z]+\\s+[^>]*>";
-    private static final String CDATA = "<!\\[CDATA\\[[\\s\\S]*?\\]\\]>";
-    private static final String HTMLTAG = "(?:" + Parsing.OPENTAG + "|" + Parsing.CLOSETAG + "|" + HTMLCOMMENT
-            + "|" + PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
-
     private static final String ASCII_PUNCTUATION = "!\"#\\$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~";
     private static final Pattern PUNCTUATION = Pattern
             .compile("^[" + ASCII_PUNCTUATION + "\\p{Pc}\\p{Pd}\\p{Pe}\\p{Pf}\\p{Pi}\\p{Po}\\p{Ps}]");
-
-    private static final Pattern HTML_TAG = Pattern.compile('^' + HTMLTAG, Pattern.CASE_INSENSITIVE);
 
     private static final Pattern ENTITY_HERE = Pattern.compile('^' + Escaping.ENTITY, Pattern.CASE_INSENSITIVE);
 
@@ -66,7 +56,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.inlineParsers.put('\n', Collections.<InlineContentParser>singletonList(new LineBreakInlineContentParser()));
         this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
         this.inlineParsers.put('`', Collections.<InlineContentParser>singletonList(new BackticksInlineParser()));
-        this.inlineParsers.put('<', Collections.<InlineContentParser>singletonList(new AutolinkInlineParser()));
+        this.inlineParsers.put('<', Arrays.asList(new AutolinkInlineParser(), new HtmlInlineParser()));
 
         this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
         this.specialCharacters = calculateSpecialCharacters(delimiterCharacters, inlineParsers.keySet());
@@ -212,9 +202,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 break;
             case ']':
                 node = parseCloseBracket();
-                break;
-            case '<':
-                node = parseHtmlInline();
                 break;
             case '&':
                 node = parseEntity();
@@ -523,20 +510,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
         index = endContent + 1;
         return contentLength + 2;
-    }
-
-    /**
-     * Attempt to parse inline HTML.
-     */
-    private Node parseHtmlInline() {
-        String m = match(HTML_TAG);
-        if (m != null) {
-            HtmlInline node = new HtmlInline();
-            node.setLiteral(m);
-            return node;
-        } else {
-            return null;
-        }
     }
 
     /**

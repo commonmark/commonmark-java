@@ -22,7 +22,7 @@ public class AutolinkInlineParser implements InlineContentParser {
         Scanner scanner = inlineParserState.scanner();
         scanner.skip();
         Position start = scanner.position();
-        if (scanner.find('>')) {
+        if (scanner.find('>') > 0) {
             String text = scanner.textBetween(start, scanner.position());
             scanner.skip();
             if (URI.matcher(text).matches()) {

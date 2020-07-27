@@ -17,7 +17,7 @@ public class BackticksInlineParser implements InlineContentParser {
         int openingTicks = scanner.skip('`');
         Position afterOpening = scanner.position();
 
-        while (scanner.find('`')) {
+        while (scanner.find('`') > 0) {
             Position beforeClosing = scanner.position();
             int count = scanner.skip('`');
             if (count == openingTicks) {

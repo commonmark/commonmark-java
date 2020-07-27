@@ -188,6 +188,23 @@ public class Parsing {
         return lastIndex - 1;
     }
 
+    public static int skipWhitespace(CharSequence s, int startIndex, int endIndex) {
+        for (int i = startIndex; i < endIndex; i++) {
+            switch (s.charAt(i)) {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\u000B':
+                case '\f':
+                case '\r':
+                    break;
+                default:
+                    return i;
+            }
+        }
+        return endIndex;
+    }
+
     private static int findNonSpace(CharSequence s, int startIndex) {
         int length = s.length();
         for (int i = startIndex; i < length; i++) {

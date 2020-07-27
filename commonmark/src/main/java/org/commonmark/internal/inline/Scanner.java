@@ -1,5 +1,6 @@
 package org.commonmark.internal.inline;
 
+import org.commonmark.internal.util.CharMatcher;
 import org.commonmark.internal.util.Parsing;
 
 public class Scanner {
@@ -25,6 +26,15 @@ public class Scanner {
         index++;
     }
 
+    public boolean skipOne(char c) {
+        if (peek() == c) {
+            skip();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public int skip(char c) {
         int count = 0;
         while (peek() == c) {
@@ -34,13 +44,47 @@ public class Scanner {
         return count;
     }
 
-    public boolean find(char c) {
-        int newIndex = Parsing.find(c, input, index);
-        if (newIndex == -1) {
-            return false;
-        } else {
-            index = newIndex;
-            return true;
+    public int skip(CharMatcher matcher) {
+        int count = 0;
+        while (matcher.matches(peek())) {
+            count++;
+            skip();
+        }
+        return count;
+    }
+
+    public int skipWhitespace() {
+        int newIndex = Parsing.skipWhitespace(input, index, input.length());
+        int count = newIndex - index;
+        index = newIndex;
+        return count;
+    }
+
+    public int find(char c) {
+        int count = 0;
+        while (true) {
+            char cur = peek();
+            if (cur == '\0') {
+                return -1;
+            } else if (cur == c) {
+                return count;
+            }
+            count++;
+            skip();
+        }
+    }
+
+    public int find(CharMatcher matcher) {
+        int count = 0;
+        while (true) {
+            char c = peek();
+            if (c == '\0') {
+                return -1;
+            } else if (matcher.matches(c)) {
+                return count;
+            }
+            count++;
+            skip();
         }
     }
 
