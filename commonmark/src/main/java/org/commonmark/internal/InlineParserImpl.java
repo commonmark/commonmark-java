@@ -3,7 +3,6 @@ package org.commonmark.internal;
 import org.commonmark.internal.inline.Scanner;
 import org.commonmark.internal.inline.*;
 import org.commonmark.internal.util.Escaping;
-import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
@@ -19,8 +18,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private static final String ASCII_PUNCTUATION = "!\"#\\$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~";
     private static final Pattern PUNCTUATION = Pattern
             .compile("^[" + ASCII_PUNCTUATION + "\\p{Pc}\\p{Pd}\\p{Pe}\\p{Pf}\\p{Pi}\\p{Po}\\p{Ps}]");
-
-    private static final Pattern ENTITY_HERE = Pattern.compile('^' + Escaping.ENTITY, Pattern.CASE_INSENSITIVE);
 
     private static final Pattern SPNL = Pattern.compile("^ *(?:\n *)?");
 
@@ -56,6 +53,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.inlineParsers.put('\n', Collections.<InlineContentParser>singletonList(new LineBreakInlineContentParser()));
         this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
         this.inlineParsers.put('`', Collections.<InlineContentParser>singletonList(new BackticksInlineParser()));
+        this.inlineParsers.put('&', Collections.<InlineContentParser>singletonList(new EntityInlineParser()));
         this.inlineParsers.put('<', Arrays.asList(new AutolinkInlineParser(), new HtmlInlineParser()));
 
         this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
@@ -79,8 +77,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         bitSet.set('[');
         bitSet.set(']');
         bitSet.set('!');
-        bitSet.set('<');
-        bitSet.set('&');
         return bitSet;
     }
 
@@ -202,9 +198,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 break;
             case ']':
                 node = parseCloseBracket();
-                break;
-            case '&':
-                node = parseEntity();
                 break;
             default:
                 boolean isDelimiter = delimiterCharacters.get(c);
@@ -510,18 +503,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
         index = endContent + 1;
         return contentLength + 2;
-    }
-
-    /**
-     * Attempt to parse a HTML style entity.
-     */
-    private Node parseEntity() {
-        String m;
-        if ((m = match(ENTITY_HERE)) != null) {
-            return text(Html5Entities.entityToString(m));
-        } else {
-            return null;
-        }
     }
 
     /**
