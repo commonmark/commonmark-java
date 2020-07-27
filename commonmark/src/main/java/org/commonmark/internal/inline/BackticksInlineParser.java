@@ -14,12 +14,12 @@ public class BackticksInlineParser implements InlineContentParser {
     public ParsedInline tryParse(InlineParserState inlineParserState, Node previous) {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();
-        int openingTicks = scanner.skip('`');
+        int openingTicks = scanner.matchMultiple('`');
         Position afterOpening = scanner.position();
 
         while (scanner.find('`') > 0) {
             Position beforeClosing = scanner.position();
-            int count = scanner.skip('`');
+            int count = scanner.matchMultiple('`');
             if (count == openingTicks) {
                 Code node = new Code();
 

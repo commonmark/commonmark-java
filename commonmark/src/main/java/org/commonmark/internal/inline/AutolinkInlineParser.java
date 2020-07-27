@@ -20,11 +20,11 @@ public class AutolinkInlineParser implements InlineContentParser {
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState, Node previous) {
         Scanner scanner = inlineParserState.scanner();
-        scanner.skip();
+        scanner.next();
         Position start = scanner.position();
         if (scanner.find('>') > 0) {
             String text = scanner.textBetween(start, scanner.position());
-            scanner.skip();
+            scanner.next();
             if (URI.matcher(text).matches()) {
                 Link node = new Link(text, null);
                 node.appendChild(new Text(text));

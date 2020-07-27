@@ -14,7 +14,7 @@ public class LineBreakInlineContentParser implements InlineContentParser {
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState, Node previous) {
         Scanner scanner = inlineParserState.scanner();
-        scanner.skip();
+        scanner.next();
 
         // Check previous text for trailing spaces.
         // The "endsWith" is an optimization to avoid an RE match in the common case.

@@ -32,7 +32,7 @@ public class HtmlInlineParser implements InlineContentParser {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();
         // Skip over `<`
-        scanner.skip();
+        scanner.next();
 
         char c = scanner.peek();
         if (tagNameStart.matches(c)) {
@@ -49,7 +49,7 @@ public class HtmlInlineParser implements InlineContentParser {
             }
         } else if (c == '!') {
             // comment, declaration or CDATA
-            scanner.skip();
+            scanner.next();
             c = scanner.peek();
             if (c == '-') {
                 if (tryComment(scanner)) {
@@ -78,30 +78,30 @@ public class HtmlInlineParser implements InlineContentParser {
     private static boolean tryOpenTag(Scanner scanner) {
         // spec: An open tag consists of a < character, a tag name, zero or more attributes, optional whitespace,
         // an optional / character, and a > character.
-        scanner.skip();
-        scanner.skip(tagNameContinue);
-        boolean whitespace = scanner.skipWhitespace() >= 1;
+        scanner.next();
+        scanner.match(tagNameContinue);
+        boolean whitespace = scanner.whitespace() >= 1;
         // spec: An attribute consists of whitespace, an attribute name, and an optional attribute value specification.
-        while (whitespace && scanner.skip(attributeStart) >= 1) {
-            scanner.skip(attributeContinue);
+        while (whitespace && scanner.match(attributeStart) >= 1) {
+            scanner.match(attributeContinue);
             // spec: An attribute value specification consists of optional whitespace, a = character,
             // optional whitespace, and an attribute value.
-            whitespace = scanner.skipWhitespace() >= 1;
-            if (scanner.skipOne('=')) {
-                scanner.skipWhitespace();
+            whitespace = scanner.whitespace() >= 1;
+            if (scanner.next('=')) {
+                scanner.whitespace();
                 char valueStart = scanner.peek();
                 if (valueStart == '\'') {
-                    scanner.skip();
+                    scanner.next();
                     if (scanner.find('\'') < 0) {
                         return false;
                     }
-                    scanner.skip();
+                    scanner.next();
                 } else if (valueStart == '"') {
-                    scanner.skip();
+                    scanner.next();
                     if (scanner.find('"') < 0) {
                         return false;
                     }
-                    scanner.skip();
+                    scanner.next();
                 } else {
                     if (scanner.find(attributeValueEnd) <= 0) {
                         return false;
@@ -109,21 +109,21 @@ public class HtmlInlineParser implements InlineContentParser {
                 }
 
                 // Whitespace is required between attributes
-                whitespace = scanner.skipWhitespace() >= 1;
+                whitespace = scanner.whitespace() >= 1;
             }
         }
 
-        scanner.skipOne('/');
-        return scanner.skipOne('>');
+        scanner.next('/');
+        return scanner.next('>');
     }
 
     private static boolean tryClosingTag(Scanner scanner) {
         // spec: A closing tag consists of the string </, a tag name, optional whitespace, and the character >.
-        scanner.skip();
-        if (scanner.skip(tagNameStart) >= 1) {
-            scanner.skip(tagNameContinue);
-            scanner.skipWhitespace();
-            return scanner.skipOne('>');
+        scanner.next();
+        if (scanner.match(tagNameStart) >= 1) {
+            scanner.match(tagNameContinue);
+            scanner.whitespace();
+            return scanner.next('>');
         }
         return false;
     }
@@ -131,10 +131,10 @@ public class HtmlInlineParser implements InlineContentParser {
     private static boolean tryProcessingInstruction(Scanner scanner) {
         // spec: A processing instruction consists of the string <?, a string of characters not including the string ?>,
         // and the string ?>.
-        scanner.skip();
+        scanner.next();
         while (scanner.find('?') > 0) {
-            scanner.skip();
-            if (scanner.skipOne('>')) {
+            scanner.next();
+            if (scanner.next('>')) {
                 return true;
             }
         }
@@ -146,29 +146,29 @@ public class HtmlInlineParser implements InlineContentParser {
         // with -, and does not contain --. (See the HTML5 spec.)
 
         // Skip first `-`
-        scanner.skip();
-        if (!scanner.skipOne('-')) {
+        scanner.next();
+        if (!scanner.next('-')) {
             return false;
         }
 
-        if (scanner.skipOne('>')) {
+        if (scanner.next('>')) {
             return false;
         }
 
-        if (scanner.skipOne('-')) {
+        if (scanner.next('-')) {
             // Can't start with ->
-            if (scanner.skipOne('>')) {
+            if (scanner.next('>')) {
                 return false;
             }
             // Empty comment
-            if (scanner.skipOne('-')) {
-                return scanner.skipOne('>');
+            if (scanner.next('-')) {
+                return scanner.next('>');
             }
         }
 
         while (scanner.find('-') >= 0) {
-            if (scanner.skipOne('-') && scanner.skipOne('-')) {
-                return scanner.skipOne('>');
+            if (scanner.next('-') && scanner.next('-')) {
+                return scanner.next('>');
             }
         }
 
@@ -180,12 +180,12 @@ public class HtmlInlineParser implements InlineContentParser {
         // and the string ]]>.
 
         // Skip `[`
-        scanner.skip();
+        scanner.next();
 
-        if (scanner.skipOne('C') && scanner.skipOne('D') && scanner.skipOne('A') && scanner.skipOne('T') && scanner.skipOne('A')
-                && scanner.skipOne('[')) {
+        if (scanner.next('C') && scanner.next('D') && scanner.next('A') && scanner.next('T') && scanner.next('A')
+                && scanner.next('[')) {
             while (scanner.find(']') >= 0) {
-                if (scanner.skipOne(']') && scanner.skipOne(']') && scanner.skipOne('>')) {
+                if (scanner.next(']') && scanner.next(']') && scanner.next('>')) {
                     return true;
                 }
             }
@@ -197,12 +197,12 @@ public class HtmlInlineParser implements InlineContentParser {
     private static boolean tryDeclaration(Scanner scanner) {
         // spec: A declaration consists of the string <!, a name consisting of one or more uppercase ASCII letters,
         // whitespace, a string of characters not including the character >, and the character >.
-        scanner.skip(declaration);
-        if (scanner.skipWhitespace() <= 0) {
+        scanner.match(declaration);
+        if (scanner.whitespace() <= 0) {
             return false;
         }
         if (scanner.find('>') >= 0) {
-            scanner.skip();
+            scanner.next();
             return true;
         }
         return false;

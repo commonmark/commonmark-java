@@ -22,38 +22,38 @@ public class Scanner {
         }
     }
 
-    public void skip() {
+    public void next() {
         index++;
     }
 
-    public boolean skipOne(char c) {
+    public boolean next(char c) {
         if (peek() == c) {
-            skip();
+            next();
             return true;
         } else {
             return false;
         }
     }
 
-    public int skip(char c) {
+    public int matchMultiple(char c) {
         int count = 0;
         while (peek() == c) {
             count++;
-            skip();
+            next();
         }
         return count;
     }
 
-    public int skip(CharMatcher matcher) {
+    public int match(CharMatcher matcher) {
         int count = 0;
         while (matcher.matches(peek())) {
             count++;
-            skip();
+            next();
         }
         return count;
     }
 
-    public int skipWhitespace() {
+    public int whitespace() {
         int newIndex = Parsing.skipWhitespace(input, index, input.length());
         int count = newIndex - index;
         index = newIndex;
@@ -70,7 +70,7 @@ public class Scanner {
                 return count;
             }
             count++;
-            skip();
+            next();
         }
     }
 
@@ -84,7 +84,7 @@ public class Scanner {
                 return count;
             }
             count++;
-            skip();
+            next();
         }
     }
 

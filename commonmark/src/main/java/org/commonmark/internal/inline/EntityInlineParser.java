@@ -20,26 +20,26 @@ public class EntityInlineParser implements InlineContentParser {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();
         // Skip `&`
-        scanner.skip();
+        scanner.next();
 
         char c = scanner.peek();
         if (c == '#') {
             // Numeric
-            scanner.skip();
-            if (scanner.skipOne('x') || scanner.skipOne('X')) {
-                int digits = scanner.skip(hex);
-                if (1 <= digits && digits <= 6 && scanner.skipOne(';')) {
+            scanner.next();
+            if (scanner.next('x') || scanner.next('X')) {
+                int digits = scanner.match(hex);
+                if (1 <= digits && digits <= 6 && scanner.next(';')) {
                     return entity(scanner, start);
                 }
             } else {
-                int digits = scanner.skip(dec);
-                if (1 <= digits && digits <= 7 && scanner.skipOne(';')) {
+                int digits = scanner.match(dec);
+                if (1 <= digits && digits <= 7 && scanner.next(';')) {
                     return entity(scanner, start);
                 }
             }
         } else if (entityStart.matches(c)) {
-            scanner.skip(entityContinue);
-            if (scanner.skipOne(';')) {
+            scanner.match(entityContinue);
+            if (scanner.next(';')) {
                 return entity(scanner, start);
             }
         }
