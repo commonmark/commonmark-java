@@ -5,11 +5,11 @@ import org.commonmark.internal.util.Parsing;
 
 public class Scanner {
 
-    private final String input;
+    private final CharSequence input;
     private int index;
 
     // TODO: Visibility
-    public Scanner(String input, int index) {
+    public Scanner(CharSequence input, int index) {
         this.input = input;
         this.index = index;
     }
@@ -20,6 +20,10 @@ public class Scanner {
         } else {
             return input.charAt(index);
         }
+    }
+
+    public boolean hasNext() {
+        return index < input.length();
     }
 
     public void next() {
@@ -94,7 +98,9 @@ public class Scanner {
         return new Position(index);
     }
 
-    public String textBetween(Position begin, Position end) {
-        return input.substring(begin.index, end.index);
+    // For cases where the caller appends the result to a StringBuilder, we could offer another method to avoid some
+    // unnecessary copying.
+    public CharSequence textBetween(Position begin, Position end) {
+        return input.subSequence(begin.index, end.index);
     }
 }

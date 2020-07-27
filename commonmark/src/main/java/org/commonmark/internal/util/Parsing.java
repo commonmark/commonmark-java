@@ -72,43 +72,41 @@ public class Parsing {
         return false;
     }
 
-    public static boolean isEscapable(CharSequence s, int index) {
-        if (index < s.length()) {
-            switch (s.charAt(index)) {
-                case '!':
-                case '"':
-                case '#':
-                case '$':
-                case '%':
-                case '&':
-                case '\'':
-                case '(':
-                case ')':
-                case '*':
-                case '+':
-                case ',':
-                case '-':
-                case '.':
-                case '/':
-                case ':':
-                case ';':
-                case '<':
-                case '=':
-                case '>':
-                case '?':
-                case '@':
-                case '[':
-                case '\\':
-                case ']':
-                case '^':
-                case '_':
-                case '`':
-                case '{':
-                case '|':
-                case '}':
-                case '~':
-                    return true;
-            }
+    public static boolean isEscapable(char c) {
+        switch (c) {
+            case '!':
+            case '"':
+            case '#':
+            case '$':
+            case '%':
+            case '&':
+            case '\'':
+            case '(':
+            case ')':
+            case '*':
+            case '+':
+            case ',':
+            case '-':
+            case '.':
+            case '/':
+            case ':':
+            case ';':
+            case '<':
+            case '=':
+            case '>':
+            case '?':
+            case '@':
+            case '[':
+            case '\\':
+            case ']':
+            case '^':
+            case '_':
+            case '`':
+            case '{':
+            case '|':
+            case '}':
+            case '~':
+                return true;
         }
         return false;
     }

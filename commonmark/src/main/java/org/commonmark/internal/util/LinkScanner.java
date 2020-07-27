@@ -1,69 +1,76 @@
 package org.commonmark.internal.util;
 
+import org.commonmark.internal.inline.Scanner;
+
 public class LinkScanner {
 
     /**
-     * Attempt to scan the contents of a link label (inside the brackets), returning the position after the content or
-     * -1. The returned position can either be the closing {@code ]}, or the end of the line if the label continues on
+     * Attempt to scan the contents of a link label (inside the brackets), stopping after the content or returning false.
+     * The stopped position can bei either the closing {@code ]}, or the end of the line if the label continues on
      * the next line.
      */
-    public static int scanLinkLabelContent(CharSequence input, int start) {
-        for (int i = start; i < input.length(); i++) {
-            char c = input.charAt(i);
-            switch (c) {
+    public static boolean scanLinkLabelContent(Scanner scanner) {
+        while (scanner.hasNext()) {
+            switch (scanner.peek()) {
                 case '\\':
-                    if (Parsing.isEscapable(input, i + 1)) {
-                        i += 1;
+                    scanner.next();
+                    if (Parsing.isEscapable(scanner.peek())) {
+                        scanner.next();
                     }
                     break;
                 case ']':
-                    return i;
+                    return true;
                 case '[':
                     // spec: Unescaped square bracket characters are not allowed inside the opening and closing
                     // square brackets of link labels.
-                    return -1;
+                    return false;
+                default:
+                    scanner.next();
             }
         }
-        return input.length();
+        return true;
     }
 
     /**
-     * Attempt to scan a link destination, returning the position after the destination or -1.
+     * Attempt to scan a link destination, stopping after the destination or returning false.
      */
-    public static int scanLinkDestination(CharSequence input, int start) {
-        if (start >= input.length()) {
-            return -1;
+    public static boolean scanLinkDestination(Scanner scanner) {
+        if (!scanner.hasNext()) {
+            return false;
         }
 
-        if (input.charAt(start) == '<') {
-            for (int i = start + 1; i < input.length(); i++) {
-                char c = input.charAt(i);
-                switch (c) {
+        if (scanner.next('<')) {
+            while (scanner.hasNext()) {
+                switch (scanner.peek()) {
                     case '\\':
-                        if (Parsing.isEscapable(input, i + 1)) {
-                            i += 1;
+                        scanner.next();
+                        if (Parsing.isEscapable(scanner.peek())) {
+                            scanner.next();
                         }
                         break;
                     case '\n':
                     case '<':
-                        return -1;
+                        return false;
                     case '>':
-                        return i + 1;
+                        scanner.next();
+                        return true;
+                    default:
+                        scanner.next();
                 }
             }
-            return -1;
+            return false;
         } else {
-            return scanLinkDestinationWithBalancedParens(input, start);
+            return scanLinkDestinationWithBalancedParens(scanner);
         }
     }
 
-    public static int scanLinkTitle(CharSequence input, int start) {
-        if (start >= input.length()) {
-            return -1;
+    public static boolean scanLinkTitle(Scanner scanner) {
+        if (!scanner.hasNext()) {
+            return false;
         }
 
         char endDelimiter;
-        switch (input.charAt(start)) {
+        switch (scanner.peek()) {
             case '"':
                 endDelimiter = '"';
                 break;
@@ -74,75 +81,83 @@ public class LinkScanner {
                 endDelimiter = ')';
                 break;
             default:
-                return -1;
+                return false;
         }
+        scanner.next();
 
-        int afterContent = scanLinkTitleContent(input, start + 1, endDelimiter);
-        if (afterContent == -1) {
-            return -1;
+        if (!scanLinkTitleContent(scanner, endDelimiter)) {
+            return false;
         }
-
-        if (afterContent >= input.length() || input.charAt(afterContent) != endDelimiter) {
-            // missing or wrong end delimiter
-            return -1;
+        if (!scanner.hasNext()) {
+            return false;
         }
-
-        return afterContent + 1;
+        scanner.next();
+        return true;
     }
 
-    public static int scanLinkTitleContent(CharSequence input, int start, char endDelimiter) {
-        for (int i = start; i < input.length(); i++) {
-            char c = input.charAt(i);
-            if (c == '\\' && Parsing.isEscapable(input, i + 1)) {
-                i += 1;
+    public static boolean scanLinkTitleContent(Scanner scanner, char endDelimiter) {
+        while (scanner.hasNext()) {
+            char c = scanner.peek();
+            if (c == '\\') {
+                scanner.next();
+                if (Parsing.isEscapable(scanner.peek())) {
+                    scanner.next();
+                }
             } else if (c == endDelimiter) {
-                return i;
+                return true;
             } else if (endDelimiter == ')' && c == '(') {
                 // unescaped '(' in title within parens is invalid
-                return -1;
+                return false;
+            } else {
+                scanner.next();
             }
         }
-        return input.length();
+        return true;
     }
 
     // spec: a nonempty sequence of characters that does not start with <, does not include ASCII space or control
     // characters, and includes parentheses only if (a) they are backslash-escaped or (b) they are part of a balanced
     // pair of unescaped parentheses
-    private static int scanLinkDestinationWithBalancedParens(CharSequence input, int start) {
+    private static boolean scanLinkDestinationWithBalancedParens(Scanner scanner) {
         int parens = 0;
-        for (int i = start; i < input.length(); i++) {
-            char c = input.charAt(i);
+        boolean empty = true;
+        while (scanner.hasNext()) {
+            char c = scanner.peek();
             switch (c) {
-                case '\0':
                 case ' ':
-                    return i != start ? i : -1;
+                    return !empty;
                 case '\\':
-                    if (Parsing.isEscapable(input, i + 1)) {
-                        i += 1;
+                    scanner.next();
+                    if (Parsing.isEscapable(scanner.peek())) {
+                        scanner.next();
                     }
                     break;
                 case '(':
                     parens++;
                     // Limit to 32 nested parens for pathological cases
                     if (parens > 32) {
-                        return -1;
+                        return false;
                     }
+                    scanner.next();
                     break;
                 case ')':
                     if (parens == 0) {
-                        return i;
+                        return true;
                     } else {
                         parens--;
                     }
+                    scanner.next();
                     break;
                 default:
                     // or control character
                     if (Character.isISOControl(c)) {
-                        return i != start ? i : -1;
+                        return !empty;
                     }
+                    scanner.next();
                     break;
             }
+            empty = false;
         }
-        return input.length();
+        return true;
     }
 }

@@ -48,6 +48,7 @@ public class EntityInlineParser implements InlineContentParser {
     }
 
     private ParsedInline entity(Scanner scanner, Position start) {
-        return ParsedInline.of(new Text(Html5Entities.entityToString(scanner.textBetween(start, scanner.position()))), scanner.position());
+        String text = scanner.textBetween(start, scanner.position()).toString();
+        return ParsedInline.of(new Text(Html5Entities.entityToString(text)), scanner.position());
     }
 }

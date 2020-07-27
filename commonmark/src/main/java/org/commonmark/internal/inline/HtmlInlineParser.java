@@ -70,8 +70,9 @@ public class HtmlInlineParser implements InlineContentParser {
     }
 
     private static ParsedInline htmlInline(Position start, Scanner scanner) {
+        String text = scanner.textBetween(start, scanner.position()).toString();
         HtmlInline node = new HtmlInline();
-        node.setLiteral(scanner.textBetween(start, scanner.position()));
+        node.setLiteral(text);
         return ParsedInline.of(node, scanner.position());
     }
 

@@ -93,6 +93,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return new Scanner(input, index);
     }
 
+    private void setPosition(Position position) {
+        index = position.getIndex();
+    }
+
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
         for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
             char opening = delimiterProcessor.getOpeningCharacter();
@@ -182,7 +186,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 ParsedInline parsedInline = inlineParser.tryParse(this, previous);
                 if (parsedInline instanceof ParsedInlineImpl) {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
-                    index = parsedInlineImpl.getPosition().getIndex();
+                    setPosition(parsedInlineImpl.getPosition());
                     return parsedInlineImpl.getNode();
                 }
             }
@@ -372,21 +376,18 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         if (!isLinkOrImage) {
 
             // See if there's a link label like `[bar]` or `[]`
-            int beforeLabel = index;
-            parseLinkLabel();
-            int labelLength = index - beforeLabel;
-            String ref = null;
-            if (labelLength > 2) {
-                ref = input.substring(beforeLabel, beforeLabel + labelLength);
-            } else if (!opener.bracketAfter) {
+            String ref = parseLinkLabel();
+            if ((ref == null || ref.isEmpty()) && !opener.bracketAfter) {
                 // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
                 // But it can only be a reference when there's no (unescaped) bracket in it.
                 // If there is, we don't even need to try to look up the reference. This is an optimization.
                 ref = input.substring(opener.index, startIndex);
+                // Strip '[' and ']'
+                ref = ref.substring(1, ref.length() - 1);
             }
 
             if (ref != null) {
-                String label = Escaping.normalizeReference(ref);
+                String label = Escaping.normalizeLabelContent(ref);
                 LinkReferenceDefinition definition = context.getLinkReferenceDefinition(label);
                 if (definition != null) {
                     dest = definition.getDestination();
@@ -451,20 +452,23 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Attempt to parse link destination, returning the string or null if no match.
      */
     private String parseLinkDestination() {
-        int afterDest = LinkScanner.scanLinkDestination(input, index);
-        if (afterDest == -1) {
+        Scanner scanner = scanner();
+        char delimiter = scanner.peek();
+        Position start = scanner.position();
+        if (!LinkScanner.scanLinkDestination(scanner)) {
             return null;
         }
 
         String dest;
-        if (peek() == '<') {
+        if (delimiter == '<') {
             // chop off surrounding <..>:
-            dest = input.substring(index + 1, afterDest - 1);
+            CharSequence rawDestination = scanner.textBetween(start, scanner.position());
+            dest = rawDestination.subSequence(1, rawDestination.length() - 1).toString();
         } else {
-            dest = input.substring(index, afterDest);
+            dest = scanner.textBetween(start, scanner.position()).toString();
         }
 
-        index = afterDest;
+        setPosition(scanner.position());
         return Escaping.unescapeString(dest);
     }
 
@@ -472,37 +476,46 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
     private String parseLinkTitle() {
-        int afterTitle = LinkScanner.scanLinkTitle(input, index);
-        if (afterTitle == -1) {
+        Scanner scanner = scanner();
+        Position start = scanner.position();
+        if (!LinkScanner.scanLinkTitle(scanner)) {
             return null;
         }
 
         // chop off ', " or parens
-        String title = input.substring(index + 1, afterTitle - 1);
-        index = afterTitle;
+        CharSequence rawTitle = scanner.textBetween(start, scanner.position());
+        String title = rawTitle.subSequence(1, rawTitle.length() - 1).toString();
+        setPosition(scanner.position());
         return Escaping.unescapeString(title);
     }
 
     /**
-     * Attempt to parse a link label, returning number of characters parsed.
+     * Attempt to parse a link label, returning the label between the brackets or null.
      */
-    int parseLinkLabel() {
-        if (index >= input.length() || input.charAt(index) != '[') {
-            return 0;
+    String parseLinkLabel() {
+        Scanner scanner = scanner();
+        if (!scanner.next('[')) {
+            return null;
         }
 
-        int startContent = index + 1;
-        int endContent = LinkScanner.scanLinkLabelContent(input, startContent);
+        Position start = scanner.position();
+        if (!LinkScanner.scanLinkLabelContent(scanner)) {
+            return null;
+        }
+        Position end = scanner.position();
+
+        if (!scanner.next(']')) {
+            return null;
+        }
+
+        String content = scanner.textBetween(start, end).toString();
         // spec: A link label can have at most 999 characters inside the square brackets.
-        int contentLength = endContent - startContent;
-        if (endContent == -1 || contentLength > 999) {
-            return 0;
+        if (content.length() > 999) {
+            return null;
         }
-        if (endContent >= input.length() || input.charAt(endContent) != ']') {
-            return 0;
-        }
-        index = endContent + 1;
-        return contentLength + 2;
+
+        setPosition(scanner.position());
+        return content;
     }
 
     /**

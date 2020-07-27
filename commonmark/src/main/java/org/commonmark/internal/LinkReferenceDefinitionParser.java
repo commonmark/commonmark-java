@@ -1,8 +1,9 @@
 package org.commonmark.internal;
 
+import org.commonmark.internal.inline.Position;
+import org.commonmark.internal.inline.Scanner;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
-import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.SourceSpan;
 
@@ -35,8 +36,9 @@ public class LinkReferenceDefinitionParser {
         }
         paragraph.append(line);
 
-        int i = 0;
-        while (i < line.length()) {
+        Scanner scanner = new Scanner(line, 0);
+        while (scanner.hasNext()) {
+            boolean success;
             switch (state) {
                 case PARAGRAPH: {
                     // We're in a paragraph now. Link reference definitions can only appear at the beginning, so once
@@ -44,28 +46,31 @@ public class LinkReferenceDefinitionParser {
                     return;
                 }
                 case START_DEFINITION: {
-                    i = startDefinition(line, i);
+                    success = startDefinition(scanner);
                     break;
                 }
                 case LABEL: {
-                    i = label(line, i);
+                    success = label(scanner);
                     break;
                 }
                 case DESTINATION: {
-                    i = destination(line, i);
+                    success = destination(scanner);
                     break;
                 }
                 case START_TITLE: {
-                    i = startTitle(line, i);
+                    success = startTitle(scanner);
                     break;
                 }
                 case TITLE: {
-                    i = title(line, i);
+                    success = title(scanner);
                     break;
                 }
+                default: {
+                    throw new IllegalStateException("Unknown parsing state: " + state);
+                }
             }
-            // -1 is returned if parsing failed, which means we fall back to treating text as a paragraph.
-            if (i == -1) {
+            // Parsing failed, which means we fall back to treating text as a paragraph.
+            if (!success) {
                 state = State.PARAGRAPH;
                 return;
             }
@@ -93,96 +98,95 @@ public class LinkReferenceDefinitionParser {
         return state;
     }
 
-    private int startDefinition(CharSequence line, int i) {
-        i = Parsing.skipSpaceTab(line, i, line.length());
-        if (i >= line.length() || line.charAt(i) != '[') {
-            return -1;
+    private boolean startDefinition(Scanner scanner) {
+        scanner.whitespace();
+        if (!scanner.next('[')) {
+            return false;
         }
 
         state = State.LABEL;
         label = new StringBuilder();
 
-        int labelStart = i + 1;
-        if (labelStart >= line.length()) {
+        if (!scanner.hasNext()) {
             label.append('\n');
         }
-
-        return labelStart;
+        return true;
     }
 
-    private int label(CharSequence line, int i) {
-        int afterLabel = LinkScanner.scanLinkLabelContent(line, i);
-        if (afterLabel == -1) {
-            return -1;
+    private boolean label(Scanner scanner) {
+        Position start = scanner.position();
+        if (!LinkScanner.scanLinkLabelContent(scanner)) {
+            return false;
         }
 
-        label.append(line, i, afterLabel);
+        label.append(scanner.textBetween(start, scanner.position()));
 
-        if (afterLabel >= line.length()) {
+        if (!scanner.hasNext()) {
             // label might continue on next line
             label.append('\n');
-            return afterLabel;
-        } else if (line.charAt(afterLabel) == ']') {
-            int colon = afterLabel + 1;
+            return true;
+        } else if (scanner.next(']')) {
             // end of label
-            if (colon >= line.length() || line.charAt(colon) != ':') {
-                return -1;
+            if (!scanner.next(':')) {
+                return false;
             }
 
             // spec: A link label can have at most 999 characters inside the square brackets.
             if (label.length() > 999) {
-                return -1;
+                return false;
             }
 
             String normalizedLabel = Escaping.normalizeLabelContent(label.toString());
             if (normalizedLabel.isEmpty()) {
-                return -1;
+                return false;
             }
 
             this.normalizedLabel = normalizedLabel;
             state = State.DESTINATION;
 
-            return Parsing.skipSpaceTab(line, colon + 1, line.length());
+            scanner.whitespace();
+            return true;
         } else {
-            return -1;
+            return false;
         }
     }
 
-    private int destination(CharSequence line, int i) {
-        i = Parsing.skipSpaceTab(line, i, line.length());
-        int afterDestination = LinkScanner.scanLinkDestination(line, i);
-        if (afterDestination == -1) {
-            return -1;
+    private boolean destination(Scanner scanner) {
+        scanner.whitespace();
+        Position start = scanner.position();
+        if (!LinkScanner.scanLinkDestination(scanner)) {
+            return false;
         }
 
-        destination = (line.charAt(i) == '<')
-                ? line.subSequence(i + 1, afterDestination - 1).toString()
-                : line.subSequence(i, afterDestination).toString();
+        String rawDestination = scanner.textBetween(start, scanner.position()).toString();
+        destination = rawDestination.startsWith("<") ?
+                rawDestination.substring(1, rawDestination.length() - 1) :
+                rawDestination;
 
-        int afterSpace = Parsing.skipSpaceTab(line, afterDestination, line.length());
-        if (afterSpace >= line.length()) {
+        int whitespace = scanner.whitespace();
+        if (!scanner.hasNext()) {
             // Destination was at end of line, so this is a valid reference for sure (and maybe a title).
             // If not at end of line, wait for title to be valid first.
             referenceValid = true;
             paragraph.setLength(0);
-        } else if (afterSpace == afterDestination) {
+        } else if (whitespace == 0) {
             // spec: The title must be separated from the link destination by whitespace
-            return -1;
+            return false;
         }
 
         state = State.START_TITLE;
-        return afterSpace;
+        return true;
     }
 
-    private int startTitle(CharSequence line, int i) {
-        i = Parsing.skipSpaceTab(line, i, line.length());
-        if (i >= line.length()) {
+    private boolean startTitle(Scanner scanner) {
+        scanner.whitespace();
+        if (!scanner.hasNext()) {
             state = State.START_DEFINITION;
-            return i;
+            return true;
         }
 
         titleDelimiter = '\0';
-        char c = line.charAt(i);
+        char c = scanner.peek();
         switch (c) {
             case '"':
             case '\'':
@@ -196,8 +200,8 @@ public class LinkReferenceDefinitionParser {
         if (titleDelimiter != '\0') {
             state = State.TITLE;
             title = new StringBuilder();
-            i++;
-            if (i == line.length()) {
+            scanner.next();
+            if (!scanner.hasNext()) {
                 title.append('\n');
             }
         } else {
@@ -205,29 +209,30 @@ public class LinkReferenceDefinitionParser {
             // There might be another reference instead, try that for the same character.
             state = State.START_DEFINITION;
         }
-        return i;
+        return true;
     }
 
-    private int title(CharSequence line, int i) {
-        int afterTitle = LinkScanner.scanLinkTitleContent(line, i, titleDelimiter);
-        if (afterTitle == -1) {
+    private boolean title(Scanner scanner) {
+        Position start = scanner.position();
+        if (!LinkScanner.scanLinkTitleContent(scanner, titleDelimiter)) {
             // Invalid title, stop
-            return -1;
+            return false;
         }
 
-        title.append(line.subSequence(i, afterTitle));
+        title.append(scanner.textBetween(start, scanner.position()));
 
-        if (afterTitle >= line.length()) {
-            // Title still going, continue on next line
+        if (!scanner.hasNext()) {
+            // Title ran until the end of line, so continue on next line (until we find the delimiter)
             title.append('\n');
-            return afterTitle;
+            return true;
         }
 
-        int afterTitleDelimiter = afterTitle + 1;
-        int afterSpace = Parsing.skipSpaceTab(line, afterTitleDelimiter, line.length());
-        if (afterSpace != line.length()) {
+        // Skip delimiter character
+        scanner.next();
+        scanner.whitespace();
+        if (scanner.hasNext()) {
             // spec: No further non-whitespace characters may occur on the line.
-            return -1;
+            return false;
         }
         referenceValid = true;
         finishReference();
@@ -235,7 +240,7 @@ public class LinkReferenceDefinitionParser {
 
         // See if there's another definition.
         state = State.START_DEFINITION;
-        return afterSpace;
+        return true;
     }
 
     private void finishReference() {
