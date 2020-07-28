@@ -10,7 +10,6 @@ import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InlineParserImpl implements InlineParser, InlineParserState {
@@ -19,11 +18,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private static final Pattern PUNCTUATION = Pattern
             .compile("^[" + ASCII_PUNCTUATION + "\\p{Pc}\\p{Pd}\\p{Pe}\\p{Pf}\\p{Pi}\\p{Po}\\p{Ps}]");
 
-    private static final Pattern SPNL = Pattern.compile("^ *(?:\n *)?");
-
     private static final Pattern UNICODE_WHITESPACE_CHAR = Pattern.compile("^[\\p{Zs}\t\r\n\f]");
-
-    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     private final BitSet specialCharacters;
     private final BitSet delimiterCharacters;
@@ -93,10 +88,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return new Scanner(input, index);
     }
 
-    private void setPosition(Position position) {
-        index = position.getIndex();
-    }
-
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
         for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
             char opening = delimiterProcessor.getOpeningCharacter();
@@ -152,6 +143,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         mergeChildTextNodes(block);
     }
 
+    void setPosition(Position position) {
+        index = position.getIndex();
+    }
+
     void reset(String content) {
         this.input = content;
         this.index = 0;
@@ -159,22 +154,18 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.lastBracket = null;
     }
 
-
-    private Text text(String text, int beginIndex, int endIndex) {
-        return new Text(text.substring(beginIndex, endIndex));
-    }
-
     private Text text(String text) {
         return new Text(text);
     }
 
     /**
-     * Parse the next inline element in subject, advancing input index.
+     * Parse the next inline element in subject, advancing our position.
      * On success, return the new inline node.
      * On failure, return null.
      */
     private Node parseInline(Node previous) {
-        char c = peek();
+        Scanner scanner = scanner();
+        char c = scanner.peek();
         if (c == '\0') {
             return null;
         }
@@ -216,52 +207,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         if (node != null) {
             return node;
         } else {
-            index++;
+            scanner.next();
+            setPosition(scanner.position());
             // When we get here, it's only for a single special character that turned out to not have a special meaning.
             // So we shouldn't have a single surrogate here, hence it should be ok to turn it into a String.
             String literal = String.valueOf(c);
             return text(literal);
         }
-    }
-
-    /**
-     * If RE matches at current index in the input, advance index and return the match; otherwise return null.
-     */
-    private String match(Pattern re) {
-        if (index >= input.length()) {
-            return null;
-        }
-        try {
-            Matcher matcher = re.matcher(input);
-            matcher.region(index, input.length());
-            boolean m = matcher.find();
-            if (m) {
-                index = matcher.end();
-                return matcher.group();
-            } else {
-                return null;
-            }
-        } catch (StackOverflowError e) {
-            return null;
-        }
-    }
-
-    /**
-     * Returns the char at the current input index, or {@code '\0'} in case there are no more characters.
-     */
-    private char peek() {
-        if (index < input.length()) {
-            return input.charAt(index);
-        } else {
-            return '\0';
-        }
-    }
-
-    /**
-     * Parse zero or more space characters, including at most one newline.
-     */
-    private void spnl() {
-        match(SPNL);
     }
 
     /**
@@ -272,16 +224,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         if (res == null) {
             return null;
         }
-        int length = res.count;
-        int startIndex = index;
 
-        index += length;
-        Text node = text(input, startIndex, index);
+        Text node = res.text;
 
         // Add entry to stack for this opener
         lastDelimiter = new Delimiter(node, delimiterChar, res.canOpen, res.canClose, lastDelimiter);
-        lastDelimiter.length = length;
-        lastDelimiter.originalLength = length;
+        lastDelimiter.length = res.count;
+        lastDelimiter.originalLength = res.count;
         if (lastDelimiter.previous != null) {
             lastDelimiter.previous.next = lastDelimiter;
         }
@@ -293,13 +242,15 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Add open bracket to delimiter stack and add a text node to block's children.
      */
     private Node parseOpenBracket() {
-        int startIndex = index;
-        index++;
+        Scanner scanner = scanner();
+        scanner.next();
+        Position start = scanner.position();
+        setPosition(start);
 
         Text node = text("[");
 
         // Add entry to stack for this opener
-        addBracket(Bracket.link(node, startIndex, lastBracket, lastDelimiter));
+        addBracket(Bracket.link(node, start, lastBracket, lastDelimiter));
 
         return node;
     }
@@ -309,18 +260,18 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Otherwise just add a text node.
      */
     private Node parseBang() {
-        int startIndex = index;
-        index++;
-        if (peek() == '[') {
-            index++;
-
+        Scanner scanner = scanner();
+        scanner.next();
+        if (scanner.next('[')) {
             Text node = text("![");
 
             // Add entry to stack for this opener
-            addBracket(Bracket.image(node, startIndex + 1, lastBracket, lastDelimiter));
+            addBracket(Bracket.image(node, scanner.position(), lastBracket, lastDelimiter));
 
+            setPosition(scanner.position());
             return node;
         } else {
+            setPosition(scanner.position());
             return text("!");
         }
     }
@@ -330,8 +281,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * plain [ character. If there is a matching delimiter, remove it from the delimiter stack.
      */
     private Node parseCloseBracket() {
-        index++;
-        int startIndex = index;
+        Scanner scanner = scanner();
+        Position beforeClose = scanner.position();
+        scanner.next();
+        setPosition(scanner.position());
 
         // Get previous `[` or `![`
         Bracket opener = lastBracket;
@@ -347,43 +300,41 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         // Check to see if we have a link/image
-
         String dest = null;
         String title = null;
-        boolean isLinkOrImage = false;
 
         // Maybe a inline link like `[foo](/uri "title")`
-        if (peek() == '(') {
-            index++;
-            spnl();
-            if ((dest = parseLinkDestination()) != null) {
-                spnl();
+        if (scanner.next('(')) {
+            scanner.whitespace();
+            dest = parseLinkDestination(scanner);
+            if (dest != null) {
+                int whitespace = scanner.whitespace();
                 // title needs a whitespace before
-                if (WHITESPACE.matcher(input.substring(index - 1, index)).matches()) {
-                    title = parseLinkTitle();
-                    spnl();
+                if (whitespace >= 1) {
+                    title = parseLinkTitle(scanner);
+                    scanner.whitespace();
                 }
-                if (peek() == ')') {
-                    index++;
-                    isLinkOrImage = true;
-                } else {
-                    index = startIndex;
+                if (!scanner.next(')')) {
+                    // Don't have a closing `)`, so it's not a destination and title -> reset.
+                    // Note that something like `[foo](` could be valid, `(` will just be text.
+                    scanner = scanner();
+                    dest = null;
+                    title = null;
                 }
             }
         }
 
-        // Maybe a reference link like `[foo][bar]`, `[foo][]` or `[foo]`
-        if (!isLinkOrImage) {
-
+        // Maybe a reference link like `[foo][bar]`, `[foo][]` or `[foo]`.
+        // Note that even `[foo](` could be a valid link if there's a reference, which is why this is not just an `else`
+        // here.
+        if (dest == null) {
             // See if there's a link label like `[bar]` or `[]`
-            String ref = parseLinkLabel();
+            String ref = parseLinkLabel(scanner);
             if ((ref == null || ref.isEmpty()) && !opener.bracketAfter) {
                 // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
                 // But it can only be a reference when there's no (unescaped) bracket in it.
                 // If there is, we don't even need to try to look up the reference. This is an optimization.
-                ref = input.substring(opener.index, startIndex);
-                // Strip '[' and ']'
-                ref = ref.substring(1, ref.length() - 1);
+                ref = scanner.textBetween(opener.contentPosition, beforeClose).toString();
             }
 
             if (ref != null) {
@@ -392,12 +343,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 if (definition != null) {
                     dest = definition.getDestination();
                     title = definition.getTitle();
-                    isLinkOrImage = true;
                 }
             }
         }
 
-        if (isLinkOrImage) {
+        if (dest != null) {
             // If we got here, open is a potential opener
             Node linkOrImage = opener.image ? new Image(dest, title) : new Link(dest, title);
 
@@ -427,10 +377,12 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 }
             }
 
+            setPosition(scanner.position());
+
             return linkOrImage;
 
-        } else { // no link or image
-            index = startIndex;
+        } else {
+            // No link or image, parse just the bracket as text and continue
             removeLastBracket();
 
             return text("]");
@@ -451,8 +403,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     /**
      * Attempt to parse link destination, returning the string or null if no match.
      */
-    private String parseLinkDestination() {
-        Scanner scanner = scanner();
+    private String parseLinkDestination(Scanner scanner) {
         char delimiter = scanner.peek();
         Position start = scanner.position();
         if (!LinkScanner.scanLinkDestination(scanner)) {
@@ -468,15 +419,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             dest = scanner.textBetween(start, scanner.position()).toString();
         }
 
-        setPosition(scanner.position());
         return Escaping.unescapeString(dest);
     }
 
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
-    private String parseLinkTitle() {
-        Scanner scanner = scanner();
+    private String parseLinkTitle(Scanner scanner) {
         Position start = scanner.position();
         if (!LinkScanner.scanLinkTitle(scanner)) {
             return null;
@@ -485,15 +434,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // chop off ', " or parens
         CharSequence rawTitle = scanner.textBetween(start, scanner.position());
         String title = rawTitle.subSequence(1, rawTitle.length() - 1).toString();
-        setPosition(scanner.position());
         return Escaping.unescapeString(title);
     }
 
     /**
      * Attempt to parse a link label, returning the label between the brackets or null.
      */
-    String parseLinkLabel() {
-        Scanner scanner = scanner();
+    String parseLinkLabel(Scanner scanner) {
         if (!scanner.next('[')) {
             return null;
         }
@@ -514,24 +461,26 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             return null;
         }
 
-        setPosition(scanner.position());
         return content;
     }
 
     /**
-     * Parse a run of ordinary characters, or a single character with a special meaning in markdown, as a plain string.
+     * Parse a run of non-special characters as plain text.
      */
     private Node parseString() {
-        int begin = index;
-        int length = input.length();
-        while (index != length) {
-            if (specialCharacters.get(input.charAt(index))) {
+        Scanner scanner = scanner();
+        Position start = scanner.position();
+        while (scanner.hasNext()) {
+            if (specialCharacters.get(scanner.peek())) {
                 break;
             }
-            index++;
+            scanner.next();
         }
-        if (begin != index) {
-            return text(input, begin, index);
+
+        String text = scanner.textBetween(start, scanner.position()).toString();
+        if (!text.isEmpty()) {
+            setPosition(scanner.position());
+            return text(text);
         } else {
             return null;
         }
@@ -544,25 +493,20 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * @return information about delimiter run, or {@code null}
      */
     private DelimiterData scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
-        int startIndex = index;
+        Scanner scanner = scanner();
+        char charBefore = scanner.peekPrevious();
+        Position start = scanner.position();
 
-        int delimiterCount = 0;
-        while (peek() == delimiterChar) {
-            delimiterCount++;
-            index++;
-        }
+        int delimiterCount = scanner.matchMultiple(delimiterChar);
 
         if (delimiterCount < delimiterProcessor.getMinLength()) {
-            index = startIndex;
+            setPosition(start);
             return null;
         }
 
-        String before = startIndex == 0 ? "\n" :
-                input.substring(startIndex - 1, startIndex);
-
-        char charAfter = peek();
-        String after = charAfter == '\0' ? "\n" :
-                String.valueOf(charAfter);
+        char charAfter = scanner.peek();
+        String before = charBefore == '\0' ? "\n" : String.valueOf(charBefore);
+        String after = charAfter == '\0' ? "\n" : String.valueOf(charAfter);
 
         // We could be more lazy here, in most cases we don't need to do every match case.
         boolean beforeIsPunctuation = PUNCTUATION.matcher(before).matches();
@@ -584,8 +528,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             canClose = rightFlanking && delimiterChar == delimiterProcessor.getClosingCharacter();
         }
 
-        index = startIndex;
-        return new DelimiterData(delimiterCount, canOpen, canClose);
+        setPosition(scanner.position());
+        String text = scanner.textBetween(start, scanner.position()).toString();
+        return new DelimiterData(delimiterCount, canOpen, canClose, new Text(text));
     }
 
     private void processDelimiters(Delimiter stackBottom) {
@@ -789,11 +734,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         final int count;
         final boolean canClose;
         final boolean canOpen;
+        final Text text;
 
-        DelimiterData(int count, boolean canOpen, boolean canClose) {
+        DelimiterData(int count, boolean canOpen, boolean canClose, Text text) {
             this.count = count;
             this.canOpen = canOpen;
             this.canClose = canClose;
+            this.text = text;
         }
     }
 }

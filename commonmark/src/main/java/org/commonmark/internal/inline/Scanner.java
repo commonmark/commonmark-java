@@ -22,6 +22,15 @@ public class Scanner {
         }
     }
 
+    public char peekPrevious() {
+        int prev = index - 1;
+        if (prev >= 0 && prev < input.length()) {
+            return input.charAt(prev);
+        } else {
+            return '\0';
+        }
+    }
+
     public boolean hasNext() {
         return index < input.length();
     }
