@@ -1,9 +1,11 @@
 package org.commonmark;
 
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,17 +17,29 @@ public class ProfilingMain {
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Started up, attach profiler now");
-        Thread.sleep(10_000);
-        System.out.println("Parsing and rendering");
-        parseAndRender(Collections.singletonList(SPEC));
-        System.out.println("Finished parsing");
+        System.out.println("Attach profiler, then press enter to start parsing.");
+        System.in.read();
+        System.out.println("Parsing");
+        List<Node> nodes = parse(Collections.singletonList(SPEC));
+        System.out.println("Finished parsing, press enter to start rendering");
+        System.in.read();
+        System.out.println(render(nodes));
+        System.out.println("Finished rendering");
     }
 
-    private static long parseAndRender(List<String> examples) {
-        long length = 0;
+    private static List<Node> parse(List<String> examples) {
+        List<Node> nodes = new ArrayList<>();
         for (String example : examples) {
-            String result = RENDERER.render(PARSER.parse(example));
+            Node doc = PARSER.parse(example);
+            nodes.add(doc);
+        }
+        return nodes;
+    }
+
+    private static long render(List<Node> examples) {
+        long length = 0;
+        for (Node example : examples) {
+            String result = RENDERER.render(example);
             length += result.length();
         }
         return length;
