@@ -210,7 +210,7 @@ public class ListBlockParser extends AbstractBlockParser {
             }
             int markerIndex = state.getNextNonSpaceIndex();
             int markerColumn = state.getColumn() + state.getIndent();
-            boolean inParagraph = matchedBlockParser.getParagraphContent() != null;
+            boolean inParagraph = !matchedBlockParser.getParagraphLines().isEmpty();
             ListData listData = parseList(state.getLine(), markerIndex, markerColumn, inParagraph);
             if (listData == null) {
                 return BlockStart.none();

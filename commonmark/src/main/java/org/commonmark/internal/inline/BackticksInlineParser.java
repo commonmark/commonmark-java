@@ -11,7 +11,7 @@ import org.commonmark.node.Text;
 public class BackticksInlineParser implements InlineContentParser {
 
     @Override
-    public ParsedInline tryParse(InlineParserState inlineParserState, Node previous) {
+    public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();
         int openingTicks = scanner.matchMultiple('`');

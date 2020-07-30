@@ -8,6 +8,7 @@ import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.SourceSpan;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class LinkReferenceDefinitionParser {
 
     private State state = State.START_DEFINITION;
 
-    private final StringBuilder paragraph = new StringBuilder();
+    private final List<CharSequence> paragraphLines = new ArrayList<>();
     private final List<LinkReferenceDefinition> definitions = new ArrayList<>();
     private final List<SourceSpan> sourceSpans = new ArrayList<>();
 
@@ -31,20 +32,17 @@ public class LinkReferenceDefinitionParser {
     private boolean referenceValid = false;
 
     public void parse(CharSequence line) {
-        if (paragraph.length() != 0) {
-            paragraph.append('\n');
+        paragraphLines.add(line);
+        if (state == State.PARAGRAPH) {
+            // We're in a paragraph now. Link reference definitions can only appear at the beginning, so once
+            // we're in a paragraph, there's no going back.
+            return;
         }
-        paragraph.append(line);
 
-        Scanner scanner = new Scanner(line, 0);
+        Scanner scanner = new Scanner(Collections.singletonList(line), 0, 0);
         while (scanner.hasNext()) {
             boolean success;
             switch (state) {
-                case PARAGRAPH: {
-                    // We're in a paragraph now. Link reference definitions can only appear at the beginning, so once
-                    // we're in a paragraph, there's no going back.
-                    return;
-                }
                 case START_DEFINITION: {
                     success = startDefinition(scanner);
                     break;
@@ -81,8 +79,11 @@ public class LinkReferenceDefinitionParser {
         sourceSpans.add(sourceSpan);
     }
 
-    CharSequence getParagraphContent() {
-        return paragraph;
+    /**
+     * @return the lines that are normal paragraph content, without newlines
+     */
+    List<CharSequence> getParagraphLines() {
+        return paragraphLines;
     }
 
     List<SourceSpan> getParagraphSourceSpans() {
@@ -168,7 +169,7 @@ public class LinkReferenceDefinitionParser {
             // Destination was at end of line, so this is a valid reference for sure (and maybe a title).
             // If not at end of line, wait for title to be valid first.
             referenceValid = true;
-            paragraph.setLength(0);
+            paragraphLines.clear();
         } else if (whitespace == 0) {
             // spec: The title must be separated from the link destination by whitespace
             return false;
@@ -236,7 +237,7 @@ public class LinkReferenceDefinitionParser {
         }
         referenceValid = true;
         finishReference();
-        paragraph.setLength(0);
+        paragraphLines.clear();
 
         // See if there's another definition.
         state = State.START_DEFINITION;

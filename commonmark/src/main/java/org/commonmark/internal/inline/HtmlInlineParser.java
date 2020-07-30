@@ -2,7 +2,6 @@ package org.commonmark.internal.inline;
 
 import org.commonmark.internal.util.AsciiMatcher;
 import org.commonmark.node.HtmlInline;
-import org.commonmark.node.Node;
 
 /**
  * Attempt to parse inline HTML.
@@ -28,7 +27,7 @@ public class HtmlInlineParser implements InlineContentParser {
     private static final AsciiMatcher declaration = AsciiMatcher.builder().range('A', 'Z').build();
 
     @Override
-    public ParsedInline tryParse(InlineParserState inlineParserState, Node previous) {
+    public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();
         // Skip over `<`

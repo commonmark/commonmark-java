@@ -103,7 +103,7 @@ public class ParserTest {
     public void inlineParser() {
         final InlineParser fakeInlineParser = new InlineParser() {
             @Override
-            public void parse(String input, Node node) {
+            public void parse(List<CharSequence> lines, Node node) {
                 node.appendChild(new ThematicBreak());
             }
         };

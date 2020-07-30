@@ -16,7 +16,7 @@ public class BackslashInlineParser implements InlineContentParser {
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
     @Override
-    public ParsedInline tryParse(InlineParserState inlineParserState, Node previous) {
+    public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         // Backslash
         scanner.next();

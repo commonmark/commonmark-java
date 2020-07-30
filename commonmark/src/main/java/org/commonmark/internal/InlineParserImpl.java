@@ -4,6 +4,7 @@ import org.commonmark.internal.inline.Scanner;
 import org.commonmark.internal.inline.*;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
+import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
@@ -26,8 +27,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final InlineParserContext context;
     private final Map<Character, List<InlineContentParser>> inlineParsers;
 
-    private String input;
+    // TODO: Should we just keep a scanner here instead?
+    private List<CharSequence> lines;
+    private int lineIndex;
     private int index;
+    private int trailingSpaces;
 
     /**
      * Top delimiter (emphasis, strong emphasis or custom emphasis). (Brackets are on a separate stack, different
@@ -45,7 +49,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         this.context = inlineParserContext;
         this.inlineParsers = new HashMap<>();
-        this.inlineParsers.put('\n', Collections.<InlineContentParser>singletonList(new LineBreakInlineContentParser()));
         this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
         this.inlineParsers.put('`', Collections.<InlineContentParser>singletonList(new BackticksInlineParser()));
         this.inlineParsers.put('&', Collections.<InlineContentParser>singletonList(new EntityInlineParser()));
@@ -72,6 +75,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         bitSet.set('[');
         bitSet.set(']');
         bitSet.set('!');
+        bitSet.set('\n');
         return bitSet;
     }
 
@@ -85,7 +89,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     // TODO: The implementation shouldn't be public
     @Override
     public Scanner scanner() {
-        return new Scanner(input, index);
+        return new Scanner(lines, lineIndex, index);
     }
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
@@ -122,16 +126,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     /**
-     * Parse content in block into inline children, using reference map to resolve references.
+     * Parse content in block into inline children, appending them to the block node.
      */
     @Override
-    public void parse(String content, Node block) {
-        reset(content.trim());
+    public void parse(List<CharSequence> lines, Node block) {
+        reset(lines);
 
-        Node previous = null;
         while (true) {
-            Node node = parseInline(previous);
-            previous = node;
+            Node node = parseInline();
             if (node != null) {
                 block.appendChild(node);
             } else {
@@ -144,12 +146,15 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     void setPosition(Position position) {
+        lineIndex = position.getLineIndex();
         index = position.getIndex();
     }
 
-    void reset(String content) {
-        this.input = content;
+    void reset(List<CharSequence> lines) {
+        this.lines = lines;
+        this.lineIndex = 0;
         this.index = 0;
+        this.trailingSpaces = 0;
         this.lastDelimiter = null;
         this.lastBracket = null;
     }
@@ -163,7 +168,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * On success, return the new inline node.
      * On failure, return null.
      */
-    private Node parseInline(Node previous) {
+    private Node parseInline() {
         Scanner scanner = scanner();
         char c = scanner.peek();
         if (c == '\0') {
@@ -173,8 +178,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         List<InlineContentParser> inlineParsers = this.inlineParsers.get(c);
         if (inlineParsers != null) {
             for (InlineContentParser inlineParser : inlineParsers) {
-                // TODO: Should we pass the whole previous node or can we make the API surface smaller?
-                ParsedInline parsedInline = inlineParser.tryParse(this, previous);
+                ParsedInline parsedInline = inlineParser.tryParse(this);
                 if (parsedInline instanceof ParsedInlineImpl) {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
                     setPosition(parsedInlineImpl.getPosition());
@@ -183,37 +187,44 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
         }
 
-        Node node;
         switch (c) {
             case '[':
-                node = parseOpenBracket();
-                break;
+                return parseOpenBracket();
             case '!':
-                node = parseBang();
-                break;
+                return parseBang();
             case ']':
-                node = parseCloseBracket();
-                break;
-            default:
-                boolean isDelimiter = delimiterCharacters.get(c);
-                if (isDelimiter) {
-                    DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
-                    node = parseDelimiters(delimiterProcessor, c);
-                } else {
-                    node = parseString();
-                }
-                break;
+                return parseCloseBracket();
+            case '\n':
+                return parseLineBreak();
         }
-        if (node != null) {
-            return node;
-        } else {
-            scanner.next();
-            setPosition(scanner.position());
-            // When we get here, it's only for a single special character that turned out to not have a special meaning.
-            // So we shouldn't have a single surrogate here, hence it should be ok to turn it into a String.
-            String literal = String.valueOf(c);
-            return text(literal);
+
+        boolean isDelimiter = delimiterCharacters.get(c);
+        if (isDelimiter) {
+            DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
+            Node delimiterNode = parseDelimiters(delimiterProcessor, c);
+            if (delimiterNode != null) {
+                return delimiterNode;
+            }
         }
+
+        // If we get here, even for a special/delimiter character, we will just treat it as text.
+        return parseText();
+//        } else {
+//            node = parseString();
+//        }
+//        break;
+//
+//        Node node;
+//        if (node != null) {
+//            return node;
+//        } else {
+//            scanner.next();
+//            setPosition(scanner.position());
+//            // When we get here, it's only for a single special character that turned out to not have a special meaning.
+//            // So we shouldn't have a single surrogate here, hence it should be ok to turn it into a String.
+//            String literal = String.valueOf(c);
+//            return text(literal);
+//        }
     }
 
     /**
@@ -464,12 +475,25 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return content;
     }
 
+    private Node parseLineBreak() {
+        Scanner scanner = scanner();
+        scanner.next();
+        setPosition(scanner.position());
+
+        if (trailingSpaces >= 2) {
+            return new HardLineBreak();
+        } else {
+            return new SoftLineBreak();
+        }
+    }
+
     /**
-     * Parse a run of non-special characters as plain text.
+     * Parse the next character as plain text, and possibly more if the following characters are non-special.
      */
-    private Node parseString() {
+    private Node parseText() {
         Scanner scanner = scanner();
         Position start = scanner.position();
+        scanner.next();
         while (scanner.hasNext()) {
             if (specialCharacters.get(scanner.peek())) {
                 break;
@@ -478,12 +502,21 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         String text = scanner.textBetween(start, scanner.position()).toString();
-        if (!text.isEmpty()) {
-            setPosition(scanner.position());
-            return text(text);
-        } else {
-            return null;
+        setPosition(scanner.position());
+
+        char c = scanner.peek();
+        if (c == '\n') {
+            // We parsed until the end of the line. Trim any trailing spaces and remember them (for hard line breaks).
+            int end = Parsing.skipBackwards(' ', text, text.length() - 1, 0) + 1;
+            trailingSpaces = text.length() - end;
+            text = text.substring(0, end);
+        } else if (c == '\0') {
+            // For the last line, both tabs and spaces are trimmed for some reason (checked with commonmark.js).
+            int end = Parsing.skipSpaceTabBackwards(text, text.length() - 1, 0) + 1;
+            text = text.substring(0, end);
         }
+
+        return text(text);
     }
 
     /**
