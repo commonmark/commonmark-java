@@ -66,9 +66,8 @@ public class DocumentParser implements ParserState {
     private final DocumentBlockParser documentBlockParser;
     private final Map<String, LinkReferenceDefinition> definitions = new LinkedHashMap<>();
 
-    private List<BlockParser> activeBlockParsers = new ArrayList<>();
-    // LinkedHashSet to have a deterministic order
-    private Set<BlockParser> allBlockParsers = new LinkedHashSet<>();
+    private final List<BlockParser> activeBlockParsers = new ArrayList<>();
+    private final List<BlockParser> allBlockParsers = new ArrayList<>();
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
                           List<DelimiterProcessor> delimiterProcessors) {
@@ -179,18 +178,17 @@ public class DocumentParser implements ParserState {
         columnIsInTab = false;
 
         // For each containing block, try to parse the associated line start.
-        // Bail out on failure: container will point to the last matching block.
-        // Set all_matched to false if not all containers match.
-        // The document will always match, can be skipped
+        // The document will always match, so we can skip the first block parser and start at 1 matches
         int matches = 1;
-        for (BlockParser blockParser : activeBlockParsers.subList(1, activeBlockParsers.size())) {
+        for (int i = 1; i < activeBlockParsers.size(); i++) {
+            BlockParser blockParser = activeBlockParsers.get(i);
             findNextNonSpace();
 
             BlockContinue result = blockParser.tryContinue(this);
             if (result instanceof BlockContinueImpl) {
                 BlockContinueImpl blockContinue = (BlockContinueImpl) result;
                 if (blockContinue.isFinalize()) {
-                    finalize(blockParser);
+                    closeBlockParsers(activeBlockParsers.size() - i);
                     return;
                 } else {
                     if (blockContinue.getNewIndex() != -1) {
@@ -205,10 +203,9 @@ public class DocumentParser implements ParserState {
             }
         }
 
-        List<BlockParser> unmatchedBlockParsers = new ArrayList<>(activeBlockParsers.subList(matches, activeBlockParsers.size()));
-        BlockParser lastMatchedBlockParser = activeBlockParsers.get(matches - 1);
-        BlockParser blockParser = lastMatchedBlockParser;
-        boolean allClosed = unmatchedBlockParsers.isEmpty();
+        int unmatchedBlocks = activeBlockParsers.size() - matches;
+        BlockParser blockParser = activeBlockParsers.get(matches - 1);
+        boolean startedNewBlock = false;
 
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
@@ -228,9 +225,12 @@ public class DocumentParser implements ParserState {
                 break;
             }
 
-            if (!allClosed) {
-                finalizeBlocks(unmatchedBlockParsers);
-                allClosed = true;
+            startedNewBlock = true;
+
+            // We're starting a new block. If we have any previous blocks that need to be closed, we need to do it now.
+            if (unmatchedBlocks > 0) {
+                closeBlockParsers(unmatchedBlocks);
+                unmatchedBlocks = 0;
             }
 
             if (blockStart.getNewIndex() != -1) {
@@ -253,7 +253,7 @@ public class DocumentParser implements ParserState {
         // appropriate block.
 
         // First check for a lazy paragraph continuation:
-        if (!allClosed && !isBlank() &&
+        if (!startedNewBlock && !isBlank() &&
                 getActiveBlockParser().canHaveLazyContinuationLines()) {
             // lazy paragraph continuation
             addLine();
@@ -261,8 +261,8 @@ public class DocumentParser implements ParserState {
         } else {
 
             // finalize any blocks not matched
-            if (!allClosed) {
-                finalizeBlocks(unmatchedBlockParsers);
+            if (unmatchedBlocks > 0) {
+                closeBlockParsers(unmatchedBlocks);
             }
 
             if (!blockParser.isContainer()) {
@@ -387,10 +387,6 @@ public class DocumentParser implements ParserState {
      * definitions.
      */
     private void finalize(BlockParser blockParser) {
-        if (getActiveBlockParser() == blockParser) {
-            deactivateBlockParser();
-        }
-
         if (blockParser instanceof ParagraphParser) {
             addDefinitionsFrom((ParagraphParser) blockParser);
         }
@@ -429,7 +425,7 @@ public class DocumentParser implements ParserState {
      */
     private <T extends BlockParser> T addChild(T blockParser) {
         while (!getActiveBlockParser().canContain(blockParser.getBlock())) {
-            finalize(getActiveBlockParser());
+            closeBlockParsers(1);
         }
 
         getActiveBlockParser().getBlock().appendChild(blockParser.getBlock());
@@ -440,17 +436,15 @@ public class DocumentParser implements ParserState {
 
     private void activateBlockParser(BlockParser blockParser) {
         activeBlockParsers.add(blockParser);
-        allBlockParsers.add(blockParser);
     }
 
-    private void deactivateBlockParser() {
-        activeBlockParsers.remove(activeBlockParsers.size() - 1);
+    private BlockParser deactivateBlockParser() {
+        return activeBlockParsers.remove(activeBlockParsers.size() - 1);
     }
 
     private void prepareActiveBlockParserForReplacement() {
-        BlockParser old = getActiveBlockParser();
-        deactivateBlockParser();
-        allBlockParsers.remove(old);
+        // Note that we don't want to parse inlines or finalize this block, as it's getting replaced.
+        BlockParser old = deactivateBlockParser();
 
         if (old instanceof ParagraphParser) {
             ParagraphParser paragraphParser = (ParagraphParser) old;
@@ -465,20 +459,21 @@ public class DocumentParser implements ParserState {
         old.getBlock().unlink();
     }
 
-    /**
-     * Finalize blocks of previous line. Returns true.
-     */
-    private void finalizeBlocks(List<BlockParser> blockParsers) {
-        for (int i = blockParsers.size() - 1; i >= 0; i--) {
-            BlockParser blockParser = blockParsers.get(i);
-            finalize(blockParser);
-        }
+    private Document finalizeAndProcess() {
+        closeBlockParsers(activeBlockParsers.size());
+        processInlines();
+        return documentBlockParser.getBlock();
     }
 
-    private Document finalizeAndProcess() {
-        finalizeBlocks(this.activeBlockParsers);
-        this.processInlines();
-        return this.documentBlockParser.getBlock();
+    private void closeBlockParsers(int count) {
+        for (int i = 0; i < count; i++) {
+            BlockParser blockParser = deactivateBlockParser();
+            finalize(blockParser);
+            // Remember for inline parsing. Note that a lot of blocks don't need inline parsing. We could have a
+            // separate interface (e.g. BlockParserWithInlines) so that we only have to remember those that actually
+            // have inlines to parse.
+            allBlockParsers.add(blockParser);
+        }
     }
 
     private static class MatchedBlockParserImpl implements MatchedBlockParser {
