@@ -2,6 +2,7 @@ package org.commonmark.internal.inline;
 
 import org.commonmark.internal.util.CharMatcher;
 
+import java.util.Collections;
 import java.util.List;
 
 public class Scanner {
@@ -19,15 +20,22 @@ public class Scanner {
     private CharSequence line = "";
     private int lineLength = 0;
 
-    // TODO: Visibility
-    public Scanner(List<CharSequence> lines, int lineIndex, int index) {
+    Scanner(List<CharSequence> lines, int lineIndex, int index) {
         this.lines = lines;
         this.lineIndex = lineIndex;
         this.index = index;
         if (!lines.isEmpty()) {
-            line = lines.get(lineIndex);
-            lineLength = line.length();
+            checkPosition(lineIndex, index);
+            setLine(lines.get(lineIndex));
         }
+    }
+
+    public static Scanner of(List<CharSequence> lines) {
+        return new Scanner(lines, 0, 0);
+    }
+
+    public static Scanner of(CharSequence line) {
+        return new Scanner(Collections.singletonList(line), 0, 0);
     }
 
     public char peek() {
@@ -70,11 +78,9 @@ public class Scanner {
         if (index > lineLength) {
             lineIndex++;
             if (lineIndex < lines.size()) {
-                line = lines.get(lineIndex);
-                lineLength = line.length();
+                setLine(lines.get(lineIndex));
             } else {
-                line = "";
-                lineLength = 0;
+                setLine("");
             }
             index = 0;
         }
@@ -160,6 +166,13 @@ public class Scanner {
         return new Position(lineIndex, index);
     }
 
+    public void setPosition(Position position) {
+        checkPosition(position.lineIndex, position.index);
+        this.lineIndex = position.lineIndex;
+        this.index = position.index;
+        setLine(lines.get(this.lineIndex));
+    }
+
     // For cases where the caller appends the result to a StringBuilder, we could offer another method to avoid some
     // unnecessary copying.
     public CharSequence textBetween(Position begin, Position end) {
@@ -182,6 +195,21 @@ public class Scanner {
             CharSequence lastLine = lines.get(end.lineIndex);
             sb.append(lastLine.subSequence(0, end.index));
             return sb.toString();
+        }
+    }
+
+    private void setLine(CharSequence line) {
+        this.line = line;
+        this.lineLength = line.length();
+    }
+
+    private void checkPosition(int lineIndex, int index) {
+        if (lineIndex < 0 || lineIndex >= lines.size()) {
+            throw new IllegalArgumentException("Line index " + lineIndex + " out of range, number of lines: " + lines.size());
+        }
+        CharSequence line = lines.get(lineIndex);
+        if (index < 0 || index > line.length()) {
+            throw new IllegalArgumentException("Index " + index + " out of range, line length: " + line.length());
         }
     }
 }

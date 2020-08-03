@@ -428,7 +428,6 @@ public class DocumentParser implements ParserState {
         } else if (index == 0) {
             content = line;
         } else {
-            // TODO: Maybe we should bring back Subsequence here?
             content = line.subSequence(index, line.length());
         }
         getActiveBlockParser().addLine(content);

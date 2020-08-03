@@ -8,7 +8,6 @@ import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.SourceSpan;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,7 +38,7 @@ public class LinkReferenceDefinitionParser {
             return;
         }
 
-        Scanner scanner = new Scanner(Collections.singletonList(line), 0, 0);
+        Scanner scanner = Scanner.of(line);
         while (scanner.hasNext()) {
             boolean success;
             switch (state) {

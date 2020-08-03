@@ -27,10 +27,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final InlineParserContext context;
     private final Map<Character, List<InlineContentParser>> inlineParsers;
 
-    // TODO: Should we just keep a scanner here instead?
-    private List<CharSequence> lines;
-    private int lineIndex;
-    private int index;
+    private Scanner scanner;
     private int trailingSpaces;
 
     /**
@@ -86,10 +83,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return map;
     }
 
-    // TODO: The implementation shouldn't be public
     @Override
     public Scanner scanner() {
-        return new Scanner(lines, lineIndex, index);
+        return scanner;
     }
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
@@ -145,15 +141,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         mergeChildTextNodes(block);
     }
 
-    void setPosition(Position position) {
-        lineIndex = position.getLineIndex();
-        index = position.getIndex();
-    }
-
     void reset(List<CharSequence> lines) {
-        this.lines = lines;
-        this.lineIndex = 0;
-        this.index = 0;
+        this.scanner = Scanner.of(lines);
         this.trailingSpaces = 0;
         this.lastDelimiter = null;
         this.lastBracket = null;
@@ -169,20 +158,23 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * On failure, return null.
      */
     private Node parseInline() {
-        Scanner scanner = scanner();
         char c = scanner.peek();
         if (c == '\0') {
             return null;
         }
 
+        Position position = scanner.position();
         List<InlineContentParser> inlineParsers = this.inlineParsers.get(c);
         if (inlineParsers != null) {
             for (InlineContentParser inlineParser : inlineParsers) {
                 ParsedInline parsedInline = inlineParser.tryParse(this);
                 if (parsedInline instanceof ParsedInlineImpl) {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
-                    setPosition(parsedInlineImpl.getPosition());
+                    scanner.setPosition(parsedInlineImpl.getPosition());
                     return parsedInlineImpl.getNode();
+                } else {
+                    // Reset position
+                    scanner.setPosition(position);
                 }
             }
         }
@@ -209,22 +201,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         // If we get here, even for a special/delimiter character, we will just treat it as text.
         return parseText();
-//        } else {
-//            node = parseString();
-//        }
-//        break;
-//
-//        Node node;
-//        if (node != null) {
-//            return node;
-//        } else {
-//            scanner.next();
-//            setPosition(scanner.position());
-//            // When we get here, it's only for a single special character that turned out to not have a special meaning.
-//            // So we shouldn't have a single surrogate here, hence it should be ok to turn it into a String.
-//            String literal = String.valueOf(c);
-//            return text(literal);
-//        }
     }
 
     /**
@@ -253,10 +229,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Add open bracket to delimiter stack and add a text node to block's children.
      */
     private Node parseOpenBracket() {
-        Scanner scanner = scanner();
         scanner.next();
         Position start = scanner.position();
-        setPosition(start);
 
         Text node = text("[");
 
@@ -271,18 +245,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Otherwise just add a text node.
      */
     private Node parseBang() {
-        Scanner scanner = scanner();
         scanner.next();
         if (scanner.next('[')) {
             Text node = text("![");
 
             // Add entry to stack for this opener
             addBracket(Bracket.image(node, scanner.position(), lastBracket, lastDelimiter));
-
-            setPosition(scanner.position());
             return node;
         } else {
-            setPosition(scanner.position());
             return text("!");
         }
     }
@@ -292,10 +262,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * plain [ character. If there is a matching delimiter, remove it from the delimiter stack.
      */
     private Node parseCloseBracket() {
-        Scanner scanner = scanner();
         Position beforeClose = scanner.position();
         scanner.next();
-        setPosition(scanner.position());
+        Position afterClose = scanner.position();
 
         // Get previous `[` or `![`
         Bracket opener = lastBracket;
@@ -318,7 +287,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         if (scanner.next('(')) {
             scanner.whitespace();
             dest = parseLinkDestination(scanner);
-            if (dest != null) {
+            if (dest == null) {
+                scanner.setPosition(afterClose);
+            } else {
                 int whitespace = scanner.whitespace();
                 // title needs a whitespace before
                 if (whitespace >= 1) {
@@ -328,7 +299,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 if (!scanner.next(')')) {
                     // Don't have a closing `)`, so it's not a destination and title -> reset.
                     // Note that something like `[foo](` could be valid, `(` will just be text.
-                    scanner = scanner();
+                    scanner.setPosition(afterClose);
                     dest = null;
                     title = null;
                 }
@@ -341,6 +312,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         if (dest == null) {
             // See if there's a link label like `[bar]` or `[]`
             String ref = parseLinkLabel(scanner);
+            if (ref == null) {
+                scanner.setPosition(afterClose);
+            }
             if ((ref == null || ref.isEmpty()) && !opener.bracketAfter) {
                 // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
                 // But it can only be a reference when there's no (unescaped) bracket in it.
@@ -388,14 +362,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 }
             }
 
-            setPosition(scanner.position());
-
             return linkOrImage;
 
         } else {
             // No link or image, parse just the bracket as text and continue
             removeLastBracket();
 
+            scanner.setPosition(afterClose);
             return text("]");
         }
     }
@@ -476,9 +449,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private Node parseLineBreak() {
-        Scanner scanner = scanner();
         scanner.next();
-        setPosition(scanner.position());
 
         if (trailingSpaces >= 2) {
             return new HardLineBreak();
@@ -491,7 +462,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Parse the next character as plain text, and possibly more if the following characters are non-special.
      */
     private Node parseText() {
-        Scanner scanner = scanner();
         Position start = scanner.position();
         scanner.next();
         while (scanner.hasNext()) {
@@ -502,7 +472,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         String text = scanner.textBetween(start, scanner.position()).toString();
-        setPosition(scanner.position());
 
         char c = scanner.peek();
         if (c == '\n') {
@@ -526,14 +495,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * @return information about delimiter run, or {@code null}
      */
     private DelimiterData scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
-        Scanner scanner = scanner();
         char charBefore = scanner.peekPrevious();
         Position start = scanner.position();
 
         int delimiterCount = scanner.matchMultiple(delimiterChar);
 
         if (delimiterCount < delimiterProcessor.getMinLength()) {
-            setPosition(start);
+            scanner.setPosition(start);
             return null;
         }
 
@@ -561,7 +529,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             canClose = rightFlanking && delimiterChar == delimiterProcessor.getClosingCharacter();
         }
 
-        setPosition(scanner.position());
         String text = scanner.textBetween(start, scanner.position()).toString();
         return new DelimiterData(delimiterCount, canOpen, canClose, new Text(text));
     }
