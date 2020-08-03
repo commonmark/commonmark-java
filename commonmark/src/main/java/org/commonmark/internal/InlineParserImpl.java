@@ -159,7 +159,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      */
     private Node parseInline() {
         char c = scanner.peek();
-        if (c == '\0') {
+        if (c == Scanner.END) {
             return null;
         }
 
@@ -479,7 +479,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             int end = Parsing.skipBackwards(' ', text, text.length() - 1, 0) + 1;
             trailingSpaces = text.length() - end;
             text = text.substring(0, end);
-        } else if (c == '\0') {
+        } else if (c == Scanner.END) {
             // For the last line, both tabs and spaces are trimmed for some reason (checked with commonmark.js).
             int end = Parsing.skipSpaceTabBackwards(text, text.length() - 1, 0) + 1;
             text = text.substring(0, end);
@@ -506,8 +506,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         char charAfter = scanner.peek();
-        String before = charBefore == '\0' ? "\n" : String.valueOf(charBefore);
-        String after = charAfter == '\0' ? "\n" : String.valueOf(charAfter);
+        String before = charBefore == Scanner.END ? "\n" : String.valueOf(charBefore);
+        String after = charAfter == Scanner.END ? "\n" : String.valueOf(charAfter);
 
         // We could be more lazy here, in most cases we don't need to do every match case.
         boolean beforeIsPunctuation = PUNCTUATION.matcher(before).matches();

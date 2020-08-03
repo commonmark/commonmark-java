@@ -7,6 +7,14 @@ import java.util.List;
 
 public class Scanner {
 
+    /**
+     * Character representing the end of input (or outside of the text in case of the "previous" methods).
+     * <p>
+     * Note that we can use NULL to represent this because CommonMark does not allow those in the input (we replace them
+     * in the beginning of parsing).
+     */
+    public static final char END = '\0';
+
     // Lines without newlines at the end. The scanner will yield `\n` between lines because they're significant for
     // parsing and the final output. There is no `\n` after the last line.
     private final List<CharSequence> lines;
@@ -46,7 +54,7 @@ public class Scanner {
                 return '\n';
             } else {
                 // Don't return newline for end of last line
-                return '\0';
+                return END;
             }
         }
     }
@@ -59,7 +67,7 @@ public class Scanner {
             if (lineIndex > 0) {
                 return '\n';
             } else {
-                return '\0';
+                return END;
             }
         }
     }
@@ -136,7 +144,7 @@ public class Scanner {
         int count = 0;
         while (true) {
             char cur = peek();
-            if (cur == '\0') {
+            if (cur == Scanner.END) {
                 return -1;
             } else if (cur == c) {
                 return count;
@@ -150,7 +158,7 @@ public class Scanner {
         int count = 0;
         while (true) {
             char c = peek();
-            if (c == '\0') {
+            if (c == END) {
                 return -1;
             } else if (matcher.matches(c)) {
                 return count;
