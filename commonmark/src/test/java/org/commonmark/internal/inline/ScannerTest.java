@@ -79,4 +79,15 @@ public class ScannerTest {
 
         assertEquals("b\ncde", scanner.textBetween(afterA, scanner.position()));
     }
+
+    @Test
+    public void nextString() {
+        Scanner scanner = Scanner.of(Arrays.<CharSequence>asList("hey ya", "hi"));
+        assertFalse(scanner.next("hoy"));
+        assertTrue(scanner.next("hey"));
+        assertTrue(scanner.next(' '));
+        assertFalse(scanner.next("yo"));
+        assertTrue(scanner.next("ya"));
+        assertFalse(scanner.next(" "));
+    }
 }

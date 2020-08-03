@@ -94,9 +94,37 @@ public class Scanner {
         }
     }
 
+    /**
+     * Check if the specified char is next and advance the position.
+     *
+     * @param c the char to check (including newline characters)
+     * @return true if matched and position was advanced, false otherwise
+     */
     public boolean next(char c) {
         if (peek() == c) {
             next();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check if we have the specified content on the line and advanced the position. Note that if you want to match
+     * newline characters, use {@link #next(char)}.
+     *
+     * @param content the text content to match on a single line (excluding newline characters)
+     * @return true if matched and position was advanced, false otherwise
+     */
+    public boolean next(String content) {
+        if (index < lineLength && index + content.length() <= lineLength) {
+            // Can't use startsWith because it's not available on CharSequence
+            for (int i = 0; i < content.length(); i++) {
+                if (line.charAt(index + i) != content.charAt(i)) {
+                    return false;
+                }
+            }
+            index += content.length();
             return true;
         } else {
             return false;

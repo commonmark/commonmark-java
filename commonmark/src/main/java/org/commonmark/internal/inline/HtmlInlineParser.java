@@ -151,24 +151,15 @@ public class HtmlInlineParser implements InlineContentParser {
             return false;
         }
 
-        if (scanner.next('>')) {
+        if (scanner.next('>') || scanner.next("->")) {
             return false;
         }
 
-        if (scanner.next('-')) {
-            // Can't start with ->
-            if (scanner.next('>')) {
-                return false;
-            }
-            // Empty comment
-            if (scanner.next('-')) {
-                return scanner.next('>');
-            }
-        }
-
         while (scanner.find('-') >= 0) {
-            if (scanner.next('-') && scanner.next('-')) {
+            if (scanner.next("--")) {
                 return scanner.next('>');
+            } else {
+                scanner.next();
             }
         }
 
@@ -182,11 +173,12 @@ public class HtmlInlineParser implements InlineContentParser {
         // Skip `[`
         scanner.next();
 
-        if (scanner.next('C') && scanner.next('D') && scanner.next('A') && scanner.next('T') && scanner.next('A')
-                && scanner.next('[')) {
+        if (scanner.next("CDATA[")) {
             while (scanner.find(']') >= 0) {
-                if (scanner.next(']') && scanner.next(']') && scanner.next('>')) {
+                if (scanner.next("]]>")) {
                     return true;
+                } else {
+                    scanner.next();
                 }
             }
         }
