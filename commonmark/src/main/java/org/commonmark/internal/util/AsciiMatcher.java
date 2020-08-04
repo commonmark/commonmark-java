@@ -3,7 +3,6 @@ package org.commonmark.internal.util;
 import java.util.BitSet;
 
 public class AsciiMatcher implements CharMatcher {
-    // TODO: Check if boolean[] is faster, see BitClass in java.util.regex.Pattern
     private final BitSet set;
 
     private AsciiMatcher(Builder builder) {
