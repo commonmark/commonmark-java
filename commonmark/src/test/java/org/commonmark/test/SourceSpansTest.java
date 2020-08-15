@@ -14,12 +14,18 @@ import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.*;
 
 public class SourceSpansTest {
 
     private static final Parser PARSER = Parser.builder().build();
+
+    // TODO: Tests for when column is within tab
+
+    // TODO: Tests for where paragraph starts with link reference definitions
 
     @Test
     public void paragraph() {
@@ -172,7 +178,7 @@ public class SourceSpansTest {
         if (node == null) {
             fail("Expected to find " + nodeClass + " node");
         } else {
-            assertThat(node.getSourceSpans(), contains(expectedSourceSpans));
+            assertEquals(Arrays.asList(expectedSourceSpans), node.getSourceSpans());
         }
     }
 }

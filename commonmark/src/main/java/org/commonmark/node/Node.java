@@ -1,7 +1,6 @@
 package org.commonmark.node;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public abstract class Node {
@@ -36,7 +35,7 @@ public abstract class Node {
     }
 
     public List<SourceSpan> getSourceSpans() {
-        return Collections.unmodifiableList(sourceSpans);
+        return sourceSpans;
     }
 
     public void setSourceSpans(List<SourceSpan> sourceSpans) {
