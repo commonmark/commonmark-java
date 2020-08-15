@@ -1,5 +1,9 @@
 package org.commonmark.node;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public abstract class Node {
 
     private Node parent = null;
@@ -7,6 +11,7 @@ public abstract class Node {
     private Node lastChild = null;
     private Node prev = null;
     private Node next = null;
+    private List<SourceSpan> sourceSpans = new ArrayList<>();
 
     public abstract void accept(Visitor visitor);
 
@@ -28,6 +33,14 @@ public abstract class Node {
 
     public Node getParent() {
         return parent;
+    }
+
+    public List<SourceSpan> getSourceSpans() {
+        return Collections.unmodifiableList(sourceSpans);
+    }
+
+    public void setSourceSpans(List<SourceSpan> sourceSpans) {
+        this.sourceSpans = new ArrayList<>(sourceSpans);
     }
 
     protected void setParent(Node parent) {

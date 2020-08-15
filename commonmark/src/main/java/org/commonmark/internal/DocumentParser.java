@@ -1,16 +1,40 @@
 package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.node.*;
+import org.commonmark.node.Block;
+import org.commonmark.node.BlockQuote;
+import org.commonmark.node.Document;
+import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.Heading;
+import org.commonmark.node.HtmlBlock;
+import org.commonmark.node.IndentedCodeBlock;
+import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.node.ListBlock;
+import org.commonmark.node.Paragraph;
+import org.commonmark.node.SourceSpan;
+import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserFactory;
-import org.commonmark.parser.block.*;
+import org.commonmark.parser.block.BlockContinue;
+import org.commonmark.parser.block.BlockParser;
+import org.commonmark.parser.block.BlockParserFactory;
+import org.commonmark.parser.block.BlockStart;
+import org.commonmark.parser.block.MatchedBlockParser;
+import org.commonmark.parser.block.ParserState;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class DocumentParser implements ParserState {
 
@@ -39,6 +63,11 @@ public class DocumentParser implements ParserState {
 
 
     private CharSequence line;
+
+    /**
+     * Line index (0-based)
+     */
+    private int lineIndex = -1;
 
     /**
      * current index (offset) in input line (0-based)
@@ -137,6 +166,10 @@ public class DocumentParser implements ParserState {
         return line;
     }
 
+    public int getLineIndex() {
+        return lineIndex;
+    }
+
     @Override
     public int getIndex() {
         return index;
@@ -172,6 +205,7 @@ public class DocumentParser implements ParserState {
      * line of input, then finalizing the document.
      */
     private void incorporateLine(CharSequence ln) {
+        lineIndex++;
         line = Parsing.prepareLine(ln);
         index = 0;
         column = 0;
@@ -256,6 +290,10 @@ public class DocumentParser implements ParserState {
         if (!startedNewBlock && !isBlank() &&
                 getActiveBlockParser().canHaveLazyContinuationLines()) {
             // lazy paragraph continuation
+            // TODO
+            for (BlockParser parser : activeBlockParsers.subList(1, activeBlockParsers.size())) {
+//                parser.onLazyContinuationLine(this);
+            }
             addLine();
 
         } else {
@@ -269,7 +307,11 @@ public class DocumentParser implements ParserState {
                 addLine();
             } else if (!isBlank()) {
                 // create paragraph container for line
-                addChild(new ParagraphParser());
+                // TODO:
+//                SourceSpan sourceSpan = SourceSpans.fromState(this, this.getNextNonSpaceIndex());
+//                ParagraphParser paragraphParser = new ParagraphParser(sourceSpan);
+                ParagraphParser paragraphParser = new ParagraphParser();
+                addChild(paragraphParser);
                 addLine();
             }
         }
@@ -392,6 +434,8 @@ public class DocumentParser implements ParserState {
         }
 
         blockParser.closeBlock();
+        // TODO
+        //blockParser.getBlock().setSourceSpans(blockParser.getSourceSpans());
     }
 
     private void addDefinitionsFrom(ParagraphParser paragraphParser) {
@@ -420,8 +464,8 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Add block of type tag as a child of the tip. If the tip can't  accept children, close and finalize it and try
-     * its parent, and so on til we find a block that can accept children.
+     * Add block of type tag as a child of the tip. If the tip can't accept children, close and finalize it and try
+     * its parent, and so on until we find a block that can accept children.
      */
     private <T extends BlockParser> T addChild(T blockParser) {
         while (!getActiveBlockParser().canContain(blockParser.getBlock())) {
