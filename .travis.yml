@@ -22,10 +22,3 @@ matrix:
 script:
   - 'if [ $TEST = java ]; then mvn test -Dsurefire.useFile=false; fi'
   - 'if [ $TEST = android ]; then mvn install -DskipTests && cd commonmark-android-test && travis_retry ./.travis.sh; fi'
-
-after_success: |
-  if [ $TRAVIS_JDK_VERSION = oraclejdk8 ] && [ $TEST = java ]; then
-    # Calculate test coverage
-    mvn clean test jacoco:report-aggregate -Pcoverage
-    bash <(curl -s https://codecov.io/bash)
-  fi
