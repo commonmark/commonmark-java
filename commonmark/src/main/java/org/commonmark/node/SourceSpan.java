@@ -61,8 +61,8 @@ public class SourceSpan {
     @Override
     public String toString() {
         return "SourceSpan{" +
-                "lineIndex=" + lineIndex +
-                ", columnIndex=" + columnIndex +
+                "line=" + lineIndex +
+                ", column=" + columnIndex +
                 ", length=" + length +
                 "}";
     }

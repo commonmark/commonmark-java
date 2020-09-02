@@ -47,9 +47,10 @@ public class SourceSpanRenderer {
 
     private static class SourceSpanMarkersVisitor extends AbstractVisitor {
 
+        private static final String OPENING = "({[<⸢⸤";
+        private static final String CLOSING = ")}]>⸣⸥";
+
         private final Map<Integer, Map<Integer, List<String>>> markers = new HashMap<>();
-        private final String opening = "({[<⸢⸤";
-        private final String closing = ")}]>⸣⸥";
 
         private int markerIndex;
 
@@ -61,8 +62,8 @@ public class SourceSpanRenderer {
         protected void visitChildren(Node parent) {
             if (!parent.getSourceSpans().isEmpty()) {
                 for (SourceSpan sourceSpan : parent.getSourceSpans()) {
-                    String opener = String.valueOf(opening.charAt(markerIndex % opening.length()));
-                    String closer = String.valueOf(closing.charAt(markerIndex % closing.length()));
+                    String opener = String.valueOf(OPENING.charAt(markerIndex % OPENING.length()));
+                    String closer = String.valueOf(CLOSING.charAt(markerIndex % CLOSING.length()));
 
                     int col = sourceSpan.getColumnIndex();
                     getMarkers(sourceSpan.getLineIndex(), col).add(opener);

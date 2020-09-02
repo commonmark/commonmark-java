@@ -222,8 +222,9 @@ public class DocumentParser implements ParserState {
             BlockContinue result = blockParser.tryContinue(this);
             if (result instanceof BlockContinueImpl) {
                 BlockContinueImpl blockContinue = (BlockContinueImpl) result;
+                openBlockParser.sourceIndex = getIndex();
                 if (blockContinue.isFinalize()) {
-                    // TODO: Source pos here?
+                    addSourceSpans();
                     closeBlockParsers(openBlockParsers.size() - i);
                     return;
                 } else {
@@ -232,7 +233,6 @@ public class DocumentParser implements ParserState {
                     } else if (blockContinue.getNewColumn() != -1) {
                         setNewColumn(blockContinue.getNewColumn());
                     }
-                    openBlockParser.index = index;
                     matches++;
                 }
             } else {
@@ -244,10 +244,13 @@ public class DocumentParser implements ParserState {
         BlockParser blockParser = openBlockParsers.get(matches - 1).blockParser;
         boolean startedNewBlock = false;
 
+        int lastIndex = index;
+
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
         boolean tryBlockStarts = blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
         while (tryBlockStarts) {
+            lastIndex = index;
             findNextNonSpace();
 
             // this is a little performance optimization:
@@ -263,6 +266,7 @@ public class DocumentParser implements ParserState {
             }
 
             startedNewBlock = true;
+            int sourceIndex = getIndex();
 
             // We're starting a new block. If we have any previous blocks that need to be closed, we need to do it now.
             if (unmatchedBlocks > 0) {
@@ -276,12 +280,17 @@ public class DocumentParser implements ParserState {
                 setNewColumn(blockStart.getNewColumn());
             }
 
+            List<SourceSpan> replacedSourceSpans = null;
             if (blockStart.isReplaceActiveBlockParser()) {
-                prepareActiveBlockParserForReplacement();
+                Block replacedBlock = prepareActiveBlockParserForReplacement();
+                replacedSourceSpans = replacedBlock.getSourceSpans();
             }
 
             for (BlockParser newBlockParser : blockStart.getBlockParsers()) {
-                addChild(new OpenBlockParser(newBlockParser, index));
+                addChild(new OpenBlockParser(newBlockParser, sourceIndex));
+                if (replacedSourceSpans != null) {
+                    newBlockParser.getBlock().setSourceSpans(replacedSourceSpans);
+                }
                 blockParser = newBlockParser;
                 tryBlockStarts = newBlockParser.isContainer();
             }
@@ -293,9 +302,8 @@ public class DocumentParser implements ParserState {
         // First check for a lazy paragraph continuation:
         if (!startedNewBlock && !isBlank() &&
                 getActiveBlockParser().canHaveLazyContinuationLines()) {
-            openBlockParsers.get(openBlockParsers.size() - 1).index = index;
+            openBlockParsers.get(openBlockParsers.size() - 1).sourceIndex = lastIndex;
             // lazy paragraph continuation
-            // TODO
             addLine();
 
         } else {
@@ -309,12 +317,18 @@ public class DocumentParser implements ParserState {
                 addLine();
             } else if (!isBlank()) {
                 // create paragraph container for line
-                // TODO:
-//                SourceSpan sourceSpan = SourceSpans.fromState(this, this.getNextNonSpaceIndex());
-//                ParagraphParser paragraphParser = new ParagraphParser(sourceSpan);
                 ParagraphParser paragraphParser = new ParagraphParser();
-                addChild(new OpenBlockParser(paragraphParser, index));
+                addChild(new OpenBlockParser(paragraphParser, lastIndex));
                 addLine();
+            } else {
+                // This can happen for a list item like this:
+                // ```
+                // *
+                // list item
+                // ```
+                //
+                // The first line does not start a paragraph yet, but we still want to record source positions.
+                addSourceSpans();
             }
         }
     }
@@ -412,11 +426,17 @@ public class DocumentParser implements ParserState {
             content = line.subSequence(index, line.length());
         }
         getActiveBlockParser().addLine(content);
-        for (OpenBlockParser openBlockParser : openBlockParsers) {
-            int blockIndex = openBlockParser.index;
+        addSourceSpans();
+    }
+
+    private void addSourceSpans() {
+        // Don't add source spans for Document itself (it would get the whole source text)
+        for (int i = 1; i < openBlockParsers.size(); i++) {
+            OpenBlockParser openBlockParser = openBlockParsers.get(i);
+            int blockIndex = openBlockParser.sourceIndex;
             int length = line.length() - blockIndex;
             if (length != 0) {
-                openBlockParser.blockParser.getBlock().getSourceSpans().add(SourceSpan.of(lineIndex, blockIndex, length));
+                openBlockParser.blockParser.addSourceSpan(SourceSpan.of(lineIndex, blockIndex, length));
             }
         }
     }
@@ -443,8 +463,6 @@ public class DocumentParser implements ParserState {
         }
 
         blockParser.closeBlock();
-        // TODO
-        //blockParser.getBlock().setSourceSpans(blockParser.getSourceSpans());
     }
 
     private void addDefinitionsFrom(ParagraphParser paragraphParser) {
@@ -493,8 +511,8 @@ public class DocumentParser implements ParserState {
         return openBlockParsers.remove(openBlockParsers.size() - 1);
     }
 
-    private void prepareActiveBlockParserForReplacement() {
-        // Note that we don't want to parse inlines or finalize this block, as it's getting replaced.
+    private Block prepareActiveBlockParserForReplacement() {
+        // Note that we don't want to parse inlines, as it's getting replaced.
         BlockParser old = deactivateBlockParser().blockParser;
 
         if (old instanceof ParagraphParser) {
@@ -507,9 +525,10 @@ public class DocumentParser implements ParserState {
             addDefinitionsFrom(paragraphParser);
         }
 
-        // TODO: Copy source positions of old block
-
+        // Do this so that source positions are calculated, which we will carry over to the replacing block.
+        old.closeBlock();
         old.getBlock().unlink();
+        return old.getBlock();
     }
 
     private Document finalizeAndProcess() {
@@ -559,11 +578,11 @@ public class DocumentParser implements ParserState {
 
     private static class OpenBlockParser {
         private final BlockParser blockParser;
-        private int index;
+        private int sourceIndex;
 
-        OpenBlockParser(BlockParser blockParser, int index) {
+        OpenBlockParser(BlockParser blockParser, int sourceIndex) {
             this.blockParser = blockParser;
-            this.index = index;
+            this.sourceIndex = sourceIndex;
         }
     }
 }

@@ -3,6 +3,7 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.Paragraph;
+import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
@@ -13,7 +14,7 @@ import java.util.List;
 public class ParagraphParser extends AbstractBlockParser {
 
     private final Paragraph block = new Paragraph();
-    private LinkReferenceDefinitionParser linkReferenceDefinitionParser = new LinkReferenceDefinitionParser();
+    private final LinkReferenceDefinitionParser linkReferenceDefinitionParser = new LinkReferenceDefinitionParser();
 
     @Override
     public boolean canHaveLazyContinuationLines() {
@@ -40,9 +41,18 @@ public class ParagraphParser extends AbstractBlockParser {
     }
 
     @Override
+    public void addSourceSpan(SourceSpan sourceSpan) {
+        // Some source spans might belong to link reference definitions, others to the paragraph.
+        // The parser will handle that.
+        linkReferenceDefinitionParser.addSourceSpan(sourceSpan);
+    }
+
+    @Override
     public void closeBlock() {
         if (linkReferenceDefinitionParser.getParagraphContent().length() == 0) {
             block.unlink();
+        } else {
+            block.getSourceSpans().addAll(linkReferenceDefinitionParser.getParagraphSourceSpans());
         }
     }
 
