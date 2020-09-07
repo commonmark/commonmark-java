@@ -52,7 +52,7 @@ public class ParagraphParser extends AbstractBlockParser {
         if (linkReferenceDefinitionParser.getParagraphContent().length() == 0) {
             block.unlink();
         } else {
-            block.getSourceSpans().addAll(linkReferenceDefinitionParser.getParagraphSourceSpans());
+            block.setSourceSpans(linkReferenceDefinitionParser.getParagraphSourceSpans());
         }
     }
 

@@ -62,7 +62,7 @@ public class TableBlockParser extends AbstractBlockParser {
         SourceSpan headerSourceSpan = !sourceSpans.isEmpty() ? sourceSpans.get(0) : null;
         Node head = new TableHead();
         if (headerSourceSpan != null) {
-            head.getSourceSpans().add(headerSourceSpan);
+            head.addSourceSpan(headerSourceSpan);
         }
         block.appendChild(head);
 
@@ -86,7 +86,7 @@ public class TableBlockParser extends AbstractBlockParser {
             SourceSpan sourceSpan = sourceSpans.get(rowIndex);
             List<CellSource> cells = split(rowLine, sourceSpan);
             TableRow row = new TableRow();
-            row.getSourceSpans().add(sourceSpan);
+            row.addSourceSpan(sourceSpan);
 
             // Body can not have more columns than head
             for (int i = 0; i < headerColumns; i++) {
@@ -101,7 +101,7 @@ public class TableBlockParser extends AbstractBlockParser {
                 block.appendChild(body);
             }
             body.appendChild(row);
-            body.getSourceSpans().add(sourceSpan);
+            body.addSourceSpan(sourceSpan);
         }
     }
 

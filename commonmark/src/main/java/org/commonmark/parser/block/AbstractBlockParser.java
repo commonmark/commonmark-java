@@ -27,7 +27,7 @@ public abstract class AbstractBlockParser implements BlockParser {
 
     @Override
     public void addSourceSpan(SourceSpan sourceSpan) {
-        getBlock().getSourceSpans().add(sourceSpan);
+        getBlock().addSourceSpan(sourceSpan);
     }
 
     @Override
