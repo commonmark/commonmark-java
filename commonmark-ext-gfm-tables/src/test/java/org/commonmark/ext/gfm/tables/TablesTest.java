@@ -666,7 +666,7 @@ public class TablesTest extends RenderingTestCase {
         assertEquals(Arrays.asList(SourceSpan.of(0, 4, 3)), headRowCell2.getSourceSpans());
 
         TableBody body = (TableBody) block.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(2, 0, 4), SourceSpan.of(3, 1, 7), SourceSpan.of(4, 0, 3)), body.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(2, 0, 4), SourceSpan.of(3, 0, 8), SourceSpan.of(4, 0, 3)), body.getSourceSpans());
 
         TableRow bodyRow1 = (TableRow) body.getFirstChild();
         assertEquals(Arrays.asList(SourceSpan.of(2, 0, 4)), bodyRow1.getSourceSpans());
@@ -676,10 +676,10 @@ public class TablesTest extends RenderingTestCase {
         assertEquals(Arrays.asList(SourceSpan.of(2, 3, 1)), bodyRow1Cell2.getSourceSpans());
 
         TableRow bodyRow2 = (TableRow) body.getFirstChild().getNext();
-        assertEquals(Arrays.asList(SourceSpan.of(3, 1, 7)), bodyRow2.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 0, 8)), bodyRow2.getSourceSpans());
         TableCell bodyRow2Cell1 = (TableCell) bodyRow2.getFirstChild();
         TableCell bodyRow2Cell2 = (TableCell) bodyRow2.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 0, 2)), bodyRow2Cell1.getSourceSpans());
         assertEquals(Arrays.asList(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getSourceSpans());
 
         TableRow bodyRow3 = (TableRow) body.getLastChild();
