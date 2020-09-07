@@ -83,7 +83,7 @@ public class TableBlockParser extends AbstractBlockParser {
         // Body starts at index 2. 0 is header, 1 is separator.
         for (int rowIndex = 2; rowIndex < rowLines.size(); rowIndex++) {
             CharSequence rowLine = rowLines.get(rowIndex);
-            SourceSpan sourceSpan = sourceSpans.get(rowIndex);
+            SourceSpan sourceSpan = rowIndex < sourceSpans.size() ? sourceSpans.get(rowIndex) : null;
             List<CellSource> cells = split(rowLine, sourceSpan);
             TableRow row = new TableRow();
             row.addSourceSpan(sourceSpan);

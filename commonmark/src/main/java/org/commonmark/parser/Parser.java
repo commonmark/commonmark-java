@@ -4,7 +4,16 @@ import org.commonmark.Extension;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
-import org.commonmark.node.*;
+import org.commonmark.node.Block;
+import org.commonmark.node.BlockQuote;
+import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.Heading;
+import org.commonmark.node.HtmlBlock;
+import org.commonmark.node.IndentedCodeBlock;
+import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.node.ListBlock;
+import org.commonmark.node.Node;
+import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
@@ -31,12 +40,14 @@ public class Parser {
     private final List<DelimiterProcessor> delimiterProcessors;
     private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
+    private final IncludeSourceSpans includeSourceSpans;
 
     private Parser(Builder builder) {
         this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.enabledBlockTypes);
         this.inlineParserFactory = builder.getInlineParserFactory();
         this.postProcessors = builder.postProcessors;
         this.delimiterProcessors = builder.delimiterProcessors;
+        this.includeSourceSpans = builder.includeSourceSpans;
 
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
@@ -99,7 +110,7 @@ public class Parser {
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, delimiterProcessors);
+        return new DocumentParser(blockParserFactories, inlineParserFactory, delimiterProcessors, includeSourceSpans);
     }
 
     private Node postProcess(Node document) {
@@ -118,6 +129,7 @@ public class Parser {
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
         private InlineParserFactory inlineParserFactory;
+        private IncludeSourceSpans includeSourceSpans = IncludeSourceSpans.NONE;
 
         /**
          * @return the configured {@link Parser}
@@ -167,7 +179,7 @@ public class Parser {
          * </pre>
          *
          * @param enabledBlockTypes A list of block nodes the parser will parse.
-         * If this list is empty, the parser will not recognize any CommonMark core features.
+         *                          If this list is empty, the parser will not recognize any CommonMark core features.
          * @return {@code this}
          */
         public Builder enabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
@@ -175,6 +187,19 @@ public class Parser {
                 throw new NullPointerException("enabledBlockTypes must not be null");
             }
             this.enabledBlockTypes = enabledBlockTypes;
+            return this;
+        }
+
+        /**
+         * Whether to calculate {@link org.commonmark.node.SourceSpan} for {@link Node}.
+         * <p>
+         * By default, source spans are disabled.
+         *
+         * @param includeSourceSpans which kind of source spans should be included
+         * @return {@code this}
+         */
+        public Builder includeSourceSpans(IncludeSourceSpans includeSourceSpans) {
+            this.includeSourceSpans = includeSourceSpans;
             return this;
         }
 

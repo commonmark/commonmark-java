@@ -2,6 +2,25 @@ package org.commonmark.node;
 
 import java.util.Objects;
 
+/**
+ * A source span references a snippet of text from the source input.
+ * <p>
+ * It has a starting position (line and column index) and a length of how many characters it spans.
+ * <p>
+ * For example, this CommonMark source text:
+ * <pre><code>
+ * > foo
+ * </code></pre>
+ * The {@link BlockQuote} node would have this source span: line 0, column 0, length 5.
+ * <p>
+ * The {@link Paragraph} node inside it would have: line 0, column 2, length 3.
+ * <p>
+ * If a block has multiple lines, it will have a source span for each line.
+ * <p>
+ * Note that the column index and length are measured in Java characters (UTF-16 code units). If you're outputting them
+ * to be consumed by another programming language, e.g. one that uses UTF-8 strings, you will need to translate them,
+ * otherwise characters such as emojis will result in incorrect positions.
+ */
 public class SourceSpan {
 
     private final int lineIndex;
@@ -33,7 +52,7 @@ public class SourceSpan {
     }
 
     /**
-     * @return length of the span
+     * @return length of the span in characters
      */
     public int getLength() {
         return length;

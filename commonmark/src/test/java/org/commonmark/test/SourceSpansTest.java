@@ -13,6 +13,7 @@ import org.commonmark.node.Paragraph;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.Parser;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -22,7 +23,7 @@ import static org.junit.Assert.*;
 
 public class SourceSpansTest {
 
-    private static final Parser PARSER = Parser.builder().build();
+    private static final Parser PARSER = Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS).build();
 
     @Test
     public void paragraph() {

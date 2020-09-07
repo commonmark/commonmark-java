@@ -15,6 +15,7 @@ import org.commonmark.node.SourceSpan;
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserFactory;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.BlockParser;
 import org.commonmark.parser.block.BlockParserFactory;
@@ -92,6 +93,7 @@ public class DocumentParser implements ParserState {
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserFactory inlineParserFactory;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
     private final Map<String, LinkReferenceDefinition> definitions = new LinkedHashMap<>();
 
@@ -99,10 +101,11 @@ public class DocumentParser implements ParserState {
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
-                          List<DelimiterProcessor> delimiterProcessors) {
+                          List<DelimiterProcessor> delimiterProcessors, IncludeSourceSpans includeSourceSpans) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.delimiterProcessors = delimiterProcessors;
+        this.includeSourceSpans = includeSourceSpans;
 
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(new OpenBlockParser(documentBlockParser, 0));
@@ -430,13 +433,15 @@ public class DocumentParser implements ParserState {
     }
 
     private void addSourceSpans() {
-        // Don't add source spans for Document itself (it would get the whole source text)
-        for (int i = 1; i < openBlockParsers.size(); i++) {
-            OpenBlockParser openBlockParser = openBlockParsers.get(i);
-            int blockIndex = openBlockParser.sourceIndex;
-            int length = line.length() - blockIndex;
-            if (length != 0) {
-                openBlockParser.blockParser.addSourceSpan(SourceSpan.of(lineIndex, blockIndex, length));
+        if (includeSourceSpans != IncludeSourceSpans.NONE) {
+            // Don't add source spans for Document itself (it would get the whole source text)
+            for (int i = 1; i < openBlockParsers.size(); i++) {
+                OpenBlockParser openBlockParser = openBlockParsers.get(i);
+                int blockIndex = openBlockParser.sourceIndex;
+                int length = line.length() - blockIndex;
+                if (length != 0) {
+                    openBlockParser.blockParser.addSourceSpan(SourceSpan.of(lineIndex, blockIndex, length));
+                }
             }
         }
     }

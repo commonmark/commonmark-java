@@ -4,6 +4,7 @@ import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.Parser;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.AttributeProviderContext;
 import org.commonmark.renderer.html.AttributeProviderFactory;
@@ -648,7 +649,11 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void sourceSpans() {
-        Node document = PARSER.parse("Abc|Def\n---|---\n|1|2\n 3|four|\n|||\n");
+        Parser parser = Parser.builder()
+                .extensions(EXTENSIONS)
+                .includeSourceSpans(IncludeSourceSpans.BLOCKS)
+                .build();
+        Node document = parser.parse("Abc|Def\n---|---\n|1|2\n 3|four|\n|||\n");
 
         TableBlock block = (TableBlock) document.getFirstChild();
         assertEquals(Arrays.asList(SourceSpan.of(0, 0, 7), SourceSpan.of(1, 0, 7),
