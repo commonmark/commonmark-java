@@ -12,14 +12,14 @@ import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.node.ThematicBreak;
-import org.commonmark.parser.Parser;
 import org.commonmark.parser.IncludeSourceSpans;
+import org.commonmark.parser.Parser;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class SourceSpansTest {
 
@@ -99,7 +99,7 @@ public class SourceSpansTest {
 
         Node document = PARSER.parse("```\nfoo\n```\nbar\n");
         Paragraph paragraph = (Paragraph) document.getLastChild();
-        assertThat(paragraph.getSourceSpans(), contains(SourceSpan.of(3, 0, 3)));
+        assertEquals(Arrays.asList(SourceSpan.of(3, 0, 3)), paragraph.getSourceSpans());
     }
 
     @Test
@@ -142,7 +142,7 @@ public class SourceSpansTest {
 
         Node document = PARSER.parse("* foo\n  * bar\n");
         ListBlock listBlock = (ListBlock) document.getFirstChild().getFirstChild().getLastChild();
-        assertThat(listBlock.getSourceSpans(), contains(SourceSpan.of(1, 2, 5)));
+        assertEquals(Arrays.asList(SourceSpan.of(1, 2, 5)), listBlock.getSourceSpans());
     }
 
     @Test
