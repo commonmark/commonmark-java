@@ -107,7 +107,7 @@ public class TableBlockParser extends AbstractBlockParser {
             tableCell.setSourceSpans(Collections.singletonList(cell.sourceSpan));
         }
 
-        inlineParser.parse(Collections.<CharSequence>singletonList(cell.content), tableCell);
+        inlineParser.parse(Collections.<CharSequence>singletonList(cell.content.trim()), tableCell);
 
         return tableCell;
     }
