@@ -167,4 +167,11 @@ public class SpecialInputTest extends CoreRenderingTestCase {
                         "</li>\n" +
                         "</ul>\n");
     }
+
+    @Test
+    public void trailingTabs() {
+        // The tab is not treated as 4 spaces here and so does not result in a hard line break, but is just preserved.
+        // This matches what commonmark.js did at the time of writing.
+        assertRendering("a\t\nb\n", "<p>a\t\nb</p>\n");
+    }
 }

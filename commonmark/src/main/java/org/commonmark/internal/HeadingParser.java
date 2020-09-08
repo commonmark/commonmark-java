@@ -6,12 +6,15 @@ import org.commonmark.node.Heading;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.block.*;
 
+import java.util.Collections;
+import java.util.List;
+
 public class HeadingParser extends AbstractBlockParser {
 
     private final Heading block = new Heading();
-    private final String content;
+    private final List<CharSequence> content;
 
-    public HeadingParser(int level, String content) {
+    public HeadingParser(int level, List<CharSequence> content) {
         block.setLevel(level);
         this.content = content;
     }
@@ -49,10 +52,9 @@ public class HeadingParser extends AbstractBlockParser {
 
             int setextHeadingLevel = getSetextHeadingLevel(line, nextNonSpace);
             if (setextHeadingLevel > 0) {
-                CharSequence paragraph = matchedBlockParser.getParagraphContent();
-                if (paragraph != null) {
-                    String content = paragraph.toString();
-                    return BlockStart.of(new HeadingParser(setextHeadingLevel, content))
+                List<CharSequence> paragraph = matchedBlockParser.getParagraphLines();
+                if (!paragraph.isEmpty()) {
+                    return BlockStart.of(new HeadingParser(setextHeadingLevel, paragraph))
                             .atIndex(line.length())
                             .replaceActiveBlockParser();
                 }
@@ -73,25 +75,29 @@ public class HeadingParser extends AbstractBlockParser {
             return null;
         }
 
-        int start = index + level;
-        if (start >= line.length()) {
+        int afterMarker = index + level;
+        if (afterMarker >= line.length()) {
             // End of line after markers is an empty heading
-            return new HeadingParser(level, "");
+            return new HeadingParser(level, Collections.<CharSequence>emptyList());
         }
 
-        char next = line.charAt(start);
+        char next = line.charAt(afterMarker);
         if (!(next == ' ' || next == '\t')) {
             return null;
         }
 
-        int beforeSpace = Parsing.skipSpaceTabBackwards(line, line.length() - 1, start);
-        int beforeHash = Parsing.skipBackwards('#', line, beforeSpace, start);
-        int beforeTrailer = Parsing.skipSpaceTabBackwards(line, beforeHash, start);
-        if (beforeTrailer != beforeHash) {
-            return new HeadingParser(level, line.subSequence(start, beforeTrailer + 1).toString());
-        } else {
-            return new HeadingParser(level, line.subSequence(start, beforeSpace + 1).toString());
+        int start = Parsing.skipSpaceTab(line, afterMarker, line.length());
+
+        int beforeSpace = Parsing.skipSpaceTabBackwards(line, line.length() - 1, afterMarker);
+        int beforeHash = Parsing.skipBackwards('#', line, beforeSpace, afterMarker);
+        int beforeTrailer = Parsing.skipSpaceTabBackwards(line, beforeHash, afterMarker);
+        // Trailing `#` need to be separated with at least one space/tab, otherwise they are part of the content.
+        int end = (beforeTrailer < beforeHash) ? beforeTrailer + 1 : beforeSpace + 1;
+        if (start >= end) {
+            // Empty, e.g. `### ###`
+            return new HeadingParser(level, Collections.<CharSequence>emptyList());
         }
+        return new HeadingParser(level, Collections.singletonList(line.subSequence(start, end)));
     }
 
     // spec: A setext heading underline is a sequence of = characters or a sequence of - characters, with no more than

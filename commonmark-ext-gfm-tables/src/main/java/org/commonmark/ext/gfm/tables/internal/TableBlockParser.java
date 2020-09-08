@@ -1,20 +1,11 @@
 package org.commonmark.ext.gfm.tables.internal;
 
-import org.commonmark.ext.gfm.tables.TableBlock;
-import org.commonmark.ext.gfm.tables.TableBody;
-import org.commonmark.ext.gfm.tables.TableCell;
-import org.commonmark.ext.gfm.tables.TableHead;
-import org.commonmark.ext.gfm.tables.TableRow;
+import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.InlineParser;
-import org.commonmark.parser.block.AbstractBlockParser;
-import org.commonmark.parser.block.AbstractBlockParserFactory;
-import org.commonmark.parser.block.BlockContinue;
-import org.commonmark.parser.block.BlockStart;
-import org.commonmark.parser.block.MatchedBlockParser;
-import org.commonmark.parser.block.ParserState;
+import org.commonmark.parser.block.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -116,7 +107,7 @@ public class TableBlockParser extends AbstractBlockParser {
             tableCell.setSourceSpans(Collections.singletonList(cell.sourceSpan));
         }
 
-        inlineParser.parse(cell.content, tableCell);
+        inlineParser.parse(Collections.<CharSequence>singletonList(cell.content.trim()), tableCell);
 
         return tableCell;
     }
@@ -246,11 +237,12 @@ public class TableBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             CharSequence line = state.getLine();
-            CharSequence paragraph = matchedBlockParser.getParagraphContent();
-            if (paragraph != null && paragraph.toString().contains("|") && !paragraph.toString().contains("\n")) {
+            List<CharSequence> paragraphLines = matchedBlockParser.getParagraphLines();
+            if (paragraphLines.size() == 1 && paragraphLines.get(0).toString().contains("|")) {
                 CharSequence separatorLine = line.subSequence(state.getIndex(), line.length());
                 List<TableCell.Alignment> columns = parseSeparator(separatorLine);
                 if (columns != null && !columns.isEmpty()) {
+                    CharSequence paragraph = paragraphLines.get(0);
                     List<CellSource> headerCells = split(paragraph, null);
                     if (columns.size() >= headerCells.size()) {
                         return BlockStart.of(new TableBlockParser(columns, paragraph))

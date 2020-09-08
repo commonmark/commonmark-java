@@ -72,43 +72,41 @@ public class Parsing {
         return false;
     }
 
-    public static boolean isEscapable(CharSequence s, int index) {
-        if (index < s.length()) {
-            switch (s.charAt(index)) {
-                case '!':
-                case '"':
-                case '#':
-                case '$':
-                case '%':
-                case '&':
-                case '\'':
-                case '(':
-                case ')':
-                case '*':
-                case '+':
-                case ',':
-                case '-':
-                case '.':
-                case '/':
-                case ':':
-                case ';':
-                case '<':
-                case '=':
-                case '>':
-                case '?':
-                case '@':
-                case '[':
-                case '\\':
-                case ']':
-                case '^':
-                case '_':
-                case '`':
-                case '{':
-                case '|':
-                case '}':
-                case '~':
-                    return true;
-            }
+    public static boolean isEscapable(char c) {
+        switch (c) {
+            case '!':
+            case '"':
+            case '#':
+            case '$':
+            case '%':
+            case '&':
+            case '\'':
+            case '(':
+            case ')':
+            case '*':
+            case '+':
+            case ',':
+            case '-':
+            case '.':
+            case '/':
+            case ':':
+            case ';':
+            case '<':
+            case '=':
+            case '>':
+            case '?':
+            case '@':
+            case '[':
+            case '\\':
+            case ']':
+            case '^':
+            case '_':
+            case '`':
+            case '{':
+            case '|':
+            case '}':
+            case '~':
+                return true;
         }
         return false;
     }
@@ -122,18 +120,16 @@ public class Parsing {
         int length = line.length();
         for (int i = 0; i < length; i++) {
             char c = line.charAt(i);
-            switch (c) {
-                case '\0':
-                    if (sb == null) {
-                        sb = new StringBuilder(length);
-                        sb.append(line, 0, i);
-                    }
-                    sb.append('\uFFFD');
-                    break;
-                default:
-                    if (sb != null) {
-                        sb.append(c);
-                    }
+            if (c == '\0') {
+                if (sb == null) {
+                    sb = new StringBuilder(length);
+                    sb.append(line, 0, i);
+                }
+                sb.append('\uFFFD');
+            } else {
+                if (sb != null) {
+                    sb.append(c);
+                }
             }
         }
 
@@ -186,6 +182,23 @@ public class Parsing {
             }
         }
         return lastIndex - 1;
+    }
+
+    public static int skipWhitespace(CharSequence s, int startIndex, int endIndex) {
+        for (int i = startIndex; i < endIndex; i++) {
+            switch (s.charAt(i)) {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\u000B':
+                case '\f':
+                case '\r':
+                    break;
+                default:
+                    return i;
+            }
+        }
+        return endIndex;
     }
 
     private static int findNonSpace(CharSequence s, int startIndex) {

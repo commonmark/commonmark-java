@@ -425,6 +425,8 @@ public class DocumentParser implements ParserState {
             }
             sb.append(rest);
             content = sb.toString();
+        } else if (index == 0) {
+            content = line;
         } else {
             content = line.subSequence(index, line.length());
         }
@@ -458,9 +460,8 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Finalize a block. Close it and do any necessary postprocessing, e.g. creating string_content from strings,
-     * setting the 'tight' or 'loose' status of a list, and parsing the beginnings of paragraphs for reference
-     * definitions.
+     * Finalize a block. Close it and do any necessary postprocessing, e.g. setting the content of blocks and
+     * collecting link reference definitions from paragraphs.
      */
     private void finalize(BlockParser blockParser) {
         if (blockParser instanceof ParagraphParser) {
@@ -567,17 +568,12 @@ public class DocumentParser implements ParserState {
         }
 
         @Override
-        public CharSequence getParagraphContent() {
+        public List<CharSequence> getParagraphLines() {
             if (matchedBlockParser instanceof ParagraphParser) {
                 ParagraphParser paragraphParser = (ParagraphParser) matchedBlockParser;
-                CharSequence content = paragraphParser.getContentString();
-                if (content.length() == 0) {
-                    return null;
-                }
-
-                return content;
+                return Collections.unmodifiableList(paragraphParser.getParagraphLines());
             }
-            return null;
+            return Collections.emptyList();
         }
     }
 

@@ -1,5 +1,7 @@
 package org.commonmark.parser.block;
 
+import java.util.List;
+
 /**
  * Open block parser that was last matched during the continue phase. This is different from the currently active
  * block parser, as an unmatched block is only closed when a new block is started.
@@ -10,11 +12,10 @@ public interface MatchedBlockParser {
     BlockParser getMatchedBlockParser();
 
     /**
-     * Returns the current content of the paragraph if the matched block is a paragraph. The content can be multiple
-     * lines separated by {@code '\n'}.
+     * Returns the current paragraph lines if the matched block is a paragraph.
      *
-     * @return paragraph content or {@code null}
+     * @return paragraph content or an empty list
      */
-    CharSequence getParagraphContent();
+    List<CharSequence> getParagraphLines();
 
 }
