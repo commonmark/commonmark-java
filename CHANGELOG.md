@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Added
+- Support for including source spans on block nodes:
+  - Answer for "Where in the source input (line/column position and length) does this block come from?"
+  - Useful for things like editors that want to keep the input and rendered output scrolled to the same lines,
+    or start editing on the block that was selected.
+  - Use `includeSourceSpans` on `Parser.Builder` to enable, read data with `Node.getSourceSpans`
+
 ## [0.15.2] - 2020-07-20
 ### Fixed
 - image-attributes extension: Fix unexpected altering of text in case

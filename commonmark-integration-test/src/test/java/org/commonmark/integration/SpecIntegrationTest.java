@@ -21,7 +21,7 @@ import java.util.*;
  */
 public class SpecIntegrationTest extends SpecTestCase {
 
-    private static final List<Extension> EXTENSIONS = Arrays.asList(
+    protected static final List<Extension> EXTENSIONS = Arrays.asList(
             AutolinkExtension.create(),
             ImageAttributesExtension.create(),
             InsExtension.create(),
@@ -29,10 +29,10 @@ public class SpecIntegrationTest extends SpecTestCase {
             TablesExtension.create(),
             TaskListItemsExtension.create(),
             YamlFrontMatterExtension.create());
-    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
+    protected static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).percentEncodeUrls(true).build();
-    private static final Map<String, String> OVERRIDDEN_EXAMPLES = getOverriddenExamples();
+    protected static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).percentEncodeUrls(true).build();
+    protected static final Map<String, String> OVERRIDDEN_EXAMPLES = getOverriddenExamples();
 
     public SpecIntegrationTest(Example example) {
         super(example);

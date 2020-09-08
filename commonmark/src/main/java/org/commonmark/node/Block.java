@@ -1,5 +1,8 @@
 package org.commonmark.node;
 
+/**
+ * Block nodes such as paragraphs, list blocks, code blocks etc.
+ */
 public abstract class Block extends Node {
 
     public Block getParent() {

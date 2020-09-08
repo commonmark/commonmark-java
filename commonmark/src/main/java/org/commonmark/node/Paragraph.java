@@ -1,5 +1,8 @@
 package org.commonmark.node;
 
+/**
+ * A paragraph block, contains inline nodes such as {@link Text}
+ */
 public class Paragraph extends Block {
 
     @Override

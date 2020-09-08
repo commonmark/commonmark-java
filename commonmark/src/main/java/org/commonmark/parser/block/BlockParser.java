@@ -1,6 +1,7 @@
 package org.commonmark.parser.block;
 
 import org.commonmark.node.Block;
+import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.InlineParser;
 
 /**
@@ -33,6 +34,13 @@ public interface BlockParser {
     BlockContinue tryContinue(ParserState parserState);
 
     void addLine(CharSequence line);
+
+    /**
+     * Add a source span of the currently parsed block. The default implementation in {@link AbstractBlockParser} adds
+     * it to the block. Unless you have some complicated parsing where you need to check source positions, you don't
+     * need to override this.
+     */
+    void addSourceSpan(SourceSpan sourceSpan);
 
     void closeBlock();
 

@@ -4,6 +4,7 @@ import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.node.SourceSpan;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public class LinkReferenceDefinitionParser {
 
     private final StringBuilder paragraph = new StringBuilder();
     private final List<LinkReferenceDefinition> definitions = new ArrayList<>();
+    private final List<SourceSpan> sourceSpans = new ArrayList<>();
 
     private StringBuilder label;
     private String normalizedLabel;
@@ -70,8 +72,16 @@ public class LinkReferenceDefinitionParser {
         }
     }
 
+    public void addSourceSpan(SourceSpan sourceSpan) {
+        sourceSpans.add(sourceSpan);
+    }
+
     CharSequence getParagraphContent() {
         return paragraph;
+    }
+
+    List<SourceSpan> getParagraphSourceSpans() {
+        return sourceSpans;
     }
 
     List<LinkReferenceDefinition> getDefinitions() {
@@ -235,7 +245,10 @@ public class LinkReferenceDefinitionParser {
 
         String d = Escaping.unescapeString(destination);
         String t = title != null ? Escaping.unescapeString(title.toString()) : null;
-        definitions.add(new LinkReferenceDefinition(normalizedLabel, d, t));
+        LinkReferenceDefinition definition = new LinkReferenceDefinition(normalizedLabel, d, t);
+        definition.setSourceSpans(sourceSpans);
+        sourceSpans.clear();
+        definitions.add(definition);
 
         label = null;
         referenceValid = false;
