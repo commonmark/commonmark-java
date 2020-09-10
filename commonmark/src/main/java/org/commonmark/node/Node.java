@@ -128,7 +128,11 @@ public abstract class Node {
      * @param sourceSpans the new source spans to set
      */
     public void setSourceSpans(List<SourceSpan> sourceSpans) {
-        this.sourceSpans = new ArrayList<>(sourceSpans);
+        if (sourceSpans.isEmpty()) {
+            this.sourceSpans = null;
+        } else {
+            this.sourceSpans = new ArrayList<>(sourceSpans);
+        }
     }
 
     /**

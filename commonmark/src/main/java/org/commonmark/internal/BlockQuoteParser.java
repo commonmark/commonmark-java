@@ -30,7 +30,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
         if (isMarker(state, nextNonSpace)) {
             int newColumn = state.getColumn() + state.getIndent() + 1;
             // optional following space or tab
-            if (Parsing.isSpaceOrTab(state.getLine(), nextNonSpace + 1)) {
+            if (Parsing.isSpaceOrTab(state.getLine().getContent(), nextNonSpace + 1)) {
                 newColumn++;
             }
             return BlockContinue.atColumn(newColumn);
@@ -40,7 +40,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
     }
 
     private static boolean isMarker(ParserState state, int index) {
-        CharSequence line = state.getLine();
+        CharSequence line = state.getLine().getContent();
         return state.getIndent() < Parsing.CODE_BLOCK_INDENT && index < line.length() && line.charAt(index) == '>';
     }
 
@@ -50,7 +50,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
             if (isMarker(state, nextNonSpace)) {
                 int newColumn = state.getColumn() + state.getIndent() + 1;
                 // optional following space or tab
-                if (Parsing.isSpaceOrTab(state.getLine(), nextNonSpace + 1)) {
+                if (Parsing.isSpaceOrTab(state.getLine().getContent(), nextNonSpace + 1)) {
                     newColumn++;
                 }
                 return BlockStart.of(new BlockQuoteParser()).atColumn(newColumn);

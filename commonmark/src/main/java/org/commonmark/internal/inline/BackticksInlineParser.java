@@ -2,8 +2,8 @@ package org.commonmark.internal.inline;
 
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Code;
-import org.commonmark.node.Node;
 import org.commonmark.node.Text;
+import org.commonmark.parser.SourceLines;
 
 /**
  * Attempt to parse backticks, returning either a backtick code span or a literal sequence of backticks.
@@ -41,7 +41,9 @@ public class BackticksInlineParser implements InlineContentParser {
         }
 
         // If we got here, we didn't find a matching closing backtick sequence.
-        String ticks = scanner.textBetween(start, afterOpening).toString();
-        return ParsedInline.of(new Text(ticks), afterOpening);
+        SourceLines source = scanner.textBetween(start, afterOpening);
+        Text text = new Text(source.getContent());
+        text.setSourceSpans(source.getSourceSpans());
+        return ParsedInline.of(text, afterOpening);
     }
 }

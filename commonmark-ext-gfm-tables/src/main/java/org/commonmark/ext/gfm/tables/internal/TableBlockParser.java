@@ -5,6 +5,7 @@ import org.commonmark.node.Block;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 
 import java.util.ArrayList;
@@ -42,8 +43,9 @@ public class TableBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
-        rowLines.add(line);
+    public void addLine(SourceLine line) {
+        // TODO: Need to preserve these for inlines
+        rowLines.add(line.getContent());
     }
 
     @Override
@@ -107,7 +109,9 @@ public class TableBlockParser extends AbstractBlockParser {
             tableCell.setSourceSpans(Collections.singletonList(cell.sourceSpan));
         }
 
-        inlineParser.parse(Collections.<CharSequence>singletonList(cell.content.trim()), tableCell);
+        // TODO: Need to fix
+        SourceLine line = SourceLine.of(cell.content.trim(), null);
+        inlineParser.parse(Collections.singletonList(line), tableCell);
 
         return tableCell;
     }

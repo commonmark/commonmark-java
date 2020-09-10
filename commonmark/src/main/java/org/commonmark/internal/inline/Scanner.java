@@ -1,8 +1,10 @@
 package org.commonmark.internal.inline;
 
 import org.commonmark.internal.util.CharMatcher;
+import org.commonmark.node.SourceSpan;
+import org.commonmark.parser.SourceLine;
+import org.commonmark.parser.SourceLines;
 
-import java.util.Collections;
 import java.util.List;
 
 public class Scanner {
@@ -17,7 +19,7 @@ public class Scanner {
 
     // Lines without newlines at the end. The scanner will yield `\n` between lines because they're significant for
     // parsing and the final output. There is no `\n` after the last line.
-    private final List<CharSequence> lines;
+    private final List<SourceLine> lines;
     // Which line we're at.
     private int lineIndex;
     // The index within the line. If index == length(), we pretend that there's a `\n` and only advance after we yield
@@ -25,10 +27,10 @@ public class Scanner {
     private int index;
 
     // Current line or "" if at the end of the lines (using "" instead of null saves a null check)
-    private CharSequence line = "";
+    private SourceLine line = SourceLine.of("", null);
     private int lineLength = 0;
 
-    Scanner(List<CharSequence> lines, int lineIndex, int index) {
+    Scanner(List<SourceLine> lines, int lineIndex, int index) {
         this.lines = lines;
         this.lineIndex = lineIndex;
         this.index = index;
@@ -38,17 +40,13 @@ public class Scanner {
         }
     }
 
-    public static Scanner of(List<CharSequence> lines) {
-        return new Scanner(lines, 0, 0);
-    }
-
-    public static Scanner of(CharSequence line) {
-        return new Scanner(Collections.singletonList(line), 0, 0);
+    public static Scanner of(SourceLines lines) {
+        return new Scanner(lines.getLines(), 0, 0);
     }
 
     public char peek() {
         if (index < lineLength) {
-            return line.charAt(index);
+            return line.getContent().charAt(index);
         } else {
             if (lineIndex < lines.size() - 1) {
                 return '\n';
@@ -62,7 +60,7 @@ public class Scanner {
     public char peekPrevious() {
         if (index > 0) {
             int prev = index - 1;
-            return line.charAt(prev);
+            return line.getContent().charAt(prev);
         } else {
             if (lineIndex > 0) {
                 return '\n';
@@ -88,7 +86,7 @@ public class Scanner {
             if (lineIndex < lines.size()) {
                 setLine(lines.get(lineIndex));
             } else {
-                setLine("");
+                setLine(SourceLine.of("", null));
             }
             index = 0;
         }
@@ -120,7 +118,7 @@ public class Scanner {
         if (index < lineLength && index + content.length() <= lineLength) {
             // Can't use startsWith because it's not available on CharSequence
             for (int i = 0; i < content.length(); i++) {
-                if (line.charAt(index + i) != content.charAt(i)) {
+                if (line.getContent().charAt(index + i) != content.charAt(i)) {
                     return false;
                 }
             }
@@ -211,41 +209,47 @@ public class Scanner {
 
     // For cases where the caller appends the result to a StringBuilder, we could offer another method to avoid some
     // unnecessary copying.
-    public CharSequence textBetween(Position begin, Position end) {
+    // TODO: Rename
+    public SourceLines textBetween(Position begin, Position end) {
         if (begin.lineIndex == end.lineIndex) {
             // Shortcut for common case of text from a single line
-            return lines.get(begin.lineIndex).subSequence(begin.index, end.index);
+            SourceLine line = lines.get(begin.lineIndex);
+            CharSequence newContent = line.getContent().subSequence(begin.index, end.index);
+            SourceSpan newSourceSpan = null;
+            SourceSpan sourceSpan = line.getSourceSpan();
+            if (sourceSpan != null) {
+                newSourceSpan = SourceSpan.of(sourceSpan.getLineIndex(), sourceSpan.getColumnIndex() + begin.index, newContent.length());
+            }
+            return SourceLines.of(SourceLine.of(newContent, newSourceSpan));
         } else {
-            StringBuilder sb = new StringBuilder();
+            SourceLines sourceLines = SourceLines.empty();
 
-            CharSequence firstLine = lines.get(begin.lineIndex);
-            sb.append(firstLine.subSequence(begin.index, firstLine.length()));
-            sb.append('\n');
+            SourceLine firstLine = lines.get(begin.lineIndex);
+            sourceLines.addLine(firstLine.substring(begin.index, firstLine.getContent().length()));
 
             // Lines between begin and end (we are appending the full line)
             for (int line = begin.lineIndex + 1; line < end.lineIndex; line++) {
-                sb.append(lines.get(line));
-                sb.append('\n');
+                sourceLines.addLine(lines.get(line));
             }
 
-            CharSequence lastLine = lines.get(end.lineIndex);
-            sb.append(lastLine.subSequence(0, end.index));
-            return sb.toString();
+            SourceLine lastLine = lines.get(end.lineIndex);
+            sourceLines.addLine(lastLine.substring(0, end.index));
+            return sourceLines;
         }
     }
 
-    private void setLine(CharSequence line) {
+    private void setLine(SourceLine line) {
         this.line = line;
-        this.lineLength = line.length();
+        this.lineLength = line.getContent().length();
     }
 
     private void checkPosition(int lineIndex, int index) {
         if (lineIndex < 0 || lineIndex >= lines.size()) {
             throw new IllegalArgumentException("Line index " + lineIndex + " out of range, number of lines: " + lines.size());
         }
-        CharSequence line = lines.get(lineIndex);
-        if (index < 0 || index > line.length()) {
-            throw new IllegalArgumentException("Index " + index + " out of range, line length: " + line.length());
+        SourceLine line = lines.get(lineIndex);
+        if (index < 0 || index > line.getContent().length()) {
+            throw new IllegalArgumentException("Index " + index + " out of range, line length: " + line.getContent().length());
         }
     }
 }

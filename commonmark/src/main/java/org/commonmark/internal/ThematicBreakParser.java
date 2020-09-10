@@ -27,7 +27,7 @@ public class ThematicBreakParser extends AbstractBlockParser {
                 return BlockStart.none();
             }
             int nextNonSpace = state.getNextNonSpaceIndex();
-            CharSequence line = state.getLine();
+            CharSequence line = state.getLine().getContent();
             if (isThematicBreak(line, nextNonSpace)) {
                 return BlockStart.of(new ThematicBreakParser()).atIndex(line.length());
             } else {

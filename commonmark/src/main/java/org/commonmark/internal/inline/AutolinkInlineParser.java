@@ -1,8 +1,8 @@
 package org.commonmark.internal.inline;
 
 import org.commonmark.node.Link;
-import org.commonmark.node.Node;
 import org.commonmark.node.Text;
+import org.commonmark.parser.SourceLines;
 
 import java.util.regex.Pattern;
 
@@ -20,19 +20,30 @@ public class AutolinkInlineParser implements InlineContentParser {
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
+        Position linkStart = scanner.position();
         scanner.next();
-        Position start = scanner.position();
+        Position textStart = scanner.position();
         if (scanner.find('>') > 0) {
-            String text = scanner.textBetween(start, scanner.position()).toString();
+            SourceLines textSource = scanner.textBetween(textStart, scanner.position());
+            String content = textSource.getContent();
             scanner.next();
-            if (URI.matcher(text).matches()) {
-                Link node = new Link(text, null);
-                node.appendChild(new Text(text));
-                return ParsedInline.of(node, scanner.position());
-            } else if (EMAIL.matcher(text).matches()) {
-                Link node = new Link("mailto:" + text, null);
-                node.appendChild(new Text(text));
-                return ParsedInline.of(node, scanner.position());
+            Position linkEnd = scanner.position();
+
+            String destination = null;
+            if (URI.matcher(content).matches()) {
+                destination = content;
+            } else if (EMAIL.matcher(content).matches()) {
+                destination = "mailto:" + content;
+            }
+
+            if (destination != null) {
+                Link link = new Link(destination, null);
+                // TODO: tests
+                link.setSourceSpans(scanner.textBetween(linkStart, linkEnd).getSourceSpans());
+                Text text = new Text(content);
+                text.setSourceSpans(textSource.getSourceSpans());
+                link.appendChild(text);
+                return ParsedInline.of(link, scanner.position());
             }
         }
         return ParsedInline.none();

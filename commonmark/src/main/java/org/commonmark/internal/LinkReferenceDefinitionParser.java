@@ -6,6 +6,8 @@ import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.SourceSpan;
+import org.commonmark.parser.SourceLine;
+import org.commonmark.parser.SourceLines;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,7 @@ public class LinkReferenceDefinitionParser {
 
     private State state = State.START_DEFINITION;
 
-    private final List<CharSequence> paragraphLines = new ArrayList<>();
+    private final List<SourceLine> paragraphLines = new ArrayList<>();
     private final List<LinkReferenceDefinition> definitions = new ArrayList<>();
     private final List<SourceSpan> sourceSpans = new ArrayList<>();
 
@@ -30,7 +32,7 @@ public class LinkReferenceDefinitionParser {
     private StringBuilder title;
     private boolean referenceValid = false;
 
-    public void parse(CharSequence line) {
+    public void parse(SourceLine line) {
         paragraphLines.add(line);
         if (state == State.PARAGRAPH) {
             // We're in a paragraph now. Link reference definitions can only appear at the beginning, so once
@@ -38,7 +40,7 @@ public class LinkReferenceDefinitionParser {
             return;
         }
 
-        Scanner scanner = Scanner.of(line);
+        Scanner scanner = Scanner.of(SourceLines.of(line));
         while (scanner.hasNext()) {
             boolean success;
             switch (state) {
@@ -81,8 +83,8 @@ public class LinkReferenceDefinitionParser {
     /**
      * @return the lines that are normal paragraph content, without newlines
      */
-    List<CharSequence> getParagraphLines() {
-        return paragraphLines;
+    SourceLines getParagraphLines() {
+        return SourceLines.of(paragraphLines);
     }
 
     List<SourceSpan> getParagraphSourceSpans() {

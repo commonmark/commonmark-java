@@ -3,6 +3,7 @@ package org.commonmark.parser.block;
 import org.commonmark.node.Block;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.SourceLine;
 
 public abstract class AbstractBlockParser implements BlockParser {
 
@@ -22,7 +23,7 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
+    public void addLine(SourceLine line) {
     }
 
     @Override

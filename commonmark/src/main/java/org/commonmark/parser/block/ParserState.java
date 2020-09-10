@@ -1,5 +1,7 @@
 package org.commonmark.parser.block;
 
+import org.commonmark.parser.SourceLine;
+
 /**
  * State of the parser that is used in block parsers.
  * <p><em>This interface is not intended to be implemented by clients.</em></p>
@@ -9,7 +11,7 @@ public interface ParserState {
     /**
      * @return the current line
      */
-    CharSequence getLine();
+    SourceLine getLine();
 
     /**
      * @return the current index within the line (0-based)

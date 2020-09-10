@@ -4,6 +4,7 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.IndentedCodeBlock;
 import org.commonmark.node.Paragraph;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
-        lines.add(line);
+    public void addLine(SourceLine line) {
+        lines.add(line.getContent());
     }
 
     @Override

@@ -5,6 +5,7 @@ import org.commonmark.ext.front.matter.YamlFrontMatterNode;
 import org.commonmark.internal.DocumentBlockParser;
 import org.commonmark.node.Block;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
+    public void addLine(SourceLine line) {
     }
 
     @Override
