@@ -45,12 +45,12 @@ public class HeadingParser extends AbstractBlockParser {
             }
 
             SourceLine line = state.getLine();
-            HeadingParser atxHeading = getAtxHeading(line);
+            int nextNonSpace = state.getNextNonSpaceIndex();
+            HeadingParser atxHeading = getAtxHeading(line.substring(nextNonSpace, line.getContent().length()));
             if (atxHeading != null) {
                 return BlockStart.of(atxHeading).atIndex(line.getContent().length());
             }
 
-            int nextNonSpace = state.getNextNonSpaceIndex();
             int setextHeadingLevel = getSetextHeadingLevel(line.getContent(), nextNonSpace);
             if (setextHeadingLevel > 0) {
                 SourceLines paragraph = matchedBlockParser.getParagraphLines();
@@ -71,7 +71,6 @@ public class HeadingParser extends AbstractBlockParser {
     // must be preceded by a space and may be followed by spaces only.
     private static HeadingParser getAtxHeading(SourceLine line) {
         Scanner scanner = Scanner.of(SourceLines.of(line));
-        scanner.whitespace();
         int level = scanner.matchMultiple('#');
 
         if (level == 0 || level > 6) {
@@ -99,9 +98,12 @@ public class HeadingParser extends AbstractBlockParser {
                 case '#':
                     if (hashCanEnd) {
                         scanner.matchMultiple('#');
-                        scanner.whitespace();
+                        int whitespace = scanner.whitespace();
                         // If there's other characters, the hashes and spaces were part of the heading
-                        hashCanEnd = false;
+                        if (scanner.hasNext()) {
+                            end = scanner.position();
+                        }
+                        hashCanEnd = whitespace > 0;
                     } else {
                         scanner.next();
                         end = scanner.position();

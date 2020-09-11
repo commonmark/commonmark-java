@@ -50,9 +50,9 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     @Override
     public void addLine(SourceLine line) {
         if (firstLine == null) {
-            firstLine = line.toString();
+            firstLine = line.getContent().toString();
         } else {
-            otherLines.append(line);
+            otherLines.append(line.getContent());
             otherLines.append('\n');
         }
     }

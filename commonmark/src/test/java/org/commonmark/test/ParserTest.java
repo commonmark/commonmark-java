@@ -176,7 +176,7 @@ public class ParserTest {
 
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            if (state.getLine().equals("---")) {
+            if (state.getLine().getContent().equals("---")) {
                 return BlockStart.of(new DashBlockParser());
             }
             return BlockStart.none();

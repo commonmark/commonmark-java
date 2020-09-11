@@ -142,6 +142,7 @@ public class DocumentParser implements ParserState {
     public SourceLine getLine() {
         SourceSpan sourceSpan = null;
         if (includeSourceSpans != IncludeSourceSpans.NONE) {
+            // TODO: is this wrong? Should be 0 shouldn't it?
             sourceSpan = SourceSpan.of(lineIndex, index, line.length());
         }
         return SourceLine.of(line, sourceSpan);

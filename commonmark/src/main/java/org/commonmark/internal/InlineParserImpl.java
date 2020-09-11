@@ -29,6 +29,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final Map<Character, List<InlineContentParser>> inlineParsers;
 
     private Scanner scanner;
+    private boolean includeSourceSpans;
     private int trailingSpaces;
 
     /**
@@ -144,6 +145,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
     void reset(SourceLines lines) {
         this.scanner = Scanner.of(lines);
+        this.includeSourceSpans = !lines.getSourceSpans().isEmpty();
         this.trailingSpaces = 0;
         this.lastDelimiter = null;
         this.lastBracket = null;
@@ -179,9 +181,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 ParsedInline parsedInline = inlineParser.tryParse(this);
                 if (parsedInline instanceof ParsedInlineImpl) {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
-                    // TODO: Should we set source spans here? Or let the inline parsers set it?
+                    Node node = parsedInlineImpl.getNode();
                     scanner.setPosition(parsedInlineImpl.getPosition());
-                    return parsedInlineImpl.getNode();
+                    // TODO: Should we set source spans here? Or let the inline parsers set it?
+                    if (includeSourceSpans) {
+                        node.setSourceSpans(scanner.textBetween(position, scanner.position()).getSourceSpans());
+                    }
+                    return node;
                 } else {
                     // Reset position
                     scanner.setPosition(position);

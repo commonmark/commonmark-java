@@ -43,7 +43,7 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        final CharSequence line = parserState.getLine();
+        final CharSequence line = parserState.getLine().getContent();
 
         if (REGEX_END.matcher(line).matches()) {
             if (currentKey != null) {
@@ -96,7 +96,7 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            CharSequence line = state.getLine();
+            CharSequence line = state.getLine().getContent();
             BlockParser parentParser = matchedBlockParser.getMatchedBlockParser();
             // check whether this line is the first line of whole document or not
             if (parentParser instanceof DocumentBlockParser && parentParser.getBlock().getFirstChild() == null &&

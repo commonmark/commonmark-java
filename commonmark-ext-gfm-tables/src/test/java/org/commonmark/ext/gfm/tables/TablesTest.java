@@ -3,8 +3,8 @@ package org.commonmark.ext.gfm.tables;
 import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourceSpan;
-import org.commonmark.parser.Parser;
 import org.commonmark.parser.IncludeSourceSpans;
+import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.AttributeProviderContext;
 import org.commonmark.renderer.html.AttributeProviderFactory;
@@ -651,7 +651,7 @@ public class TablesTest extends RenderingTestCase {
     public void sourceSpans() {
         Parser parser = Parser.builder()
                 .extensions(EXTENSIONS)
-                .includeSourceSpans(IncludeSourceSpans.BLOCKS)
+                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
                 .build();
         Node document = parser.parse("Abc|Def\n---|---\n|1|2\n 3|four|\n|||\n");
 
@@ -668,7 +668,9 @@ public class TablesTest extends RenderingTestCase {
         TableCell headRowCell1 = (TableCell) headRow.getFirstChild();
         TableCell headRowCell2 = (TableCell) headRow.getLastChild();
         assertEquals(Arrays.asList(SourceSpan.of(0, 0, 3)), headRowCell1.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 3)), headRowCell1.getFirstChild().getSourceSpans());
         assertEquals(Arrays.asList(SourceSpan.of(0, 4, 3)), headRowCell2.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(0, 4, 3)), headRowCell2.getFirstChild().getSourceSpans());
 
         TableBody body = (TableBody) block.getLastChild();
         assertEquals(Arrays.asList(SourceSpan.of(2, 0, 4), SourceSpan.of(3, 0, 8), SourceSpan.of(4, 0, 3)), body.getSourceSpans());
@@ -678,14 +680,18 @@ public class TablesTest extends RenderingTestCase {
         TableCell bodyRow1Cell1 = (TableCell) bodyRow1.getFirstChild();
         TableCell bodyRow1Cell2 = (TableCell) bodyRow1.getLastChild();
         assertEquals(Arrays.asList(SourceSpan.of(2, 1, 1)), bodyRow1Cell1.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(2, 1, 1)), bodyRow1Cell1.getFirstChild().getSourceSpans());
         assertEquals(Arrays.asList(SourceSpan.of(2, 3, 1)), bodyRow1Cell2.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(2, 3, 1)), bodyRow1Cell2.getFirstChild().getSourceSpans());
 
         TableRow bodyRow2 = (TableRow) body.getFirstChild().getNext();
         assertEquals(Arrays.asList(SourceSpan.of(3, 0, 8)), bodyRow2.getSourceSpans());
         TableCell bodyRow2Cell1 = (TableCell) bodyRow2.getFirstChild();
         TableCell bodyRow2Cell2 = (TableCell) bodyRow2.getLastChild();
         assertEquals(Arrays.asList(SourceSpan.of(3, 0, 2)), bodyRow2Cell1.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getFirstChild().getSourceSpans());
         assertEquals(Arrays.asList(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getFirstChild().getSourceSpans());
 
         TableRow bodyRow3 = (TableRow) body.getLastChild();
         assertEquals(Arrays.asList(SourceSpan.of(4, 0, 3)), bodyRow3.getSourceSpans());

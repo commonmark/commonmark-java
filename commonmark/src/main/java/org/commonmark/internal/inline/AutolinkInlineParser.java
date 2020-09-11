@@ -20,14 +20,12 @@ public class AutolinkInlineParser implements InlineContentParser {
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
-        Position linkStart = scanner.position();
         scanner.next();
         Position textStart = scanner.position();
         if (scanner.find('>') > 0) {
             SourceLines textSource = scanner.textBetween(textStart, scanner.position());
             String content = textSource.getContent();
             scanner.next();
-            Position linkEnd = scanner.position();
 
             String destination = null;
             if (URI.matcher(content).matches()) {
@@ -38,8 +36,6 @@ public class AutolinkInlineParser implements InlineContentParser {
 
             if (destination != null) {
                 Link link = new Link(destination, null);
-                // TODO: tests
-                link.setSourceSpans(scanner.textBetween(linkStart, linkEnd).getSourceSpans());
                 Text text = new Text(content);
                 text.setSourceSpans(textSource.getSourceSpans());
                 link.appendChild(text);
