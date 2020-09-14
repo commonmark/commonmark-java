@@ -183,8 +183,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
                     Node node = parsedInlineImpl.getNode();
                     scanner.setPosition(parsedInlineImpl.getPosition());
-                    // TODO: Should we set source spans here? Or let the inline parsers set it?
-                    if (includeSourceSpans) {
+                    if (includeSourceSpans && node.getSourceSpans().isEmpty()) {
                         node.setSourceSpans(scanner.textBetween(position, scanner.position()).getSourceSpans());
                     }
                     return node;
@@ -252,7 +251,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         Text node = text(scanner.textBetween(start, contentPosition));
 
         // Add entry to stack for this opener
-        addBracket(Bracket.link(node, contentPosition, lastBracket, lastDelimiter));
+        addBracket(Bracket.link(node, start, contentPosition, lastBracket, lastDelimiter));
 
         return node;
     }
@@ -265,10 +264,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         Position start = scanner.position();
         scanner.next();
         if (scanner.next('[')) {
-            Text node = text(scanner.textBetween(start, scanner.position()));
+            Position contentPosition = scanner.position();
+            Text node = text(scanner.textBetween(start, contentPosition));
 
             // Add entry to stack for this opener
-            addBracket(Bracket.image(node, scanner.position(), lastBracket, lastDelimiter));
+            addBracket(Bracket.image(node, start, contentPosition, lastBracket, lastDelimiter));
             return node;
         } else {
             return text(scanner.textBetween(start, scanner.position()));
@@ -351,9 +351,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         if (dest != null) {
-            // If we got here, open is a potential opener
+            // If we got here, we have a link or image
             Node linkOrImage = opener.image ? new Image(dest, title) : new Link(dest, title);
 
+            // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
             Node node = opener.node.getNext();
             while (node != null) {
                 Node next = node.getNext();
@@ -361,7 +362,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 node = next;
             }
 
-            // TODO: source positions
+            if (includeSourceSpans) {
+                linkOrImage.setSourceSpans(scanner.textBetween(opener.markerPosition, scanner.position()).getSourceSpans());
+            }
 
             // Process delimiters such as emphasis inside link/image
             processDelimiters(opener.previousDelimiter);
@@ -507,7 +510,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         Text text = new Text(content);
-        // TODO: Test
         text.setSourceSpans(source.getSourceSpans());
         return text;
     }
@@ -621,6 +623,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             // Remove number of used delimiters from stack and inline nodes.
             opener.length -= useDelims;
             closer.length -= useDelims;
+            // TODO: Need to adjust source spans
             openerNode.setLiteral(
                     openerNode.getLiteral().substring(0,
                             openerNode.getLiteral().length() - useDelims));
@@ -739,18 +742,42 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private void mergeIfNeeded(Text first, Text last, int textLength) {
         if (first != null && last != null && first != last) {
             StringBuilder sb = new StringBuilder(textLength);
+            List<SourceSpan> sourceSpans = Collections.emptyList();
+            if (includeSourceSpans) {
+                sourceSpans = new ArrayList<>(first.getSourceSpans());
+            }
             sb.append(first.getLiteral());
             Node node = first.getNext();
             Node stop = last.getNext();
             while (node != stop) {
                 sb.append(((Text) node).getLiteral());
+                if (includeSourceSpans) {
+                    mergeSourceSpans(sourceSpans, node.getSourceSpans());
+                }
+
                 Node unlink = node;
                 node = node.getNext();
                 unlink.unlink();
             }
-            // TODO: Need to merge sourcespans too
             String literal = sb.toString();
             first.setLiteral(literal);
+            first.setSourceSpans(sourceSpans);
+        }
+    }
+
+    private void mergeSourceSpans(List<SourceSpan> sourceSpans, List<SourceSpan> other) {
+        if (sourceSpans.isEmpty()) {
+            sourceSpans.addAll(other);
+        } else if (!other.isEmpty()) {
+            int lastIndex = sourceSpans.size() - 1;
+            SourceSpan a = sourceSpans.get(lastIndex);
+            SourceSpan b = other.get(0);
+            if (a.getLineIndex() == b.getLineIndex() && a.getColumnIndex() + a.getLength() == b.getColumnIndex()) {
+                sourceSpans.set(lastIndex, SourceSpan.of(a.getLineIndex(), a.getColumnIndex(), a.getLength() + b.getLength()));
+                sourceSpans.addAll(other.subList(1, other.size()));
+            } else {
+                sourceSpans.addAll(other);
+            }
         }
     }
 

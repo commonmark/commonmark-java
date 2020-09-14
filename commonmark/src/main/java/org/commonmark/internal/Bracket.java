@@ -9,10 +9,20 @@ import org.commonmark.node.Text;
 public class Bracket {
 
     public final Text node;
+
+    /**
+     * The position of the marker for the bracket (<code>[</code> or <code>![</code>)
+     */
+    public final Position markerPosition;
+
     /**
      * The position of the content (after the opening bracket)
      */
     public final Position contentPosition;
+
+    /**
+     * Whether this is an image or link.
+     */
     public final boolean image;
 
     /**
@@ -35,16 +45,17 @@ public class Bracket {
      */
     public boolean bracketAfter = false;
 
-    static public Bracket link(Text node, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
-        return new Bracket(node, contentPosition, previous, previousDelimiter, false);
+    static public Bracket link(Text node, Position markerPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
+        return new Bracket(node, markerPosition, contentPosition, previous, previousDelimiter, false);
     }
 
-    static public Bracket image(Text node, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
-        return new Bracket(node, contentPosition, previous, previousDelimiter, true);
+    static public Bracket image(Text node, Position markerPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
+        return new Bracket(node, markerPosition, contentPosition, previous, previousDelimiter, true);
     }
 
-    private Bracket(Text node, Position contentPosition, Bracket previous, Delimiter previousDelimiter, boolean image) {
+    private Bracket(Text node, Position markerPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter, boolean image) {
         this.node = node;
+        this.markerPosition = markerPosition;
         this.contentPosition = contentPosition;
         this.image = image;
         this.previous = previous;
