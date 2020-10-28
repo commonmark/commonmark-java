@@ -6,7 +6,7 @@ Java library for parsing and rendering [Markdown] text according to the
 
 [![Maven Central status](https://img.shields.io/maven-central/v/com.atlassian.commonmark/commonmark.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.atlassian.commonmark%22)
 [![javadoc](https://www.javadoc.io/badge/com.atlassian.commonmark/commonmark.svg?color=blue)](https://www.javadoc.io/doc/com.atlassian.commonmark/commonmark)
-[![Build status](https://travis-ci.org/atlassian/commonmark-java.svg?branch=master)](https://travis-ci.org/atlassian/commonmark-java)
+[![ci](https://github.com/atlassian/commonmark-java/workflows/ci/badge.svg)](https://github.com/atlassian/commonmark-java/actions?query=workflow%3Aci)
 [![codecov](https://codecov.io/gh/atlassian/commonmark-java/branch/master/graph/badge.svg)](https://codecov.io/gh/atlassian/commonmark-java)
 [![SourceSpy Dashboard](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/atlassiancommonmarkjava/)
 
