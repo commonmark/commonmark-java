@@ -100,9 +100,9 @@ public class TextContentRenderer implements Renderer {
         public Builder extensions(Iterable<? extends Extension> extensions) {
             for (Extension extension : extensions) {
                 if (extension instanceof TextContentRenderer.TextContentRendererExtension) {
-                    TextContentRenderer.TextContentRendererExtension htmlRendererExtension =
+                    TextContentRenderer.TextContentRendererExtension textContentRendererExtension =
                             (TextContentRenderer.TextContentRendererExtension) extension;
-                    htmlRendererExtension.extend(this);
+                    textContentRendererExtension.extend(this);
                 }
             }
             return this;
