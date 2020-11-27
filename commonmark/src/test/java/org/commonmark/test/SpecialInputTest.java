@@ -174,4 +174,9 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         // This matches what commonmark.js did at the time of writing.
         assertRendering("a\t\nb\n", "<p>a\t\nb</p>\n");
     }
+
+    @Test
+    public void emph() {
+        assertRendering("*foo bar*\n", "<p><em>foo bar</em></p>\n");
+    }
 }

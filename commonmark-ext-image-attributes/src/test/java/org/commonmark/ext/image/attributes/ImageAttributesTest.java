@@ -1,13 +1,20 @@
 package org.commonmark.ext.image.attributes;
 
 import org.commonmark.Extension;
+import org.commonmark.node.Node;
+import org.commonmark.node.Paragraph;
+import org.commonmark.node.SourceSpan;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 public class ImageAttributesTest extends RenderingTestCase {
 
@@ -42,7 +49,7 @@ public class ImageAttributesTest extends RenderingTestCase {
     @Test
     public void doubleDelimiters() {
         assertRendering("![text](/url.png){{height=5}}",
-                "<p><img src=\"/url.png\" alt=\"text\" height=\"5\" /></p>\n");
+                "<p><img src=\"/url.png\" alt=\"text\" />{{height=5}}</p>\n");
     }
 
     @Test
@@ -69,7 +76,8 @@ public class ImageAttributesTest extends RenderingTestCase {
     @Test
     public void repeatedStyleNameUsesFinalOne() {
         assertRendering("![text](/url.png){height=4 height=5 width=1 height=6}",
-                "<p><img src=\"/url.png\" alt=\"text\" height=\"6\" width=\"1\" /></p>\n");    }
+                "<p><img src=\"/url.png\" alt=\"text\" height=\"6\" width=\"1\" /></p>\n");
+    }
 
     @Test
     public void styleValuesAreEscaped() {
@@ -111,6 +119,21 @@ public class ImageAttributesTest extends RenderingTestCase {
         assertRendering("some *text*{height=3 width=4}\n", "<p>some <em>text</em>{height=3 width=4}</p>\n");
         assertRendering("{NN} text", "<p>{NN} text</p>\n");
         assertRendering("{}", "<p>{}</p>\n");
+    }
+
+    @Test
+    public void sourceSpans() {
+        Parser parser = Parser.builder()
+                .extensions(EXTENSIONS)
+                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                .build();
+
+        // This doesn't result in image attributes, so source spans should be for the single (merged) text node.
+        Node document = parser.parse("x{height=3 width=4}\n");
+        Paragraph block = (Paragraph) document.getFirstChild();
+        Node text = block.getFirstChild();
+        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 19)),
+                text.getSourceSpans());
     }
 
     @Override

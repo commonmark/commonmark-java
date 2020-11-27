@@ -246,8 +246,22 @@ public class SourceSpansTest {
     public void inlineEmphasis() {
         assertInlineSpans("*hey*", Emphasis.class, SourceSpan.of(0, 0, 5));
         assertInlineSpans("*hey*", Text.class, SourceSpan.of(0, 1, 3));
-        assertInlineSpans("**hey**", Emphasis.class, SourceSpan.of(0, 0, 7));
+        assertInlineSpans("**hey**", StrongEmphasis.class, SourceSpan.of(0, 0, 7));
         assertInlineSpans("**hey**", Text.class, SourceSpan.of(0, 2, 3));
+
+        // This is an interesting one. It renders like this:
+        // <p>*<em>hey</em></p>
+        // The delimiter processor only uses one of the asterisks.
+        // So the first Text node should be the `*` at the beginning with the correct span.
+        assertInlineSpans("**hey*", Text.class, SourceSpan.of(0, 0, 1));
+        assertInlineSpans("**hey*", Emphasis.class, SourceSpan.of(0, 1, 5));
+
+        assertInlineSpans("***hey**", Text.class, SourceSpan.of(0, 0, 1));
+        assertInlineSpans("***hey**", StrongEmphasis.class, SourceSpan.of(0, 1, 7));
+
+        Node document = INLINES_PARSER.parse("*hey**");
+        Node lastText = document.getFirstChild().getLastChild();
+        assertEquals(Arrays.asList(SourceSpan.of(0, 5, 1)), lastText.getSourceSpans());
     }
 
     // TODO:
@@ -260,7 +274,6 @@ public class SourceSpansTest {
         Node document = PARSER.parse(source);
         return SourceSpanRenderer.render(document, source);
     }
-
 
     private static void assertSpans(String input, Class<? extends Node> nodeClass, SourceSpan... expectedSourceSpans) {
         assertSpans(PARSER.parse(input), nodeClass, expectedSourceSpans);
