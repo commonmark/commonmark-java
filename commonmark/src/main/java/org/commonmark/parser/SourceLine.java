@@ -31,8 +31,6 @@ public class SourceLine {
     }
 
     public SourceLine substring(int beginIndex, int endIndex) {
-        // TODO: Check indices
-        // TODO: Tests
         CharSequence newContent = content.subSequence(beginIndex, endIndex);
         SourceSpan newSourceSpan = null;
         if (sourceSpan != null) {
