@@ -405,9 +405,9 @@ public class DocumentParser implements ParserState {
             content = line.subSequence(index, line.length());
         }
         SourceSpan sourceSpan = null;
-//        SourceLine sourceLine = ;
         if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES) {
-            // TODO: This is not correct for expanded tabs
+            // Note that if we're in a partially-consumed tab, the length here corresponds to the content but not to the
+            // actual source length. That sounds like a problem, but I haven't found a test case where it matters (yet).
             sourceSpan = SourceSpan.of(lineIndex, index, content.length());
         }
         getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan));

@@ -264,11 +264,13 @@ public class SourceSpansTest {
         assertEquals(Arrays.asList(SourceSpan.of(0, 5, 1)), lastText.getSourceSpans());
     }
 
-    // TODO:
-//    @Test
-//    public void tabOffset() {
-//        assertInlineSpans(">\t*foo*");
-//    }
+    @Test
+    public void tabExpansion() {
+        assertInlineSpans(">\tfoo", BlockQuote.class, SourceSpan.of(0, 0, 5));
+        assertInlineSpans(">\tfoo", Text.class, SourceSpan.of(0, 2, 3));
+
+        assertInlineSpans("a\tb", Text.class, SourceSpan.of(0, 0, 3));
+    }
 
     private String visualizeSourceSpans(String source) {
         Node document = PARSER.parse(source);
