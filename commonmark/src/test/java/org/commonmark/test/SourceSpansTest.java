@@ -200,6 +200,13 @@ public class SourceSpansTest {
     }
 
     @Test
+    public void inlineHeading() {
+        assertInlineSpans("# foo", Text.class, SourceSpan.of(0, 2, 3));
+        assertInlineSpans(" # foo", Text.class, SourceSpan.of(0, 3, 3));
+        assertInlineSpans("> # foo", Text.class, SourceSpan.of(0, 4, 3));
+    }
+
+    @Test
     public void inlineAutolink() {
         assertInlineSpans("see <https://example.org>", Link.class, SourceSpan.of(0, 4, 21));
     }
