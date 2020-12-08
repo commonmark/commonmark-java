@@ -327,7 +327,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         assertEquals(1, data.size());
         assertEquals("ms.author", data.keySet().iterator().next());
         assertEquals(1, data.get("ms.author").size());
-        assertEquals("author", data.get("key").get(0));
+        assertEquals("author", data.get("ms.author").get(0));
     }
 
     @Override
