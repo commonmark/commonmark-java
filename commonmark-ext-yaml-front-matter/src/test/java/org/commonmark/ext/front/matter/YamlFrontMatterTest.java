@@ -310,6 +310,25 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         assertTrue(data.containsKey("see"));
         assertEquals(Collections.singletonList("you"), data.get("see"));
     }
+    
+    @Test
+    public void dotInKeys() {
+        final String input = "---" +
+                "\nms.author: author" +
+                "\n---" +
+                "\n";
+
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        Node document = PARSER.parse(input);
+        document.accept(visitor);
+
+        Map<String, List<String>> data = visitor.getData();
+
+        assertEquals(1, data.size());
+        assertEquals("ms.author", data.keySet().iterator().next());
+        assertEquals(1, data.get("ms.author").size());
+        assertEquals("author", data.get("key").get(0));
+    }
 
     @Override
     protected String render(String source) {
