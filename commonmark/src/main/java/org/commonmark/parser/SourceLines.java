@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * A set of lines ({@link SourceLine}) from the input source.
+ *
+ * @since 0.16.0
  */
 public class SourceLines {
 

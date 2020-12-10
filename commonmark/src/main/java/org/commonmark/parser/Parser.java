@@ -197,6 +197,7 @@ public class Parser {
          *
          * @param includeSourceSpans which kind of source spans should be included
          * @return {@code this}
+         * @since 0.16.0
          */
         public Builder includeSourceSpans(IncludeSourceSpans includeSourceSpans) {
             this.includeSourceSpans = includeSourceSpans;

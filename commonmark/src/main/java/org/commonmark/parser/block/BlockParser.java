@@ -40,6 +40,8 @@ public interface BlockParser {
      * Add a source span of the currently parsed block. The default implementation in {@link AbstractBlockParser} adds
      * it to the block. Unless you have some complicated parsing where you need to check source positions, you don't
      * need to override this.
+     *
+     * @since 0.16.0
      */
     void addSourceSpan(SourceSpan sourceSpan);
 

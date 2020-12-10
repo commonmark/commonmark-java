@@ -20,6 +20,8 @@ import java.util.Objects;
  * Note that the column index and length are measured in Java characters (UTF-16 code units). If you're outputting them
  * to be consumed by another programming language, e.g. one that uses UTF-8 strings, you will need to translate them,
  * otherwise characters such as emojis will result in incorrect positions.
+ *
+ * @since 0.16.0
  */
 public class SourceSpan {
 

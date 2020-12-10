@@ -4,6 +4,8 @@ import org.commonmark.node.SourceSpan;
 
 /**
  * A line or part of a line from the input source.
+ *
+ * @since 0.16.0
  */
 public class SourceLine {
 

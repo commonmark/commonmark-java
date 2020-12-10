@@ -117,6 +117,7 @@ public abstract class Node {
 
     /**
      * @return the source spans of this node if included by the parser, an empty list otherwise
+     * @since 0.16.0
      */
     public List<SourceSpan> getSourceSpans() {
         return sourceSpans != null ? Collections.unmodifiableList(sourceSpans) : Collections.<SourceSpan>emptyList();
@@ -126,6 +127,7 @@ public abstract class Node {
      * Replace the current source spans with the provided list.
      *
      * @param sourceSpans the new source spans to set
+     * @since 0.16.0
      */
     public void setSourceSpans(List<SourceSpan> sourceSpans) {
         if (sourceSpans.isEmpty()) {
@@ -139,6 +141,7 @@ public abstract class Node {
      * Add a source span to the end of the list.
      *
      * @param sourceSpan the source span to add
+     * @since 0.16.0
      */
     public void addSourceSpan(SourceSpan sourceSpan) {
         if (sourceSpans == null) {

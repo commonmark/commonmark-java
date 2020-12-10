@@ -3,6 +3,8 @@ package org.commonmark.parser;
 /**
  * Whether to include {@link org.commonmark.node.SourceSpan} or not while parsing,
  * see {@link Parser.Builder#includeSourceSpans(IncludeSourceSpans)}.
+ *
+ * @since 0.16.0
  */
 public enum IncludeSourceSpans {
     /**
