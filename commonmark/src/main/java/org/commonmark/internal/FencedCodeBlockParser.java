@@ -3,6 +3,7 @@ package org.commonmark.internal;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 
 import static org.commonmark.internal.util.Escaping.unescapeString;
@@ -29,7 +30,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
         int newIndex = state.getIndex();
-        CharSequence line = state.getLine();
+        CharSequence line = state.getLine().getContent();
         boolean closing = state.getIndent() < Parsing.CODE_BLOCK_INDENT && isClosing(line, nextNonSpace);
         if (closing) {
             // closing fence - we're at end of line, so we can finalize now
@@ -47,11 +48,11 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
+    public void addLine(SourceLine line) {
         if (firstLine == null) {
-            firstLine = line.toString();
+            firstLine = line.getContent().toString();
         } else {
-            otherLines.append(line);
+            otherLines.append(line.getContent());
             otherLines.append('\n');
         }
     }
@@ -73,7 +74,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
             }
 
             int nextNonSpace = state.getNextNonSpaceIndex();
-            FencedCodeBlockParser blockParser = checkOpener(state.getLine(), nextNonSpace, indent);
+            FencedCodeBlockParser blockParser = checkOpener(state.getLine().getContent(), nextNonSpace, indent);
             if (blockParser != null) {
                 return BlockStart.of(blockParser).atIndex(nextNonSpace + blockParser.block.getFenceLength());
             } else {

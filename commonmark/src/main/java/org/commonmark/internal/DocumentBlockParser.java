@@ -2,6 +2,7 @@ package org.commonmark.internal;
 
 import org.commonmark.node.Block;
 import org.commonmark.node.Document;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
@@ -31,7 +32,7 @@ public class DocumentBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
+    public void addLine(SourceLine line) {
     }
 
 }

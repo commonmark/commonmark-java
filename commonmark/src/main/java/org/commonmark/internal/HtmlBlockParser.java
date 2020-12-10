@@ -4,6 +4,7 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.Paragraph;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 
 import java.util.regex.Pattern;
@@ -88,10 +89,10 @@ public class HtmlBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
-        content.add(line);
+    public void addLine(SourceLine line) {
+        content.add(line.getContent());
 
-        if (closingPattern != null && closingPattern.matcher(line).find()) {
+        if (closingPattern != null && closingPattern.matcher(line.getContent()).find()) {
             finished = true;
         }
     }
@@ -107,7 +108,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
-            CharSequence line = state.getLine();
+            CharSequence line = state.getLine().getContent();
 
             if (state.getIndent() < 4 && line.charAt(nextNonSpace) == '<') {
                 for (int blockType = 1; blockType <= 7; blockType++) {

@@ -1,10 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.node.*;
-import org.commonmark.parser.InlineParser;
-import org.commonmark.parser.InlineParserContext;
-import org.commonmark.parser.InlineParserFactory;
-import org.commonmark.parser.Parser;
+import org.commonmark.parser.*;
 import org.commonmark.parser.block.*;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
@@ -103,7 +100,7 @@ public class ParserTest {
     public void inlineParser() {
         final InlineParser fakeInlineParser = new InlineParser() {
             @Override
-            public void parse(List<CharSequence> lines, Node node) {
+            public void parse(SourceLines lines, Node node) {
                 node.appendChild(new ThematicBreak());
             }
         };
@@ -179,7 +176,7 @@ public class ParserTest {
 
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            if (state.getLine().equals("---")) {
+            if (state.getLine().getContent().equals("---")) {
                 return BlockStart.of(new DashBlockParser());
             }
             return BlockStart.none();

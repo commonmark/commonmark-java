@@ -27,27 +27,18 @@ public interface DelimiterProcessor {
     int getMinLength();
 
     /**
-     * Determine how many (if any) of the delimiter characters should be used.
+     * Process the delimiter runs.
      * <p>
-     * This allows implementations to decide how many characters to use based on the properties of the delimiter runs.
-     * An implementation can also return 0 when it doesn't want to allow this particular combination of delimiter runs.
-     *
-     * @param opener the opening delimiter run
-     * @param closer the closing delimiter run
-     * @return how many delimiters should be used; must not be greater than length of either opener or closer
-     */
-    int getDelimiterUse(DelimiterRun opener, DelimiterRun closer);
-
-    /**
-     * Process the matched delimiters, e.g. by wrapping the nodes between opener and closer in a new node, or appending
-     * a new node after the opener.
+     * The processor can examine the runs and the nodes and decide if it wants to process or not. If not, it should not
+     * change any nodes and return 0. If yes, it should do the processing (wrapping nodes, etc) and then return how many
+     * delimiters were used.
      * <p>
-     * Note that removal of the delimiter from the delimiter nodes and unlinking them is done by the caller.
+     * Note that removal (unlinking) of the used delimiter {@link Text} nodes is done by the caller.
      *
-     * @param opener the text node that contained the opening delimiter
-     * @param closer the text node that contained the closing delimiter
-     * @param delimiterUse the number of delimiters that were used
+     * @param openingRun the opening delimiter run
+     * @param closingRun the closing delimiter run
+     * @return how many delimiters were used; must not be greater than length of either opener or closer
      */
-    void process(Text opener, Text closer, int delimiterUse);
+    int process(DelimiterRun openingRun, DelimiterRun closingRun);
 
 }

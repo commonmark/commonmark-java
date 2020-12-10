@@ -3,6 +3,7 @@ package org.commonmark.parser.block;
 import org.commonmark.node.Block;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.SourceLine;
 
 /**
  * Parser for a specific block node.
@@ -22,7 +23,7 @@ public interface BlockParser {
      * Lazy continuation lines are lines that were rejected by this {@link #tryContinue(ParserState)} but didn't match
      * any other block parsers either.
      * <p>
-     * If true is returned here, those lines will get added via {@link #addLine(CharSequence)}. For false, the block is
+     * If true is returned here, those lines will get added via {@link #addLine(SourceLine)}. For false, the block is
      * closed instead.
      */
     boolean canHaveLazyContinuationLines();
@@ -33,7 +34,7 @@ public interface BlockParser {
 
     BlockContinue tryContinue(ParserState parserState);
 
-    void addLine(CharSequence line);
+    void addLine(SourceLine line);
 
     /**
      * Add a source span of the currently parsed block. The default implementation in {@link AbstractBlockParser} adds

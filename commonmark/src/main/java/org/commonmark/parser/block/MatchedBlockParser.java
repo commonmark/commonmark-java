@@ -1,6 +1,6 @@
 package org.commonmark.parser.block;
 
-import java.util.List;
+import org.commonmark.parser.SourceLines;
 
 /**
  * Open block parser that was last matched during the continue phase. This is different from the currently active
@@ -16,6 +16,6 @@ public interface MatchedBlockParser {
      *
      * @return paragraph content or an empty list
      */
-    List<CharSequence> getParagraphLines();
+    SourceLines getParagraphLines();
 
 }

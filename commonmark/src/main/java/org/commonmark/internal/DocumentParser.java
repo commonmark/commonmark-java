@@ -1,41 +1,15 @@
 package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.node.Block;
-import org.commonmark.node.BlockQuote;
-import org.commonmark.node.Document;
-import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.Heading;
-import org.commonmark.node.HtmlBlock;
-import org.commonmark.node.IndentedCodeBlock;
-import org.commonmark.node.LinkReferenceDefinition;
-import org.commonmark.node.ListBlock;
-import org.commonmark.node.Paragraph;
-import org.commonmark.node.SourceSpan;
-import org.commonmark.node.ThematicBreak;
-import org.commonmark.parser.InlineParser;
-import org.commonmark.parser.InlineParserFactory;
-import org.commonmark.parser.IncludeSourceSpans;
-import org.commonmark.parser.block.BlockContinue;
-import org.commonmark.parser.block.BlockParser;
-import org.commonmark.parser.block.BlockParserFactory;
-import org.commonmark.parser.block.BlockStart;
-import org.commonmark.parser.block.MatchedBlockParser;
-import org.commonmark.parser.block.ParserState;
+import org.commonmark.node.*;
+import org.commonmark.parser.*;
+import org.commonmark.parser.block.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DocumentParser implements ParserState {
 
@@ -165,12 +139,12 @@ public class DocumentParser implements ParserState {
     }
 
     @Override
-    public CharSequence getLine() {
-        return line;
-    }
-
-    public int getLineIndex() {
-        return lineIndex;
+    public SourceLine getLine() {
+        SourceSpan sourceSpan = null;
+        if (includeSourceSpans != IncludeSourceSpans.NONE) {
+            sourceSpan = SourceSpan.of(lineIndex, 0, line.length());
+        }
+        return SourceLine.of(line, sourceSpan);
     }
 
     @Override
@@ -399,11 +373,10 @@ public class DocumentParser implements ParserState {
 
     private void advance() {
         char c = line.charAt(index);
+        index++;
         if (c == '\t') {
-            index++;
             column += Parsing.columnsToNextTabStop(column);
         } else {
-            index++;
             column++;
         }
     }
@@ -430,7 +403,13 @@ public class DocumentParser implements ParserState {
         } else {
             content = line.subSequence(index, line.length());
         }
-        getActiveBlockParser().addLine(content);
+        SourceSpan sourceSpan = null;
+        if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES) {
+            // Note that if we're in a partially-consumed tab, the length here corresponds to the content but not to the
+            // actual source length. That sounds like a problem, but I haven't found a test case where it matters (yet).
+            sourceSpan = SourceSpan.of(lineIndex, index, content.length());
+        }
+        getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan));
         addSourceSpans();
     }
 
@@ -568,12 +547,12 @@ public class DocumentParser implements ParserState {
         }
 
         @Override
-        public List<CharSequence> getParagraphLines() {
+        public SourceLines getParagraphLines() {
             if (matchedBlockParser instanceof ParagraphParser) {
                 ParagraphParser paragraphParser = (ParagraphParser) matchedBlockParser;
-                return Collections.unmodifiableList(paragraphParser.getParagraphLines());
+                return paragraphParser.getParagraphLines();
             }
-            return Collections.emptyList();
+            return SourceLines.empty();
         }
     }
 

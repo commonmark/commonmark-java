@@ -1,29 +1,20 @@
 package org.commonmark.test;
 
-import org.commonmark.node.BlockQuote;
-import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.Heading;
-import org.commonmark.node.HtmlBlock;
-import org.commonmark.node.IndentedCodeBlock;
-import org.commonmark.node.LinkReferenceDefinition;
-import org.commonmark.node.ListBlock;
-import org.commonmark.node.ListItem;
-import org.commonmark.node.Node;
-import org.commonmark.node.Paragraph;
-import org.commonmark.node.SourceSpan;
-import org.commonmark.node.ThematicBreak;
+import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 public class SourceSpansTest {
 
     private static final Parser PARSER = Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS).build();
+    private static final Parser INLINES_PARSER = Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
 
     @Test
     public void paragraph() {
@@ -194,20 +185,133 @@ public class SourceSpansTest {
                 visualizeSourceSpans("> * ```\n>   foo\n>   ```"));
     }
 
+    @Test
+    public void inlineText() {
+        assertInlineSpans("foo", Text.class, SourceSpan.of(0, 0, 3));
+        assertInlineSpans("> foo", Text.class, SourceSpan.of(0, 2, 3));
+        assertInlineSpans("* foo", Text.class, SourceSpan.of(0, 2, 3));
+
+        // SourceSpans should be merged: ` is a separate Text node while inline parsing and gets merged at the end
+        assertInlineSpans("foo`bar", Text.class, SourceSpan.of(0, 0, 7));
+        assertInlineSpans("foo[bar", Text.class, SourceSpan.of(0, 0, 7));
+
+        assertInlineSpans("[foo](/url)", Text.class, SourceSpan.of(0, 1, 3));
+        assertInlineSpans("*foo*", Text.class, SourceSpan.of(0, 1, 3));
+    }
+
+    @Test
+    public void inlineHeading() {
+        assertInlineSpans("# foo", Text.class, SourceSpan.of(0, 2, 3));
+        assertInlineSpans(" # foo", Text.class, SourceSpan.of(0, 3, 3));
+        assertInlineSpans("> # foo", Text.class, SourceSpan.of(0, 4, 3));
+    }
+
+    @Test
+    public void inlineAutolink() {
+        assertInlineSpans("see <https://example.org>", Link.class, SourceSpan.of(0, 4, 21));
+    }
+
+    @Test
+    public void inlineBackslash() {
+        assertInlineSpans("\\!", Text.class, SourceSpan.of(0, 0, 2));
+    }
+
+    @Test
+    public void inlineBackticks() {
+        assertInlineSpans("see `code`", Code.class, SourceSpan.of(0, 4, 6));
+        assertInlineSpans("`multi\nline`", Code.class,
+                SourceSpan.of(0, 0, 6),
+                SourceSpan.of(1, 0, 5));
+        assertInlineSpans("text ```", Text.class, SourceSpan.of(0, 0, 8));
+    }
+
+    @Test
+    public void inlineEntity() {
+        assertInlineSpans("&amp;", Text.class, SourceSpan.of(0, 0, 5));
+    }
+
+    @Test
+    public void inlineHtml() {
+        assertInlineSpans("hi <strong>there</strong>", HtmlInline.class, SourceSpan.of(0, 3, 8));
+    }
+
+    @Test
+    public void links() {
+        assertInlineSpans("[text](/url)", Link.class, SourceSpan.of(0, 0, 12));
+        assertInlineSpans("[text](/url)", Text.class, SourceSpan.of(0, 1, 4));
+
+        assertInlineSpans("[text]\n\n[text]: /url", Link.class, SourceSpan.of(0, 0, 6));
+        assertInlineSpans("[text]\n\n[text]: /url", Text.class, SourceSpan.of(0, 1, 4));
+        assertInlineSpans("[text][]\n\n[text]: /url", Link.class, SourceSpan.of(0, 0, 8));
+        assertInlineSpans("[text][]\n\n[text]: /url", Text.class, SourceSpan.of(0, 1, 4));
+        assertInlineSpans("[text][ref]\n\n[ref]: /url", Link.class, SourceSpan.of(0, 0, 11));
+        assertInlineSpans("[text][ref]\n\n[ref]: /url", Text.class, SourceSpan.of(0, 1, 4));
+        assertInlineSpans("[notalink]", Text.class, SourceSpan.of(0, 0, 10));
+    }
+
+    @Test
+    public void inlineEmphasis() {
+        assertInlineSpans("*hey*", Emphasis.class, SourceSpan.of(0, 0, 5));
+        assertInlineSpans("*hey*", Text.class, SourceSpan.of(0, 1, 3));
+        assertInlineSpans("**hey**", StrongEmphasis.class, SourceSpan.of(0, 0, 7));
+        assertInlineSpans("**hey**", Text.class, SourceSpan.of(0, 2, 3));
+
+        // This is an interesting one. It renders like this:
+        // <p>*<em>hey</em></p>
+        // The delimiter processor only uses one of the asterisks.
+        // So the first Text node should be the `*` at the beginning with the correct span.
+        assertInlineSpans("**hey*", Text.class, SourceSpan.of(0, 0, 1));
+        assertInlineSpans("**hey*", Emphasis.class, SourceSpan.of(0, 1, 5));
+
+        assertInlineSpans("***hey**", Text.class, SourceSpan.of(0, 0, 1));
+        assertInlineSpans("***hey**", StrongEmphasis.class, SourceSpan.of(0, 1, 7));
+
+        Node document = INLINES_PARSER.parse("*hey**");
+        Node lastText = document.getFirstChild().getLastChild();
+        assertEquals(Arrays.asList(SourceSpan.of(0, 5, 1)), lastText.getSourceSpans());
+    }
+
+    @Test
+    public void tabExpansion() {
+        assertInlineSpans(">\tfoo", BlockQuote.class, SourceSpan.of(0, 0, 5));
+        assertInlineSpans(">\tfoo", Text.class, SourceSpan.of(0, 2, 3));
+
+        assertInlineSpans("a\tb", Text.class, SourceSpan.of(0, 0, 3));
+    }
+
     private String visualizeSourceSpans(String source) {
         Node document = PARSER.parse(source);
         return SourceSpanRenderer.render(document, source);
     }
 
     private static void assertSpans(String input, Class<? extends Node> nodeClass, SourceSpan... expectedSourceSpans) {
-        Node node = PARSER.parse(input);
-        while (node != null && !nodeClass.isInstance(node)) {
-            node = node.getFirstChild();
+        assertSpans(PARSER.parse(input), nodeClass, expectedSourceSpans);
+    }
+
+    private static void assertInlineSpans(String input, Class<? extends Node> nodeClass, SourceSpan... expectedSourceSpans) {
+        assertSpans(INLINES_PARSER.parse(input), nodeClass, expectedSourceSpans);
+    }
+
+    private static void assertSpans(Node rootNode, Class<? extends Node> nodeClass, SourceSpan... expectedSourceSpans) {
+        Node node = findNode(rootNode, nodeClass);
+        assertEquals(Arrays.asList(expectedSourceSpans), node.getSourceSpans());
+    }
+
+    private static Node findNode(Node rootNode, Class<? extends Node> nodeClass) {
+        Deque<Node> nodes = new ArrayDeque<>();
+        nodes.add(rootNode);
+        while (!nodes.isEmpty()) {
+            Node node = nodes.removeFirst();
+            if (nodeClass.isInstance(node)) {
+                return node;
+            }
+            if (node.getFirstChild() != null) {
+                nodes.addFirst(node.getFirstChild());
+            }
+            if (node.getNext() != null) {
+                nodes.addLast(node.getNext());
+            }
         }
-        if (node == null) {
-            fail("Expected to find " + nodeClass + " node");
-        } else {
-            assertEquals(Arrays.asList(expectedSourceSpans), node.getSourceSpans());
-        }
+        throw new AssertionError("Expected to find " + nodeClass + " node");
     }
 }

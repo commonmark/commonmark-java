@@ -2,12 +2,16 @@ package org.commonmark.ext.ins;
 
 import org.commonmark.Extension;
 import org.commonmark.node.Node;
+import org.commonmark.node.Paragraph;
+import org.commonmark.node.SourceSpan;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -87,6 +91,20 @@ public class InsTest extends RenderingTestCase {
     public void textContentRenderer() {
         Node document = PARSER.parse("++foo++");
         assertEquals("foo", CONTENT_RENDERER.render(document));
+    }
+
+    @Test
+    public void sourceSpans() {
+        Parser parser = Parser.builder()
+                .extensions(EXTENSIONS)
+                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                .build();
+
+        Node document = parser.parse("hey ++there++\n");
+        Paragraph block = (Paragraph) document.getFirstChild();
+        Node ins = block.getLastChild();
+        assertEquals(Arrays.asList(SourceSpan.of(0, 4, 9)),
+                ins.getSourceSpans());
     }
 
     @Override

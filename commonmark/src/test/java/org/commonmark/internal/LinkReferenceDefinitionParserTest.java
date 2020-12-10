@@ -2,13 +2,14 @@ package org.commonmark.internal;
 
 import org.commonmark.internal.LinkReferenceDefinitionParser.State;
 import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.parser.SourceLine;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class LinkReferenceDefinitionParserTest {
 
-    private LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
+    private final LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
 
     @Test
     public void testStartLabel() {
@@ -20,8 +21,8 @@ public class LinkReferenceDefinitionParserTest {
         // Not a label
         assertParagraph("a");
         // Can not go back to parsing link reference definitions
-        parser.parse("a");
-        parser.parse("[");
+        parse("a");
+        parse("[");
         assertEquals(State.PARAGRAPH, parser.getState());
         assertParagraphLines("a\n[", parser);
     }
@@ -51,39 +52,36 @@ public class LinkReferenceDefinitionParserTest {
 
     @Test
     public void testLabelMultiline() {
-        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse("[two");
+        parse("[two");
         assertEquals(State.LABEL, parser.getState());
-        parser.parse("lines]:");
+        parse("lines]:");
         assertEquals(State.DESTINATION, parser.getState());
-        parser.parse("/url");
+        parse("/url");
         assertEquals(State.START_TITLE, parser.getState());
         assertDef(parser.getDefinitions().get(0), "two lines", "/url", null);
     }
 
     @Test
     public void testLabelStartsWithNewline() {
-        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse("[");
+        parse("[");
         assertEquals(State.LABEL, parser.getState());
-        parser.parse("weird]:");
+        parse("weird]:");
         assertEquals(State.DESTINATION, parser.getState());
-        parser.parse("/url");
+        parse("/url");
         assertEquals(State.START_TITLE, parser.getState());
         assertDef(parser.getDefinitions().get(0), "weird", "/url", null);
     }
 
     @Test
     public void testDestination() {
-        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse("[foo]: /url");
+        parse("[foo]: /url");
         assertEquals(State.START_TITLE, parser.getState());
         assertParagraphLines("", parser);
 
         assertEquals(1, parser.getDefinitions().size());
         assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
 
-        parser.parse("[bar]: </url2>");
+        parse("[bar]: </url2>");
         assertDef(parser.getDefinitions().get(1), "bar", "/url2", null);
     }
 
@@ -94,8 +92,7 @@ public class LinkReferenceDefinitionParserTest {
 
     @Test
     public void testTitle() {
-        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse("[foo]: /url 'title'");
+        parse("[foo]: /url 'title'");
         assertEquals(State.START_DEFINITION, parser.getState());
         assertParagraphLines("", parser);
 
@@ -105,12 +102,11 @@ public class LinkReferenceDefinitionParserTest {
 
     @Test
     public void testTitleStartWhitespace() {
-        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse("[foo]: /url");
+        parse("[foo]: /url");
         assertEquals(State.START_TITLE, parser.getState());
         assertParagraphLines("", parser);
 
-        parser.parse("   ");
+        parse("   ");
 
         assertEquals(State.START_DEFINITION, parser.getState());
         assertParagraphLines("   ", parser);
@@ -121,18 +117,17 @@ public class LinkReferenceDefinitionParserTest {
 
     @Test
     public void testTitleMultiline() {
-        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse("[foo]: /url 'two");
+        parse("[foo]: /url 'two");
         assertEquals(State.TITLE, parser.getState());
         assertParagraphLines("[foo]: /url 'two", parser);
         assertEquals(0, parser.getDefinitions().size());
 
-        parser.parse("lines");
+        parse("lines");
         assertEquals(State.TITLE, parser.getState());
         assertParagraphLines("[foo]: /url 'two\nlines", parser);
         assertEquals(0, parser.getDefinitions().size());
 
-        parser.parse("'");
+        parse("'");
         assertEquals(State.START_DEFINITION, parser.getState());
         assertParagraphLines("", parser);
 
@@ -142,10 +137,9 @@ public class LinkReferenceDefinitionParserTest {
 
     @Test
     public void testTitleMultiline2() {
-        LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse("[foo]: /url '");
+        parse("[foo]: /url '");
         assertEquals(State.TITLE, parser.getState());
-        parser.parse("title'");
+        parse("title'");
         assertEquals(State.START_DEFINITION, parser.getState());
 
         assertDef(parser.getDefinitions().get(0), "foo", "/url", "\ntitle");
@@ -158,13 +152,18 @@ public class LinkReferenceDefinitionParserTest {
         assertParagraph("[foo]: /url 'title' INVALID");
     }
 
+    private void parse(String content) {
+        parser.parse(SourceLine.of(content, null));
+    }
+
     private static void assertParagraph(String input) {
         assertState(input, State.PARAGRAPH, input);
     }
 
     private static void assertState(String input, State state, String paragraphContent) {
         LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
-        parser.parse(input);
+        // TODO: Should we check things with source spans here?
+        parser.parse(SourceLine.of(input, null));
         assertEquals(state, parser.getState());
         assertParagraphLines(paragraphContent, parser);
     }
@@ -176,14 +175,7 @@ public class LinkReferenceDefinitionParserTest {
     }
 
     private static void assertParagraphLines(String expectedContent, LinkReferenceDefinitionParser parser) {
-        StringBuilder sb = new StringBuilder();
-        for (CharSequence line : parser.getParagraphLines()) {
-            if (sb.length() != 0) {
-                sb.append('\n');
-            }
-            sb.append(line);
-        }
-        String actual = sb.toString();
+        String actual = parser.getParagraphLines().getContent();
         assertEquals(expectedContent, actual);
     }
 }

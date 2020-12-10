@@ -1,9 +1,6 @@
 package org.commonmark.internal.inline;
 
-import org.commonmark.node.Emphasis;
-import org.commonmark.node.Node;
-import org.commonmark.node.StrongEmphasis;
-import org.commonmark.node.Text;
+import org.commonmark.node.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.delimiter.DelimiterRun;
 
@@ -31,35 +28,39 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
     }
 
     @Override
-    public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+    public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
         // "multiple of 3" rule for internal delimiter runs
-        if ((opener.canClose() || closer.canOpen()) &&
-                closer.originalLength() % 3 != 0 &&
-                (opener.originalLength() + closer.originalLength()) % 3 == 0) {
+        if ((openingRun.canClose() || closingRun.canOpen()) &&
+                closingRun.originalLength() % 3 != 0 &&
+                (openingRun.originalLength() + closingRun.originalLength()) % 3 == 0) {
             return 0;
         }
+
+        int usedDelimiters;
+        Node emphasis;
         // calculate actual number of delimiters used from this closer
-        if (opener.length() >= 2 && closer.length() >= 2) {
-            return 2;
+        if (openingRun.length() >= 2 && closingRun.length() >= 2) {
+            usedDelimiters = 2;
+            emphasis = new StrongEmphasis(String.valueOf(delimiterChar) + delimiterChar);
         } else {
-            return 1;
-        }
-    }
-
-    @Override
-    public void process(Text opener, Text closer, int delimiterUse) {
-        String singleDelimiter = String.valueOf(getOpeningCharacter());
-        Node emphasis = delimiterUse == 1
-                ? new Emphasis(singleDelimiter)
-                : new StrongEmphasis(singleDelimiter + singleDelimiter);
-
-        Node tmp = opener.getNext();
-        while (tmp != null && tmp != closer) {
-            Node next = tmp.getNext();
-            emphasis.appendChild(tmp);
-            tmp = next;
+            usedDelimiters = 1;
+            emphasis = new Emphasis(String.valueOf(delimiterChar));
         }
 
+        SourceSpans sourceSpans = SourceSpans.empty();
+        sourceSpans.addAllFrom(openingRun.getOpeners(usedDelimiters));
+
+        Text opener = openingRun.getOpener();
+        for (Node node : Nodes.between(opener, closingRun.getCloser())) {
+            emphasis.appendChild(node);
+            sourceSpans.addAll(node.getSourceSpans());
+        }
+
+        sourceSpans.addAllFrom(closingRun.getClosers(usedDelimiters));
+
+        emphasis.setSourceSpans(sourceSpans.getSourceSpans());
         opener.insertAfter(emphasis);
+
+        return usedDelimiters;
     }
 }

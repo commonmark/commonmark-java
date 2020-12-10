@@ -99,12 +99,8 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         }
 
         @Override
-        public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
             return delimiterUse;
-        }
-
-        @Override
-        public void process(Text opener, Text closer, int delimiterUse) {
         }
     }
 
@@ -126,20 +122,19 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         }
 
         @Override
-        public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
-            return 1;
-        }
-
-        @Override
-        public void process(Text opener, Text closer, int delimiterUse) {
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
             UpperCaseNode content = new UpperCaseNode();
-            Node tmp = opener.getNext();
-            while (tmp != null && tmp != closer) {
+            Text start = openingRun.getOpener();
+            Text end = closingRun.getCloser();
+            Node tmp = start.getNext();
+            while (tmp != null && tmp != end) {
                 Node next = tmp.getNext();
                 content.appendChild(tmp);
                 tmp = next;
             }
-            opener.insertAfter(content);
+            start.insertAfter(content);
+
+            return 1;
         }
     }
 
@@ -198,14 +193,10 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         }
 
         @Override
-        public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
+            openingRun.getOpener().insertAfter(new Text("(1)"));
+            closingRun.getCloser().insertBefore(new Text("(/1)"));
             return 1;
-        }
-
-        @Override
-        public void process(Text opener, Text closer, int delimiterUse) {
-            opener.insertAfter(new Text("(1)"));
-            closer.insertBefore(new Text("(/1)"));
         }
     }
 
@@ -227,14 +218,10 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         }
 
         @Override
-        public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
+            openingRun.getOpener().insertAfter(new Text("(2)"));
+            closingRun.getCloser().insertBefore(new Text("(/2)"));
             return 2;
-        }
-
-        @Override
-        public void process(Text opener, Text closer, int delimiterUse) {
-            opener.insertAfter(new Text("(2)"));
-            closer.insertBefore(new Text("(/2)"));
         }
     }
 }

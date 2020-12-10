@@ -5,6 +5,7 @@ import org.commonmark.ext.front.matter.YamlFrontMatterNode;
 import org.commonmark.internal.DocumentBlockParser;
 import org.commonmark.node.Block;
 import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 
 import java.util.ArrayList;
@@ -37,12 +38,12 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public void addLine(CharSequence line) {
+    public void addLine(SourceLine line) {
     }
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        final CharSequence line = parserState.getLine();
+        final CharSequence line = parserState.getLine().getContent();
 
         if (REGEX_END.matcher(line).matches()) {
             if (currentKey != null) {
@@ -95,7 +96,7 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     public static class Factory extends AbstractBlockParserFactory {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            CharSequence line = state.getLine();
+            CharSequence line = state.getLine().getContent();
             BlockParser parentParser = matchedBlockParser.getMatchedBlockParser();
             // check whether this line is the first line of whole document or not
             if (parentParser instanceof DocumentBlockParser && parentParser.getBlock().getFirstChild() == null &&

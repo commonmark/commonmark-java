@@ -1,6 +1,5 @@
 package org.commonmark.internal;
 
-import org.commonmark.node.Text;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.delimiter.DelimiterRun;
 
@@ -71,12 +70,7 @@ class StaggeredDelimiterProcessor implements DelimiterProcessor {
     }
 
     @Override
-    public int getDelimiterUse(DelimiterRun opener, DelimiterRun closer) {
-        return findProcessor(opener.length()).getDelimiterUse(opener, closer);
-    }
-
-    @Override
-    public void process(Text opener, Text closer, int delimiterUse) {
-        findProcessor(delimiterUse).process(opener, closer, delimiterUse);
+    public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
+        return findProcessor(openingRun.length()).process(openingRun, closingRun);
     }
 }

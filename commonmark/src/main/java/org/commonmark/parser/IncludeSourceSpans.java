@@ -13,4 +13,8 @@ public enum IncludeSourceSpans {
      * Include source spans on {@link org.commonmark.node.Block} nodes.
      */
     BLOCKS,
+    /**
+     * Include source spans on block nodes and inline nodes.
+     */
+    BLOCKS_AND_INLINES,
 }

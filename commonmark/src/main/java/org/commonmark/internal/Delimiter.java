@@ -3,36 +3,33 @@ package org.commonmark.internal;
 import org.commonmark.node.Text;
 import org.commonmark.parser.delimiter.DelimiterRun;
 
+import java.util.List;
+
 /**
  * Delimiter (emphasis, strong emphasis or custom emphasis).
  */
 public class Delimiter implements DelimiterRun {
 
-    public final Text node;
+    public final List<Text> characters;
     public final char delimiterChar;
+    private final int originalLength;
 
-    /**
-     * Can open emphasis, see spec.
-     */
-    public final boolean canOpen;
+    // Can open emphasis, see spec.
+    private final boolean canOpen;
 
-    /**
-     * Can close emphasis, see spec.
-     */
-    public final boolean canClose;
+    // Can close emphasis, see spec.
+    private final boolean canClose;
 
     public Delimiter previous;
     public Delimiter next;
 
-    public int length = 1;
-    public int originalLength = 1;
-
-    public Delimiter(Text node, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
-        this.node = node;
+    public Delimiter(List<Text> characters, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
+        this.characters = characters;
         this.delimiterChar = delimiterChar;
         this.canOpen = canOpen;
         this.canClose = canClose;
         this.previous = previous;
+        this.originalLength = characters.size();
     }
 
     @Override
@@ -47,11 +44,39 @@ public class Delimiter implements DelimiterRun {
 
     @Override
     public int length() {
-        return length;
+        return characters.size();
     }
 
     @Override
     public int originalLength() {
         return originalLength;
+    }
+
+    @Override
+    public Text getOpener() {
+        return characters.get(characters.size() - 1);
+    }
+
+    @Override
+    public Text getCloser() {
+        return characters.get(0);
+    }
+
+    @Override
+    public Iterable<Text> getOpeners(int length) {
+        if (!(length >= 1 && length <= length())) {
+            throw new IllegalArgumentException("length must be between 1 and " + length() + ", was " + length);
+        }
+
+        return characters.subList(characters.size() - length, characters.size());
+    }
+
+    @Override
+    public Iterable<Text> getClosers(int length) {
+        if (!(length >= 1 && length <= length())) {
+            throw new IllegalArgumentException("length must be between 1 and " + length() + ", was " + length);
+        }
+
+        return characters.subList(0, length);
     }
 }
