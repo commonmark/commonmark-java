@@ -23,7 +23,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private static final Pattern UNICODE_WHITESPACE_CHAR = Pattern.compile("^[\\p{Zs}\t\r\n\f]");
 
     private final BitSet specialCharacters;
-    private final BitSet delimiterCharacters;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final InlineParserContext context;
     private final Map<Character, List<InlineContentParser>> inlineParsers;
@@ -53,21 +52,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.inlineParsers.put('&', Collections.<InlineContentParser>singletonList(new EntityInlineParser()));
         this.inlineParsers.put('<', Arrays.asList(new AutolinkInlineParser(), new HtmlInlineParser()));
 
-        this.delimiterCharacters = calculateDelimiterCharacters(this.delimiterProcessors.keySet());
-        this.specialCharacters = calculateSpecialCharacters(delimiterCharacters, inlineParsers.keySet());
+        this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), inlineParsers.keySet());
     }
 
-    public static BitSet calculateDelimiterCharacters(Set<Character> characters) {
+    public static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters, Set<Character> characters) {
         BitSet bitSet = new BitSet();
-        for (Character character : characters) {
-            bitSet.set(character);
+        for (Character c : delimiterCharacters) {
+            bitSet.set(c);
         }
-        return bitSet;
-    }
-
-    public static BitSet calculateSpecialCharacters(BitSet delimiterCharacters, Set<Character> characters) {
-        BitSet bitSet = new BitSet();
-        bitSet.or(delimiterCharacters);
         for (Character c : characters) {
             bitSet.set(c);
         }
@@ -166,13 +158,28 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      */
     private List<? extends Node> parseInline() {
         char c = scanner.peek();
-        if (c == Scanner.END) {
-            return null;
+
+        switch (c) {
+            case '[':
+                return Collections.singletonList(parseOpenBracket());
+            case '!':
+                return Collections.singletonList(parseBang());
+            case ']':
+                return Collections.singletonList(parseCloseBracket());
+            case '\n':
+                return Collections.singletonList(parseLineBreak());
+            case Scanner.END:
+                return null;
         }
 
-        Position position = scanner.position();
+        // No inline parser, delimiter or other special handling.
+        if (!specialCharacters.get(c)) {
+            return Collections.singletonList(parseText());
+        }
+
         List<InlineContentParser> inlineParsers = this.inlineParsers.get(c);
         if (inlineParsers != null) {
+            Position position = scanner.position();
             for (InlineContentParser inlineParser : inlineParsers) {
                 ParsedInline parsedInline = inlineParser.tryParse(this);
                 if (parsedInline instanceof ParsedInlineImpl) {
@@ -190,20 +197,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
         }
 
-        switch (c) {
-            case '[':
-                return Collections.singletonList(parseOpenBracket());
-            case '!':
-                return Collections.singletonList(parseBang());
-            case ']':
-                return Collections.singletonList(parseCloseBracket());
-            case '\n':
-                return Collections.singletonList(parseLineBreak());
-        }
-
-        boolean isDelimiter = delimiterCharacters.get(c);
-        if (isDelimiter) {
-            DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
+        DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
+        if (delimiterProcessor != null) {
             List<? extends Node> nodes = parseDelimiters(delimiterProcessor, c);
             if (nodes != null) {
                 return nodes;
@@ -481,8 +476,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private Node parseText() {
         Position start = scanner.position();
         scanner.next();
-        while (scanner.hasNext()) {
-            if (specialCharacters.get(scanner.peek())) {
+        char c;
+        while (true) {
+            c = scanner.peek();
+            if (c == Scanner.END || specialCharacters.get(c)) {
                 break;
             }
             scanner.next();
@@ -491,7 +488,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         SourceLines source = scanner.getSource(start, scanner.position());
         String content = source.getContent();
 
-        char c = scanner.peek();
         if (c == '\n') {
             // We parsed until the end of the line. Trim any trailing spaces and remember them (for hard line breaks).
             int end = Parsing.skipBackwards(' ', content, content.length() - 1, 0) + 1;

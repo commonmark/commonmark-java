@@ -36,8 +36,7 @@ public class DocumentParser implements ParserState {
         NODES_TO_CORE_FACTORIES = Collections.unmodifiableMap(map);
     }
 
-
-    private CharSequence line;
+    private SourceLine line;
 
     /**
      * Line index (0-based)
@@ -107,7 +106,7 @@ public class DocumentParser implements ParserState {
         int lineBreak;
         while ((lineBreak = Parsing.findLineBreak(input, lineStart)) != -1) {
             String line = input.substring(lineStart, lineBreak);
-            incorporateLine(line);
+            parseLine(line);
             if (lineBreak + 1 < input.length() && input.charAt(lineBreak) == '\r' && input.charAt(lineBreak + 1) == '\n') {
                 lineStart = lineBreak + 2;
             } else {
@@ -116,7 +115,7 @@ public class DocumentParser implements ParserState {
         }
         if (input.length() > 0 && (lineStart == 0 || lineStart < input.length())) {
             String line = input.substring(lineStart);
-            incorporateLine(line);
+            parseLine(line);
         }
 
         return finalizeAndProcess();
@@ -132,7 +131,7 @@ public class DocumentParser implements ParserState {
 
         String line;
         while ((line = bufferedReader.readLine()) != null) {
-            incorporateLine(line);
+            parseLine(line);
         }
 
         return finalizeAndProcess();
@@ -140,11 +139,7 @@ public class DocumentParser implements ParserState {
 
     @Override
     public SourceLine getLine() {
-        SourceSpan sourceSpan = null;
-        if (includeSourceSpans != IncludeSourceSpans.NONE) {
-            sourceSpan = SourceSpan.of(lineIndex, 0, line.length());
-        }
-        return SourceLine.of(line, sourceSpan);
+        return line;
     }
 
     @Override
@@ -181,12 +176,8 @@ public class DocumentParser implements ParserState {
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
      */
-    private void incorporateLine(CharSequence ln) {
-        lineIndex++;
-        line = Parsing.prepareLine(ln);
-        index = 0;
-        column = 0;
-        columnIsInTab = false;
+    private void parseLine(CharSequence ln) {
+        setLine(ln);
 
         // For each containing block, try to parse the associated line start.
         // The document will always match, so we can skip the first block parser and start at 1 matches
@@ -231,7 +222,7 @@ public class DocumentParser implements ParserState {
             findNextNonSpace();
 
             // this is a little performance optimization:
-            if (isBlank() || (indent < Parsing.CODE_BLOCK_INDENT && Parsing.isLetter(line, nextNonSpace))) {
+            if (isBlank() || (indent < Parsing.CODE_BLOCK_INDENT && Parsing.isLetter(this.line.getContent(), nextNonSpace))) {
                 setNewIndex(nextNonSpace);
                 break;
             }
@@ -310,14 +301,28 @@ public class DocumentParser implements ParserState {
         }
     }
 
+    private void setLine(CharSequence ln) {
+        lineIndex++;
+        index = 0;
+        column = 0;
+        columnIsInTab = false;
+
+        CharSequence lineContent = Parsing.prepareLine(ln);
+        SourceSpan sourceSpan = null;
+        if (includeSourceSpans != IncludeSourceSpans.NONE) {
+            sourceSpan = SourceSpan.of(lineIndex, 0, lineContent.length());
+        }
+        this.line = SourceLine.of(lineContent, sourceSpan);
+    }
+
     private void findNextNonSpace() {
         int i = index;
         int cols = column;
 
         blank = true;
-        int length = line.length();
+        int length = line.getContent().length();
         while (i < length) {
-            char c = line.charAt(i);
+            char c = line.getContent().charAt(i);
             switch (c) {
                 case ' ':
                     i++;
@@ -343,7 +348,7 @@ public class DocumentParser implements ParserState {
             index = nextNonSpace;
             column = nextNonSpaceColumn;
         }
-        int length = line.length();
+        int length = line.getContent().length();
         while (index < newIndex && index != length) {
             advance();
         }
@@ -357,7 +362,7 @@ public class DocumentParser implements ParserState {
             index = nextNonSpace;
             column = nextNonSpaceColumn;
         }
-        int length = line.length();
+        int length = line.getContent().length();
         while (column < newColumn && index != length) {
             advance();
         }
@@ -372,7 +377,7 @@ public class DocumentParser implements ParserState {
     }
 
     private void advance() {
-        char c = line.charAt(index);
+        char c = line.getContent().charAt(index);
         index++;
         if (c == '\t') {
             column += Parsing.columnsToNextTabStop(column);
@@ -390,7 +395,7 @@ public class DocumentParser implements ParserState {
         if (columnIsInTab) {
             // Our column is in a partially consumed tab. Expand the remaining columns (to the next tab stop) to spaces.
             int afterTab = index + 1;
-            CharSequence rest = line.subSequence(afterTab, line.length());
+            CharSequence rest = line.getContent().subSequence(afterTab, line.getContent().length());
             int spaces = Parsing.columnsToNextTabStop(column);
             StringBuilder sb = new StringBuilder(spaces + rest.length());
             for (int i = 0; i < spaces; i++) {
@@ -399,9 +404,9 @@ public class DocumentParser implements ParserState {
             sb.append(rest);
             content = sb.toString();
         } else if (index == 0) {
-            content = line;
+            content = line.getContent();
         } else {
-            content = line.subSequence(index, line.length());
+            content = line.getContent().subSequence(index, line.getContent().length());
         }
         SourceSpan sourceSpan = null;
         if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES) {
@@ -419,7 +424,7 @@ public class DocumentParser implements ParserState {
             for (int i = 1; i < openBlockParsers.size(); i++) {
                 OpenBlockParser openBlockParser = openBlockParsers.get(i);
                 int blockIndex = openBlockParser.sourceIndex;
-                int length = line.length() - blockIndex;
+                int length = line.getContent().length() - blockIndex;
                 if (length != 0) {
                     openBlockParser.blockParser.addSourceSpan(SourceSpan.of(lineIndex, blockIndex, length));
                 }

@@ -31,8 +31,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         int nextNonSpace = state.getNextNonSpaceIndex();
         int newIndex = state.getIndex();
         CharSequence line = state.getLine().getContent();
-        boolean closing = state.getIndent() < Parsing.CODE_BLOCK_INDENT && isClosing(line, nextNonSpace);
-        if (closing) {
+        if (state.getIndent() < Parsing.CODE_BLOCK_INDENT && nextNonSpace < line.length() && line.charAt(nextNonSpace) == block.getFenceChar() && isClosing(line, nextNonSpace)) {
             // closing fence - we're at end of line, so we can finalize now
             return BlockContinue.finished();
         } else {

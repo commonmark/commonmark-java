@@ -46,9 +46,11 @@ public class HeadingParser extends AbstractBlockParser {
 
             SourceLine line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
-            HeadingParser atxHeading = getAtxHeading(line.substring(nextNonSpace, line.getContent().length()));
-            if (atxHeading != null) {
-                return BlockStart.of(atxHeading).atIndex(line.getContent().length());
+            if (line.getContent().charAt(nextNonSpace) == '#') {
+                HeadingParser atxHeading = getAtxHeading(line.substring(nextNonSpace, line.getContent().length()));
+                if (atxHeading != null) {
+                    return BlockStart.of(atxHeading).atIndex(line.getContent().length());
+                }
             }
 
             int setextHeadingLevel = getSetextHeadingLevel(line.getContent(), nextNonSpace);

@@ -9,7 +9,7 @@ import org.commonmark.parser.SourceLine;
 public interface ParserState {
 
     /**
-     * @return the current line being parsed (full line)
+     * @return the current source line being parsed (full line)
      */
     SourceLine getLine();
 
