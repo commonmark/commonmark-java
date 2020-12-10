@@ -37,7 +37,6 @@ public class SourceLines {
     }
 
     public boolean isEmpty() {
-        // TODO: What if there's a single empty line?
         return lines.isEmpty();
     }
 

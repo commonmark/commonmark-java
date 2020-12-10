@@ -78,48 +78,48 @@ public class ScannerTest {
         Position start = scanner.position();
 
         scanner.next();
-        assertSourceLines(scanner.textBetween(start, scanner.position()),
+        assertSourceLines(scanner.getSource(start, scanner.position()),
                 "a",
                 SourceSpan.of(10, 3, 1));
 
         Position afterA = scanner.position();
 
         scanner.next();
-        assertSourceLines(scanner.textBetween(start, scanner.position()),
+        assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab",
                 SourceSpan.of(10, 3, 2));
 
         Position afterB = scanner.position();
 
         scanner.next();
-        assertSourceLines(scanner.textBetween(start, scanner.position()),
+        assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\n",
                 SourceSpan.of(10, 3, 2));
 
         scanner.next();
-        assertSourceLines(scanner.textBetween(start, scanner.position()),
+        assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\nc",
                 SourceSpan.of(10, 3, 2),
                 SourceSpan.of(11, 4, 1));
 
         scanner.next();
-        assertSourceLines(scanner.textBetween(start, scanner.position()),
+        assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\ncd",
                 SourceSpan.of(10, 3, 2),
                 SourceSpan.of(11, 4, 2));
 
         scanner.next();
-        assertSourceLines(scanner.textBetween(start, scanner.position()),
+        assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\ncde",
                 SourceSpan.of(10, 3, 2),
                 SourceSpan.of(11, 4, 3));
 
-        assertSourceLines(scanner.textBetween(afterA, scanner.position()),
+        assertSourceLines(scanner.getSource(afterA, scanner.position()),
                 "b\ncde",
                 SourceSpan.of(10, 4, 1),
                 SourceSpan.of(11, 4, 3));
 
-        assertSourceLines(scanner.textBetween(afterB, scanner.position()),
+        assertSourceLines(scanner.getSource(afterB, scanner.position()),
                 "\ncde",
                 SourceSpan.of(11, 4, 3));
     }

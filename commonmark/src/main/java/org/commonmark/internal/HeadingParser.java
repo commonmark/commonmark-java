@@ -121,7 +121,7 @@ public class HeadingParser extends AbstractBlockParser {
             }
         }
 
-        SourceLines source = scanner.textBetween(start, end);
+        SourceLines source = scanner.getSource(start, end);
         String content = source.getContent();
         if (content.isEmpty()) {
             return new HeadingParser(level, SourceLines.empty());

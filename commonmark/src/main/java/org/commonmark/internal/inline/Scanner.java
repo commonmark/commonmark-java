@@ -10,7 +10,7 @@ import java.util.List;
 public class Scanner {
 
     /**
-     * Character representing the end of input (or outside of the text in case of the "previous" methods).
+     * Character representing the end of input source (or outside of the text in case of the "previous" methods).
      * <p>
      * Note that we can use NULL to represent this because CommonMark does not allow those in the input (we replace them
      * in the beginning of parsing).
@@ -209,8 +209,7 @@ public class Scanner {
 
     // For cases where the caller appends the result to a StringBuilder, we could offer another method to avoid some
     // unnecessary copying.
-    // TODO: Rename
-    public SourceLines textBetween(Position begin, Position end) {
+    public SourceLines getSource(Position begin, Position end) {
         if (begin.lineIndex == end.lineIndex) {
             // Shortcut for common case of text from a single line
             SourceLine line = lines.get(begin.lineIndex);

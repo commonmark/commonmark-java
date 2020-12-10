@@ -2,7 +2,6 @@ package org.commonmark.internal.inline;
 
 import org.commonmark.internal.util.AsciiMatcher;
 import org.commonmark.internal.util.Html5Entities;
-import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 
 /**
@@ -48,7 +47,7 @@ public class EntityInlineParser implements InlineContentParser {
     }
 
     private ParsedInline entity(Scanner scanner, Position start) {
-        String text = scanner.textBetween(start, scanner.position()).getContent();
+        String text = scanner.getSource(start, scanner.position()).getContent();
         return ParsedInline.of(new Text(Html5Entities.entityToString(text)), scanner.position());
     }
 }

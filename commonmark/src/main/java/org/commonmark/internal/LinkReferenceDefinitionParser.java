@@ -121,7 +121,7 @@ public class LinkReferenceDefinitionParser {
             return false;
         }
 
-        label.append(scanner.textBetween(start, scanner.position()).getContent());
+        label.append(scanner.getSource(start, scanner.position()).getContent());
 
         if (!scanner.hasNext()) {
             // label might continue on next line
@@ -160,7 +160,7 @@ public class LinkReferenceDefinitionParser {
             return false;
         }
 
-        String rawDestination = scanner.textBetween(start, scanner.position()).getContent();
+        String rawDestination = scanner.getSource(start, scanner.position()).getContent();
         destination = rawDestination.startsWith("<") ?
                 rawDestination.substring(1, rawDestination.length() - 1) :
                 rawDestination;
@@ -221,7 +221,7 @@ public class LinkReferenceDefinitionParser {
             return false;
         }
 
-        title.append(scanner.textBetween(start, scanner.position()).getContent());
+        title.append(scanner.getSource(start, scanner.position()).getContent());
 
         if (!scanner.hasNext()) {
             // Title ran until the end of line, so continue on next line (until we find the delimiter)

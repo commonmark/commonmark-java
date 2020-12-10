@@ -180,7 +180,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                     Node node = parsedInlineImpl.getNode();
                     scanner.setPosition(parsedInlineImpl.getPosition());
                     if (includeSourceSpans && node.getSourceSpans().isEmpty()) {
-                        node.setSourceSpans(scanner.textBetween(position, scanner.position()).getSourceSpans());
+                        node.setSourceSpans(scanner.getSource(position, scanner.position()).getSourceSpans());
                     }
                     return Collections.singletonList(node);
                 } else {
@@ -242,7 +242,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         scanner.next();
         Position contentPosition = scanner.position();
 
-        Text node = text(scanner.textBetween(start, contentPosition));
+        Text node = text(scanner.getSource(start, contentPosition));
 
         // Add entry to stack for this opener
         addBracket(Bracket.link(node, start, contentPosition, lastBracket, lastDelimiter));
@@ -259,13 +259,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         scanner.next();
         if (scanner.next('[')) {
             Position contentPosition = scanner.position();
-            Text node = text(scanner.textBetween(start, contentPosition));
+            Text node = text(scanner.getSource(start, contentPosition));
 
             // Add entry to stack for this opener
             addBracket(Bracket.image(node, start, contentPosition, lastBracket, lastDelimiter));
             return node;
         } else {
-            return text(scanner.textBetween(start, scanner.position()));
+            return text(scanner.getSource(start, scanner.position()));
         }
     }
 
@@ -282,13 +282,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         Bracket opener = lastBracket;
         if (opener == null) {
             // No matching opener, just return a literal.
-            return text(scanner.textBetween(beforeClose, afterClose));
+            return text(scanner.getSource(beforeClose, afterClose));
         }
 
         if (!opener.allowed) {
             // Matching opener but it's not allowed, just return a literal.
             removeLastBracket();
-            return text(scanner.textBetween(beforeClose, afterClose));
+            return text(scanner.getSource(beforeClose, afterClose));
         }
 
         // Check to see if we have a link/image
@@ -331,7 +331,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
                 // But it can only be a reference when there's no (unescaped) bracket in it.
                 // If there is, we don't even need to try to look up the reference. This is an optimization.
-                ref = scanner.textBetween(opener.contentPosition, beforeClose).getContent();
+                ref = scanner.getSource(opener.contentPosition, beforeClose).getContent();
             }
 
             if (ref != null) {
@@ -357,7 +357,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
 
             if (includeSourceSpans) {
-                linkOrImage.setSourceSpans(scanner.textBetween(opener.markerPosition, scanner.position()).getSourceSpans());
+                linkOrImage.setSourceSpans(scanner.getSource(opener.markerPosition, scanner.position()).getSourceSpans());
             }
 
             // Process delimiters such as emphasis inside link/image
@@ -386,7 +386,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             removeLastBracket();
 
             scanner.setPosition(afterClose);
-            return text(scanner.textBetween(beforeClose, afterClose));
+            return text(scanner.getSource(beforeClose, afterClose));
         }
     }
 
@@ -414,10 +414,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         String dest;
         if (delimiter == '<') {
             // chop off surrounding <..>:
-            String rawDestination = scanner.textBetween(start, scanner.position()).getContent();
+            String rawDestination = scanner.getSource(start, scanner.position()).getContent();
             dest = rawDestination.substring(1, rawDestination.length() - 1);
         } else {
-            dest = scanner.textBetween(start, scanner.position()).getContent();
+            dest = scanner.getSource(start, scanner.position()).getContent();
         }
 
         return Escaping.unescapeString(dest);
@@ -433,7 +433,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         // chop off ', " or parens
-        String rawTitle = scanner.textBetween(start, scanner.position()).getContent();
+        String rawTitle = scanner.getSource(start, scanner.position()).getContent();
         String title = rawTitle.substring(1, rawTitle.length() - 1);
         return Escaping.unescapeString(title);
     }
@@ -456,7 +456,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             return null;
         }
 
-        String content = scanner.textBetween(start, end).getContent();
+        String content = scanner.getSource(start, end).getContent();
         // spec: A link label can have at most 999 characters inside the square brackets.
         if (content.length() > 999) {
             return null;
@@ -488,7 +488,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             scanner.next();
         }
 
-        SourceLines source = scanner.textBetween(start, scanner.position());
+        SourceLines source = scanner.getSource(start, scanner.position());
         String content = source.getContent();
 
         char c = scanner.peek();
@@ -530,7 +530,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         scanner.setPosition(start);
         Position positionBefore = start;
         while (scanner.next(delimiterChar)) {
-            delimiters.add(text(scanner.textBetween(positionBefore, scanner.position())));
+            delimiters.add(text(scanner.getSource(positionBefore, scanner.position())));
             positionBefore = scanner.position();
         }
 
