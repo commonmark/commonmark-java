@@ -20,7 +20,7 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        run: mvn -B package
+        run: mvn -B package javadoc:javadoc
 
   coverage:
     runs-on: ubuntu-latest
