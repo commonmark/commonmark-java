@@ -9,7 +9,7 @@ import java.util.Objects;
  * <p>
  * For example, this CommonMark source text:
  * <pre><code>
- * > foo
+ * &gt; foo
  * </code></pre>
  * The {@link BlockQuote} node would have this source span: line 0, column 0, length 5.
  * <p>

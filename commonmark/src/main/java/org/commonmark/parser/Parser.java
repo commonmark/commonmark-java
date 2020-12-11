@@ -260,7 +260,6 @@ public class Parser {
          * link ([title](http://))
          * image (![alt](http://))
          * <p>
-         * <p>
          * Note that if this method is not called or the inline parser factory is set to null, then the default
          * implementation will be used.
          *
