@@ -6,13 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.16.0] - 2020-12-11
 ### Added
-- Support for including source spans on block nodes:
-  - Answer for "Where in the source input (line/column position and length) does this block come from?"
+- Support for including source spans on block and inline nodes (#1):
+  - Answer for "Where in the source input (line/column position and length) does this node come from?"
   - Useful for things like editors that want to keep the input and rendered output scrolled to the same lines,
-    or start editing on the block that was selected.
-  - Use `includeSourceSpans` on `Parser.Builder` to enable, read data with `Node.getSourceSpans`
+    or start editing on the node that was selected.
+  - Use `includeSourceSpans` on `Parser.Builder` to enable,
+    either with `IncludeSourceSpans.BLOCKS` or `IncludeSourceSpans.BLOCKS_AND_INLINES`
+  - Read data with `Node.getSourceSpans`
+  - Note that enabling this has a small performance impact on parsing (about 10%)
+### Changed
+- In order to support source spans (see above), a few of the extension
+  APIs changed. It should only affect users implementing their own
+  extensions. See the Javadoc to see what changed.
+- YAML front matter extension: Support dots in key names
 
 ## [0.15.2] - 2020-07-20
 ### Fixed
@@ -299,6 +307,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.16.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.15.2...commonmark-parent-0.16.0
 [0.15.2]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.15.1...commonmark-parent-0.15.2
 [0.15.1]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.15.0...commonmark-parent-0.15.1
 [0.15.0]: https://github.com/atlassian/commonmark-java/compare/commonmark-parent-0.14.0...commonmark-parent-0.15.0
