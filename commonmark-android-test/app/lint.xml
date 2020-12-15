@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!--Method considered overridden by Dalvik-->
+    <issue id="DalvikOverride" severity="fatal"/>
+
+    <!--Package not included in Android-->
+    <issue id="InvalidPackage" severity="fatal"/>
+
+    <!--Using Private APIs-->
+    <issue id="PrivateApi" severity="fatal"/>
+
+    <!--Potential AAPT crash-->
+    <issue id="AaptCrash" severity="fatal"/>
+
+    <!--Restricted API-->
+    <issue id="RestrictedApi" severity="fatal"/>
+
+    <!--Calling new methods on older versions-->
+    <issue id="NewApi" severity="fatal"/>
+
+    <issue id="AllowBackup" severity="ignore"/>
+    <issue id="FullBackupContent" severity="ignore"/>
+    <issue id="MissingApplicationIcon" severity="ignore"/>
+    <issue id="GradleDependency" severity="ignore"/>
+</lint>
