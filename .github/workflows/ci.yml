@@ -38,3 +38,17 @@ jobs:
 
       - name: Publish coverage
         uses: codecov/codecov-action@v1
+
+  android-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Android Lint checks
+        run: cd commonmark-android-test && ./gradlew :app:lint
