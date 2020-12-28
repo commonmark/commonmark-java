@@ -2,6 +2,7 @@ commonmark-android-test
 =======================
 
 This module ensures that commonmark-java is supported on Android by running `lint` checks on library sources.
+Current `minSdk` is 19
 
 Requirements:
 
