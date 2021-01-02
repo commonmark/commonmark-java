@@ -1,31 +1,15 @@
 apply plugin: 'com.android.application'
 
-def testProperties
-def testPropertiesFile = file('../test.properties')
-if (testPropertiesFile.canRead()) {
-    testProperties = new Properties()
-    testPropertiesFile.withInputStream {
-        stream -> testProperties.load(stream)
-    }
-}
-
 android {
-    compileSdkVersion 16
-    buildToolsVersion "21.1.1"
+    compileSdkVersion 30
+    buildToolsVersion "30.0.2"
 
     defaultConfig {
         applicationId "com.atlassian.commonmark.android.test"
-        minSdkVersion 16
-        targetSdkVersion 16
+        minSdkVersion 19
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-    }
-
-    productFlavors {
-        maven
-        snapshot
     }
 
     compileOptions {
@@ -40,45 +24,22 @@ android {
         exclude 'META-INF/NOTICE.txt'
     }
 
-    testOptions {
-        resultsDir = testProperties['path.report']
-    }
-}
-
-repositories {
-    flatDir {
-        dirs '../../commonmark/target',
-                '../../commonmark-ext-autolink/target',
-                '../../commonmark-ext-gfm-strikethrough/target',
-                '../../commonmark-ext-gfm-tables/target',
-                '../../commonmark-ext-heading-anchor/target',
-                '../../commonmark-ext-ins/target',
-                '../../commonmark-ext-yaml-front-matter/target',
-                '../../commonmark-test-util/target'
+    // we add other modules sources in order for lint to process them (lint operates on sources)
+    sourceSets {
+        main {
+            java.srcDirs += [
+                    '../../commonmark',
+                    '../../commonmark-ext-autolink',
+                    '../../commonmark-ext-gfm-strikethrough',
+                    '../../commonmark-ext-gfm-tables',
+                    '../../commonmark-ext-heading-anchor',
+                    '../../commonmark-ext-ins',
+                    '../../commonmark-ext-yaml-front-matter'
+            ].collect { "$it/src/main/java" }
+        }
     }
 }
 
 dependencies {
-    androidTestCompile 'com.android.support.test:runner:0.4.1'
-    androidTestCompile 'com.android.support.test:rules:0.4.1'
-
-    androidTestCompile ':commonmark-test-util-' + testProperties['version.snapshot']
-
-    androidTestMavenCompile 'org.nibor.autolink:autolink:' + testProperties['version.maven_autolink']
-    androidTestMavenCompile 'com.atlassian.commonmark:commonmark:' + testProperties['version.maven']
-    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-autolink:' + testProperties['version.maven']
-    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:' + testProperties['version.maven']
-    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-gfm-tables:' + testProperties['version.maven']
-    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-heading-anchor:' + testProperties['version.maven']
-    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-ins:' + testProperties['version.maven']
-    androidTestMavenCompile 'com.atlassian.commonmark:commonmark-ext-yaml-front-matter:' + testProperties['version.maven']
-
-    androidTestSnapshotCompile 'org.nibor.autolink:autolink:' + testProperties['version.snapshot_autolink']
-    androidTestSnapshotCompile ':commonmark-' + testProperties['version.snapshot']
-    androidTestSnapshotCompile ':commonmark-ext-autolink-' + testProperties['version.snapshot']
-    androidTestSnapshotCompile ':commonmark-ext-gfm-strikethrough-' + testProperties['version.snapshot']
-    androidTestSnapshotCompile ':commonmark-ext-gfm-tables-' + testProperties['version.snapshot']
-    androidTestSnapshotCompile ':commonmark-ext-heading-anchor-' + testProperties['version.snapshot']
-    androidTestSnapshotCompile ':commonmark-ext-ins-' + testProperties['version.snapshot']
-    androidTestSnapshotCompile ':commonmark-ext-yaml-front-matter-' + testProperties['version.snapshot']
+    implementation('org.nibor.autolink:autolink:0.10.0')
 }
