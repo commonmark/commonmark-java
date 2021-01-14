@@ -278,8 +278,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:commonmark/commonmark-java.git</connection>
-        <developerConnection>scm:git:git@github.com:commonmark/commonmark-java.git</developerConnection>
+        <connection>scm:git:https://github.com/commonmark/commonmark-java</connection>
+        <developerConnection>scm:git:https://github.com/commonmark/commonmark-java</developerConnection>
         <url>https://github.com/commonmark/commonmark-java</url>
         <tag>HEAD</tag>
     </scm>
