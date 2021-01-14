@@ -32,8 +32,9 @@ jobs:
           git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
 
       - name: Release
-        uses: actions/checkout@v2
-        run: mvn -B release:prepare release:perform
+        run: |
+          mvn -B -Dusername=${{ secrets.GH_USERNAME }} -Dpassword=${{ secrets.GH_ACCESS_TOKEN }} release:prepare
+          mvn -B release:perform
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
