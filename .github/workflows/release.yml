@@ -10,7 +10,7 @@ on:
 
 jobs:
   release:
-    environment: release
+    environment: maven_central
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -25,6 +25,11 @@ jobs:
           server-password: MAVEN_PASSWORD # env variable to use for password in release
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable to use for passphrase in release
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "${{ secrets.GIT_USER_NAME }}"
+          git config --global user.email "${{ secrets.GIT_USER_EMAIL }}"
 
       - name: Release
         run: mvn -B release:prepare release:perform
