@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>commonmark-parent</artifactId>
-        <groupId>com.atlassian.commonmark</groupId>
+        <groupId>org.commonmark</groupId>
         <version>0.16.2-SNAPSHOT</version>
     </parent>
 
@@ -13,12 +13,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.atlassian.commonmark</groupId>
+            <groupId>org.commonmark</groupId>
             <artifactId>commonmark</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.atlassian.commonmark</groupId>
+            <groupId>org.commonmark</groupId>
             <artifactId>commonmark-test-util</artifactId>
             <scope>test</scope>
         </dependency>

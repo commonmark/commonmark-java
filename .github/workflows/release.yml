@@ -1,0 +1,35 @@
+# See:
+# https://docs.github.com/en/free-pro-team@latest/actions/guides/publishing-java-packages-with-maven
+# https://central.sonatype.org/pages/apache-maven.html
+# https://github.com/actions/setup-java
+
+name: release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  release:
+    environment: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Set up Maven Central repository
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+          server-id: ossrh
+          server-username: MAVEN_USERNAME # env variable to use for username in release
+          server-password: MAVEN_PASSWORD # env variable to use for password in release
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable to use for passphrase in release
+
+      - name: Release
+        run: mvn -B release:prepare release:perform
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}

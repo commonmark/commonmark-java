@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.atlassian.pom</groupId>
-        <artifactId>central-pom</artifactId>
-        <version>5.0.13</version>
-    </parent>
-
     <packaging>pom</packaging>
 
-    <groupId>com.atlassian.commonmark</groupId>
+    <groupId>org.commonmark</groupId>
     <artifactId>commonmark-parent</artifactId>
     <version>0.16.2-SNAPSHOT</version>
     <name>commonmark-java parent</name>
@@ -17,7 +11,7 @@
         Java implementation of CommonMark, a specification of the Markdown format for turning plain text into formatted
         text.
     </description>
-    <url>https://github.com/atlassian/commonmark-java</url>
+    <url>https://github.com/commonmark/commonmark-java</url>
 
     <modules>
         <module>commonmark</module>
@@ -53,18 +47,25 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.0.0-M1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.2.0</version>
                     <configuration>
                         <excludePackageNames>*.internal,*.internal.*</excludePackageNames>
                         <!-- The offline links make links from extensions to core work. -->
                         <detectOfflineLinks>false</detectOfflineLinks>
                         <offlineLinks>
                             <offlineLink>
-                                <url>http://static.javadoc.io/com.atlassian.commonmark/commonmark/${project.version}/</url>
+                                <url>http://static.javadoc.io/org.commonmark/commonmark/${project.version}/
+                                </url>
                                 <location>${commonmark.javadoc.location}</location>
                             </offlineLink>
                         </offlineLinks>
@@ -72,67 +73,88 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-		    <version>2.22.1</version>
+                    <version>2.22.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <dependencyManagement>
         <dependencies>
             <!-- For dependencies between modules -->
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-autolink</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-image-attributes</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-ins</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-tables</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-heading-anchor</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-task-list-items</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-yaml-front-matter</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.atlassian.commonmark</groupId>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-test-util</artifactId>
                 <version>0.16.2-SNAPSHOT</version>
             </dependency>
@@ -157,6 +179,58 @@
     </dependencyManagement>
 
     <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>coverage</id>
             <build>
@@ -204,11 +278,21 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:atlassian/commonmark-java.git</connection>
-        <!-- Push URL is used for pushing commits and tag when doing a release on internal systems, see https://maven.apache.org/scm/git.html -->
-        <developerConnection>scm:git:[fetch=]git@github.com:atlassian/commonmark-java.git[push=]git@bitbucket.org:atlassian/commonmark-java.git</developerConnection>
-        <url>https://github.com/atlassian/commonmark-java</url>
+        <connection>scm:git:git@github.com:commonmark/commonmark-java.git</connection>
+        <developerConnection>scm:git:git@github.com:commonmark/commonmark-java.git</developerConnection>
+        <url>https://github.com/commonmark/commonmark-java</url>
         <tag>HEAD</tag>
     </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
