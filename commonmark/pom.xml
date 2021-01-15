@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.commonmark</groupId>
         <artifactId>commonmark-parent</artifactId>
-        <version>0.17.0-SNAPSHOT</version>
+        <version>0.17.0</version>
     </parent>
 
     <artifactId>commonmark</artifactId>
