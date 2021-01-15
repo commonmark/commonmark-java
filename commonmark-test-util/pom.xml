@@ -34,4 +34,10 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <relocation>
+            <groupId>org.commonmark</groupId>
+        </relocation>
+    </distributionManagement>
+
 </project>

@@ -70,4 +70,10 @@
         </profile>
     </profiles>
 
+    <distributionManagement>
+        <relocation>
+            <groupId>org.commonmark</groupId>
+        </relocation>
+    </distributionManagement>
+
 </project>
