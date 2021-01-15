@@ -4,11 +4,11 @@ commonmark-java
 Java library for parsing and rendering [Markdown] text according to the
 [CommonMark] specification (and some extensions).
 
-[![Maven Central status](https://img.shields.io/maven-central/v/com.atlassian.commonmark/commonmark.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.atlassian.commonmark%22)
-[![javadoc](https://www.javadoc.io/badge/com.atlassian.commonmark/commonmark.svg?color=blue)](https://www.javadoc.io/doc/com.atlassian.commonmark/commonmark)
-[![ci](https://github.com/atlassian/commonmark-java/workflows/ci/badge.svg)](https://github.com/atlassian/commonmark-java/actions?query=workflow%3Aci)
-[![codecov](https://codecov.io/gh/atlassian/commonmark-java/branch/master/graph/badge.svg)](https://codecov.io/gh/atlassian/commonmark-java)
-[![SourceSpy Dashboard](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/atlassiancommonmarkjava/)
+[![Maven Central status](https://img.shields.io/maven-central/v/org.commonmark/commonmark.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.commonmark%22)
+[![javadoc](https://www.javadoc.io/badge/org.commonmark/commonmark.svg?color=blue)](https://www.javadoc.io/doc/org.commonmark/commonmark)
+[![ci](https://github.com/commonmark/commonmark-java/workflows/ci/badge.svg)](https://github.com/commonmark/commonmark-java/actions?query=workflow%3Aci)
+[![codecov](https://codecov.io/gh/commonmark/commonmark-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commonmark/commonmark-java)
+[![SourceSpy Dashboard](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/commonmarkcommonmarkjava/)
 
 Introduction
 ------------
@@ -32,9 +32,9 @@ Coordinates for core library (see all on [Maven Central]):
 
 ```xml
 <dependency>
-    <groupId>com.atlassian.commonmark</groupId>
+    <groupId>org.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.16.1</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
@@ -215,7 +215,7 @@ report an issue.
 ### API documentation
 
 Javadocs are available online on
-[javadoc.io](https://www.javadoc.io/doc/com.atlassian.commonmark/commonmark).
+[javadoc.io](https://www.javadoc.io/doc/org.commonmark/commonmark).
 
 
 Extensions
@@ -390,7 +390,7 @@ BSD (2-clause) licensed, see LICENSE.txt file.
 [Markdown]: https://daringfireball.net/projects/markdown/
 [commonmark.js]: https://github.com/jgm/commonmark.js
 [CommonMark Dingus]: http://spec.commonmark.org/dingus/
-[Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22com.atlassian.commonmark%22
+[Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22org.commonmark%22
 [Semantic Versioning]: http://semver.org/
 [autolink-java]: https://github.com/robinst/autolink-java
 [gfm-tables]: https://help.github.com/articles/organizing-information-with-tables/

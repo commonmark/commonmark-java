@@ -1,3 +1,3 @@
-<manifest package="com.atlassian.commonmark.android.test">
+<manifest package="org.commonmark.android.test">
     <application />
 </manifest>

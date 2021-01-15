@@ -5,7 +5,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.atlassian.commonmark.android.test"
+        applicationId "org.commonmark.android.test"
         minSdkVersion 19
         targetSdkVersion 30
         versionCode 1
