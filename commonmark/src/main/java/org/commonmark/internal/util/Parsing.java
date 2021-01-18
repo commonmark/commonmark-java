@@ -111,6 +111,48 @@ public class Parsing {
         return false;
     }
 
+    // See https://spec.commonmark.org/0.29/#punctuation-character
+    public static boolean isPunctuationCodePoint(int codePoint) {
+        switch (Character.getType(codePoint)) {
+            case Character.CONNECTOR_PUNCTUATION:
+            case Character.DASH_PUNCTUATION:
+            case Character.END_PUNCTUATION:
+            case Character.FINAL_QUOTE_PUNCTUATION:
+            case Character.INITIAL_QUOTE_PUNCTUATION:
+            case Character.OTHER_PUNCTUATION:
+            case Character.START_PUNCTUATION:
+                return true;
+            default:
+                switch (codePoint) {
+                    case '$':
+                    case '+':
+                    case '<':
+                    case '=':
+                    case '>':
+                    case '^':
+                    case '`':
+                    case '|':
+                    case '~':
+                        return true;
+                    default:
+                        return false;
+                }
+        }
+    }
+
+    public static boolean isWhitespaceCodePoint(int codePoint) {
+        switch (codePoint) {
+            case ' ':
+            case '\t':
+            case '\r':
+            case '\n':
+            case '\f':
+                return true;
+            default:
+                return Character.getType(codePoint) == Character.SPACE_SEPARATOR;
+        }
+    }
+
     /**
      * Prepares the input line replacing {@code \0}
      */

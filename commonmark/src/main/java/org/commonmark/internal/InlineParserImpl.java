@@ -12,15 +12,8 @@ import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class InlineParserImpl implements InlineParser, InlineParserState {
-
-    private static final String ASCII_PUNCTUATION = "!\"#\\$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~";
-    private static final Pattern PUNCTUATION = Pattern
-            .compile("^[" + ASCII_PUNCTUATION + "\\p{Pc}\\p{Pd}\\p{Pe}\\p{Pf}\\p{Pi}\\p{Po}\\p{Ps}]");
-
-    private static final Pattern UNICODE_WHITESPACE_CHAR = Pattern.compile("^[\\p{Zs}\t\r\n\f]");
 
     private final BitSet specialCharacters;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
@@ -511,7 +504,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * @return information about delimiter run, or {@code null}
      */
     private DelimiterData scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
-        char charBefore = scanner.peekPrevious();
+        int before = scanner.peekPreviousCodePoint();
         Position start = scanner.position();
 
         // Quick check to see if we have enough delimiters.
@@ -530,15 +523,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             positionBefore = scanner.position();
         }
 
-        char charAfter = scanner.peek();
-        String before = charBefore == Scanner.END ? "\n" : String.valueOf(charBefore);
-        String after = charAfter == Scanner.END ? "\n" : String.valueOf(charAfter);
+        int after = scanner.peekCodePoint();
 
         // We could be more lazy here, in most cases we don't need to do every match case.
-        boolean beforeIsPunctuation = PUNCTUATION.matcher(before).matches();
-        boolean beforeIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(before).matches();
-        boolean afterIsPunctuation = PUNCTUATION.matcher(after).matches();
-        boolean afterIsWhitespace = UNICODE_WHITESPACE_CHAR.matcher(after).matches();
+        boolean beforeIsPunctuation = before == Scanner.END || Parsing.isPunctuationCodePoint(before);
+        boolean beforeIsWhitespace = before == Scanner.END || Parsing.isWhitespaceCodePoint(before);
+        boolean afterIsPunctuation = after == Scanner.END || Parsing.isPunctuationCodePoint(after);
+        boolean afterIsWhitespace = after == Scanner.END || Parsing.isWhitespaceCodePoint(after);
 
         boolean leftFlanking = !afterIsWhitespace &&
                 (!afterIsPunctuation || beforeIsWhitespace || beforeIsPunctuation);

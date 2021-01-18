@@ -176,7 +176,11 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
-    public void emph() {
-        assertRendering("*foo bar*\n", "<p><em>foo bar</em></p>\n");
+    public void unicodePunctuationEmphasis() {
+        // The character here is: U+12470 CUNEIFORM PUNCTUATION SIGN OLD ASSYRIAN WORD DIVIDER
+        // Which is in Unicode category "Po" and needs 2 code units in UTF-16. That means to implement
+        // it correctly, we need to check code points, not Java chars.
+        // Note that currently the reference implementation doesn't implement this correctly (resulting in no <em>).
+        assertRendering("foo\uD809\uDC70_(bar)_", "<p>foo\uD809\uDC70<em>(bar)</em></p>\n");
     }
 }

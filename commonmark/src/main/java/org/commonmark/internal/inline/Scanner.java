@@ -57,10 +57,37 @@ public class Scanner {
         }
     }
 
-    public char peekPrevious() {
+    public int peekCodePoint() {
+        if (index < lineLength) {
+            char c = line.getContent().charAt(index);
+            if (Character.isHighSurrogate(c) && index + 1 < lineLength) {
+                char low = line.getContent().charAt(index + 1);
+                if (Character.isLowSurrogate(low)) {
+                    return Character.toCodePoint(c, low);
+                }
+            }
+            return c;
+        } else {
+            if (lineIndex < lines.size() - 1) {
+                return '\n';
+            } else {
+                // Don't return newline for end of last line
+                return END;
+            }
+        }
+    }
+
+    public int peekPreviousCodePoint() {
         if (index > 0) {
             int prev = index - 1;
-            return line.getContent().charAt(prev);
+            char c = line.getContent().charAt(prev);
+            if (Character.isLowSurrogate(c) && prev > 0) {
+                char high = line.getContent().charAt(prev - 1);
+                if (Character.isHighSurrogate(high)) {
+                    return Character.toCodePoint(high, c);
+                }
+            }
+            return c;
         } else {
             if (lineIndex > 0) {
                 return '\n';

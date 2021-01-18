@@ -33,40 +33,55 @@ public class ScannerTest {
                 SourceLine.of("cde", null)),
                 0, 0);
         assertTrue(scanner.hasNext());
-        assertEquals('\0', scanner.peekPrevious());
+        assertEquals('\0', scanner.peekPreviousCodePoint());
         assertEquals('a', scanner.peek());
         scanner.next();
 
         assertTrue(scanner.hasNext());
-        assertEquals('a', scanner.peekPrevious());
+        assertEquals('a', scanner.peekPreviousCodePoint());
         assertEquals('b', scanner.peek());
         scanner.next();
 
         assertTrue(scanner.hasNext());
-        assertEquals('b', scanner.peekPrevious());
+        assertEquals('b', scanner.peekPreviousCodePoint());
         assertEquals('\n', scanner.peek());
         scanner.next();
 
         assertTrue(scanner.hasNext());
-        assertEquals('\n', scanner.peekPrevious());
+        assertEquals('\n', scanner.peekPreviousCodePoint());
         assertEquals('c', scanner.peek());
         scanner.next();
 
         assertTrue(scanner.hasNext());
-        assertEquals('c', scanner.peekPrevious());
+        assertEquals('c', scanner.peekPreviousCodePoint());
         assertEquals('d', scanner.peek());
         scanner.next();
 
         assertTrue(scanner.hasNext());
-        assertEquals('d', scanner.peekPrevious());
+        assertEquals('d', scanner.peekPreviousCodePoint());
         assertEquals('e', scanner.peek());
         scanner.next();
 
         assertFalse(scanner.hasNext());
-        assertEquals('e', scanner.peekPrevious());
+        assertEquals('e', scanner.peekPreviousCodePoint());
         assertEquals('\0', scanner.peek());
     }
 
+    @Test
+    public void testCodePoints() {
+        Scanner scanner = new Scanner(Arrays.asList(SourceLine.of("\uD83D\uDE0A", null)), 0, 0);
+
+        assertTrue(scanner.hasNext());
+        assertEquals('\0', scanner.peekPreviousCodePoint());
+        assertEquals(128522, scanner.peekCodePoint());
+        scanner.next();
+        // This jumps chars, not code points. So jump two here
+        scanner.next();
+
+        assertFalse(scanner.hasNext());
+        assertEquals(128522, scanner.peekPreviousCodePoint());
+        assertEquals('\0', scanner.peekCodePoint());
+    }
 
     @Test
     public void testTextBetween() {
