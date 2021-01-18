@@ -386,11 +386,11 @@ Copyright (c) 2015-2019 Atlassian and others.
 
 BSD (2-clause) licensed, see LICENSE.txt file.
 
-[CommonMark]: http://commonmark.org/
+[CommonMark]: https://commonmark.org/
 [Markdown]: https://daringfireball.net/projects/markdown/
-[commonmark.js]: https://github.com/jgm/commonmark.js
-[CommonMark Dingus]: http://spec.commonmark.org/dingus/
+[commonmark.js]: https://github.com/commonmark/commonmark.js
+[CommonMark Dingus]: https://spec.commonmark.org/dingus/
 [Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22org.commonmark%22
-[Semantic Versioning]: http://semver.org/
+[Semantic Versioning]: https://semver.org/
 [autolink-java]: https://github.com/robinst/autolink-java
 [gfm-tables]: https://help.github.com/articles/organizing-information-with-tables/
