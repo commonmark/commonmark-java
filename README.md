@@ -7,7 +7,7 @@ Java library for parsing and rendering [Markdown] text according to the
 [![Maven Central status](https://img.shields.io/maven-central/v/org.commonmark/commonmark.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.commonmark%22)
 [![javadoc](https://www.javadoc.io/badge/org.commonmark/commonmark.svg?color=blue)](https://www.javadoc.io/doc/org.commonmark/commonmark)
 [![ci](https://github.com/commonmark/commonmark-java/workflows/ci/badge.svg)](https://github.com/commonmark/commonmark-java/actions?query=workflow%3Aci)
-[![codecov](https://codecov.io/gh/commonmark/commonmark-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commonmark/commonmark-java)
+[![codecov](https://codecov.io/gh/commonmark/commonmark-java/branch/main/graph/badge.svg)](https://codecov.io/gh/commonmark/commonmark-java)
 [![SourceSpy Dashboard](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/commonmarkcommonmarkjava/)
 
 Introduction
