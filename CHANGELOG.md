@@ -12,6 +12,9 @@ with the exception that 0.x versions can break between minor versions.
   (characters that are longer than one UTF-16 "char"). Note that this is
   an edge case with rarely used Unicode characters, which a lot of other
   implementations don't handle correctly.
+- Fix tables where the row starts with spaces and then the first `|` -
+  rows that didn't have spaces before were not affected (#199). This bug
+  is present in 0.16.1 and 0.17.0.
 
 ## [0.17.0] - 2021-01-15
 ### Changed

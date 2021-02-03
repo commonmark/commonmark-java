@@ -121,7 +121,8 @@ public class TableBlockParser extends AbstractBlockParser {
 
     private static List<SourceLine> split(SourceLine line) {
         CharSequence row = line.getContent();
-        int cellStart = row.charAt(0) == '|' ? 1 : 0;
+        int nonSpace = Parsing.skipSpaceTab(row, 0, row.length());
+        int cellStart = row.charAt(nonSpace) == '|' ? nonSpace + 1 : nonSpace;
         List<SourceLine> cells = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         for (int i = cellStart; i < row.length(); i++) {

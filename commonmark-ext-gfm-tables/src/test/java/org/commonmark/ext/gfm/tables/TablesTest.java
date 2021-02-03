@@ -159,6 +159,24 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void spaceBeforeSeparator() {
+        assertRendering("  |Abc|Def|\n  |---|---|\n  |1|2|", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
     public void separatorMustNotHaveLessPartsThanHead() {
         assertRendering("Abc|Def|Ghi\n---|---\n1|2|3", "<p>Abc|Def|Ghi\n---|---\n1|2|3</p>\n");
     }
@@ -688,7 +706,7 @@ public class TablesTest extends RenderingTestCase {
         assertEquals(Arrays.asList(SourceSpan.of(3, 0, 8)), bodyRow2.getSourceSpans());
         TableCell bodyRow2Cell1 = (TableCell) bodyRow2.getFirstChild();
         TableCell bodyRow2Cell2 = (TableCell) bodyRow2.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(3, 0, 2)), bodyRow2Cell1.getSourceSpans());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getSourceSpans());
         assertEquals(Arrays.asList(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getFirstChild().getSourceSpans());
         assertEquals(Arrays.asList(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getSourceSpans());
         assertEquals(Arrays.asList(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getFirstChild().getSourceSpans());
