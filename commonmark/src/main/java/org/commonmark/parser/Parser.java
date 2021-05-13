@@ -4,23 +4,14 @@ import org.commonmark.Extension;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
-import org.commonmark.node.Block;
-import org.commonmark.node.BlockQuote;
-import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.Heading;
-import org.commonmark.node.HtmlBlock;
-import org.commonmark.node.IndentedCodeBlock;
-import org.commonmark.node.LinkReferenceDefinition;
-import org.commonmark.node.ListBlock;
-import org.commonmark.node.Node;
-import org.commonmark.node.ThematicBreak;
+import org.commonmark.internal.LinkReferenceDefinitions;
+import org.commonmark.node.*;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -51,8 +42,7 @@ public class Parser {
 
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
-        this.inlineParserFactory.create(new InlineParserContextImpl(delimiterProcessors,
-                Collections.<String, LinkReferenceDefinition>emptyMap()));
+        this.inlineParserFactory.create(new InlineParserContextImpl(delimiterProcessors, new LinkReferenceDefinitions()));
     }
 
     /**
@@ -179,7 +169,7 @@ public class Parser {
          * </pre>
          *
          * @param enabledBlockTypes A list of block nodes the parser will parse.
-         *                          If this list is empty, the parser will not recognize any CommonMark core features.
+         * If this list is empty, the parser will not recognize any CommonMark core features.
          * @return {@code this}
          */
         public Builder enabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
