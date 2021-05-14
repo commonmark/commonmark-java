@@ -17,6 +17,8 @@ public interface InlineParserContext {
 
     /**
      * Look up a {@link LinkReferenceDefinition} for a given label.
+     * <p>
+     * Note that the label is not normalized yet; implementations are responsible for normalizing before lookup.
      *
      * @param label the link label to look up
      * @return the definition if one exists, {@code null} otherwise

@@ -68,7 +68,7 @@ public class DocumentParser implements ParserState {
     private final List<DelimiterProcessor> delimiterProcessors;
     private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
-    private final Map<String, LinkReferenceDefinition> definitions = new LinkedHashMap<>();
+    private final LinkReferenceDefinitions definitions = new LinkReferenceDefinitions();
 
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
@@ -460,11 +460,7 @@ public class DocumentParser implements ParserState {
             // Add nodes into document before paragraph.
             paragraphParser.getBlock().insertBefore(definition);
 
-            String label = definition.getLabel();
-            // spec: When there are multiple matching link reference definitions, the first is used
-            if (!definitions.containsKey(label)) {
-                definitions.put(label, definition);
-            }
+            definitions.add(definition);
         }
     }
 

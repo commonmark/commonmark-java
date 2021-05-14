@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Changed
+- Pass original instead of normalized label to `InlineParserContext` for lookup (#204).
+  This allows custom contexts to change the lookup logic and have access to the original
+  label content.
+  In case you have a custom implementation of `InlineParserContext`, you might need to adjust
+  it to do normalization.
+
 ## [0.17.1] - 2021-02-03
 ### Fixed
 - Fix emphasis surrounded by non-BMP punctuation/whitespace characters

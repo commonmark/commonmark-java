@@ -323,8 +323,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
 
             if (ref != null) {
-                String label = Escaping.normalizeLabelContent(ref);
-                LinkReferenceDefinition definition = context.getLinkReferenceDefinition(label);
+                LinkReferenceDefinition definition = context.getLinkReferenceDefinition(ref);
                 if (definition != null) {
                     dest = definition.getDestination();
                     title = definition.getTitle();

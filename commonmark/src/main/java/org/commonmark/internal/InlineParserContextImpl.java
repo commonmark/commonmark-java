@@ -10,10 +10,10 @@ import java.util.Map;
 public class InlineParserContextImpl implements InlineParserContext {
 
     private final List<DelimiterProcessor> delimiterProcessors;
-    private final Map<String, LinkReferenceDefinition> linkReferenceDefinitions;
+    private final LinkReferenceDefinitions linkReferenceDefinitions;
 
     public InlineParserContextImpl(List<DelimiterProcessor> delimiterProcessors,
-                                   Map<String, LinkReferenceDefinition> linkReferenceDefinitions) {
+                                   LinkReferenceDefinitions linkReferenceDefinitions) {
         this.delimiterProcessors = delimiterProcessors;
         this.linkReferenceDefinitions = linkReferenceDefinitions;
     }
