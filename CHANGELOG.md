@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.18.0] - 2021-05-14
 ### Changed
 - Pass original instead of normalized label to `InlineParserContext` for lookup (#204).
   This allows custom contexts to change the lookup logic and have access to the original
@@ -332,6 +332,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.18.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.1...commonmark-parent-0.18.0
 [0.17.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.0...commonmark-parent-0.17.1
 [0.17.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.16.1...commonmark-parent-0.17.0
 [0.16.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.15.2...commonmark-parent-0.16.1
