@@ -4,7 +4,7 @@
     <parent>
         <artifactId>commonmark-parent</artifactId>
         <groupId>org.commonmark</groupId>
-        <version>0.17.2</version>
+        <version>0.17.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>commonmark-ext-yaml-front-matter</artifactId>
