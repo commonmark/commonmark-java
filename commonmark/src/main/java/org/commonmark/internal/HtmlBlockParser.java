@@ -14,8 +14,8 @@ public class HtmlBlockParser extends AbstractBlockParser {
     private static final Pattern[][] BLOCK_PATTERNS = new Pattern[][]{
             {null, null}, // not used (no type 0)
             {
-                    Pattern.compile("^<(?:script|pre|style)(?:\\s|>|$)", Pattern.CASE_INSENSITIVE),
-                    Pattern.compile("</(?:script|pre|style)>", Pattern.CASE_INSENSITIVE)
+                    Pattern.compile("^<(?:script|pre|style|textarea)(?:\\s|>|$)", Pattern.CASE_INSENSITIVE),
+                    Pattern.compile("</(?:script|pre|style|textarea)>", Pattern.CASE_INSENSITIVE)
             },
             {
                     Pattern.compile("^<!--"),
