@@ -66,6 +66,7 @@ public class ListItemParser extends AbstractBlockParser {
         if (state.getIndent() >= contentIndent) {
             return BlockContinue.atColumn(state.getColumn() + contentIndent);
         } else {
+            // Note: We'll hit this case for lazy continuation lines, they will get added later.
             return BlockContinue.none();
         }
     }

@@ -4,7 +4,8 @@ Issue #113: EOL character weirdness on Windows
 (Important: first line ends with CR + CR + LF)
 
 ```````````````````````````````` example
-line1
+line1
+
 line2
 .
 <p>line1</p>
@@ -154,3 +155,39 @@ Issue #289.
 .
 <p>[a](&lt;b) c&gt;</p>
 ````````````````````````````````
+
+Issue #334 - UTF-8 BOM
+
+```````````````````````````````` example
+﻿# Hi
+.
+<h1>Hi</h1>
+````````````````````````````````
+
+Issue commonmark.js#213 - type 7 blocks can't interrupt
+paragraph
+
+```````````````````````````````` example
+- <script>
+- some text
+some other text
+</script>
+.
+<ul>
+<li>
+<script>
+</li>
+<li>some text
+some other text
+</script></li>
+</ul>
+````````````````````````````````
+
+Issue #383 - emphasis parsing.
+
+```````````````````````````````` example
+*****Hello*world****
+.
+<p>**<em><strong>Hello<em>world</em></strong></em></p>
+````````````````````````````````
+

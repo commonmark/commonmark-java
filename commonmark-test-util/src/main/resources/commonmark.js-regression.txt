@@ -80,7 +80,7 @@ Issue jgm/CommonMark#468 - backslash at end of link definition
 <p>[]: test</p>
 ````````````````````````````````
 
-Issue jgm/commonmark.js#121 - punctuation set different
+Issue commonmark/commonmark.js#121 - punctuation set different
 
 ```````````````````````````````` example
 ^_test_
@@ -122,7 +122,15 @@ Double-encoding.
 ```````````````````````````````` example
 [XSS](javascript&amp;colon;alert%28&#039;XSS&#039;%29)
 .
-<p><a href="javascript&amp;colon;alert('XSS')">XSS</a></p>
+<p><a href="javascript&amp;colon;alert%28'XSS'%29">XSS</a></p>
+````````````````````````````````
+
+PR #179
+
+```````````````````````````````` example
+[link](https://www.example.com/home/%25batty)
+.
+<p><a href="https://www.example.com/home/%25batty">link</a></p>
 ````````````````````````````````
 
 Issue commonamrk#517 - script, pre, style close tag without
@@ -158,4 +166,53 @@ text
 text</p>
 ````````````````````````````````
 
+Issue #196.
+
+```````````````````````````````` example
+a <?
+?>
+.
+<p>a <?
+?></p>
+````````````````````````````````
+
+Issue #211
+
+```````````````````````````````` example
+[\
+foo]: /uri
+
+[\
+foo]
+.
+<p><a href="/uri"><br />
+foo</a></p>
+````````````````````````````````
+
+Issue #213 - type 7 blocks can't interrupt
+paragraph
+
+```````````````````````````````` example
+- <script>
+- some text
+some other text
+</script>
+.
+<ul>
+<li>
+<script>
+</li>
+<li>some text
+some other text
+</script></li>
+</ul>
+````````````````````````````````
+
+Issue cmark/#383 - emphasis parsing.
+
+```````````````````````````````` example
+*****Hello*world****
+.
+<p>**<em><strong>Hello<em>world</em></strong></em></p>
+````````````````````````````````
 
