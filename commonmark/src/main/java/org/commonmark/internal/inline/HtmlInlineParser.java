@@ -24,8 +24,6 @@ public class HtmlInlineParser implements InlineContentParser {
             .c('"').c('\'').c('=').c('<').c('>').c('`')
             .build();
 
-    private static final AsciiMatcher declaration = AsciiMatcher.builder().range('A', 'Z').build();
-
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
@@ -58,7 +56,7 @@ public class HtmlInlineParser implements InlineContentParser {
                 if (tryCdata(scanner)) {
                     return htmlInline(start, scanner);
                 }
-            } else if (declaration.matches(c)) {
+            } else if (asciiLetter.matches(c)) {
                 if (tryDeclaration(scanner)) {
                     return htmlInline(start, scanner);
                 }
@@ -187,9 +185,9 @@ public class HtmlInlineParser implements InlineContentParser {
     }
 
     private static boolean tryDeclaration(Scanner scanner) {
-        // spec: A declaration consists of the string <!, a name consisting of one or more uppercase ASCII letters,
-        // whitespace, a string of characters not including the character >, and the character >.
-        scanner.match(declaration);
+        // spec: A declaration consists of the string <!, an ASCII letter, zero or more characters not including
+        // the character >, and the character >.
+        scanner.match(asciiLetter);
         if (scanner.whitespace() <= 0) {
             return false;
         }
