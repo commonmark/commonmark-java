@@ -26,7 +26,6 @@ public class LinkReferenceDefinitionParser {
     private final List<SourceSpan> sourceSpans = new ArrayList<>();
 
     private StringBuilder label;
-    private String normalizedLabel;
     private String destination;
     private char titleDelimiter;
     private StringBuilder title;
@@ -143,7 +142,6 @@ public class LinkReferenceDefinitionParser {
                 return false;
             }
 
-            this.normalizedLabel = normalizedLabel;
             state = State.DESTINATION;
 
             scanner.whitespace();
@@ -252,14 +250,13 @@ public class LinkReferenceDefinitionParser {
 
         String d = Escaping.unescapeString(destination);
         String t = title != null ? Escaping.unescapeString(title.toString()) : null;
-        LinkReferenceDefinition definition = new LinkReferenceDefinition(normalizedLabel, d, t);
+        LinkReferenceDefinition definition = new LinkReferenceDefinition(label.toString(), d, t);
         definition.setSourceSpans(sourceSpans);
         sourceSpans.clear();
         definitions.add(definition);
 
         label = null;
         referenceValid = false;
-        normalizedLabel = null;
         destination = null;
         title = null;
     }

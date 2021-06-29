@@ -58,7 +58,7 @@ public class LinkReferenceDefinitionParserTest {
         assertEquals(State.DESTINATION, parser.getState());
         parse("/url");
         assertEquals(State.START_TITLE, parser.getState());
-        assertDef(parser.getDefinitions().get(0), "two lines", "/url", null);
+        assertDef(parser.getDefinitions().get(0), "two\nlines", "/url", null);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class LinkReferenceDefinitionParserTest {
         assertEquals(State.DESTINATION, parser.getState());
         parse("/url");
         assertEquals(State.START_TITLE, parser.getState());
-        assertDef(parser.getDefinitions().get(0), "weird", "/url", null);
+        assertDef(parser.getDefinitions().get(0), "\nweird", "/url", null);
     }
 
     @Test

@@ -105,6 +105,16 @@ public class LinkReferenceDefinitionNodeTest {
         assertThat(item2.getFirstChild(), instanceOf(Paragraph.class));
     }
 
+    @Test
+    public void testDefinitionLabelCaseIsPreserved() {
+        Node document = parse("This is a paragraph with a [foo] link.\n\n[fOo]: /url 'title'");
+        List<Node> nodes = Nodes.getChildren(document);
+
+        assertThat(nodes.size(), is(2));
+        assertThat(nodes.get(0), instanceOf(Paragraph.class));
+        assertDef(nodes.get(1), "fOo");
+    }
+
     private static Node parse(String input) {
         Parser parser = Parser.builder().build();
         return parser.parse(input);
