@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.18.0] - 2021-06-30
+### Changed
+- Update to CommonMark spec 0.30:
+  - Add `textarea` to list of literal HTML block tags.
+    Like `script`, `style`, and `pre`, `textarea` blocks can contain
+    blank lines without the contents being interpreted as commonmark.
+  - Fix case folding for link reference labels in some cases
+    (e.g. `ẞ` and `SS` should match)
+  - Allow lowercase ASCII in HTML declaration
+  - Don't let type 7 HTML blocks interrupt lazy paragraphs either
+- Preserve the original case for the label of `LinkReferenceDefinition`.
+  Before, we used to store the normalized version (lowercase, collapsed whitespace).
+
 ## [0.17.2] - 2021-05-14
 ### Changed
 - Pass original instead of normalized label to `InlineParserContext` for lookup (#204).
@@ -332,6 +345,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.18.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.2...commonmark-parent-0.18.0
 [0.17.2]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.1...commonmark-parent-0.17.2
 [0.17.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.0...commonmark-parent-0.17.1
 [0.17.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.16.1...commonmark-parent-0.17.0
