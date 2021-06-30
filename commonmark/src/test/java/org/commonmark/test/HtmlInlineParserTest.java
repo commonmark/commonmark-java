@@ -23,5 +23,8 @@ public class HtmlInlineParserTest extends CoreRenderingTestCase {
         assertRendering("inline <!FOO>", "<p>inline &lt;!FOO&gt;</p>\n");
         assertRendering("inline <!FOO >", "<p>inline <!FOO ></p>\n");
         assertRendering("inline <!FOO 'bar'>", "<p>inline <!FOO 'bar'></p>\n");
+
+        // Lowercase
+        assertRendering("inline <!foo bar>", "<p>inline <!foo bar></p>\n");
     }
 }

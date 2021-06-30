@@ -183,4 +183,32 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         // Note that currently the reference implementation doesn't implement this correctly (resulting in no <em>).
         assertRendering("foo\uD809\uDC70_(bar)_", "<p>foo\uD809\uDC70<em>(bar)</em></p>\n");
     }
+
+    @Test
+    public void htmlBlockInterruptingList() {
+        assertRendering("- <script>\n" +
+                "- some text\n" +
+                "some other text\n" +
+                "</script>\n", "<ul>\n" +
+                "<li>\n" +
+                "<script>\n" +
+                "</li>\n" +
+                "<li>some text\n" +
+                "some other text\n" +
+                "</script></li>\n" +
+                "</ul>\n");
+
+        assertRendering("- <script>\n" +
+                "- some text\n" +
+                "some other text\n" +
+                "\n" +
+                "</script>\n", "<ul>\n" +
+                "<li>\n" +
+                "<script>\n" +
+                "</li>\n" +
+                "<li>some text\n" +
+                "some other text</li>\n" +
+                "</ul>\n" +
+                "</script>\n");
+    }
 }

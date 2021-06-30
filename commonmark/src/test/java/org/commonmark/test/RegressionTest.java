@@ -64,6 +64,8 @@ public class RegressionTest extends RenderingTestCase {
         // The only difference is that we don't change `%28` and `%29` to `(` and `)` (percent encoding is preserved)
         m.put("[XSS](javascript&amp;colon;alert%28&#039;XSS&#039;%29)\n",
                 "<p><a href=\"javascript&amp;colon;alert%28'XSS'%29\">XSS</a></p>\n");
+        // Callers should handle BOMs
+        m.put("\uFEFF# Hi\n", "<p>\uFEFF# Hi</p>\n");
 
         return m;
     }
