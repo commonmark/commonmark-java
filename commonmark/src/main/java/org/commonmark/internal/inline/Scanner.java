@@ -1,11 +1,11 @@
 package org.commonmark.internal.inline;
 
+import java.util.List;
+
 import org.commonmark.internal.util.CharMatcher;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
-
-import java.util.List;
 
 public class Scanner {
 
@@ -193,6 +193,30 @@ public class Scanner {
         }
     }
 
+    /**
+     * Capture next series of whitespace
+     * @return Consecutive whitespace as String, or empty String if no whitespace found
+     */
+    public String whitespaceAsString() {
+        StringBuilder sb = new StringBuilder(0);
+        while (true) {
+            char c = peek();
+            switch (c) {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\u000B':
+                case '\f':
+                case '\r':
+                    sb.append(c);
+                    next();
+                    break;
+                default:
+                    return sb.toString();
+            }
+        }
+    }
+    
     public int find(char c) {
         int count = 0;
         while (true) {
@@ -237,6 +261,10 @@ public class Scanner {
     // For cases where the caller appends the result to a StringBuilder, we could offer another method to avoid some
     // unnecessary copying.
     public SourceLines getSource(Position begin, Position end) {
+        return getSource(begin, end, 0);
+    }
+    
+    public SourceLines getSource(Position begin, Position end, int offset) {
         if (begin.lineIndex == end.lineIndex) {
             // Shortcut for common case of text from a single line
             SourceLine line = lines.get(begin.lineIndex);
@@ -244,7 +272,14 @@ public class Scanner {
             SourceSpan newSourceSpan = null;
             SourceSpan sourceSpan = line.getSourceSpan();
             if (sourceSpan != null) {
-                newSourceSpan = SourceSpan.of(sourceSpan.getLineIndex(), sourceSpan.getColumnIndex() + begin.index, newContent.length());
+                int newColumnIndex = sourceSpan.getColumnIndex() + begin.index;
+                
+                // Make sure SourceSpan is still tracking literal line, not its prefix
+                if(offset > 0) {
+                    newColumnIndex -= offset;
+                }
+                
+                newSourceSpan = SourceSpan.of(sourceSpan.getLineIndex(), newColumnIndex, newContent.length());
             }
             return SourceLines.of(SourceLine.of(newContent, newSourceSpan));
         } else {
@@ -261,6 +296,18 @@ public class Scanner {
             SourceLine lastLine = lines.get(end.lineIndex);
             sourceLines.addLine(lastLine.substring(0, end.index));
             return sourceLines;
+        }
+    }
+    
+    // Many lines are passed around as raw strings, with an index value indicating
+    //    where the literal string begins. Calling this method returns only the literal
+    //    portion of the line, or an empty string if that is not possible.
+    public String alignToLiteral() {
+        if(index >= line.getLiteralIndex() || line.getLiteralIndex() == 0) {
+            return "";
+        }else {
+            index = line.getLiteralIndex();
+            return line.substring(0, index).getContent().toString();
         }
     }
 

@@ -102,6 +102,11 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
             return delimiterUse;
         }
+
+        @Override
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix) {
+            return process(openingRun, closingRun);
+        }
     }
 
     private static class AsymmetricDelimiterProcessor implements DelimiterProcessor {
@@ -135,6 +140,11 @@ public class DelimiterProcessorTest extends RenderingTestCase {
             start.insertAfter(content);
 
             return 1;
+        }
+
+        @Override
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix) {
+            return process(openingRun, closingRun);
         }
     }
 
@@ -198,6 +208,11 @@ public class DelimiterProcessorTest extends RenderingTestCase {
             closingRun.getCloser().insertBefore(new Text("(/1)"));
             return 1;
         }
+
+        @Override
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix) {
+            return process(openingRun, closingRun);
+        }
     }
 
     private static class TwoDelimiterProcessor implements DelimiterProcessor {
@@ -222,6 +237,11 @@ public class DelimiterProcessorTest extends RenderingTestCase {
             openingRun.getOpener().insertAfter(new Text("(2)"));
             closingRun.getCloser().insertBefore(new Text("(/2)"));
             return 2;
+        }
+
+        @Override
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix) {
+            return process(openingRun, closingRun);
         }
     }
 }

@@ -1,13 +1,20 @@
 package org.commonmark.node;
 
 public class FencedCodeBlock extends Block {
+ // Track whitespace as follows:
+    //    [0] Pre-block
+    //    [1] Pre-content
+    //    [2] Post-content
+    //    [3] Post-block
+    private String[] whitespaceTracker = {"", "", "", ""};
 
     private char fenceChar;
-    private int fenceLength;
-    private int fenceIndent;
+    private int startFenceLength;
+    private int endFenceLength;
 
     private String info;
     private String literal;
+    private String raw;
 
     @Override
     public void accept(Visitor visitor) {
@@ -22,20 +29,28 @@ public class FencedCodeBlock extends Block {
         this.fenceChar = fenceChar;
     }
 
-    public int getFenceLength() {
-        return fenceLength;
+    public int getStartFenceLength() {
+        return startFenceLength;
     }
 
-    public void setFenceLength(int fenceLength) {
-        this.fenceLength = fenceLength;
+    public void setStartFenceLength(int startFenceLength) {
+        this.startFenceLength = startFenceLength;
     }
 
-    public int getFenceIndent() {
-        return fenceIndent;
+    public int getEndFenceLength() {
+        return endFenceLength;
     }
 
-    public void setFenceIndent(int fenceIndent) {
-        this.fenceIndent = fenceIndent;
+    public void setEndFenceLength(int endFenceLength) {
+        this.endFenceLength = endFenceLength;
+    }
+
+    public int getStartFenceIndent() {
+        return whitespaceTracker[0].length();
+    }
+    
+    public int getEndFenceIndent() {
+        return whitespaceTracker[2].length();
     }
 
     /**
@@ -55,5 +70,37 @@ public class FencedCodeBlock extends Block {
 
     public void setLiteral(String literal) {
         this.literal = literal;
+    }
+    
+    public String getRaw() {
+        return raw;
+    }
+    
+    public void setRaw(String raw) {
+        this.raw = raw;
+    }
+    
+    @Override
+    public String whitespacePreBlock() {
+        return whitespaceTracker[0];
+    }
+
+    @Override
+    public String whitespacePreContent() {
+        return whitespaceTracker[1];
+    }
+
+    @Override
+    public String whitespacePostContent() {
+        return whitespaceTracker[2];
+    }
+
+    @Override
+    public String whitespacePostBlock() {
+        return whitespaceTracker[3];
+    }
+    
+    public void setWhitespace(String... newWhitespace) {
+        whitespaceTracker = super.prepareStructuralWhitespace(newWhitespace);
     }
 }

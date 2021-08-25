@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.node.BlankLine;
 import org.commonmark.node.Block;
 import org.commonmark.node.ListBlock;
 import org.commonmark.node.ListItem;
@@ -20,8 +21,19 @@ public class ListItemParser extends AbstractBlockParser {
 
     private boolean hadBlankLine;
 
+    // Helps distinguish multi-line line items, as described in <pre>ListBlockParser</pre>
+    private boolean firstLineBlank = false;
+    
     public ListItemParser(int contentIndent) {
         this.contentIndent = contentIndent;
+        block.setRawNumber("");
+    }
+    
+    public ListItemParser(int contentIndent, String currentRawNumber, boolean firstLineBlank, String whitespacePreBlock, String whitespacePreContent) {
+        this(contentIndent);
+        block.setRawNumber(currentRawNumber);
+        this.firstLineBlank = firstLineBlank;
+        block.setWhitespace(whitespacePreBlock, whitespacePreContent);
     }
 
     @Override
@@ -52,18 +64,24 @@ public class ListItemParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         if (state.isBlank()) {
-            if (block.getFirstChild() == null) {
+        	if (block.getFirstChild() == null || block.getFirstChild() instanceof BlankLine) {
                 // Blank line after empty list item
                 return BlockContinue.none();
             } else {
                 Block activeBlock = state.getActiveBlockParser().getBlock();
                 // If the active block is a code block, blank lines in it should not affect if the list is tight.
                 hadBlankLine = activeBlock instanceof Paragraph || activeBlock instanceof ListItem;
+                
                 return BlockContinue.atIndex(state.getNextNonSpaceIndex());
             }
         }
 
         if (state.getIndent() >= contentIndent) {
+        	if(firstLineBlank) {
+                String whitespacePreContent = block.whitespacePreContent() + "\n";
+                block.setWhitespace(block.whitespacePreBlock(), whitespacePreContent);
+                firstLineBlank = false;
+            }
             return BlockContinue.atColumn(state.getColumn() + contentIndent);
         } else {
             // Note: We'll hit this case for lazy continuation lines, they will get added later.

@@ -1,9 +1,10 @@
 package org.commonmark.parser;
 
-import org.commonmark.node.SourceSpan;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import org.commonmark.node.SourceSpan;
 
 /**
  * A set of lines ({@link SourceLine}) from the input source.
@@ -62,5 +63,33 @@ public class SourceLines {
             }
         }
         return sourceSpans;
+    }
+    
+    /**
+     * Return original <pre>List&lt;SourceLine&rt;</pre>, but with first line removed.
+     * If the list is already empty, return the list unchanged
+     */
+    public List<SourceLine> removeFirstLine() {
+        if(!isEmpty()) {
+            lines.remove(0);
+        }
+        
+        return lines;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lines);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof SourceLines) {
+            if(((SourceLines)obj).getLines().equals(lines)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

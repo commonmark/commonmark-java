@@ -7,6 +7,8 @@ package org.commonmark.node;
  */
 public interface Visitor {
 
+	void visit(BlankLine blankLine);
+	
     void visit(BlockQuote blockQuote);
 
     void visit(BulletList bulletList);

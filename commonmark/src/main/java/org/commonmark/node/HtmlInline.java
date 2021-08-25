@@ -8,6 +8,7 @@ package org.commonmark.node;
 public class HtmlInline extends Node {
 
     private String literal;
+    private String raw;
 
     @Override
     public void accept(Visitor visitor) {
@@ -20,5 +21,13 @@ public class HtmlInline extends Node {
 
     public void setLiteral(String literal) {
         this.literal = literal;
+    }
+    
+    public String getRaw() {
+        return raw;
+    }
+    
+    public void setRaw(String raw) {
+        this.raw = raw;
     }
 }

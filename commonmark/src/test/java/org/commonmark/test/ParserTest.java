@@ -155,6 +155,31 @@ public class ParserTest {
     }
 
     private static class DashBlock extends CustomBlock {
+
+        @Override
+        public String whitespacePreBlock() {
+            return "";
+        }
+
+        @Override
+        public String whitespacePreContent() {
+            return "";
+        }
+
+        @Override
+        public String whitespacePostContent() {
+            return "";
+        }
+
+        @Override
+        public String whitespacePostBlock() {
+            return "";
+        }
+
+        @Override
+        public void setWhitespace(String... newWhitespace) {
+            // No whitespace needed for testing
+        }
     }
 
     private static class DashBlockParser extends AbstractBlockParser {

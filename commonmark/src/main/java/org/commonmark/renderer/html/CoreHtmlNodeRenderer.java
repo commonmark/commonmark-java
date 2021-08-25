@@ -1,9 +1,38 @@
 package org.commonmark.renderer.html;
 
-import org.commonmark.node.*;
-import org.commonmark.renderer.NodeRenderer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
-import java.util.*;
+import org.commonmark.internal.util.Escaping;
+import org.commonmark.node.AbstractVisitor;
+import org.commonmark.node.BlankLine;
+import org.commonmark.node.BlockQuote;
+import org.commonmark.node.BulletList;
+import org.commonmark.node.Code;
+import org.commonmark.node.Document;
+import org.commonmark.node.Emphasis;
+import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.HardLineBreak;
+import org.commonmark.node.Heading;
+import org.commonmark.node.HtmlBlock;
+import org.commonmark.node.HtmlInline;
+import org.commonmark.node.Image;
+import org.commonmark.node.IndentedCodeBlock;
+import org.commonmark.node.Link;
+import org.commonmark.node.ListBlock;
+import org.commonmark.node.ListItem;
+import org.commonmark.node.Node;
+import org.commonmark.node.OrderedList;
+import org.commonmark.node.Paragraph;
+import org.commonmark.node.SoftLineBreak;
+import org.commonmark.node.StrongEmphasis;
+import org.commonmark.node.Text;
+import org.commonmark.node.ThematicBreak;
+import org.commonmark.renderer.NodeRenderer;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
@@ -40,7 +69,8 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
                 Code.class,
                 HtmlInline.class,
                 SoftLineBreak.class,
-                HardLineBreak.class
+                HardLineBreak.class,
+                BlankLine.class
         ));
     }
 
@@ -99,7 +129,11 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     public void visit(FencedCodeBlock fencedCodeBlock) {
         String literal = fencedCodeBlock.getLiteral();
         Map<String, String> attributes = new LinkedHashMap<>();
-        String info = fencedCodeBlock.getInfo();
+        
+        // The info string for FencedCodeBlock is not escaped or trimmed
+        //    of excess whitespace, do that now
+        String info = Escaping.unescapeString(fencedCodeBlock.getInfo()).trim();
+        
         if (info != null && !info.isEmpty()) {
             int space = info.indexOf(" ");
             String language;
@@ -244,6 +278,13 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         html.line();
     }
 
+    @Override
+    public void visit(BlankLine blankLine) {
+        // The BlankLine class is not part of the CommonMark standard, and is
+        //    only for roundtrip rendering. Thus, it is specifically ignored
+        //    by the HTML renderer.
+    }
+    
     @Override
     protected void visitChildren(Node parent) {
         Node node = parent.getFirstChild();

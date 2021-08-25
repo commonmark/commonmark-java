@@ -41,4 +41,19 @@ public interface DelimiterProcessor {
      */
     int process(DelimiterRun openingRun, DelimiterRun closingRun);
 
+    /**
+     * Process the delimiter runs.
+     * <p>
+     * The processor can examine the runs and the nodes and decide if it wants to process or not. If not, it should not
+     * change any nodes and return 0. If yes, it should do the processing (wrapping nodes, etc) and then return how many
+     * delimiters were used.
+     * <p>
+     * Note that removal (unlinking) of the used delimiter {@link Text} nodes is done by the caller.
+     *
+     * @param openingRun the opening delimiter run
+     * @param closingRun the closing delimiter run
+     * @param prefix whitespace before the delimiter run, if any
+     * @return how many delimiters were used; must not be greater than length of either opener or closer
+     */
+    int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix);
 }

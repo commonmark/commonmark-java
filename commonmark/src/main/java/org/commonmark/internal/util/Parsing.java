@@ -226,6 +226,56 @@ public class Parsing {
         return lastIndex - 1;
     }
 
+    public static String collectWhitespace(CharSequence s, int startIndex, int lastIndex) {
+        StringBuilder whitespace = new StringBuilder(lastIndex - startIndex);
+        
+        for (int i = startIndex; i < lastIndex; i++) {
+            switch (s.charAt(i)) {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\u000B':
+                case '\f':
+                case '\r':
+                    whitespace.append(s.charAt(i));
+                    break;
+                default:
+                    return whitespace.toString();
+            }
+        }
+        return whitespace.toString();
+    }
+    
+    public static String collectWhitespaceBackwards(CharSequence s, int startIndex, int lastIndex) {
+        StringBuilder whitespace = new StringBuilder(startIndex - lastIndex);
+        
+        for (int i = startIndex; i >= lastIndex; i--) {
+            switch (s.charAt(i)) {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\u000B':
+                case '\f':
+                case '\r':
+                    whitespace.append(s.charAt(i));
+                    break;
+                default:
+                    return whitespace.toString();
+            }
+        }
+        return whitespace.toString();
+    }
+    
+    public static String generateSpaces(int numberOfSpaces) {
+        StringBuilder spaces = new StringBuilder(numberOfSpaces);
+        
+        for(int i = 0; i < numberOfSpaces; i++) {
+            spaces.append(" ");
+        }
+        
+        return spaces.toString();
+    }
+    
     private static int findNonSpace(CharSequence s, int startIndex) {
         int length = s.length();
         for (int i = startIndex; i < length; i++) {

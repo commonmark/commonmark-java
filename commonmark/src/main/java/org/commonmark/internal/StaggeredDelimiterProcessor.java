@@ -73,4 +73,10 @@ class StaggeredDelimiterProcessor implements DelimiterProcessor {
     public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
         return findProcessor(openingRun.length()).process(openingRun, closingRun);
     }
+
+
+    @Override
+    public int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix) {
+        return process(openingRun, closingRun);
+    }
 }

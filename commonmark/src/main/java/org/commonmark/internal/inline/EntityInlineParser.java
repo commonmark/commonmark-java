@@ -45,9 +45,15 @@ public class EntityInlineParser implements InlineContentParser {
 
         return ParsedInline.none();
     }
+    
+    @Override
+    public ParsedInline tryParse(InlineParserState inlineParserState, String prefix) {
+        // Inline entities do not have significant prefix values
+        return tryParse(inlineParserState);
+    }
 
     private ParsedInline entity(Scanner scanner, Position start) {
         String text = scanner.getSource(start, scanner.position()).getContent();
-        return ParsedInline.of(new Text(Html5Entities.entityToString(text)), scanner.position());
+        return ParsedInline.of(new Text(Html5Entities.entityToString(text), text, "", ""), scanner.position());
     }
 }

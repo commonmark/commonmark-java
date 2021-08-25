@@ -1,17 +1,43 @@
 package org.commonmark.internal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.commonmark.internal.inline.AsteriskDelimiterProcessor;
+import org.commonmark.internal.inline.AutolinkInlineParser;
+import org.commonmark.internal.inline.BackslashInlineParser;
+import org.commonmark.internal.inline.BackticksInlineParser;
+import org.commonmark.internal.inline.EntityInlineParser;
+import org.commonmark.internal.inline.HtmlInlineParser;
+import org.commonmark.internal.inline.InlineContentParser;
+import org.commonmark.internal.inline.InlineParserState;
+import org.commonmark.internal.inline.ParsedInline;
+import org.commonmark.internal.inline.ParsedInlineImpl;
+import org.commonmark.internal.inline.Position;
 import org.commonmark.internal.inline.Scanner;
-import org.commonmark.internal.inline.*;
+import org.commonmark.internal.inline.UnderscoreDelimiterProcessor;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.node.*;
+import org.commonmark.node.HardLineBreak;
+import org.commonmark.node.Image;
+import org.commonmark.node.Link;
+import org.commonmark.node.LinkFormat.LinkType;
+import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.node.Node;
+import org.commonmark.node.SoftLineBreak;
+import org.commonmark.node.SourceSpans;
+import org.commonmark.node.Text;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
-
-import java.util.*;
 
 public class InlineParserImpl implements InlineParser, InlineParserState {
 
@@ -126,7 +152,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
         }
 
-        processDelimiters(null);
+        processDelimiters(null, "");
         mergeChildTextNodes(block);
     }
 
@@ -138,8 +164,16 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.lastBracket = null;
     }
 
+    // Text node without roundtrip information
     private Text text(SourceLines sourceLines) {
-        Text text = new Text(sourceLines.getContent());
+        Text text = new Text(sourceLines.getContent(), sourceLines.getContent(), "", "");
+        text.setSourceSpans(sourceLines.getSourceSpans());
+        return text;
+    }
+    
+    // Text node with roundtrip information
+    private Text text(SourceLines sourceLines, String preContentWhitespace, String postContentWhitespace) {
+        Text text = new Text(sourceLines.getContent(), sourceLines.getContent(), preContentWhitespace, postContentWhitespace);
         text.setSourceSpans(sourceLines.getSourceSpans());
         return text;
     }
@@ -150,6 +184,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * On failure, return null.
      */
     private List<? extends Node> parseInline() {
+    	// AST: Capture raw information needed for roundtrip rendering
+        String prefix = scanner.alignToLiteral();
+        
         char c = scanner.peek();
 
         switch (c) {
@@ -158,7 +195,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             case '!':
                 return Collections.singletonList(parseBang());
             case ']':
-                return Collections.singletonList(parseCloseBracket());
+                List<Node> nodeList = Collections.singletonList(parseCloseBracket(prefix));
+                prefix = "";
+                return nodeList;
             case '\n':
                 return Collections.singletonList(parseLineBreak());
             case Scanner.END:
@@ -167,14 +206,23 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         // No inline parser, delimiter or other special handling.
         if (!specialCharacters.get(c)) {
-            return Collections.singletonList(parseText());
+        	List<Node> nodeList = Collections.singletonList(parseText(prefix));
+            prefix = "";
+            return nodeList;
         }
 
         List<InlineContentParser> inlineParsers = this.inlineParsers.get(c);
         if (inlineParsers != null) {
             Position position = scanner.position();
             for (InlineContentParser inlineParser : inlineParsers) {
-                ParsedInline parsedInline = inlineParser.tryParse(this);
+            	ParsedInline parsedInline;
+            	if(inlineParser instanceof BackticksInlineParser) {
+                    parsedInline = inlineParser.tryParse(this, prefix);
+                    prefix = "";
+                }else {
+                    parsedInline = inlineParser.tryParse(this);
+                }
+            	
                 if (parsedInline instanceof ParsedInlineImpl) {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
                     Node node = parsedInlineImpl.getNode();
@@ -192,21 +240,28 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         DelimiterProcessor delimiterProcessor = delimiterProcessors.get(c);
         if (delimiterProcessor != null) {
-            List<? extends Node> nodes = parseDelimiters(delimiterProcessor, c);
+            List<? extends Node> nodes = parseDelimiters(delimiterProcessor, c, prefix);
+            
+            // Preserve a prefix which has _only_ whitespace, as this may be
+            //    needed in the following "parseText" method
+            if(!prefix.isEmpty() && prefix.isBlank()) {
+                prefix = "";
+            }
+            
             if (nodes != null) {
                 return nodes;
             }
         }
 
         // If we get here, even for a special/delimiter character, we will just treat it as text.
-        return Collections.singletonList(parseText());
+        return Collections.singletonList(parseText(prefix));
     }
 
     /**
      * Attempt to parse delimiters like emphasis, strong emphasis or custom delimiters.
      */
-    private List<? extends Node> parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
-        DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar);
+    private List<? extends Node> parseDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar, String prefix) {
+        DelimiterData res = scanDelimiters(delimiterProcessor, delimiterChar, prefix);
         if (res == null) {
             return null;
         }
@@ -245,6 +300,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private Node parseBang() {
         Position start = scanner.position();
         scanner.next();
+        
         if (scanner.next('[')) {
             Position contentPosition = scanner.position();
             Text node = text(scanner.getSource(start, contentPosition));
@@ -262,8 +318,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * plain [ character. If there is a matching delimiter, remove it from the delimiter stack.
      */
     private Node parseCloseBracket() {
+        return parseCloseBracket("");
+    }
+    
+    private Node parseCloseBracket(String prefix) {
         Position beforeClose = scanner.position();
         scanner.next();
+        
         Position afterClose = scanner.position();
 
         // Get previous `[` or `![`
@@ -281,31 +342,65 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         // Check to see if we have a link/image
         String dest = null;
+        String rawDest = "";
         String title = null;
+        String rawTitle = "";
+        
+        LinkType currentLinkType = LinkType.NULL;
+        char titleSymbol = Character.MIN_VALUE;
+        String whitespacePreDestination = "";
+        String whitespacePreTitle = "";
+        String whitespacePostContent = "";
 
         // Maybe a inline link like `[foo](/uri "title")`
         if (scanner.next('(')) {
+            whitespacePreDestination = scanner.whitespaceAsString();
             scanner.whitespace();
+            rawDest = parseLinkDestinationRaw(scanner);
             dest = parseLinkDestination(scanner);
+            
             if (dest == null) {
                 scanner.setPosition(afterClose);
+                whitespacePreDestination = "";
             } else {
-                int whitespace = scanner.whitespace();
+                whitespacePreTitle = scanner.whitespaceAsString();
+                scanner.whitespace();
                 // title needs a whitespace before
-                if (whitespace >= 1) {
+                if (whitespacePreTitle.length() >= 1) {
+                    // Capture the symbol used for the title
+                    titleSymbol = scanner.peek();
+                    rawTitle = parseLinkTitleRaw(scanner);
                     title = parseLinkTitle(scanner);
-                    scanner.whitespace();
+                    
+                    // If title isn't valid, discard the captured value of its symbol
+                    if(title == null) {
+                        titleSymbol = Character.MIN_VALUE;
+                    }
+                    whitespacePostContent = scanner.whitespaceAsString();
                 }
+                
+                currentLinkType = LinkType.INLINE;
+                
                 if (!scanner.next(')')) {
                     // Don't have a closing `)`, so it's not a destination and title -> reset.
                     // Note that something like `[foo](` could be valid, `(` will just be text.
                     scanner.setPosition(afterClose);
                     dest = null;
+                    rawDest = "";
                     title = null;
+                    rawTitle = "";
+                    currentLinkType = LinkType.NULL;
+                    titleSymbol = Character.MIN_VALUE;
+                    whitespacePreDestination = "";
+                    whitespacePreTitle = "";
+                    whitespacePostContent = "";
                 }
             }
         }
 
+        String label = null;
+        String rawLabel = null;
+        
         // Maybe a reference link like `[foo][bar]`, `[foo][]` or `[foo]`.
         // Note that even `[foo](` could be a valid link if there's a reference, which is why this is not just an `else`
         // here.
@@ -327,13 +422,55 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 if (definition != null) {
                     dest = definition.getDestination();
                     title = definition.getTitle();
+                    label = definition.getLabel();
+                }else {
+                    if(!ref.isEmpty()) {
+                        label = ref;
+                    }
                 }
+                
+                currentLinkType = LinkType.REFERENCE;
+                
+                // If this reference link has a following label (like
+                //    `[foo][bar]` or `[foo][]`, capture it for roundtrip
+                //    purposes
+                Position currentPos = scanner.position();
+                
+                scanner.setPosition(beforeClose);
+                scanner.next();
+                
+                whitespacePostContent = scanner.whitespaceAsString();
+                
+                // Check just in case there's a "[]" hanging out, but if
+                //    there are any line breaks ignore extra symbols
+                //    because a next pass would catch those.
+                if(scanner.hasNext() && scanner.peek() == '[' && !whitespacePostContent.contains("\n")) {
+                    scanner.next();
+                    if(scanner.peek() == ']') {
+                        label = "";
+                    }
+                }else {
+                    label = null;
+                }
+                
+                // The raw label needs to be populated, either with the original (raw)
+                //    link reference info or with the (literal) label information
+                if(label != null && !label.isEmpty() && !ref.equals(label)) {
+                    rawLabel = ref;
+                }else {
+                    rawLabel = label;
+                }
+                
+                // Reset scanner if no extra content was found
+                scanner.setPosition(currentPos);
             }
         }
 
         if (dest != null) {
             // If we got here, we have a link or image
-            Node linkOrImage = opener.image ? new Image(dest, title) : new Link(dest, title);
+            Node linkOrImage = opener.image ?
+                    new Image(dest, rawDest, title, rawTitle, label, rawLabel, currentLinkType, titleSymbol, whitespacePreDestination, whitespacePreTitle, whitespacePostContent) :
+                    new Link(dest, rawDest, title, rawTitle, label, rawLabel, currentLinkType, titleSymbol, whitespacePreDestination, whitespacePreTitle, whitespacePostContent);
 
             // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
             Node node = opener.node.getNext();
@@ -348,7 +485,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
 
             // Process delimiters such as emphasis inside link/image
-            processDelimiters(opener.previousDelimiter);
+            processDelimiters(opener.previousDelimiter, prefix);
             mergeChildTextNodes(linkOrImage);
             // We don't need the corresponding text node anymore, we turned it into a link/image node
             opener.node.unlink();
@@ -373,7 +510,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             removeLastBracket();
 
             scanner.setPosition(afterClose);
-            return text(scanner.getSource(beforeClose, afterClose));
+            return text(scanner.getSource(beforeClose, afterClose), prefix, "");
         }
     }
 
@@ -409,6 +546,18 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         return Escaping.unescapeString(dest);
     }
+    
+    private String parseLinkDestinationRaw(Scanner rawScanner) {
+        Position start = rawScanner.position();
+        if(!LinkScanner.scanLinkDestination(rawScanner)) {
+            return null;
+        }
+        
+        String dest = rawScanner.getSource(start, scanner.position()).getContent();
+        rawScanner.setPosition(start);
+        
+        return dest;
+    }
 
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
@@ -423,6 +572,22 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         String rawTitle = scanner.getSource(start, scanner.position()).getContent();
         String title = rawTitle.substring(1, rawTitle.length() - 1);
         return Escaping.unescapeString(title);
+    }
+    
+    /**
+     * Attempt to parse the link title in raw form, returning the raw string or null if no match.
+     */
+    private String parseLinkTitleRaw(Scanner rawScanner) {
+        Position start = rawScanner.position();
+        if(!LinkScanner.scanLinkTitle(rawScanner)) {
+            return null;
+        }
+        
+        String rawTitle = scanner.getSource(start, scanner.position()).getContent();
+        
+        rawScanner.setPosition(start);
+        
+        return rawTitle;
     }
 
     /**
@@ -466,32 +631,69 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * Parse the next character as plain text, and possibly more if the following characters are non-special.
      */
     private Node parseText() {
+        return parseText("");
+    }
+    
+    private Node parseText(String prefix) {
+        String preContentWhitespace = "";
+        
+        if(!prefix.isEmpty()) {
+            // Capture whitespace and anything that might be a block quote for roundtrip purposes
+            if(prefix.isBlank() || prefix.contains(">")) {
+                preContentWhitespace = prefix;
+            }
+        }
+        
+        StringBuilder postContentWhitespace = new StringBuilder();
+        
         Position start = scanner.position();
         scanner.next();
+
         char c;
         while (true) {
             c = scanner.peek();
-            if (c == Scanner.END || specialCharacters.get(c)) {
+            
+            if(c == Scanner.END) {
                 break;
             }
+            
+            if(c != ' ' && c != '\t' && c != '\n' && postContentWhitespace.length() > 0) {
+                postContentWhitespace.setLength(0);
+            }
+            
+            if (specialCharacters.get(c)) {
+                break;
+            }
+            
+            if(c == ' ' || c == '\t') {
+                postContentWhitespace.append(c);
+            }
+            
             scanner.next();
         }
-
-        SourceLines source = scanner.getSource(start, scanner.position());
+        
+        SourceLines source = scanner.getSource(start, scanner.position(), prefix.length());
         String content = source.getContent();
 
         if (c == '\n') {
             // We parsed until the end of the line. Trim any trailing spaces and remember them (for hard line breaks).
             int end = Parsing.skipBackwards(' ', content, content.length() - 1, 0) + 1;
             trailingSpaces = content.length() - end;
+            if(postContentWhitespace.length() == 0) {
+                postContentWhitespace.append(content.subSequence(end, content.length()));
+            }
             content = content.substring(0, end);
         } else if (c == Scanner.END) {
             // For the last line, both tabs and spaces are trimmed for some reason (checked with commonmark.js).
             int end = Parsing.skipSpaceTabBackwards(content, content.length() - 1, 0) + 1;
+            if(postContentWhitespace.length() == 0) {
+                postContentWhitespace.append(content.subSequence(end, content.length()));
+            }
             content = content.substring(0, end);
         }
-
-        Text text = new Text(content);
+        
+        Text text = new Text(content, content, preContentWhitespace, postContentWhitespace.toString());
+        
         text.setSourceSpans(source.getSourceSpans());
         return text;
     }
@@ -502,7 +704,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      *
      * @return information about delimiter run, or {@code null}
      */
-    private DelimiterData scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar) {
+    private DelimiterData scanDelimiters(DelimiterProcessor delimiterProcessor, char delimiterChar, String prefix) {
         int before = scanner.peekPreviousCodePoint();
         Position start = scanner.position();
 
@@ -517,8 +719,16 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         List<Text> delimiters = new ArrayList<>();
         scanner.setPosition(start);
         Position positionBefore = start;
+        
         while (scanner.next(delimiterChar)) {
-            delimiters.add(text(scanner.getSource(positionBefore, scanner.position())));
+            Text delimText = text(scanner.getSource(positionBefore, scanner.position()), prefix, "");
+            
+            // Erase prefix after first line
+            if(prefix.length() > 0) {
+                prefix = "";
+            }
+            
+            delimiters.add(delimText);
             positionBefore = scanner.position();
         }
 
@@ -548,6 +758,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private void processDelimiters(Delimiter stackBottom) {
+        processDelimiters(stackBottom, "");
+    }
+    
+    private void processDelimiters(Delimiter stackBottom, String prefix) {
 
         Map<Character, Delimiter> openersBottom = new HashMap<>();
 
@@ -576,7 +790,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             while (opener != null && opener != stackBottom && opener != openersBottom.get(delimiterChar)) {
                 if (opener.canOpen() && opener.delimiterChar == openingDelimiterChar) {
                     potentialOpenerFound = true;
-                    usedDelims = delimiterProcessor.process(opener, closer);
+                    usedDelims = delimiterProcessor.process(opener, closer, prefix);
+                    
+                    String openerWhitespace = opener.characters.get(0).whitespacePreContent();
+                    if(!openerWhitespace.isBlank()) {
+                        closer.characters.get(0).setWhitespace(openerWhitespace, "");
+                    }
+                    
                     if (usedDelims > 0) {
                         openerFound = true;
                         break;
@@ -711,9 +931,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private void mergeIfNeeded(Text first, Text last, int textLength) {
-        if (first != null && last != null && first != last) {
+    	if (first != null && last != null && first != last) {
             StringBuilder sb = new StringBuilder(textLength);
+            StringBuilder sb2 = new StringBuilder(textLength);
             sb.append(first.getLiteral());
+            sb2.append(first.getRaw());
             SourceSpans sourceSpans = null;
             if (includeSourceSpans) {
                 sourceSpans = new SourceSpans();
@@ -723,6 +945,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             Node stop = last.getNext();
             while (node != stop) {
                 sb.append(((Text) node).getLiteral());
+                sb2.append(((Text)node).getRaw());
                 if (sourceSpans != null) {
                     sourceSpans.addAll(node.getSourceSpans());
                 }
@@ -732,7 +955,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 unlink.unlink();
             }
             String literal = sb.toString();
+            String raw = sb2.toString();
             first.setLiteral(literal);
+            first.setRaw(raw);
             if (sourceSpans != null) {
                 first.setSourceSpans(sourceSpans.getSourceSpans());
             }

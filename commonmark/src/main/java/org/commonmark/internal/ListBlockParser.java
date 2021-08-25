@@ -1,8 +1,18 @@
 package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
-import org.commonmark.node.*;
-import org.commonmark.parser.block.*;
+import org.commonmark.node.Block;
+import org.commonmark.node.BulletList;
+import org.commonmark.node.ListBlock;
+import org.commonmark.node.ListItem;
+import org.commonmark.node.OrderedList;
+import org.commonmark.parser.block.AbstractBlockParser;
+import org.commonmark.parser.block.AbstractBlockParserFactory;
+import org.commonmark.parser.block.BlockContinue;
+import org.commonmark.parser.block.BlockParser;
+import org.commonmark.parser.block.BlockStart;
+import org.commonmark.parser.block.MatchedBlockParser;
+import org.commonmark.parser.block.ParserState;
 
 public class ListBlockParser extends AbstractBlockParser {
 
@@ -11,6 +21,17 @@ public class ListBlockParser extends AbstractBlockParser {
     private boolean hadBlankLine;
     private int linesAfterBlank;
 
+    private static String currentRawNumber;
+    
+    /*
+     * When gathering data for roundtrip parsing, there is no easy way to know whether
+     * a blank list item is a precursor to more content (CommonMark test case 248) or
+     * if it stands alone (CommonMark test case 252).
+     * Luckily, if the first line is blank, any further content which doesn't start a
+     * new list item indicates that the first line is split, not standalone.
+     */
+    private static boolean firstLineBlank = false;
+    
     public ListBlockParser(ListBlock block) {
         this.block = block;
     }
@@ -114,9 +135,28 @@ public class ListBlockParser extends AbstractBlockParser {
             case '-':
             case '+':
             case '*':
-                if (isSpaceTabOrEnd(line, index + 1)) {
+            	if (isSpaceTabOrEnd(line, index + 1)) {
+                    // Collect any pre-content whitespace in the first line for
+                    //    roundtrip purposes.
+                    String preContentWhitespace = Parsing.collectWhitespace(line, index + 1, line.length());
+                    
+                    // AST: Lists can be separated from their delimiter by a blank line, make
+                    //    sure to capture this for roundtrip purposes if it occurs
+                    if(line.subSequence(index + 1, line.length()).toString().isBlank()) {
+                        firstLineBlank = true;
+                    }else {
+                        firstLineBlank = false;
+                    }
+                    
+                    String preBlockWhitespace = line.subSequence(0, index).toString();
+                    
+                    if(!preBlockWhitespace.isBlank()) {
+                        preBlockWhitespace = "";
+                    }
+                    
                     BulletList bulletList = new BulletList();
                     bulletList.setBulletMarker(c);
+                    bulletList.setWhitespace(preBlockWhitespace, preContentWhitespace);
                     return new ListMarkerData(bulletList, index + 1);
                 } else {
                     return null;
@@ -153,9 +193,31 @@ public class ListBlockParser extends AbstractBlockParser {
                 case ')':
                     if (digits >= 1 && isSpaceTabOrEnd(line, i + 1)) {
                         String number = line.subSequence(index, i).toString();
+
+                        // AST: Lists can be separated from their delimiter by a blank line, make
+                        //    sure to capture this for roundtrip purposes if it occurs
+                        if(line.subSequence(index + 1, line.length()).toString().isBlank()) {
+                            firstLineBlank = true;
+                        }else {
+                            firstLineBlank = false;
+                        }
+                        
+                        // Collect any pre-content whitespace in the first line for
+                        //    roundtrip purposes.
+                        String preContentWhitespace = Parsing.collectWhitespace(line, i+1, line.length());
+                        String preBlockWhitespace = line.subSequence(0, index).toString();
+                        
+                        if(!preBlockWhitespace.isBlank()) {
+                            preBlockWhitespace = "";
+                        }
+                        
                         OrderedList orderedList = new OrderedList();
                         orderedList.setStartNumber(Integer.parseInt(number));
+                        // AST: Actual list number can be anything, it is
+                        //         only auto-incremented during rendering
+                        currentRawNumber = number;
                         orderedList.setDelimiter(c);
+                        orderedList.setWhitespace(preBlockWhitespace, preContentWhitespace);
                         return new ListMarkerData(orderedList, i + 1);
                     } else {
                         return null;
@@ -217,8 +279,12 @@ public class ListBlockParser extends AbstractBlockParser {
             }
 
             int newColumn = listData.contentColumn;
-            ListItemParser listItemParser = new ListItemParser(newColumn - state.getColumn());
-
+            String preBlockWhitespace = listData.listBlock.whitespacePreBlock();
+            String preContentWhitespace = listData.listBlock.whitespacePreContent();
+            
+            ListItemParser listItemParser = new ListItemParser(newColumn - state.getColumn(), currentRawNumber, firstLineBlank, preBlockWhitespace, preContentWhitespace);
+            firstLineBlank = false;
+            
             // prepend the list block if needed
             if (!(matched instanceof ListBlockParser) ||
                     !(listsMatch((ListBlock) matched.getBlock(), listData.listBlock))) {

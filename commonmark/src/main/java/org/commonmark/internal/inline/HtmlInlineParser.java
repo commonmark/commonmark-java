@@ -65,6 +65,12 @@ public class HtmlInlineParser implements InlineContentParser {
 
         return ParsedInline.none();
     }
+    
+    @Override
+    public ParsedInline tryParse(InlineParserState inlineParserState, String prefix) {
+        // Inline HTML does not have significant prefix values
+        return tryParse(inlineParserState);
+    }
 
     private static ParsedInline htmlInline(Position start, Scanner scanner) {
         String text = scanner.getSource(start, scanner.position()).getContent();

@@ -24,12 +24,18 @@ public class BackslashInlineParser implements InlineContentParser {
         char next = scanner.peek();
         if (next == '\n') {
             scanner.next();
-            return ParsedInline.of(new HardLineBreak(), scanner.position());
+            return ParsedInline.of(new HardLineBreak(true), scanner.position());
         } else if (ESCAPABLE.matcher(String.valueOf(next)).matches()) {
             scanner.next();
-            return ParsedInline.of(new Text(String.valueOf(next)), scanner.position());
+            return ParsedInline.of(new Text(String.valueOf(next), "\\" + String.valueOf(next), "", ""), scanner.position());
         } else {
             return ParsedInline.of(new Text("\\"), scanner.position());
         }
+    }
+    
+    @Override
+    public ParsedInline tryParse(InlineParserState inlineParserState, String prefix) {
+        // Backslash-escaped characters do not have significant prefix values
+        return tryParse(inlineParserState);
     }
 }

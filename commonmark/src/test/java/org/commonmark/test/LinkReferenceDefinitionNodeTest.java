@@ -17,9 +17,11 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[foo]: /url 'title'");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(2));
+        // Node size is 3 instead of 2 due to BlankLine pseudo-node
+        assertThat(nodes.size(), is(3));
         assertThat(nodes.get(0), instanceOf(Paragraph.class));
-        LinkReferenceDefinition definition = assertDef(nodes.get(1), "foo");
+        assertThat(nodes.get(1), instanceOf(BlankLine.class));
+        LinkReferenceDefinition definition = assertDef(nodes.get(2), "foo");
 
         assertThat(definition.getDestination(), is("/url"));
         assertThat(definition.getTitle(), is("title"));
@@ -41,10 +43,12 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[foo]: /url\n[bar]: /url");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(3));
+        // Node size is 4 instead of 3 due to BlankLine pseudo-node
+        assertThat(nodes.size(), is(4));
         assertThat(nodes.get(0), instanceOf(Paragraph.class));
-        assertDef(nodes.get(1), "foo");
-        assertDef(nodes.get(2), "bar");
+        assertThat(nodes.get(1), instanceOf(BlankLine.class));
+        assertDef(nodes.get(2), "foo");
+        assertDef(nodes.get(3), "bar");
     }
 
     @Test
@@ -52,13 +56,15 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[foo]: /url1\n[foo]: /url2");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(3));
+        // Node size is 4 instead of 3 due to BlankLine pseudo-node
+        assertThat(nodes.size(), is(4));
         assertThat(nodes.get(0), instanceOf(Paragraph.class));
-        LinkReferenceDefinition def1 = assertDef(nodes.get(1), "foo");
+        assertThat(nodes.get(1), instanceOf(BlankLine.class));
+        LinkReferenceDefinition def1 = assertDef(nodes.get(2), "foo");
         assertThat(def1.getDestination(), is("/url1"));
         // When there's multiple definitions with the same label, the first one "wins", as in reference links will use
         // that. But we still want to preserve the original definitions in the document.
-        LinkReferenceDefinition def2 = assertDef(nodes.get(2), "foo");
+        LinkReferenceDefinition def2 = assertDef(nodes.get(3), "foo");
         assertThat(def2.getDestination(), is("/url2"));
     }
 
@@ -110,9 +116,11 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[fOo]: /url 'title'");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(2));
+        // Node size is 3 instead of 2 due to BlankLine pseudo-node
+        assertThat(nodes.size(), is(3));
         assertThat(nodes.get(0), instanceOf(Paragraph.class));
-        assertDef(nodes.get(1), "fOo");
+        assertThat(nodes.get(1), instanceOf(BlankLine.class));
+        assertDef(nodes.get(2), "fOo");
     }
 
     private static Node parse(String input) {

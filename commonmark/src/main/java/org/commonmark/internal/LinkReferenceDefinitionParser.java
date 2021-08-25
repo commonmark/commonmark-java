@@ -1,5 +1,8 @@
 package org.commonmark.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.commonmark.internal.inline.Position;
 import org.commonmark.internal.inline.Scanner;
 import org.commonmark.internal.util.Escaping;
@@ -8,9 +11,6 @@ import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Parser for link reference definitions at the beginning of a paragraph.
@@ -26,20 +26,37 @@ public class LinkReferenceDefinitionParser {
     private final List<SourceSpan> sourceSpans = new ArrayList<>();
 
     private StringBuilder label;
+    private String extendedLabel = null;
     private String destination;
+    private String rawDestination;
     private char titleDelimiter;
     private StringBuilder title;
     private boolean referenceValid = false;
+    private List<SourceLine> rawParagraphLines = new ArrayList<>();
+    
+    private int previousLineIndex = 0;
+    private String whitespacePreLabel = "";
+    private String whitespacePreDestination = "";
+    private String whitespacePreTitle = "";
+    private String whitespacePostTitle = "";
 
     public void parse(SourceLine line) {
-        paragraphLines.add(line);
-        if (state == State.PARAGRAPH) {
+    	paragraphLines.add(line.getLiteralLine());
+        rawParagraphLines.add(line);
+        
+    	if (state == State.PARAGRAPH) {
             // We're in a paragraph now. Link reference definitions can only appear at the beginning, so once
             // we're in a paragraph, there's no going back.
             return;
         }
 
         Scanner scanner = Scanner.of(SourceLines.of(line));
+        if(line.getSourceSpan() != null) {
+            // Ensure that LinkReferenceDefinition objects can have populated source spans
+            // Source spans track literal lines, not raw lines
+            addSourceSpan(line.getLiteralLine().getSourceSpan());
+        }
+        
         while (scanner.hasNext()) {
             boolean success;
             switch (state) {
@@ -48,14 +65,35 @@ public class LinkReferenceDefinitionParser {
                     break;
                 }
                 case LABEL: {
+                	// Capture line number to determine if line breaks occur
+                    if(line.getSourceSpan() != null) {
+                        previousLineIndex = line.getSourceSpan().getLineIndex();
+                    }
+                    
                     success = label(scanner);
                     break;
                 }
                 case DESTINATION: {
+                	// Check for any line breaks
+                    if(line.getSourceSpan() != null) {
+                        if(line.getSourceSpan().getLineIndex() > previousLineIndex) {
+                            whitespacePreDestination = whitespacePreDestination + "\n";
+                            previousLineIndex++;
+                        }
+                    }
+                    
                     success = destination(scanner);
                     break;
                 }
                 case START_TITLE: {
+                	// Check for any line breaks
+                    if(line.getSourceSpan() != null) {
+                        if(line.getSourceSpan().getLineIndex() > previousLineIndex) {
+                            whitespacePreTitle = whitespacePreTitle + "\n";
+                            previousLineIndex++;
+                        }
+                    }
+                    
                     success = startTitle(scanner);
                     break;
                 }
@@ -85,9 +123,21 @@ public class LinkReferenceDefinitionParser {
     SourceLines getParagraphLines() {
         return SourceLines.of(paragraphLines);
     }
+    
+    SourceLines getRawParagraphLines() {
+        return SourceLines.of(rawParagraphLines);
+    }
+    
+    void setRawParagraphLines(SourceLines rawParagraphLines) {
+        this.rawParagraphLines = rawParagraphLines.getLines();
+    }
 
     List<SourceSpan> getParagraphSourceSpans() {
         return sourceSpans;
+    }
+    
+    String getExtendedLabel() {
+        return extendedLabel;
     }
 
     List<LinkReferenceDefinition> getDefinitions() {
@@ -100,8 +150,16 @@ public class LinkReferenceDefinitionParser {
     }
 
     private boolean startDefinition(Scanner scanner) {
-        scanner.whitespace();
-        if (!scanner.next('[')) {
+    	// Capture whitespace for roundtrip purposes
+        whitespacePreLabel = scanner.whitespaceAsString();
+        
+        String whitespaceCheck = scanner.alignToLiteral();
+        
+        if(!whitespaceCheck.isEmpty()) {
+            whitespacePreLabel = whitespaceCheck;
+        }
+        
+    	if (!scanner.next('[')) {
             return false;
         }
 
@@ -144,7 +202,7 @@ public class LinkReferenceDefinitionParser {
 
             state = State.DESTINATION;
 
-            scanner.whitespace();
+            whitespacePreDestination = scanner.whitespaceAsString();
             return true;
         } else {
             return false;
@@ -152,24 +210,26 @@ public class LinkReferenceDefinitionParser {
     }
 
     private boolean destination(Scanner scanner) {
-        scanner.whitespace();
+    	whitespacePreDestination = whitespacePreDestination +
+                scanner.whitespaceAsString();
         Position start = scanner.position();
         if (!LinkScanner.scanLinkDestination(scanner)) {
             return false;
         }
 
-        String rawDestination = scanner.getSource(start, scanner.position()).getContent();
+        rawDestination = scanner.getSource(start, scanner.position()).getContent();
         destination = rawDestination.startsWith("<") ?
                 rawDestination.substring(1, rawDestination.length() - 1) :
                 rawDestination;
 
-        int whitespace = scanner.whitespace();
+        whitespacePreTitle = scanner.whitespaceAsString();
         if (!scanner.hasNext()) {
             // Destination was at end of line, so this is a valid reference for sure (and maybe a title).
             // If not at end of line, wait for title to be valid first.
             referenceValid = true;
             paragraphLines.clear();
-        } else if (whitespace == 0) {
+            rawParagraphLines.clear();
+        } else if (whitespacePreTitle.length() == 0) {
             // spec: The title must be separated from the link destination by whitespace
             return false;
         }
@@ -179,8 +239,8 @@ public class LinkReferenceDefinitionParser {
     }
 
     private boolean startTitle(Scanner scanner) {
-        scanner.whitespace();
-        if (!scanner.hasNext()) {
+    	whitespacePreTitle = whitespacePreTitle + scanner.whitespaceAsString();
+    	if (!scanner.hasNext()) {
             state = State.START_DEFINITION;
             return true;
         }
@@ -229,14 +289,17 @@ public class LinkReferenceDefinitionParser {
 
         // Skip delimiter character
         scanner.next();
-        scanner.whitespace();
+        whitespacePostTitle = scanner.whitespaceAsString();
         if (scanner.hasNext()) {
+        	title = null;
+            whitespacePostTitle = "";
             // spec: No further non-whitespace characters may occur on the line.
             return false;
         }
         referenceValid = true;
         finishReference();
         paragraphLines.clear();
+        rawParagraphLines.clear();
 
         // See if there's another definition.
         state = State.START_DEFINITION;
@@ -248,9 +311,14 @@ public class LinkReferenceDefinitionParser {
             return;
         }
 
+        if(rawDestination.isEmpty()) {
+            rawDestination = destination;
+        }
+
         String d = Escaping.unescapeString(destination);
         String t = title != null ? Escaping.unescapeString(title.toString()) : null;
-        LinkReferenceDefinition definition = new LinkReferenceDefinition(label.toString(), d, t);
+        String rawTitle = title != null ? title.toString() : "";
+        LinkReferenceDefinition definition = new LinkReferenceDefinition(label.toString(), d, rawDestination, t, rawTitle, titleDelimiter, whitespacePreLabel, whitespacePreDestination, whitespacePreTitle, whitespacePostTitle);
         definition.setSourceSpans(sourceSpans);
         sourceSpans.clear();
         definitions.add(definition);
@@ -259,6 +327,8 @@ public class LinkReferenceDefinitionParser {
         referenceValid = false;
         destination = null;
         title = null;
+        whitespacePreDestination = "";
+        whitespacePostTitle = "";
     }
 
     enum State {

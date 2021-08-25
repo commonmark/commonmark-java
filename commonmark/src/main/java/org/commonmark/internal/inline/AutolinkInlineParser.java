@@ -1,10 +1,11 @@
 package org.commonmark.internal.inline;
 
+import java.util.regex.Pattern;
+
 import org.commonmark.node.Link;
+import org.commonmark.node.LinkFormat.LinkType;
 import org.commonmark.node.Text;
 import org.commonmark.parser.SourceLines;
-
-import java.util.regex.Pattern;
 
 /**
  * Attempt to parse an autolink (URL or email in pointy brackets).
@@ -39,9 +40,16 @@ public class AutolinkInlineParser implements InlineContentParser {
                 Text text = new Text(content);
                 text.setSourceSpans(textSource.getSourceSpans());
                 link.appendChild(text);
+                link.setLinkType(LinkType.AUTOLINK);
                 return ParsedInline.of(link, scanner.position());
             }
         }
         return ParsedInline.none();
+    }
+    
+    @Override
+    public ParsedInline tryParse(InlineParserState inlineParserState, String prefix) {
+        // Autolinks do not have significant prefix values
+        return tryParse(inlineParserState);
     }
 }

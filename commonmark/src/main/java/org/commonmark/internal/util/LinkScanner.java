@@ -70,7 +70,9 @@ public class LinkScanner {
         }
 
         char endDelimiter;
-        switch (scanner.peek()) {
+        char c = scanner.peek();
+        
+        switch (c) {
             case '"':
                 endDelimiter = '"';
                 break;
@@ -83,6 +85,10 @@ public class LinkScanner {
             default:
                 return false;
         }
+        
+//        if(c != '(' && !(scanner.hasNext() && scanner.peek() == '(')) {
+//            scanner.next();
+//        }
         scanner.next();
 
         if (!scanLinkTitleContent(scanner, endDelimiter)) {
@@ -158,6 +164,11 @@ public class LinkScanner {
             }
             empty = false;
         }
+        
+        if(parens > 0) {
+            return false;
+        }
+        
         return true;
     }
 }

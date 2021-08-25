@@ -1,13 +1,18 @@
 package org.commonmark.internal;
 
+import java.util.regex.Pattern;
+
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.Paragraph;
 import org.commonmark.parser.SourceLine;
-import org.commonmark.parser.block.*;
-
-import java.util.regex.Pattern;
+import org.commonmark.parser.block.AbstractBlockParser;
+import org.commonmark.parser.block.AbstractBlockParserFactory;
+import org.commonmark.parser.block.BlockContinue;
+import org.commonmark.parser.block.BlockStart;
+import org.commonmark.parser.block.MatchedBlockParser;
+import org.commonmark.parser.block.ParserState;
 
 public class HtmlBlockParser extends AbstractBlockParser {
 
@@ -64,6 +69,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
 
     private boolean finished = false;
     private BlockContent content = new BlockContent();
+    private BlockContent rawContent = new BlockContent();
 
     private HtmlBlockParser(Pattern closingPattern) {
         this.closingPattern = closingPattern;
@@ -90,7 +96,22 @@ public class HtmlBlockParser extends AbstractBlockParser {
 
     @Override
     public void addLine(SourceLine line) {
-        content.add(line.getContent());
+    	// Raw line and literal line are the same
+        if(line.getLiteralIndex() == 0) {
+            content.add(line.getContent());
+            rawContent.add(line.getContent());
+        }
+        // Raw line and literal line are different
+        else {
+            content.add(line.getLiteralLine().getContent());
+            
+            // Use the literal line for anything which may be a block quote
+            if(line != null && line.getContent().toString().contains(">")) {
+                rawContent.add(line.getContent());
+            }else {
+                rawContent.add(line.getLiteralLine().getContent());
+            }
+        }
 
         if (closingPattern != null && closingPattern.matcher(line.getContent()).find()) {
             finished = true;
@@ -100,7 +121,9 @@ public class HtmlBlockParser extends AbstractBlockParser {
     @Override
     public void closeBlock() {
         block.setLiteral(content.getString());
+        block.setRaw(rawContent.getString());
         content = null;
+        rawContent = null;
     }
 
     public static class Factory extends AbstractBlockParserFactory {
