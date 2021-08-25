@@ -364,12 +364,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 whitespacePreDestination = "";
             } else {
                 whitespacePreTitle = scanner.whitespaceAsString();
-                scanner.whitespace();
+
                 // title needs a whitespace before
                 if (whitespacePreTitle.length() >= 1) {
+                    Position titleStart = scanner.position();
                     // Capture the symbol used for the title
                     titleSymbol = scanner.peek();
                     rawTitle = parseLinkTitleRaw(scanner);
+                    scanner.setPosition(titleStart);
                     title = parseLinkTitle(scanner);
                     
                     // If title isn't valid, discard the captured value of its symbol
@@ -584,8 +586,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
         
         String rawTitle = scanner.getSource(start, scanner.position()).getContent();
-        
-        rawScanner.setPosition(start);
         
         return rawTitle;
     }
