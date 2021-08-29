@@ -59,7 +59,7 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
         // Strip leading whitespace off first raw line (because it's already
         //    captured by the whitespace tracker)
         if(rawLines != null && rawLines.size() == 0) {
-            rawLines.add(line.getContent().toString().stripLeading());
+            rawLines.add(line.getContent().toString().replaceFirst("^\\s+", ""));
         }else {
             rawLines.add(prefix + line.getContent());
         }

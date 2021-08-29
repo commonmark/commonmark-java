@@ -59,7 +59,7 @@ public class BlockQuoteParser extends AbstractBlockParser {
             String preBlockWhitespace = "";
             
             if(nextNonSpace > 0) {
-            	if(state.getLine().getContent().subSequence(0, nextNonSpace).toString().isBlank()) {
+            	if(state.getLine().getContent().subSequence(0, nextNonSpace).toString().trim().equals("")) {
             		preBlockWhitespace = state.getLine().getContent().subSequence(0, nextNonSpace).toString();
             	}else {
             		preBlockWhitespace = Parsing.collectWhitespaceBackwards(state.getLine().getContent(), nextNonSpace, 0);

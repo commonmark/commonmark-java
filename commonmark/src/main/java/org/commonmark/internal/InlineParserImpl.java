@@ -244,7 +244,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             
             // Preserve a prefix which has _only_ whitespace, as this may be
             //    needed in the following "parseText" method
-            if(!prefix.isEmpty() && prefix.isBlank()) {
+            if(!prefix.isEmpty() && prefix.trim().equals("")) {
                 prefix = "";
             }
             
@@ -639,7 +639,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         
         if(!prefix.isEmpty()) {
             // Capture whitespace and anything that might be a block quote for roundtrip purposes
-            if(prefix.isBlank() || prefix.contains(">")) {
+            if(prefix.trim().equals("") || prefix.contains(">")) {
                 preContentWhitespace = prefix;
             }
         }
@@ -793,7 +793,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                     usedDelims = delimiterProcessor.process(opener, closer, prefix);
                     
                     String openerWhitespace = opener.characters.get(0).whitespacePreContent();
-                    if(!openerWhitespace.isBlank()) {
+                    if(!openerWhitespace.trim().equals("")) {
                         closer.characters.get(0).setWhitespace(openerWhitespace, "");
                     }
                     

@@ -142,7 +142,7 @@ public class ListBlockParser extends AbstractBlockParser {
                     
                     // AST: Lists can be separated from their delimiter by a blank line, make
                     //    sure to capture this for roundtrip purposes if it occurs
-                    if(line.subSequence(index + 1, line.length()).toString().isBlank()) {
+                    if(line.subSequence(index + 1, line.length()).toString().trim().equals("")) {
                         firstLineBlank = true;
                     }else {
                         firstLineBlank = false;
@@ -150,7 +150,7 @@ public class ListBlockParser extends AbstractBlockParser {
                     
                     String preBlockWhitespace = line.subSequence(0, index).toString();
                     
-                    if(!preBlockWhitespace.isBlank()) {
+                    if(!preBlockWhitespace.trim().equals("")) {
                         preBlockWhitespace = "";
                     }
                     
@@ -196,7 +196,7 @@ public class ListBlockParser extends AbstractBlockParser {
 
                         // AST: Lists can be separated from their delimiter by a blank line, make
                         //    sure to capture this for roundtrip purposes if it occurs
-                        if(line.subSequence(index + 1, line.length()).toString().isBlank()) {
+                        if(line.subSequence(index + 1, line.length()).toString().trim().equals("")) {
                             firstLineBlank = true;
                         }else {
                             firstLineBlank = false;
@@ -207,7 +207,7 @@ public class ListBlockParser extends AbstractBlockParser {
                         String preContentWhitespace = Parsing.collectWhitespace(line, i+1, line.length());
                         String preBlockWhitespace = line.subSequence(0, index).toString();
                         
-                        if(!preBlockWhitespace.isBlank()) {
+                        if(!preBlockWhitespace.trim().equals("")) {
                             preBlockWhitespace = "";
                         }
                         

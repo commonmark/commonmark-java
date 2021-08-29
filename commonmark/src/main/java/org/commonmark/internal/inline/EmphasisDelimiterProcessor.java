@@ -79,7 +79,7 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
         String preContentWhitespace = prefix;
         
         if(!openingRun.getOpener().whitespacePreContent().isEmpty() &&
-                openingRun.getOpener().whitespacePreContent().isBlank()) {
+                openingRun.getOpener().whitespacePreContent().trim().equals("")) {
             preContentWhitespace = openingRun.getOpener().whitespacePreContent();
         }
         

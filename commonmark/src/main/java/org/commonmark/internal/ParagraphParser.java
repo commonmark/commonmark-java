@@ -50,8 +50,8 @@ public class ParagraphParser extends AbstractBlockParser {
         
         if (!state.isBlank()) {
             
-            if(state.getLine() != null && state.getLine().getContent().toString().stripLeading().length() != 0) {
-                setextCheck = state.getLine().getContent().toString().stripLeading().charAt(0);
+            if(state.getLine() != null && state.getLine().getContent().toString().replaceFirst("^\\s+", "").length() != 0) {
+                setextCheck = state.getLine().getContent().toString().replaceFirst("^\\s+", "").charAt(0);
             }
             
             if(setextCheck != Character.MIN_VALUE && setextCheck != '=' && setextCheck != '-') {
