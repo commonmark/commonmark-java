@@ -236,6 +236,49 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void pipesOnOutsideWhitespaceAfterHeader() {
+        assertRendering("|Abc|Def| \n|---|---|\n|1|2|", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
+    public void pipesOnOutsideZeroLengthHeaders() {
+        // This is literally what someone has done IRL - it helped to expose
+        // an issue with parsing the last header cell correctly
+        assertRendering("||center header||\n" +
+                        "-|-------------|-\n" +
+                        "1|      2      |3",
+                "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th></th>\n" +
+                "<th>center header</th>\n" +
+                "<th></th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "<td>3</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
     public void inlineElements() {
         assertRendering("*Abc*|Def\n---|---\n1|2", "<table>\n" +
                 "<thead>\n" +

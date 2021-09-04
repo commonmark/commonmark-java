@@ -122,14 +122,22 @@ public class TableBlockParser extends AbstractBlockParser {
     private static List<SourceLine> split(SourceLine line) {
         CharSequence row = line.getContent();
         int nonSpace = Parsing.skipSpaceTab(row, 0, row.length());
-        int cellStart = row.charAt(nonSpace) == '|' ? nonSpace + 1 : nonSpace;
+        int cellStart = nonSpace;
+        int cellEnd = row.length();
+        if (row.charAt(nonSpace) == '|') {
+            // This row has leading/trailing pipes - skip the leading pipe
+            cellStart = nonSpace + 1;
+            // Strip whitespace from the end but not the pipe or we could miss an empty ("||") cell
+            int nonSpaceEnd = Parsing.skipSpaceTabBackwards(row, row.length() - 1, cellStart + 1);
+            cellEnd = nonSpaceEnd + 1;
+        }
         List<SourceLine> cells = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        for (int i = cellStart; i < row.length(); i++) {
+        for (int i = cellStart; i < cellEnd; i++) {
             char c = row.charAt(i);
             switch (c) {
                 case '\\':
-                    if (i + 1 < row.length() && row.charAt(i + 1) == '|') {
+                    if (i + 1 < cellEnd && row.charAt(i + 1) == '|') {
                         // Pipe is special for table parsing. An escaped pipe doesn't result in a new cell, but is
                         // passed down to inline parsing as an unescaped pipe. Note that that applies even for the `\|`
                         // in an input like `\\|` - in other words, table parsing doesn't support escaping backslashes.
