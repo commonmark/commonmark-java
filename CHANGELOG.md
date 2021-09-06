@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.18.1] - 2021-09-06
+### Fixed
+- Fix tables with leading/trailing header pipes and trailing spaces (#244).
+  This was a regression in 0.16.1 which is now fixed.
+
 ## [0.18.0] - 2021-06-30
 ### Changed
 - Update to CommonMark spec 0.30:
@@ -345,6 +350,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.18.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.18.0...commonmark-parent-0.18.1
 [0.18.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.2...commonmark-parent-0.18.0
 [0.17.2]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.1...commonmark-parent-0.17.2
 [0.17.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.0...commonmark-parent-0.17.1
