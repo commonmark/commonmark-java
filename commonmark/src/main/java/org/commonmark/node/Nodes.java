@@ -14,6 +14,9 @@ public class Nodes {
 
     /**
      * The nodes between (not including) start and end.
+     * @param start Start node
+     * @param end End node
+     * @return Iterable list of <pre>Node</pre>s
      */
     public static Iterable<Node> between(Node start, Node end) {
         return new NodeIterable(start.getNext(), end);

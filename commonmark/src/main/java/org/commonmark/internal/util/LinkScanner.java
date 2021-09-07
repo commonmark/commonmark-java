@@ -86,9 +86,6 @@ public class LinkScanner {
                 return false;
         }
         
-//        if(c != '(' && !(scanner.hasNext() && scanner.peek() == '(')) {
-//            scanner.next();
-//        }
         scanner.next();
 
         if (!scanLinkTitleContent(scanner, endDelimiter)) {

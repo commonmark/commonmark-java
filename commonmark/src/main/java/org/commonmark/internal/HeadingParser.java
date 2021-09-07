@@ -21,27 +21,19 @@ public class HeadingParser extends AbstractBlockParser {
     private final SourceLines content;
 
     public HeadingParser(int level, SourceLines content) {
-    	block.setLevel(level);
+        block.setLevel(level);
         block.setSymbolType('#');
         this.content = content;
     }
     
-    public HeadingParser(int level, SourceLines content, char symbolType, int numEndingSymbols, String... whitespace) {
+    public HeadingParser(int level, SourceLines content, char symbolType, int numEndingSymbols, String whitespacePreBlock, String whitespacePreContent, String whitespacePostContent, String whitespacePostBlock) {
         this(level, content);
         block.setSymbolType(symbolType);
         block.setNumEndingSymbol(numEndingSymbols);
-        
-        if(whitespace.length == 4) {
-            block.setWhitespace(whitespace);
-        }else {
-            String[] tempArray = {"", "", "", ""};
-            
-            for(int i = 0; i < whitespace.length; i++) {
-                tempArray[i] = whitespace[i];
-            }
-            
-            block.setWhitespace(tempArray);
-        }
+        block.setPreBlockWhitespace(whitespacePreBlock);
+        block.setPreContentWhitespace(whitespacePreContent);
+        block.setPostContentWhitespace(whitespacePostContent);
+        block.setPostBlockWhitespace(whitespacePostBlock);
     }
 
     @Override
@@ -97,12 +89,8 @@ public class HeadingParser extends AbstractBlockParser {
             if (setextHeadingLevel > 0) {
                 int numEndingSymbols = line.getContent().toString().trim().length();
                 
-                // AST: Setext headings have a slightly different twist on whitespace:
-                //      Pre-block = Before setext text begins
-                //      Pre-content = Directly after setext text
-                //      Post-content = Before setext delimiting line
-                //      Post-block = After setext delimiting line
-                String preContentWhitespace = "";
+                // AST: Setext headings have a slightly different twist on
+                //      whitespace, see the <pre>Heading</pre> class for details
                 String postContentWhitespace = Parsing.collectWhitespace(line.getContent(), 0, line.getContent().length());
                 String postBlockWhitespace = Parsing.collectWhitespaceBackwards(line.getContent(), line.getContent().length() - 1, 0);
                 
@@ -134,7 +122,7 @@ public class HeadingParser extends AbstractBlockParser {
                 
                 SourceLines paragraph = matchedBlockParser.getParagraphLines();
                 if (!paragraph.isEmpty()) {
-                    return BlockStart.of(new HeadingParser(setextHeadingLevel, paragraph, symbolType, numEndingSymbols, preBlockWhitespace, preContentWhitespace, postContentWhitespace, postBlockWhitespace))
+                    return BlockStart.of(new HeadingParser(setextHeadingLevel, paragraph, symbolType, numEndingSymbols, preBlockWhitespace, "", postContentWhitespace, postBlockWhitespace))
                             .atIndex(line.getContent().length())
                             .replaceActiveBlockParser();
                 }

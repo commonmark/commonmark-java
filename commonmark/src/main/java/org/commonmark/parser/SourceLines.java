@@ -66,8 +66,9 @@ public class SourceLines {
     }
     
     /**
-     * Return original <pre>List&lt;SourceLine&rt;</pre>, but with first line removed.
+     * Return original <pre>List&lt;SourceLine&gt;</pre>, but with first line removed.
      * If the list is already empty, return the list unchanged
+     * @return List of source lines, or a blank list
      */
     public List<SourceLine> removeFirstLine() {
         if(!isEmpty()) {

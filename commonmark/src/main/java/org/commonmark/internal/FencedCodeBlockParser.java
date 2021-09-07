@@ -25,7 +25,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         
         // Fenced code blocks can't be indented by newlines or tabs, so it's safe to assume
         //    spaces for the indentation
-        block.setWhitespace(Parsing.generateSpaces(fenceIndent));
+        block.setPreStartFenceWhitespace(Parsing.generateSpaces(fenceIndent));
     }
 
     @Override
@@ -39,15 +39,15 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         int newIndex = state.getIndex();
         CharSequence line = state.getLine().getContent();
         if (state.getIndent() < Parsing.CODE_BLOCK_INDENT && nextNonSpace < line.length() && line.charAt(nextNonSpace) == block.getFenceChar() && isClosing(line, nextNonSpace)) {
-        	// Capture whitespace before closing fence (if any) for roundtrip purposes
+            // Capture whitespace before closing fence (if any) for roundtrip purposes
             if(nextNonSpace > 0) {
-                block.setWhitespace(block.whitespacePreBlock(), block.whitespacePreContent(), Parsing.collectWhitespace(line, 0, nextNonSpace), block.whitespacePostBlock());
+                block.setPreEndFenceWhitespace(Parsing.collectWhitespace(line, 0, nextNonSpace));
             }
             
-        	// closing fence - we're at end of line, so we can finalize now
+            // closing fence - we're at end of line, so we can finalize now
             return BlockContinue.finished();
         } else {
-        	// Capture line before optional spaces are removed
+            // Capture line before optional spaces are removed
             rawLines.append(line.toString());
             rawLines.append('\n');
             
@@ -183,7 +183,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         
         // Capture post-fence spaces (if any) for roundtrip purposes
         if(after > 0 && after != (index + fences)) {
-            block.setWhitespace(block.whitespacePreBlock(), block.whitespacePreContent(), block.whitespacePostContent(), Parsing.collectWhitespaceBackwards(line, line.length() - 1, 0));
+            block.setPostBlockWhitespace(Parsing.collectWhitespaceBackwards(line, line.length() - 1, 0));
         }
         
         return after == line.length();

@@ -184,7 +184,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * On failure, return null.
      */
     private List<? extends Node> parseInline() {
-    	// AST: Capture raw information needed for roundtrip rendering
+        // AST: Capture raw information needed for roundtrip rendering
         String prefix = scanner.alignToLiteral();
         
         char c = scanner.peek();
@@ -206,7 +206,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         // No inline parser, delimiter or other special handling.
         if (!specialCharacters.get(c)) {
-        	List<Node> nodeList = Collections.singletonList(parseText(prefix));
+            List<Node> nodeList = Collections.singletonList(parseText(prefix));
             prefix = "";
             return nodeList;
         }
@@ -215,14 +215,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         if (inlineParsers != null) {
             Position position = scanner.position();
             for (InlineContentParser inlineParser : inlineParsers) {
-            	ParsedInline parsedInline;
-            	if(inlineParser instanceof BackticksInlineParser) {
+                ParsedInline parsedInline;
+                if(inlineParser instanceof BackticksInlineParser) {
                     parsedInline = inlineParser.tryParse(this, prefix);
                     prefix = "";
                 }else {
                     parsedInline = inlineParser.tryParse(this);
                 }
-            	
+                
                 if (parsedInline instanceof ParsedInlineImpl) {
                     ParsedInlineImpl parsedInlineImpl = (ParsedInlineImpl) parsedInline;
                     Node node = parsedInlineImpl.getNode();
@@ -931,7 +931,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private void mergeIfNeeded(Text first, Text last, int textLength) {
-    	if (first != null && last != null && first != last) {
+        if (first != null && last != null && first != last) {
             StringBuilder sb = new StringBuilder(textLength);
             StringBuilder sb2 = new StringBuilder(textLength);
             sb.append(first.getLiteral());

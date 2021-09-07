@@ -13,18 +13,18 @@ import org.commonmark.parser.SourceLine;
 public interface BlockParser {
 
     /**
-     * Return true if the block that is parsed is a container (contains other blocks), or false if it's a leaf.
+     * @return true if the block that is parsed is a container (contains other blocks), or false if it's a leaf.
      */
     boolean isContainer();
 
     /**
-     * Return true if the block can have lazy continuation lines.
      * <p>
      * Lazy continuation lines are lines that were rejected by this {@link #tryContinue(ParserState)} but didn't match
      * any other block parsers either.
      * <p>
      * If true is returned here, those lines will get added via {@link #addLine(SourceLine)}. For false, the block is
      * closed instead.
+     * @return true if the block can have lazy continuation lines.
      */
     boolean canHaveLazyContinuationLines();
 
@@ -42,6 +42,7 @@ public interface BlockParser {
      * need to override this.
      *
      * @since 0.16.0
+     * @param sourceSpan Source span to be added into the current block
      */
     void addSourceSpan(SourceSpan sourceSpan);
 

@@ -309,13 +309,13 @@ public class DocumentParser implements ParserState {
             }
 
             if (!blockParser.isContainer()) {
-            	// Capture any blank lines within a separate node for roundtrip purposes
-            	// BlankLine nodes do _not_ interrupt the current node type's processor
-            	if(isBlank()) {
-            		BlankLineParser blankLineParser = new BlankLineParser(ln.toString());
-            		addChild(new OpenBlockParser(blankLineParser, lastIndex));
-            	}
-            	
+                // Capture any blank lines within a separate node for roundtrip purposes
+                // BlankLine nodes do _not_ interrupt the current node type's processor
+                if(isBlank()) {
+                    BlankLineParser blankLineParser = new BlankLineParser(ln.toString());
+                    addChild(new OpenBlockParser(blankLineParser, lastIndex));
+                }
+
                 addLine();
             } else if (!isBlank()) {
                 // create paragraph container for line
@@ -335,9 +335,9 @@ public class DocumentParser implements ParserState {
                 // Capture any blank lines within a separate node for roundtrip purposes
                 // BlankLine nodes do _not_ interrupt the current node type's processor
                 if(isBlank()) {
-            		BlankLineParser blankLineParser = new BlankLineParser(ln.toString());
-            		addChild(new OpenBlockParser(blankLineParser, lastIndex));
-            	}
+                    BlankLineParser blankLineParser = new BlankLineParser(ln.toString());
+                    addChild(new OpenBlockParser(blankLineParser, lastIndex));
+                }
             }
         }
     }
@@ -445,20 +445,20 @@ public class DocumentParser implements ParserState {
             sb.append(rest);
             content = sb.toString();
         } else {
-        	content = line.getContent().toString();
+            content = line.getContent().toString();
         }
         
         SourceSpan sourceSpan = null;
         if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES) {
             // Note that if we're in a partially-consumed tab, the length here corresponds to the content but not to the
             // actual source length. That sounds like a problem, but I haven't found a test case where it matters (yet).
-        	sourceSpan = SourceSpan.of(lineIndex, index, line.getLiteralLine().getContent().length());
+            sourceSpan = SourceSpan.of(lineIndex, index, line.getLiteralLine().getContent().length());
         }
         
         if(!columnIsInTab) {
-        	getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan, index));
+            getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan, index));
         }else {
-        	getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan, 0));
+            getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan, 0));
         }
 
         addSourceSpans();
@@ -473,7 +473,7 @@ public class DocumentParser implements ParserState {
                 int length = line.getContent().length() - blockIndex;
                 
                 if(line.getLiteralIndex() != 0) {
-                	length = line.getLiteralLine().getContent().length() - blockIndex;
+                    length = line.getLiteralLine().getContent().length() - blockIndex;
                 }
                 
                 if (length != 0) {
@@ -532,20 +532,20 @@ public class DocumentParser implements ParserState {
      * its parent, and so on until we find a block that can accept children.
      */
     private void addChild(OpenBlockParser openBlockParser) {
-    	// BlankLine nodes do _not_ interrupt the current node type's processor, as
-    	//    they are non-standard CommonMark nodes meant only for roundtrip processing
-    	if(!(openBlockParser.blockParser instanceof BlankLineParser)) {
-	        while (!getActiveBlockParser().canContain(openBlockParser.blockParser.getBlock())) {
-	            closeBlockParsers(1);
-	        }
-    	}
+        // BlankLine nodes do _not_ interrupt the current node type's processor, as
+        //    they are non-standard CommonMark nodes meant only for roundtrip processing
+        if(!(openBlockParser.blockParser instanceof BlankLineParser)) {
+            while (!getActiveBlockParser().canContain(openBlockParser.blockParser.getBlock())) {
+                closeBlockParsers(1);
+            }
+        }
 
         getActiveBlockParser().getBlock().appendChild(openBlockParser.blockParser.getBlock());
         
         // BlankLine nodes do _not_ become the active parser, as this would interrupt the
         //    parser before it
         if(!(openBlockParser.blockParser instanceof BlankLineParser)) {
-        	activateBlockParser(openBlockParser);
+            activateBlockParser(openBlockParser);
         }
     }
 
@@ -581,16 +581,15 @@ public class DocumentParser implements ParserState {
         closeBlockParsers(openBlockParsers.size());
         processInlines();
         Document docNode = documentBlockParser.getBlock();
-        String postBlockWhitespace = "";
+        String whitespaceEndOfDocument = "";
         
         // CommonMark test cases end with newlines, indicating that this should be standard
-        //    in rountrip scenarios. If a post-document whitespace doesn't exist, add it.
-        if(postBlockWhitespace.isEmpty()) {
-    		postBlockWhitespace = "\n";
-    	}
+        //    in roundtrip scenarios. If a post-document whitespace doesn't exist, add it.
+        if(whitespaceEndOfDocument.isEmpty()) {
+            whitespaceEndOfDocument = "\n";
+        }
         
-        docNode.setWhitespace(docNode.whitespacePreBlock(), docNode.whitespacePreContent(),
-        		docNode.whitespacePostContent(), postBlockWhitespace);
+        docNode.setEndOfDocumentWhitespace(whitespaceEndOfDocument);
         return documentBlockParser.getBlock();
     }
 

@@ -1,16 +1,19 @@
 package org.commonmark.node;
 
 public class Heading extends Block {
-	// Track whitespace as follows:
-    //    [0] Pre-block
-    //    [1] Pre-content
-    //    [2] Post-content
-    //    [3] Post-block
-    private String[] whitespaceTracker = {"", "", "", ""};
-
     private int level;
     private char symbolType;
     private int numEndingSymbol;
+    
+    // Whitespace for roundtrip rendering
+    // AST: Pre-marker whitespace (ATX) or before setext text (setext)
+    private String whitespacePreBlock = "";
+    // AST: Pre-text (ATX) or after setext text ends (setext)
+    private String whitespacePreContent = "";
+    // AST: Post-text (ATX) or before setext delimiting line (setext)
+    private String whitespacePostContent = "";
+    // AST: Post-block (ATX) or after setext delimiting line (setext) 
+    private String whitespacePostBlock = "";
 
     @Override
     public void accept(Visitor visitor) {
@@ -41,27 +44,35 @@ public class Heading extends Block {
         this.numEndingSymbol = numEndingSymbol;
     }
     
-    @Override
     public String whitespacePreBlock() {
-        return whitespaceTracker[0];
-    }
-
-    @Override
-    public String whitespacePreContent() {
-        return whitespaceTracker[1];
-    }
-
-    @Override
-    public String whitespacePostContent() {
-        return whitespaceTracker[2];
-    }
-
-    @Override
-    public String whitespacePostBlock() {
-        return whitespaceTracker[3];
+        return whitespacePreBlock;
     }
     
-    public void setWhitespace(String... newWhitespace) {
-        whitespaceTracker = super.prepareStructuralWhitespace(newWhitespace);
+    public String whitespacePreContent() {
+        return whitespacePreContent;
+    }
+    
+    public String whitespacePostContent() {
+        return whitespacePostContent;
+    }
+    
+    public String whitespacePostBlock() {
+        return whitespacePostBlock;
+    }
+    
+    public void setPreBlockWhitespace(String whitespace) {
+        whitespacePreBlock = whitespace;
+    }
+    
+    public void setPreContentWhitespace(String whitespace) {
+        whitespacePreContent = whitespace;
+    }
+    
+    public void setPostContentWhitespace(String whitespace) {
+        whitespacePostContent = whitespace;
+    }
+    
+    public void setPostBlockWhitespace(String whitespace) {
+        whitespacePostBlock = whitespace;
     }
 }

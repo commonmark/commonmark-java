@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Text extends Node {
 
-	private String literal;
+    private String literal;
     private String raw = "";
     private String preContentWhitespace;
     private String postContentWhitespace;

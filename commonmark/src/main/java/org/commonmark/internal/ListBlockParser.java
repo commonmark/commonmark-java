@@ -135,7 +135,7 @@ public class ListBlockParser extends AbstractBlockParser {
             case '-':
             case '+':
             case '*':
-            	if (isSpaceTabOrEnd(line, index + 1)) {
+                if (isSpaceTabOrEnd(line, index + 1)) {
                     // Collect any pre-content whitespace in the first line for
                     //    roundtrip purposes.
                     String preContentWhitespace = Parsing.collectWhitespace(line, index + 1, line.length());
@@ -156,7 +156,8 @@ public class ListBlockParser extends AbstractBlockParser {
                     
                     BulletList bulletList = new BulletList();
                     bulletList.setBulletMarker(c);
-                    bulletList.setWhitespace(preBlockWhitespace, preContentWhitespace);
+                    bulletList.setPreBlockWhitespace(preBlockWhitespace);
+                    bulletList.setPreContentWhitespace(preContentWhitespace);
                     return new ListMarkerData(bulletList, index + 1);
                 } else {
                     return null;
@@ -217,7 +218,8 @@ public class ListBlockParser extends AbstractBlockParser {
                         //         only auto-incremented during rendering
                         currentRawNumber = number;
                         orderedList.setDelimiter(c);
-                        orderedList.setWhitespace(preBlockWhitespace, preContentWhitespace);
+                        orderedList.setPreBlockWhitespace(preBlockWhitespace);
+                        orderedList.setPreContentWhitespace(preContentWhitespace);
                         return new ListMarkerData(orderedList, i + 1);
                     } else {
                         return null;

@@ -13,7 +13,7 @@ package org.commonmark.node;
  */
 public class LinkReferenceDefinition extends Node {
 
-	private String label;
+    private String label;
     private String destination;
     private String rawDestination;
     private String title;
@@ -47,7 +47,7 @@ public class LinkReferenceDefinition extends Node {
     public void setLabel(String label) {
         this.label = label;
     }
-    
+
     public String getDestination() {
         return destination;
     }

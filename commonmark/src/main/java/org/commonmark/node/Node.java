@@ -149,21 +149,6 @@ public abstract class Node {
         }
         this.sourceSpans.add(sourceSpan);
     }
-
-    /**
-     * Check whether the given node is of the subset which count as "inline" nodes
-     * @param node Node to be checked for inline
-     * @return true if node is an inline node, otherwise false
-     */
-    public static boolean isInlineNode(Node node) {
-        if(node instanceof Code || node instanceof Emphasis || node instanceof StrongEmphasis ||
-                node instanceof Link || node instanceof Image || node instanceof HtmlInline ||
-                node instanceof HardLineBreak) {
-            return true;
-        }else {
-            return false;
-        }
-    }
     
     @Override
     public String toString() {

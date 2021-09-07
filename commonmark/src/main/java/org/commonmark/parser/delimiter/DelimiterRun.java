@@ -44,6 +44,8 @@ public interface DelimiterRun {
      * <p>
      * For example, for a delimiter run {@code ***}, calling this with 1 would return the last {@code *}.
      * Calling it with 2 would return the second last {@code *} and the last {@code *}.
+     * @param length Number of openers to capture
+     * @return Requested number of opening characters
      */
     Iterable<Text> getOpeners(int length);
 
@@ -53,6 +55,8 @@ public interface DelimiterRun {
      * <p>
      * For example, for a delimiter run {@code ***}, calling this with 1 would return the first {@code *}.
      * Calling it with 2 would return the first {@code *} and the second {@code *}.
+     * @param length Number of closers to capture
+     * @return Requested number of closing characters
      */
     Iterable<Text> getClosers(int length);
 }

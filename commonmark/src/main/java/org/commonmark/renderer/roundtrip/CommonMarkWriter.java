@@ -25,7 +25,7 @@ public class CommonMarkWriter {
     }
 
     public void line() {
-    	append('\n');
+        append('\n');
     }
 
     public void writeStripped(String s) {

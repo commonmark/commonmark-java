@@ -29,11 +29,12 @@ public class ListItemParser extends AbstractBlockParser {
         block.setRawNumber("");
     }
     
-    public ListItemParser(int contentIndent, String currentRawNumber, boolean firstLineBlank, String whitespacePreBlock, String whitespacePreContent) {
+    public ListItemParser(int contentIndent, String currentRawNumber, boolean firstLineBlank, String whitespacePreMarker, String whitespacePostMarker) {
         this(contentIndent);
         block.setRawNumber(currentRawNumber);
         this.firstLineBlank = firstLineBlank;
-        block.setWhitespace(whitespacePreBlock, whitespacePreContent);
+        block.setPreMarkerWhitespace(whitespacePreMarker);
+        block.setPostMarkerWhitespace(whitespacePostMarker);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class ListItemParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         if (state.isBlank()) {
-        	if (block.getFirstChild() == null || block.getFirstChild() instanceof BlankLine) {
+            if (block.getFirstChild() == null || block.getFirstChild() instanceof BlankLine) {
                 // Blank line after empty list item
                 return BlockContinue.none();
             } else {
@@ -77,9 +78,9 @@ public class ListItemParser extends AbstractBlockParser {
         }
 
         if (state.getIndent() >= contentIndent) {
-        	if(firstLineBlank) {
-                String whitespacePreContent = block.whitespacePreContent() + "\n";
-                block.setWhitespace(block.whitespacePreBlock(), whitespacePreContent);
+            if(firstLineBlank) {
+                String whitespacePostMarker = block.whitespacePostMarker() + "\n";
+                block.setPostMarkerWhitespace(whitespacePostMarker);
                 firstLineBlank = false;
             }
             return BlockContinue.atColumn(state.getColumn() + contentIndent);

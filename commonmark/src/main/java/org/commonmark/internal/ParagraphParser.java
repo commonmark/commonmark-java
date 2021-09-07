@@ -2,7 +2,6 @@ package org.commonmark.internal;
 
 import java.util.List;
 
-import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.Paragraph;
@@ -19,18 +18,13 @@ public class ParagraphParser extends AbstractBlockParser {
     private final Paragraph block = new Paragraph();
     private final LinkReferenceDefinitionParser linkReferenceDefinitionParser = new LinkReferenceDefinitionParser();
 
-    private String postContentWhitespace = "";
-    private String postBlockWhitespace = "";
-    
     // Preserve original default constructor by explicitly defining one
     public ParagraphParser() {
         super();
     }
     
     public ParagraphParser(String preBlockWhitespace) {
-        block.setWhitespace(preBlockWhitespace);
-        postContentWhitespace = "";
-        postBlockWhitespace = "";
+        block.setPreBlockWhitespace(preBlockWhitespace);
     }
     
     @Override
@@ -45,19 +39,7 @@ public class ParagraphParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState state) {
-    	char setextCheck = Character.MIN_VALUE;
-        postBlockWhitespace = block.whitespacePostBlock();
-        
         if (!state.isBlank()) {
-            
-            if(state.getLine() != null && state.getLine().getContent().toString().replaceFirst("^\\s+", "").length() != 0) {
-                setextCheck = state.getLine().getContent().toString().replaceFirst("^\\s+", "").charAt(0);
-            }
-            
-            if(setextCheck != Character.MIN_VALUE && setextCheck != '=' && setextCheck != '-') {
-                // Collect post-content whitespace for roundtrip purposes
-                postContentWhitespace = Parsing.collectWhitespaceBackwards(state.getLine().getContent(), state.getLine().getContent().length() - 1, 0);
-            }
             return BlockContinue.atIndex(state.getIndex());
         } else {
             return BlockContinue.none();
@@ -78,8 +60,6 @@ public class ParagraphParser extends AbstractBlockParser {
 
     @Override
     public void closeBlock() {
-        block.setWhitespace(block.whitespacePreBlock(), block.whitespacePreContent(), postContentWhitespace, postBlockWhitespace);
-        
         if (linkReferenceDefinitionParser.getParagraphLines().isEmpty()) {
             block.unlink();
         } else {

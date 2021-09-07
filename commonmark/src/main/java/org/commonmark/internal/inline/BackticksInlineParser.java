@@ -30,7 +30,7 @@ public class BackticksInlineParser implements InlineContentParser {
             if (count == openingTicks) {
                 Code node = new Code();
 
-node.setNumBackticks(count);
+                node.setNumBackticks(count);
                 
                 String content = scanner.getSource(afterOpening, beforeClosing).getContent();
                 // Capture raw string for roundtrip rendering

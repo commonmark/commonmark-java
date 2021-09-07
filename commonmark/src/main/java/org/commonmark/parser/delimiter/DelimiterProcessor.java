@@ -23,6 +23,7 @@ public interface DelimiterProcessor {
 
     /**
      * Minimum number of delimiter characters that are needed to activate this. Must be at least 1.
+     * @return the minimum number of delimiter characters needed to activate the processor.
      */
     int getMinLength();
 

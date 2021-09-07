@@ -3,6 +3,10 @@ package org.commonmark.node;
 public abstract class ListBlock extends Block {
 
     private boolean tight;
+    
+    // Whitespace for roundtrip parsing of the first line in a list block
+    private String whitespacePreBlock = "";
+    private String whitespacePreContent = "";
 
     /**
      * @return whether this list is tight or loose
@@ -16,4 +20,19 @@ public abstract class ListBlock extends Block {
         this.tight = tight;
     }
 
+    public String whitespacePreBlock() {
+        return whitespacePreBlock;
+    }
+    
+    public String whitespacePreContent() {
+        return whitespacePreContent;
+    }
+    
+    public void setPreBlockWhitespace(String whitespace) {
+        whitespacePreBlock = whitespace;
+    }
+    
+    public void setPreContentWhitespace(String whitespace) {
+        whitespacePreContent = whitespace;
+    }
 }

@@ -2,7 +2,7 @@ package org.commonmark.node;
 
 public class Image extends Node implements LinkFormat {
 
-	private String destination;
+    private String destination;
     private String rawDestination;
     private String title;
     private String rawTitle;

@@ -8,11 +8,11 @@ package org.commonmark.node;
  */
 public abstract class AbstractVisitor implements Visitor {
 
-	@Override
+    @Override
     public void visit(BlankLine blankLine) {
         visitChildren(blankLine);
     }
-	
+
     @Override
     public void visit(BlockQuote blockQuote) {
         visitChildren(blockQuote);

@@ -53,4 +53,9 @@ public class InsDelimiterProcessor implements DelimiterProcessor {
             return 0;
         }
     }
+
+    @Override
+    public int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix) {
+        return process(openingRun, closingRun);
+    }
 }

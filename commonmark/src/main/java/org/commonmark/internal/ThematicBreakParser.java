@@ -1,6 +1,5 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.block.AbstractBlockParser;
@@ -21,11 +20,6 @@ public class ThematicBreakParser extends AbstractBlockParser {
     
     public ThematicBreakParser(CharSequence content) {
         block.setContent(content);
-    }
-    
-    public ThematicBreakParser(CharSequence content, String... whitespace) {
-        block.setContent(content);
-        block.setWhitespace(whitespace);
     }
     
     @Override
@@ -49,12 +43,8 @@ public class ThematicBreakParser extends AbstractBlockParser {
             int nextNonSpace = state.getNextNonSpaceIndex();
             CharSequence line = state.getLine().getContent();
             
-            // Collect pre- and post-content whitespace for roundtrip purposes
-            String preContentWhitespace = Parsing.collectWhitespace(line, 0, nextNonSpace);
-            String postContentWhitespace = Parsing.collectWhitespaceBackwards(line, line.length() - 1, nextNonSpace);
-            
             if (isThematicBreak(line, nextNonSpace)) {
-            	return BlockStart.of(new ThematicBreakParser(line, "", preContentWhitespace, postContentWhitespace)).atIndex(line.length());
+                return BlockStart.of(new ThematicBreakParser(line)).atIndex(line.length());
             } else {
                 return BlockStart.none();
             }

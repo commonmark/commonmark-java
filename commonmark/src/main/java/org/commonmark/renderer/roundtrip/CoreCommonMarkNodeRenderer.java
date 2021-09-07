@@ -87,21 +87,21 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
     @Override
     public void visit(Document document) {
         // No rendering itself (aside from post-block whitespace, if present)
-    	
+        
         visitChildren(document);
 
-        textContent.write(document.whitespacePostBlock());
+        textContent.write(document.whitespaceEndOfDocument());
     }
 
     public void visit(BlockQuote blockQuote) {
-    	if(blockQuote.getFirstChild() instanceof Heading ||
-    			blockQuote.getFirstChild() instanceof IndentedCodeBlock ||
-    			blockQuote.getFirstChild() instanceof FencedCodeBlock) {
-	    	textContent.write(blockQuote.whitespacePreBlock());
-	    	textContent.write(">");
-	    	textContent.write(blockQuote.whitespacePreContent());
-    	}
-    	
+        if(blockQuote.getFirstChild() instanceof Heading ||
+                blockQuote.getFirstChild() instanceof IndentedCodeBlock ||
+                blockQuote.getFirstChild() instanceof FencedCodeBlock) {
+            textContent.write(blockQuote.whitespacePreMarker());
+            textContent.write(">");
+            textContent.write(blockQuote.whitespacePostMarker());
+        }
+
         visitChildren(blockQuote);
         
         writeEndOfLineIfNeeded(blockQuote, null);
@@ -134,7 +134,7 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
     
     @Override
     public void visit(Emphasis emphasis) {
-    	textContent.write(emphasis.whitespacePreBlock());
+        textContent.write(emphasis.whitespacePreBlock());
         textContent.write(emphasis.getOpeningDelimiter());
         visitChildren(emphasis);
         textContent.write(emphasis.getClosingDelimiter());
@@ -156,13 +156,13 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
         // CommonMark test case #96 shows that content with no ending fence and
         //    completely blank content should not trigger a new line
         if(fencedCodeBlock.getEndFenceLength() > 0 || !fencedCodeBlock.getRaw().isEmpty()) {
-        	textContent.line();
+            textContent.line();
         }
         
         textContent.write(fencedCodeBlock.getRaw());
         
         if(fencedCodeBlock.getEndFenceLength() > 0 && !fencedCodeBlock.getRaw().isEmpty()) {
-        	textContent.line();
+            textContent.line();
         }
         
         for(int i = 0; i < fencedCodeBlock.getEndFenceIndent(); i++) {
@@ -182,17 +182,17 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
 
     @Override
     public void visit(HardLineBreak hardLineBreak) {
-    	if(hardLineBreak.hasBackslash()) {
-    		textContent.write("\\");
-    	}
-    	
+        if(hardLineBreak.hasBackslash()) {
+            textContent.write("\\");
+        }
+
         writeEndOfLine();
     }
 
     public void visit(Heading heading) {
         
         if(heading.getSymbolType() == '#') {
-        	textContent.write(heading.whitespacePreBlock());
+            textContent.write(heading.whitespacePreBlock());
             
             for(int i = 0; i < heading.getLevel(); i++) {
                 textContent.write(heading.getSymbolType());
@@ -215,33 +215,33 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
             writeEndOfLineIfNeeded(heading, null);
             
         }else {
-        	textContent.write(heading.whitespacePreBlock());
-        	
-        	visitChildren(heading);
-        	
-        	textContent.write(heading.whitespacePreContent());
-        	
-        	writeEndOfLine();
+            textContent.write(heading.whitespacePreBlock());
 
-        	textContent.write(heading.whitespacePostContent());
-        	
+            visitChildren(heading);
+
+            textContent.write(heading.whitespacePreContent());
+
+            writeEndOfLine();
+
+            textContent.write(heading.whitespacePostContent());
+
             if(heading.getNumEndingSymbol() > 0) {
-            	for(int i = 0; i < heading.getNumEndingSymbol(); i++) {
-            		textContent.write(heading.getSymbolType());
-            	}
+                for(int i = 0; i < heading.getNumEndingSymbol(); i++) {
+                    textContent.write(heading.getSymbolType());
+                }
             }
-            
-           	textContent.write(heading.whitespacePostBlock());
+
+            textContent.write(heading.whitespacePostBlock());
             
             writeEndOfLineIfNeeded(heading, null);
         }
     }
 
     public void visit(ThematicBreak thematicBreak) {
-    	if(thematicBreak.getContent() != null) {
-    		textContent.write(thematicBreak.getContent().toString());
-    	}
-    	
+        if(thematicBreak.getContent() != null) {
+            textContent.write(thematicBreak.getContent().toString());
+        }
+
         writeEndOfLineIfNeeded(thematicBreak, null);
     }
 
@@ -252,8 +252,8 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
 
     @Override
     public void visit(HtmlBlock htmlBlock) {
-    	textContent.write(htmlBlock.getRaw());
-    	writeEndOfLineIfNeeded(htmlBlock, null);
+        textContent.write(htmlBlock.getRaw());
+        writeEndOfLineIfNeeded(htmlBlock, null);
     }
 
     @Override
@@ -263,11 +263,11 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
 
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
-   		textContent.write(indentedCodeBlock.whitespacePreContent());
-    	
-    	textContent.write(indentedCodeBlock.getRaw());
-    	
-    	writeEndOfLineIfNeeded(indentedCodeBlock, null);
+        textContent.write(indentedCodeBlock.getIndentWhitespace());
+
+        textContent.write(indentedCodeBlock.getRaw());
+
+        writeEndOfLineIfNeeded(indentedCodeBlock, null);
     }
 
     public void visit(Link link) {
@@ -285,37 +285,33 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
         if (listHolder != null && listHolder instanceof OrderedListHolder) {
             OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
             
-            textContent.write(listItem.whitespacePreBlock());
+            textContent.write(listItem.whitespacePreMarker());
             
             if(!(listItem.getFirstChild() instanceof ThematicBreak) &&
-            		!(listItem.getFirstChild() instanceof HtmlBlock) &&
-            		!(listItem.getParent().getParent() instanceof BlockQuote) &&
-            		!(listItem.getFirstChild() instanceof BlankLine)) {
-            	textContent.write(listItem.getRawNumber() + "");
-            	textContent.write(orderedListHolder.getDelimiter());
-            	textContent.write(listItem.whitespacePreContent());
+                    !(listItem.getFirstChild() instanceof HtmlBlock) &&
+                    !(listItem.getParent().getParent() instanceof BlockQuote) &&
+                    !(listItem.getFirstChild() instanceof BlankLine)) {
+                textContent.write(listItem.getRawNumber() + "");
+                textContent.write(orderedListHolder.getDelimiter());
+                textContent.write(listItem.whitespacePostMarker());
             }
             
             visitChildren(listItem);
-            
-            textContent.write(listItem.whitespacePostBlock());
             
             writeEndOfLineIfNeeded(listItem, null);
         } else if (listHolder != null && listHolder instanceof BulletListHolder) {
             BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
             
-            textContent.write(listItem.whitespacePreBlock());
+            textContent.write(listItem.whitespacePreMarker());
             
             if(!(listItem.getFirstChild() instanceof ThematicBreak) &&
-            		!(listItem.getFirstChild() instanceof HtmlBlock) &&
-            		!(listItem.getParent().getParent() instanceof BlockQuote) &&
-            		!(listItem.getFirstChild() instanceof BlankLine)) {
-            	textContent.write(bulletListHolder.getMarker());
-            	textContent.write(listItem.whitespacePreContent());
+                    !(listItem.getFirstChild() instanceof HtmlBlock) &&
+                    !(listItem.getParent().getParent() instanceof BlockQuote) &&
+                    !(listItem.getFirstChild() instanceof BlankLine)) {
+                textContent.write(bulletListHolder.getMarker());
+                textContent.write(listItem.whitespacePostMarker());
             }
             visitChildren(listItem);
-            
-            textContent.write(listItem.whitespacePostBlock());
             
             writeEndOfLineIfNeeded(listItem, null);
         }
@@ -340,19 +336,17 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
         visitChildren(paragraph);
         
         writeEndOfLineIfNeeded(paragraph, null);
-
-        textContent.write(paragraph.whitespacePostBlock());
     }
 
     @Override
     public void visit(SoftLineBreak softLineBreak) {
-    	// Within roundtrip rendering, a soft break is always a newline of some kind
+        // Within roundtrip rendering, a soft break is always a newline of some kind
         writeEndOfLine();
     }
     
     @Override
     public void visit(StrongEmphasis strongEmphasis) {
-    	textContent.write(strongEmphasis.whitespacePreBlock());
+        textContent.write(strongEmphasis.whitespacePreBlock());
         textContent.write(strongEmphasis.getOpeningDelimiter());
         visitChildren(strongEmphasis);
         textContent.write(strongEmphasis.getClosingDelimiter());
@@ -360,21 +354,21 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
 
     @Override
     public void visit(Text text) {
-    	if(!text.getRaw().isEmpty()) {
-			textContent.write(text.whitespacePreContent() + text.getRaw() + text.whitespacePostContent());
-		}else {
-			textContent.write(text.whitespacePreContent() + text.getLiteral() + text.whitespacePostContent());
-		}
+        if(!text.getRaw().isEmpty()) {
+            textContent.write(text.whitespacePreContent() + text.getRaw() + text.whitespacePostContent());
+        }else {
+            textContent.write(text.whitespacePreContent() + text.getLiteral() + text.whitespacePostContent());
+        }
     }
     
     @Override
-	public void visit(BlankLine blankLine) {
-		System.out.println(blankLine.getRaw());
-		textContent.write(blankLine.getRaw());
-		writeEndOfLineIfNeeded(blankLine, null);
-	}
+    public void visit(BlankLine blankLine) {
+        System.out.println(blankLine.getRaw());
+        textContent.write(blankLine.getRaw());
+        writeEndOfLineIfNeeded(blankLine, null);
+    }
 
-	@Override
+    @Override
     protected void visitChildren(Node parent) {
         Node node = parent.getFirstChild();
         
@@ -403,18 +397,18 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
             visitChildren(node);
             textContent.write(">");
         }else if(node.getLinkType() == LinkType.REFERENCE) {
-        	textContent.write("[");
+            textContent.write("[");
             visitChildren(node);
             textContent.write("]");
             
             if(node.getLabel() != null) {
-	            textContent.write("[");
-	            if(node.getRawLabel() != null && !node.getRawLabel().isEmpty()) {
-	            	textContent.write(node.getRawLabel());
-	            }else {
-	            	textContent.write(node.getLabel());
-	            }
-	            textContent.write("]");
+                textContent.write("[");
+                if(node.getRawLabel() != null && !node.getRawLabel().isEmpty()) {
+                    textContent.write(node.getRawLabel());
+                }else {
+                    textContent.write(node.getLabel());
+                }
+                textContent.write("]");
             }
         }else {
             textContent.write("[");
@@ -424,8 +418,8 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
             textContent.write("(");
             
             if(!node.getRawDestination().isEmpty()) {
-            	textContent.write(node.getWhitespacePreDestination());
-            	textContent.write(node.getRawDestination());
+                textContent.write(node.getWhitespacePreDestination());
+                textContent.write(node.getRawDestination());
             }else if(node.getDestination() != null) {
                 textContent.write(node.getWhitespacePreDestination());
                 textContent.write(node.getDestination());
@@ -434,8 +428,8 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
             }
             
             if(!node.getRawTitle().isEmpty()) {
-            	textContent.write(node.getWhitespacePreTitle());
-            	textContent.write(node.getRawTitle());
+                textContent.write(node.getWhitespacePreTitle());
+                textContent.write(node.getRawTitle());
             }else if(node.getTitle() != null) {
                 textContent.write(node.getWhitespacePreTitle());
                 textContent.write(node.getTitleSymbol() + "");
@@ -443,9 +437,9 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
                 textContent.write(node.getTitle());
                 
                 if(node.getTitleSymbol() == '(') {
-                	textContent.write(")");
+                    textContent.write(")");
                 }else {
-                	textContent.write(node.getTitleSymbol());
+                    textContent.write(node.getTitleSymbol());
                 }
             }
             
@@ -455,38 +449,38 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
     }
     
     private void writeLinkReference(LinkReferenceDefinition node) {
-    	textContent.write(node.whitespacePreLabel());
-    	
+        textContent.write(node.whitespacePreLabel());
+
         textContent.write("[");
         textContent.write(node.getLabel());
         textContent.write("]:");
         
         if(node.getDestination() != null) {
-        	textContent.write(node.whitespacePreDestination());
-        	if(!node.getRawDestination().isEmpty()) {
-        		textContent.write(node.getRawDestination());
-        	}else {
-        		textContent.write(node.getDestination());
-        	}
+            textContent.write(node.whitespacePreDestination());
+            if(!node.getRawDestination().isEmpty()) {
+                textContent.write(node.getRawDestination());
+            }else {
+                textContent.write(node.getDestination());
+            }
             
             if(node.getTitle() != null) {
-            	textContent.write(node.whitespacePreTitle());
-            	
-            	char delimiter = node.getDelimiterChar();
-            	
-            	if(delimiter == Character.MIN_VALUE) {
-            		delimiter = '"';
-            	}
-            	
-            	textContent.write(delimiter);
-            	
-            	if(!node.getRawTitle().isEmpty()) {
-            		textContent.write(node.getRawTitle());
-            	}else {
-            		textContent.write(node.getTitle());
-            	}
-            	
-            	textContent.write(delimiter);
+                textContent.write(node.whitespacePreTitle());
+
+                char delimiter = node.getDelimiterChar();
+
+                if(delimiter == Character.MIN_VALUE) {
+                    delimiter = '"';
+                }
+
+                textContent.write(delimiter);
+
+                if(!node.getRawTitle().isEmpty()) {
+                    textContent.write(node.getRawTitle());
+                }else {
+                    textContent.write(node.getTitle());
+                }
+
+                textContent.write(delimiter);
             }
         }
         
@@ -500,18 +494,18 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
             visitChildren(node);
             textContent.write(">");
         }else if(node.getLinkType() == LinkType.REFERENCE) {
-        	textContent.write("![");
+            textContent.write("![");
             visitChildren(node);
             textContent.write("]");
             
             if(node.getLabel() != null) {
-	            textContent.write("[");
-	            if(node.getRawLabel() != null && !node.getRawLabel().isEmpty()) {
-	            	textContent.write(node.getRawLabel());
-	            }else {
-	            	textContent.write(node.getLabel());
-	            }
-	            textContent.write("]");
+                textContent.write("[");
+                if(node.getRawLabel() != null && !node.getRawLabel().isEmpty()) {
+                    textContent.write(node.getRawLabel());
+                }else {
+                    textContent.write(node.getLabel());
+                }
+                textContent.write("]");
             }
         }else {
             textContent.write("![");
@@ -521,8 +515,8 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
             textContent.write("(");
             
             if(!node.getRawDestination().isEmpty()) {
-            	textContent.write(node.getWhitespacePreDestination());
-            	textContent.write(node.getRawDestination());
+                textContent.write(node.getWhitespacePreDestination());
+                textContent.write(node.getRawDestination());
             }else if(node.getDestination() != null) {
                 textContent.write(node.getWhitespacePreDestination());
                 textContent.write(node.getDestination());
@@ -531,8 +525,8 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
             }
             
             if(!node.getRawTitle().isEmpty()) {
-            	textContent.write(node.getWhitespacePreTitle());
-            	textContent.write(node.getRawTitle());
+                textContent.write(node.getWhitespacePreTitle());
+                textContent.write(node.getRawTitle());
             }else if(node.getTitle() != null) {
                 textContent.write(node.getWhitespacePreTitle());
                 textContent.write(node.getTitleSymbol() + "");
@@ -540,9 +534,9 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
                 textContent.write(node.getTitle());
                 
                 if(node.getTitleSymbol() == '(') {
-                	textContent.write(")");
+                    textContent.write(")");
                 }else {
-                	textContent.write(node.getTitleSymbol());
+                    textContent.write(node.getTitleSymbol());
                 }
             }
             
@@ -553,19 +547,11 @@ public class CoreCommonMarkNodeRenderer extends AbstractVisitor implements NodeR
 
     private void writeEndOfLineIfNeeded(Node node, Character c) {
         if (node.getNext() != null) {
-        	if(node instanceof ListItem) {
-        		// If a list item has post-block whitespace, allow it to handle whitespace
-        		if(((ListItem)node).whitespacePostBlock().isEmpty()) {
-        			textContent.line();
-        		}
-        	}else if(node instanceof Paragraph) {
-        		// If a paragraph has post-block whitespace, allow it to handle whitespace
-        		if(((Paragraph)node).whitespacePostBlock().isEmpty()) {
-        			textContent.line();
-        		}
-        	}else {
-        		textContent.line();
-        	}
+            if(node instanceof ListItem || node instanceof Paragraph) {
+                textContent.line();
+            }else {
+                textContent.line();
+            }
         }
     }
 

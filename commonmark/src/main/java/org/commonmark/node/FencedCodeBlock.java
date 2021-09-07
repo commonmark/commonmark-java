@@ -1,12 +1,6 @@
 package org.commonmark.node;
 
 public class FencedCodeBlock extends Block {
- // Track whitespace as follows:
-    //    [0] Pre-block
-    //    [1] Pre-content
-    //    [2] Post-content
-    //    [3] Post-block
-    private String[] whitespaceTracker = {"", "", "", ""};
 
     private char fenceChar;
     private int startFenceLength;
@@ -15,6 +9,12 @@ public class FencedCodeBlock extends Block {
     private String info;
     private String literal;
     private String raw;
+    
+    // Whitespace tracked for roundtrip rendering
+    private String whitespacePreStartFence = "";
+    private String whitespacePreContent = "";
+    private String whitespacePreEndFence = "";
+    private String whitespacePostBlock = "";
 
     @Override
     public void accept(Visitor visitor) {
@@ -46,15 +46,16 @@ public class FencedCodeBlock extends Block {
     }
 
     public int getStartFenceIndent() {
-        return whitespaceTracker[0].length();
+        return whitespacePreStartFence.length();
     }
     
     public int getEndFenceIndent() {
-        return whitespaceTracker[2].length();
+        return whitespacePreEndFence.length();
     }
 
     /**
      * @see <a href="http://spec.commonmark.org/0.18/#info-string">CommonMark spec</a>
+     * @return Info string or null
      */
     public String getInfo() {
         return info;
@@ -80,27 +81,35 @@ public class FencedCodeBlock extends Block {
         this.raw = raw;
     }
     
-    @Override
-    public String whitespacePreBlock() {
-        return whitespaceTracker[0];
+    public String whitespacePreStartFence() {
+        return whitespacePreStartFence;
     }
 
-    @Override
     public String whitespacePreContent() {
-        return whitespaceTracker[1];
+        return whitespacePreContent;
     }
 
-    @Override
-    public String whitespacePostContent() {
-        return whitespaceTracker[2];
+    public String whitespacePreEndFence() {
+        return whitespacePreEndFence;
     }
 
-    @Override
     public String whitespacePostBlock() {
-        return whitespaceTracker[3];
+        return whitespacePostBlock;
     }
     
-    public void setWhitespace(String... newWhitespace) {
-        whitespaceTracker = super.prepareStructuralWhitespace(newWhitespace);
+    public void setPreStartFenceWhitespace(String whitespace) {
+        whitespacePreStartFence = whitespace;
+    }
+    
+    public void setPreContentWhitespace(String whitespace) {
+        whitespacePreContent = whitespace;
+    }
+    
+    public void setPreEndFenceWhitespace(String whitespace) {
+        whitespacePreEndFence = whitespace;
+    }
+    
+    public void setPostBlockWhitespace(String whitespace) {
+        whitespacePostBlock = whitespace;
     }
 }

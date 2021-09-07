@@ -96,7 +96,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
 
     @Override
     public void addLine(SourceLine line) {
-    	// Raw line and literal line are the same
+        // Raw line and literal line are the same
         if(line.getLiteralIndex() == 0) {
             content.add(line.getContent());
             rawContent.add(line.getContent());

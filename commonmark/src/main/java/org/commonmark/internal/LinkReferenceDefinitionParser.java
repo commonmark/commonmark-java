@@ -41,10 +41,10 @@ public class LinkReferenceDefinitionParser {
     private String whitespacePostTitle = "";
 
     public void parse(SourceLine line) {
-    	paragraphLines.add(line.getLiteralLine());
+        paragraphLines.add(line.getLiteralLine());
         rawParagraphLines.add(line);
         
-    	if (state == State.PARAGRAPH) {
+        if (state == State.PARAGRAPH) {
             // We're in a paragraph now. Link reference definitions can only appear at the beginning, so once
             // we're in a paragraph, there's no going back.
             return;
@@ -65,7 +65,7 @@ public class LinkReferenceDefinitionParser {
                     break;
                 }
                 case LABEL: {
-                	// Capture line number to determine if line breaks occur
+                    // Capture line number to determine if line breaks occur
                     if(line.getSourceSpan() != null) {
                         previousLineIndex = line.getSourceSpan().getLineIndex();
                     }
@@ -74,7 +74,7 @@ public class LinkReferenceDefinitionParser {
                     break;
                 }
                 case DESTINATION: {
-                	// Check for any line breaks
+                    // Check for any line breaks
                     if(line.getSourceSpan() != null) {
                         if(line.getSourceSpan().getLineIndex() > previousLineIndex) {
                             whitespacePreDestination = whitespacePreDestination + "\n";
@@ -86,7 +86,7 @@ public class LinkReferenceDefinitionParser {
                     break;
                 }
                 case START_TITLE: {
-                	// Check for any line breaks
+                    // Check for any line breaks
                     if(line.getSourceSpan() != null) {
                         if(line.getSourceSpan().getLineIndex() > previousLineIndex) {
                             whitespacePreTitle = whitespacePreTitle + "\n";
@@ -150,7 +150,7 @@ public class LinkReferenceDefinitionParser {
     }
 
     private boolean startDefinition(Scanner scanner) {
-    	// Capture whitespace for roundtrip purposes
+        // Capture whitespace for roundtrip purposes
         whitespacePreLabel = scanner.whitespaceAsString();
         
         String whitespaceCheck = scanner.alignToLiteral();
@@ -159,7 +159,7 @@ public class LinkReferenceDefinitionParser {
             whitespacePreLabel = whitespaceCheck;
         }
         
-    	if (!scanner.next('[')) {
+        if (!scanner.next('[')) {
             return false;
         }
 
@@ -210,7 +210,7 @@ public class LinkReferenceDefinitionParser {
     }
 
     private boolean destination(Scanner scanner) {
-    	whitespacePreDestination = whitespacePreDestination +
+        whitespacePreDestination = whitespacePreDestination +
                 scanner.whitespaceAsString();
         Position start = scanner.position();
         if (!LinkScanner.scanLinkDestination(scanner)) {
@@ -239,8 +239,8 @@ public class LinkReferenceDefinitionParser {
     }
 
     private boolean startTitle(Scanner scanner) {
-    	whitespacePreTitle = whitespacePreTitle + scanner.whitespaceAsString();
-    	if (!scanner.hasNext()) {
+        whitespacePreTitle = whitespacePreTitle + scanner.whitespaceAsString();
+        if (!scanner.hasNext()) {
             state = State.START_DEFINITION;
             return true;
         }
@@ -291,7 +291,7 @@ public class LinkReferenceDefinitionParser {
         scanner.next();
         whitespacePostTitle = scanner.whitespaceAsString();
         if (scanner.hasNext()) {
-        	title = null;
+            title = null;
             whitespacePostTitle = "";
             // spec: No further non-whitespace characters may occur on the line.
             return false;

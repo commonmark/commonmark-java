@@ -7,22 +7,22 @@ import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
 
 public class BlankLineParser extends AbstractBlockParser {
-	
-	private BlankLine block;
-	
-	public BlankLineParser(String raw) {
-		block = new BlankLine(raw);
-	}
 
-	@Override
-	public Block getBlock() {
-		return block;
-	}
+    private BlankLine block;
 
-	@Override
-	public BlockContinue tryContinue(ParserState parserState) {
-		// Blank lines do not become active parsers, so they cannot be continued
-		return null;
-	}
+    public BlankLineParser(String raw) {
+        block = new BlankLine(raw);
+    }
+
+    @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
+    public BlockContinue tryContinue(ParserState parserState) {
+        // Blank lines do not become active parsers, so they cannot be continued
+        return null;
+    }
 
 }
