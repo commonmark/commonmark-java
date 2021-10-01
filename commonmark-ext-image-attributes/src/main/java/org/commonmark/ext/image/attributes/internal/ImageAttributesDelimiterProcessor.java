@@ -85,4 +85,9 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
 
         return 1;
     }
+
+    @Override
+    public int process(DelimiterRun openingRun, DelimiterRun closingRun, String prefix) {
+        return process(openingRun, closingRun);
+    }
 }

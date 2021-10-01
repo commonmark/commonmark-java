@@ -45,7 +45,7 @@ public class TableBlockParser extends AbstractBlockParser {
 
     @Override
     public void addLine(SourceLine line) {
-        rowLines.add(line);
+        rowLines.add(line.getLiteralLine());
     }
 
     @Override

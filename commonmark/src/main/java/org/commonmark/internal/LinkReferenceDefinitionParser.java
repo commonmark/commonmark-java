@@ -51,11 +51,6 @@ public class LinkReferenceDefinitionParser {
         }
 
         Scanner scanner = Scanner.of(SourceLines.of(line));
-        if(line.getSourceSpan() != null) {
-            // Ensure that LinkReferenceDefinition objects can have populated source spans
-            // Source spans track literal lines, not raw lines
-            addSourceSpan(line.getLiteralLine().getSourceSpan());
-        }
         
         while (scanner.hasNext()) {
             boolean success;
