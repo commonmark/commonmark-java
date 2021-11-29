@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.18.1] - 2021-11-29
 ### Fixed
 - Fix tables with leading/trailing header pipes and trailing spaces (#244).
   This was a regression in 0.16.1 which is now fixed.
