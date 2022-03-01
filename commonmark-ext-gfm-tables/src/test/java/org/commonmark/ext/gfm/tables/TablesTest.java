@@ -709,6 +709,28 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void tableWithDanglingPipe() {
+        assertRendering("Abc|Def\n---|---\n1|2\n|", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td></td>\n" +
+                "<td></td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
     public void sourceSpans() {
         Parser parser = Parser.builder()
                 .extensions(EXTENSIONS)

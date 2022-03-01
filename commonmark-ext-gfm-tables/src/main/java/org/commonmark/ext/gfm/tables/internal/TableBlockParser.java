@@ -124,7 +124,7 @@ public class TableBlockParser extends AbstractBlockParser {
         int nonSpace = Parsing.skipSpaceTab(row, 0, row.length());
         int cellStart = nonSpace;
         int cellEnd = row.length();
-        if (row.charAt(nonSpace) == '|') {
+        if (row.charAt(nonSpace) == '|' && nonSpace + 1 < cellEnd) {
             // This row has leading/trailing pipes - skip the leading pipe
             cellStart = nonSpace + 1;
             // Strip whitespace from the end but not the pipe or we could miss an empty ("||") cell
