@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Added
+- YAML front matter extension: Limited support for single and double
+  quoted string values (#260)
+
 ## [0.18.2] - 2022-02-24
 ### Changed
 - Test against Java 17

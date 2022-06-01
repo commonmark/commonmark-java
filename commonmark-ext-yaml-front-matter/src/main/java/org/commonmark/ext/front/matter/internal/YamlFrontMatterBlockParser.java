@@ -61,10 +61,11 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
             inLiteral = false;
             currentKey = matcher.group(1);
             currentValues = new ArrayList<>();
-            if ("|".equals(matcher.group(2))) {
+            String value = matcher.group(2);
+            if ("|".equals(value)) {
                 inLiteral = true;
-            } else if (!"".equals(matcher.group(2))) {
-                currentValues.add(matcher.group(2));
+            } else if (!"".equals(value)) {
+                currentValues.add(parseString(value));
             }
 
             return BlockContinue.atIndex(parserState.getIndex());
@@ -81,7 +82,8 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
             } else {
                 matcher = REGEX_METADATA_LIST.matcher(line);
                 if (matcher.matches()) {
-                    currentValues.add(matcher.group(1));
+                    String value = matcher.group(1);
+                    currentValues.add(parseString(value));
                 }
             }
 
@@ -91,6 +93,24 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
 
     @Override
     public void parseInlines(InlineParser inlineParser) {
+    }
+
+    private static String parseString(String s) {
+        // Limited parsing of https://yaml.org/spec/1.2.2/#73-flow-scalar-styles
+        // We assume input is well-formed and otherwise treat it as a plain string. In a real
+        // parser, e.g. `'foo` would be invalid because it's missing a trailing `'`.
+        if (s.startsWith("'") && s.endsWith("'")) {
+            String inner = s.substring(1, s.length() - 1);
+            return inner.replace("''", "'");
+        } else if (s.startsWith("\"") && s.endsWith("\"")) {
+            String inner = s.substring(1, s.length() - 1);
+            // Only support escaped `\` and `"`, nothing else.
+            return inner
+                    .replace("\\\"", "\"")
+                    .replace("\\\\", "\\");
+        } else {
+            return s;
+        }
     }
 
     public static class Factory extends AbstractBlockParserFactory {
