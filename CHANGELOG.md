@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.19.0] - 2022-06-02
 ### Added
 - YAML front matter extension: Limited support for single and double
   quoted string values (#260)
@@ -362,6 +362,7 @@ Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
 
+[0.19.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.18.2...commonmark-parent-0.19.0
 [0.18.2]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.18.1...commonmark-parent-0.18.2
 [0.18.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.18.0...commonmark-parent-0.18.1
 [0.18.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.17.2...commonmark-parent-0.18.0
