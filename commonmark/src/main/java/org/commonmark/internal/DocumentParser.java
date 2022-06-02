@@ -98,6 +98,14 @@ public class DocumentParser implements ParserState {
         return list;
     }
 
+    public static void checkEnabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
+        for (Class<? extends Block> enabledBlockType : enabledBlockTypes) {
+            if (!NODES_TO_CORE_FACTORIES.containsKey(enabledBlockType)) {
+                throw new IllegalArgumentException("Can't enable block type " + enabledBlockType + ", possible options are: " + NODES_TO_CORE_FACTORIES.keySet());
+            }
+        }
+    }
+
     /**
      * The main parsing function. Returns a parsed document AST.
      */
