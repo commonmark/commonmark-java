@@ -176,6 +176,7 @@ public class Parser {
             if (enabledBlockTypes == null) {
                 throw new NullPointerException("enabledBlockTypes must not be null");
             }
+            DocumentParser.checkEnabledBlockTypes(enabledBlockTypes);
             this.enabledBlockTypes = enabledBlockTypes;
             return this;
         }

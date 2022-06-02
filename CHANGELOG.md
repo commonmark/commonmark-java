@@ -10,6 +10,8 @@ with the exception that 0.x versions can break between minor versions.
 ### Added
 - YAML front matter extension: Limited support for single and double
   quoted string values (#260)
+### Changed
+- Check argument of `enabledBlockTypes` when building parser instead of NPEing later
 
 ## [0.18.2] - 2022-02-24
 ### Changed
