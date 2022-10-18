@@ -261,21 +261,21 @@ public class TablesTest extends RenderingTestCase {
                         "-|-------------|-\n" +
                         "1|      2      |3",
                 "<table>\n" +
-                "<thead>\n" +
-                "<tr>\n" +
-                "<th></th>\n" +
-                "<th>center header</th>\n" +
-                "<th></th>\n" +
-                "</tr>\n" +
-                "</thead>\n" +
-                "<tbody>\n" +
-                "<tr>\n" +
-                "<td>1</td>\n" +
-                "<td>2</td>\n" +
-                "<td>3</td>\n" +
-                "</tr>\n" +
-                "</tbody>\n" +
-                "</table>\n");
+                        "<thead>\n" +
+                        "<tr>\n" +
+                        "<th></th>\n" +
+                        "<th>center header</th>\n" +
+                        "<th></th>\n" +
+                        "</tr>\n" +
+                        "</thead>\n" +
+                        "<tbody>\n" +
+                        "<tr>\n" +
+                        "<td>1</td>\n" +
+                        "<td>2</td>\n" +
+                        "<td>3</td>\n" +
+                        "</tr>\n" +
+                        "</tbody>\n" +
+                        "</table>\n");
     }
 
     @Test
@@ -665,6 +665,47 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void danglingPipe() {
+        assertRendering("Abc|Def\n" +
+                "---|---\n" +
+                "1|2\n" +
+                "|", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n" +
+                "<p>|</p>\n");
+
+        assertRendering("Abc|Def\n" +
+                "---|---\n" +
+                "1|2\n" +
+                "  |  ", "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>Abc</th>\n" +
+                "<th>Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n" +
+                "<p>|</p>\n");
+    }
+
+    @Test
     public void attributeProviderIsApplied() {
         AttributeProviderFactory factory = new AttributeProviderFactory() {
             @Override
@@ -718,7 +759,7 @@ public class TablesTest extends RenderingTestCase {
 
         TableBlock block = (TableBlock) document.getFirstChild();
         assertEquals(Arrays.asList(SourceSpan.of(0, 0, 7), SourceSpan.of(1, 0, 7),
-                SourceSpan.of(2, 0, 4), SourceSpan.of(3, 0, 8), SourceSpan.of(4, 0, 3)),
+                        SourceSpan.of(2, 0, 4), SourceSpan.of(3, 0, 8), SourceSpan.of(4, 0, 3)),
                 block.getSourceSpans());
 
         TableHead head = (TableHead) block.getFirstChild();
