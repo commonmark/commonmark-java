@@ -19,6 +19,8 @@ public class TableBlockParser extends AbstractBlockParser {
     private final List<SourceLine> rowLines = new ArrayList<>();
     private final List<TableCell.Alignment> columns;
 
+    private boolean canHaveLazyContinuationLines = true;
+
     private TableBlockParser(List<TableCell.Alignment> columns, SourceLine headerLine) {
         this.columns = columns;
         this.rowLines.add(headerLine);
@@ -26,7 +28,7 @@ public class TableBlockParser extends AbstractBlockParser {
 
     @Override
     public boolean canHaveLazyContinuationLines() {
-        return true;
+        return canHaveLazyContinuationLines;
     }
 
     @Override
@@ -36,7 +38,17 @@ public class TableBlockParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState state) {
-        if (Parsing.find('|', state.getLine().getContent(), 0) != -1) {
+        CharSequence content = state.getLine().getContent();
+        int pipe = Parsing.find('|', content, state.getNextNonSpaceIndex());
+        if (pipe != -1) {
+            if (pipe == state.getNextNonSpaceIndex()) {
+                // If we *only* have a pipe character (and whitespace), that is not a valid table row and ends the table.
+                if (Parsing.skipSpaceTab(content, pipe + 1, content.length()) == content.length()) {
+                    // We also don't want the pipe to be added via lazy continuation.
+                    canHaveLazyContinuationLines = false;
+                    return BlockContinue.none();
+                }
+            }
             return BlockContinue.atIndex(state.getIndex());
         } else {
             return BlockContinue.none();
@@ -128,7 +140,7 @@ public class TableBlockParser extends AbstractBlockParser {
             // This row has leading/trailing pipes - skip the leading pipe
             cellStart = nonSpace + 1;
             // Strip whitespace from the end but not the pipe or we could miss an empty ("||") cell
-            int nonSpaceEnd = Parsing.skipSpaceTabBackwards(row, row.length() - 1, cellStart + 1);
+            int nonSpaceEnd = Parsing.skipSpaceTabBackwards(row, row.length() - 1, cellStart);
             cellEnd = nonSpaceEnd + 1;
         }
         List<SourceLine> cells = new ArrayList<>();
