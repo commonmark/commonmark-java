@@ -7,7 +7,7 @@ fi
 
 version=$1
 curl -L "https://raw.githubusercontent.com/commonmark/commonmark-spec/$version/spec.txt" -o commonmark-test-util/src/main/resources/spec.txt
-curl -L "https://raw.githubusercontent.com/github/cmark-gfm/master/test/spec.txt" -o commonmark-ext-gfm-tables/src/test/resources/gfm-spec.txt
+curl -L "https://raw.githubusercontent.com/github/cmark-gfm/master/test/spec.txt" -o commonmark-test-util/src/main/resources/gfm-spec.txt
 
 echo "Check cmark and commonmark.js regression.txt:"
 echo "https://github.com/commonmark/cmark/blob/master/test/regression.txt"

@@ -14,6 +14,10 @@ public class TestResources {
         return TestResources.class.getResource("/spec.txt");
     }
 
+    public static URL getGfmSpec() {
+        return TestResources.class.getResource("/gfm-spec.txt");
+    }
+
     public static List<URL> getRegressions() {
         return Arrays.asList(
                 TestResources.class.getResource("/cmark-regression.txt"),
