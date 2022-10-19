@@ -26,12 +26,12 @@ public class StrikethroughTest extends RenderingTestCase {
             .extensions(EXTENSIONS).build();
 
     @Test
-    public void oneTildeIsNotEnough() {
-        assertRendering("~foo~", "<p>~foo~</p>\n");
+    public void oneTildeIsEnough() {
+        assertRendering("~foo~", "<p><del>foo</del></p>\n");
     }
 
     @Test
-    public void twoTildesYay() {
+    public void twoTildesWorksToo() {
         assertRendering("~~foo~~", "<p><del>foo</del></p>\n");
     }
 
@@ -48,23 +48,22 @@ public class StrikethroughTest extends RenderingTestCase {
 
     @Test
     public void threeInnerThree() {
-        assertRendering("a ~~~foo~~~", "<p>a ~<del>foo</del>~</p>\n");
+        assertRendering("a ~~~foo~~~", "<p>a ~~~foo~~~</p>\n");
     }
 
     @Test
     public void twoInnerThree() {
-        assertRendering("~~foo~~~", "<p><del>foo</del>~</p>\n");
+        assertRendering("~~foo~~~", "<p>~~foo~~~</p>\n");
     }
 
     @Test
     public void tildesInside() {
         assertRendering("~~foo~bar~~", "<p><del>foo~bar</del></p>\n");
         assertRendering("~~foo~~bar~~", "<p><del>foo</del>bar~~</p>\n");
-        assertRendering("~~foo~~~bar~~", "<p><del>foo</del>~bar~~</p>\n");
-        assertRendering("~~foo~~~~bar~~", "<p><del>foo</del><del>bar</del></p>\n");
-        assertRendering("~~foo~~~~~bar~~", "<p><del>foo</del>~<del>bar</del></p>\n");
-        assertRendering("~~foo~~~~~~bar~~", "<p><del>foo</del>~~<del>bar</del></p>\n");
-        assertRendering("~~foo~~~~~~~bar~~", "<p><del>foo</del>~~~<del>bar</del></p>\n");
+        assertRendering("~~foo~~~bar~~", "<p><del>foo~~~bar</del></p>\n");
+        assertRendering("~~foo~~~~bar~~", "<p><del>foo~~~~bar</del></p>\n");
+        assertRendering("~~foo~~~~~bar~~", "<p><del>foo~~~~~bar</del></p>\n");
+        assertRendering("~~foo~~~~~~bar~~", "<p><del>foo~~~~~~bar</del></p>\n");
     }
 
     @Test
