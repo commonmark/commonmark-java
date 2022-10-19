@@ -8,8 +8,12 @@ with the exception that 0.x versions can break between minor versions.
 
 ## [Unreleased]
 ### Fixed
-- A single pipe (optional whitespace) now ends a table instead of crashing or
-  being treated as an empty row, for consistency with GitHub (#255).
+- GitHub tables: A single pipe (optional whitespace) now ends a table
+  instead of crashing or being treated as an empty row, for consistency
+  with GitHub (#255).
+- GitHub strikethrough: A single tilde now also works, and more than two
+  tildes are not accepted anymore. This brings us in line with what
+  GitHub actually does, which is a bit underspecified (#267)
 
 ## [0.19.0] - 2022-06-02
 ### Added

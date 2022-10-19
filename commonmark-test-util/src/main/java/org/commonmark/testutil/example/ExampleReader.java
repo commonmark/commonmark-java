@@ -42,6 +42,17 @@ public class ExampleReader {
         }
     }
 
+    public static List<Object[]> readExampleObjects(URL url, String info) {
+        List<Example> examples = readExamples(url);
+        List<Object[]> data = new ArrayList<>();
+        for (Example example : examples) {
+            if (example.getInfo().contains(info)) {
+                data.add(new Object[]{example});
+            }
+        }
+        return data;
+    }
+
     public static List<String> readExampleSources(URL url) {
         List<Example> examples = ExampleReader.readExamples(url);
         List<String> result = new ArrayList<>();

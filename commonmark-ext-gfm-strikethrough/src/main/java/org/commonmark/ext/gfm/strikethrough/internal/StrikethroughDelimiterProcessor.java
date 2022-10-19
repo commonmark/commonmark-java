@@ -22,13 +22,13 @@ public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
 
     @Override
     public int getMinLength() {
-        return 2;
+        return 1;
     }
 
     @Override
     public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
-        if (openingRun.length() >= 2 && closingRun.length() >= 2) {
-            // Use exactly two delimiters even if we have more, and don't care about internal openers/closers.
+        if (openingRun.length() == closingRun.length() && openingRun.length() <= 2) {
+            // GitHub only accepts either one or two delimiters, but not a mix or more than that.
 
             Text opener = openingRun.getOpener();
 
@@ -36,19 +36,19 @@ public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
             Node strikethrough = new Strikethrough();
 
             SourceSpans sourceSpans = new SourceSpans();
-            sourceSpans.addAllFrom(openingRun.getOpeners(2));
+            sourceSpans.addAllFrom(openingRun.getOpeners(openingRun.length()));
 
             for (Node node : Nodes.between(opener, closingRun.getCloser())) {
                 strikethrough.appendChild(node);
                 sourceSpans.addAll(node.getSourceSpans());
             }
 
-            sourceSpans.addAllFrom(closingRun.getClosers(2));
+            sourceSpans.addAllFrom(closingRun.getClosers(closingRun.length()));
             strikethrough.setSourceSpans(sourceSpans.getSourceSpans());
 
             opener.insertAfter(strikethrough);
 
-            return 2;
+            return openingRun.length();
         } else {
             return 0;
         }
