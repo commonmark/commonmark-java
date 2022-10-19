@@ -14,6 +14,7 @@ with the exception that 0.x versions can break between minor versions.
 - GitHub strikethrough: A single tilde now also works, and more than two
   tildes are not accepted anymore. This brings us in line with what
   GitHub actually does, which is a bit underspecified (#267)
+- The autolink extension now handles source spans correctly (#209)
 
 ## [0.19.0] - 2022-06-02
 ### Added

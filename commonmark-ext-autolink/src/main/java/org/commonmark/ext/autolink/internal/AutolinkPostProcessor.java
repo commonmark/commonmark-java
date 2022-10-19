@@ -1,16 +1,13 @@
 package org.commonmark.ext.autolink.internal;
 
-import org.commonmark.node.AbstractVisitor;
-import org.commonmark.node.Link;
-import org.commonmark.node.Node;
-import org.commonmark.node.Text;
+import org.commonmark.node.*;
 import org.commonmark.parser.PostProcessor;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
 import org.nibor.autolink.Span;
 
-import java.util.EnumSet;
+import java.util.*;
 
 public class AutolinkPostProcessor implements PostProcessor {
 
@@ -25,26 +22,49 @@ public class AutolinkPostProcessor implements PostProcessor {
         return node;
     }
 
-    private void linkify(Text textNode) {
-        String literal = textNode.getLiteral();
+    private void linkify(Text originalTextNode) {
+        String literal = originalTextNode.getLiteral();
 
-        Node lastNode = textNode;
+        Node lastNode = originalTextNode;
+        List<SourceSpan> sourceSpans = originalTextNode.getSourceSpans();
+        SourceSpan sourceSpan = sourceSpans.size() == 1 ? sourceSpans.get(0) : null;
 
-        for (Span span : linkExtractor.extractSpans(literal)) {
-            String text = literal.substring(span.getBeginIndex(), span.getEndIndex());
+        Iterator<Span> spans = linkExtractor.extractSpans(literal).iterator();
+        while (spans.hasNext()) {
+            Span span = spans.next();
+
+            if (lastNode == originalTextNode && !spans.hasNext() && !(span instanceof LinkSpan)) {
+                // Didn't find any links, don't bother changing existing node.
+                return;
+            }
+
+            Text textNode = createTextNode(literal, span, sourceSpan);
             if (span instanceof LinkSpan) {
-                String destination = getDestination((LinkSpan) span, text);
-                Text contentNode = new Text(text);
+                String destination = getDestination((LinkSpan) span, textNode.getLiteral());
+
                 Link linkNode = new Link(destination, null);
-                linkNode.appendChild(contentNode);
+                linkNode.appendChild(textNode);
+                linkNode.setSourceSpans(textNode.getSourceSpans());
                 lastNode = insertNode(linkNode, lastNode);
             } else {
-                lastNode = insertNode(new Text(text), lastNode);
+                lastNode = insertNode(textNode, lastNode);
             }
         }
 
         // Original node no longer needed
-        textNode.unlink();
+        originalTextNode.unlink();
+    }
+
+    private static Text createTextNode(String literal, Span span, SourceSpan sourceSpan) {
+        int beginIndex = span.getBeginIndex();
+        int endIndex = span.getEndIndex();
+        String text = literal.substring(beginIndex, endIndex);
+        Text textNode = new Text(text);
+        if (sourceSpan != null) {
+            int length = endIndex - beginIndex;
+            textNode.addSourceSpan(SourceSpan.of(sourceSpan.getLineIndex(), beginIndex, length));
+        }
+        return textNode;
     }
 
     private static String getDestination(LinkSpan linkSpan, String linkText) {
