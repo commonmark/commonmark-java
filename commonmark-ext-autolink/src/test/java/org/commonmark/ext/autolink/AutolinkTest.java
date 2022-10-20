@@ -1,13 +1,20 @@
 package org.commonmark.ext.autolink;
 
 import org.commonmark.Extension;
+import org.commonmark.node.*;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AutolinkTest extends RenderingTestCase {
 
@@ -51,6 +58,59 @@ public class AutolinkTest extends RenderingTestCase {
     public void dontLinkTextWithinLinks() {
         assertRendering("<http://example.com>",
                 "<p><a href=\"http://example.com\">http://example.com</a></p>\n");
+    }
+
+    @Test
+    public void sourceSpans() {
+        Parser parser = Parser.builder()
+                .extensions(EXTENSIONS)
+                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                .build();
+        Node document = parser.parse("abc\n" +
+                "http://example.com/one\n" +
+                "def http://example.com/two\n" +
+                "ghi http://example.com/three jkl");
+
+        Paragraph paragraph = (Paragraph) document.getFirstChild();
+        Text abc = (Text) paragraph.getFirstChild();
+        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 3)),
+                abc.getSourceSpans());
+
+        assertTrue(abc.getNext() instanceof SoftLineBreak);
+
+        Link one = (Link) abc.getNext().getNext();
+        assertEquals("http://example.com/one", one.getDestination());
+        assertEquals(Arrays.asList(SourceSpan.of(1, 0, 22)),
+                one.getSourceSpans());
+
+        assertTrue(one.getNext() instanceof SoftLineBreak);
+
+        Text def = (Text) one.getNext().getNext();
+        assertEquals("def ", def.getLiteral());
+        assertEquals(Arrays.asList(SourceSpan.of(2, 0, 4)),
+                def.getSourceSpans());
+
+        Link two = (Link) def.getNext();
+        assertEquals("http://example.com/two", two.getDestination());
+        assertEquals(Arrays.asList(SourceSpan.of(2, 4, 22)),
+                two.getSourceSpans());
+
+        assertTrue(two.getNext() instanceof SoftLineBreak);
+
+        Text ghi = (Text) two.getNext().getNext();
+        assertEquals("ghi ", ghi.getLiteral());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 0, 4)),
+                ghi.getSourceSpans());
+
+        Link three = (Link) ghi.getNext();
+        assertEquals("http://example.com/three", three.getDestination());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 4, 24)),
+                three.getSourceSpans());
+
+        Text jkl = (Text) three.getNext();
+        assertEquals(" jkl", jkl.getLiteral());
+        assertEquals(Arrays.asList(SourceSpan.of(3, 28, 4)),
+                jkl.getSourceSpans());
     }
 
     @Override
