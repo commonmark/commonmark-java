@@ -30,11 +30,13 @@ import org.commonmark.renderer.NodeRenderer;
  * <p>
  * If you have another extension that only uses a single tilde ({@code ~}) syntax, you will have to configure this
  * {@link StrikethroughExtension} to only accept the double tilde syntax, like this:
+ * </p>
  * <pre>
  *     {@code
  *     StrikethroughExtension.builder().requireTwoTildes(true).build();
  *     }
  * </pre>
+ * <p>
  * If you don't do that, there's a conflict between the two extensions and you will get an
  * {@link IllegalArgumentException} when constructing the parser.
  * </p>
