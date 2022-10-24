@@ -60,7 +60,7 @@ public class DelimiterProcessorTest extends RenderingTestCase {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void multipleDelimitersWithSameLength() {
+    public void multipleDelimitersWithSameLengthConflict() {
         Parser.builder()
                 .customDelimiterProcessor(new OneDelimiterProcessor())
                 .customDelimiterProcessor(new OneDelimiterProcessor())

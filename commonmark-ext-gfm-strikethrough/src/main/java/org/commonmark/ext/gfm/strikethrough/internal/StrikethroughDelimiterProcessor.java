@@ -10,6 +10,16 @@ import org.commonmark.parser.delimiter.DelimiterRun;
 
 public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
 
+    private final boolean requireTwoTildes;
+
+    public StrikethroughDelimiterProcessor() {
+        this(false);
+    }
+
+    public StrikethroughDelimiterProcessor(boolean requireTwoTildes) {
+        this.requireTwoTildes = requireTwoTildes;
+    }
+
     @Override
     public char getOpeningCharacter() {
         return '~';
@@ -22,7 +32,7 @@ public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
 
     @Override
     public int getMinLength() {
-        return 1;
+        return requireTwoTildes ? 2 : 1;
     }
 
     @Override

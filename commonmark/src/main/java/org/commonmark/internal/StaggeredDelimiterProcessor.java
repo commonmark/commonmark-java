@@ -51,7 +51,7 @@ class StaggeredDelimiterProcessor implements DelimiterProcessor {
                 added = true;
                 break;
             } else if (len == pLen) {
-                throw new IllegalArgumentException("Cannot add two delimiter processors for char '" + delim + "' and minimum length " + len);
+                throw new IllegalArgumentException("Cannot add two delimiter processors for char '" + delim + "' and minimum length " + len + "; conflicting processors: " + p + ", " + dp);
             }
         }
         if (!added) {
