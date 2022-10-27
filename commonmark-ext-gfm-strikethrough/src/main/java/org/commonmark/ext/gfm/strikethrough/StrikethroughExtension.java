@@ -14,29 +14,59 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 
 /**
- * Extension for GFM strikethrough using ~~ (GitHub Flavored Markdown).
+ * Extension for GFM strikethrough using {@code ~} or {@code ~~} (GitHub Flavored Markdown).
+ * <p>Example input:</p>
+ * <pre>{@code ~foo~ or ~~bar~~}</pre>
+ * <p>Example output (HTML):</p>
+ * <pre>{@code <del>foo</del> or <del>bar</del>}</pre>
  * <p>
- * Create it with {@link #create()} and then configure it on the builders
+ * Create the extension with {@link #create()} and then add it to the parser and renderer builders
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
  * {@link HtmlRenderer.Builder#extensions(Iterable)}).
  * </p>
  * <p>
  * The parsed strikethrough text regions are turned into {@link Strikethrough} nodes.
  * </p>
+ * <p>
+ * If you have another extension that only uses a single tilde ({@code ~}) syntax, you will have to configure this
+ * {@link StrikethroughExtension} to only accept the double tilde syntax, like this:
+ * </p>
+ * <pre>
+ *     {@code
+ *     StrikethroughExtension.builder().requireTwoTildes(true).build();
+ *     }
+ * </pre>
+ * <p>
+ * If you don't do that, there's a conflict between the two extensions and you will get an
+ * {@link IllegalArgumentException} when constructing the parser.
+ * </p>
  */
 public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
         TextContentRenderer.TextContentRendererExtension {
 
-    private StrikethroughExtension() {
+    private final boolean requireTwoTildes;
+
+    private StrikethroughExtension(Builder builder) {
+        this.requireTwoTildes = builder.requireTwoTildes;
     }
 
+    /**
+     * @return the extension with default options
+     */
     public static Extension create() {
-        return new StrikethroughExtension();
+        return builder().build();
+    }
+
+    /**
+     * @return a builder to configure the behavior of the extension
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        parserBuilder.customDelimiterProcessor(new StrikethroughDelimiterProcessor());
+        parserBuilder.customDelimiterProcessor(new StrikethroughDelimiterProcessor(requireTwoTildes));
     }
 
     @Override
@@ -57,5 +87,27 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
                 return new StrikethroughTextContentNodeRenderer(context);
             }
         });
+    }
+
+    public static class Builder {
+
+        private boolean requireTwoTildes = false;
+
+        /**
+         * @param requireTwoTildes Whether two tilde characters ({@code ~~}) are required for strikethrough or whether
+         * one is also enough. Default is {@code false}; both a single tilde and two tildes can be used for strikethrough.
+         * @return {@code this}
+         */
+        public Builder requireTwoTildes(boolean requireTwoTildes) {
+            this.requireTwoTildes = requireTwoTildes;
+            return this;
+        }
+
+        /**
+         * @return a configured extension
+         */
+        public Extension build() {
+            return new StrikethroughExtension(this);
+        }
     }
 }

@@ -4,22 +4,25 @@ import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.SourceSpan;
+import org.commonmark.node.Text;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterRun;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 
+import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 
 public class StrikethroughTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(StrikethroughExtension.create());
+    private static final Set<Extension> EXTENSIONS = singleton(StrikethroughExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
     private static final TextContentRenderer CONTENT_RENDERER = TextContentRenderer.builder()
@@ -93,6 +96,19 @@ public class StrikethroughTest extends RenderingTestCase {
     }
 
     @Test
+    public void requireTwoTildesOption() {
+        Parser parser = Parser.builder()
+                .extensions(singleton(StrikethroughExtension.builder()
+                        .requireTwoTildes(true)
+                        .build()))
+                .customDelimiterProcessor(new SubscriptDelimiterProcessor())
+                .build();
+
+        Node document = parser.parse("~foo~ ~~bar~~");
+        assertEquals("(sub)foo(/sub) /bar/", CONTENT_RENDERER.render(document));
+    }
+
+    @Test
     public void sourceSpans() {
         Parser parser = Parser.builder()
                 .extensions(EXTENSIONS)
@@ -109,5 +125,30 @@ public class StrikethroughTest extends RenderingTestCase {
     @Override
     protected String render(String source) {
         return HTML_RENDERER.render(PARSER.parse(source));
+    }
+
+    private static class SubscriptDelimiterProcessor implements DelimiterProcessor {
+
+        @Override
+        public char getOpeningCharacter() {
+            return '~';
+        }
+
+        @Override
+        public char getClosingCharacter() {
+            return '~';
+        }
+
+        @Override
+        public int getMinLength() {
+            return 1;
+        }
+
+        @Override
+        public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
+            openingRun.getOpener().insertAfter(new Text("(sub)"));
+            closingRun.getCloser().insertBefore(new Text("(/sub)"));
+            return 1;
+        }
     }
 }
