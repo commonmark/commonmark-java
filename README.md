@@ -48,7 +48,8 @@ be followed.
 See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt)
 file if you're wondering which version of the spec is currently
 implemented. Also check out the [CommonMark dingus] for getting familiar
-with the syntax or trying out edge cases.
+with the syntax or trying out edge cases. If you clone the repository,
+you can also use the `DingusApp` class to try out things interactively.
 
 
 Usage
