@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## [Unreleased]
+## [0.21.0] - 2022-11-17
 ### Added
 - GitHub strikethrough: With the previous version we adjusted the
   extension to also accept the single tilde syntax. But if you use
@@ -379,7 +379,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
-[Unreleased]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.20.0...HEAD
+[0.21.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.20.0...commonmark-parent-0.21.0
 [0.20.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.19.0...commonmark-parent-0.20.0
 [0.19.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.18.2...commonmark-parent-0.19.0
 [0.18.2]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.18.1...commonmark-parent-0.18.2
