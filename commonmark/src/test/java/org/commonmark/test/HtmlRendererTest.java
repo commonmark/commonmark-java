@@ -254,6 +254,24 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void videoTagAutoDetectMp4() {
+        assertEquals("<p><video controls=\"\"><source src=\"/url.mp4\" />text</video></p>\n",
+                defaultRenderer().render(parse("![text](/url.mp4)")));
+    }
+
+    @Test
+    public void videoTagAutoDetectWebm() {
+        assertEquals("<p><video controls=\"\"><source src=\"/url.webm\" />text</video></p>\n",
+                defaultRenderer().render(parse("![text](/url.webm)")));
+    }
+
+    @Test
+    public void videoTagAutoDetectIsCaseInsensitive() {
+        assertEquals("<p><video controls=\"\"><source src=\"/url.Mp4\" />text</video></p>\n",
+                defaultRenderer().render(parse("![text](/url.Mp4)")));
+    }
+
+    @Test
     public void canRenderContentsOfSingleParagraph() {
         Node paragraphs = parse("Here I have a test [link](http://www.google.com)");
         Node paragraph = paragraphs.getFirstChild();

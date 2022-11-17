@@ -10,6 +10,9 @@ import java.util.*;
  */
 public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
+    private static final Set<String> VIDEO_EXTENSIONS = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList("mp4", "webm")));
+
     protected final HtmlNodeRendererContext context;
     private final HtmlWriter html;
 
@@ -180,22 +183,21 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     public void visit(Image image) {
         String url = image.getDestination();
 
+        MediaType mediaType = detectMediaType(url);
+
         AltTextVisitor altTextVisitor = new AltTextVisitor();
         image.accept(altTextVisitor);
         String altText = altTextVisitor.getAltText();
 
-        Map<String, String> attrs = new LinkedHashMap<>();
         if (context.shouldSanitizeUrls()) {
             url = context.urlSanitizer().sanitizeImageUrl(url);
         }
 
-        attrs.put("src", context.encodeUrl(url));
-        attrs.put("alt", altText);
-        if (image.getTitle() != null) {
-            attrs.put("title", image.getTitle());
+        if (mediaType == MediaType.VIDEO) {
+            renderVideo(image, url, altText);
+        } else {
+            renderImage(image, url, altText);
         }
-
-        html.tag("img", getAttrs(image, "img", attrs), true);
     }
 
     @Override
@@ -274,6 +276,44 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         html.line();
     }
 
+    private static MediaType detectMediaType(String url) {
+        int extensionStart = url.lastIndexOf('.');
+        if (extensionStart < 0) {
+            return MediaType.IMAGE;
+        }
+        String extension = url.substring(extensionStart + 1).toLowerCase(Locale.ROOT);
+
+        if (VIDEO_EXTENSIONS.contains(extension)) {
+            return MediaType.VIDEO;
+        } else {
+            return MediaType.IMAGE;
+        }
+    }
+
+    private void renderImage(Image image, String url, String altText) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        attrs.put("src", context.encodeUrl(url));
+        attrs.put("alt", altText);
+        if (image.getTitle() != null) {
+            attrs.put("title", image.getTitle());
+        }
+
+        html.tag("img", getAttrs(image, "img", attrs), true);
+    }
+
+    private void renderVideo(Image image, String url, String altText) {
+        Map<String, String> videoAttrs = new LinkedHashMap<>();
+        videoAttrs.put("controls", "");
+
+        Map<String, String> sourceAttrs = new LinkedHashMap<>();
+        sourceAttrs.put("src", context.encodeUrl(url));
+
+        html.tag("video", getAttrs(image, "video", videoAttrs));
+        html.tag("source", sourceAttrs, true);
+        html.text(altText);
+        html.tag("/video");
+    }
+
     private boolean isInTightList(Paragraph paragraph) {
         Node parent = paragraph.getParent();
         if (parent != null) {
@@ -316,5 +356,10 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         public void visit(HardLineBreak hardLineBreak) {
             sb.append('\n');
         }
+    }
+
+    private enum MediaType {
+        IMAGE,
+        VIDEO
     }
 }
