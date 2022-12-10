@@ -1,6 +1,7 @@
 package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
@@ -8,6 +9,9 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class TablesTextContentTest extends RenderingTestCase {
 
@@ -17,123 +21,138 @@ public class TablesTextContentTest extends RenderingTestCase {
 
     @Test
     public void oneHeadNoBody() {
-        assertRendering("Abc|Def\n---|---", "Abc| Def\n");
+        assertTableRendering("Abc|Def\n---|---", "| Abc | Def |\n| --- | --- |\n");
     }
 
     @Test
     public void oneColumnOneHeadNoBody() {
-        String expected = "Abc\n";
-        assertRendering("|Abc\n|---\n", expected);
-        assertRendering("|Abc|\n|---|\n", expected);
-        assertRendering("Abc|\n---|\n", expected);
+        String expected = "| Abc |\n| --- |\n";
+        assertTableRendering("|Abc\n|---\n", expected);
+        assertTableRendering("|Abc|\n|---|\n", expected);
+        assertTableRendering("Abc|\n---|\n", expected);
 
         // Pipe required on separator
-        assertRendering("|Abc\n---\n", "|Abc");
+        assertIsNotTable("|Abc\n---\n");
         // Pipe required on head
-        assertRendering("Abc\n|---\n", "Abc\n|---");
+        assertIsNotTable("Abc\n|---\n");
     }
 
     @Test
     public void oneColumnOneHeadOneBody() {
-        String expected = "Abc\n1\n";
-        assertRendering("|Abc\n|---\n|1", expected);
-        assertRendering("|Abc|\n|---|\n|1|", expected);
-        assertRendering("Abc|\n---|\n1|", expected);
+        String expected = "| Abc |\n| --- |\n| 1 |\n";
+        assertTableRendering("|Abc\n|---\n|1", expected);
+        assertTableRendering("|Abc|\n|---|\n|1|", expected);
+        assertTableRendering("Abc|\n---|\n1|", expected);
 
         // Pipe required on separator
-        assertRendering("|Abc\n---\n|1", "|Abc\n|1");
+        assertIsNotTable("|Abc\n---\n|1");
     }
 
     @Test
     public void oneHeadOneBody() {
-        assertRendering("Abc|Def\n---|---\n1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n---|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void separatorMustNotHaveLessPartsThanHead() {
-        assertRendering("Abc|Def|Ghi\n---|---\n1|2|3", "Abc|Def|Ghi\n---|---\n1|2|3");
+        assertIsNotTable("Abc|Def|Ghi\n---|---\n1|2|3");
     }
 
     @Test
     public void padding() {
-        assertRendering(" Abc  | Def \n --- | --- \n 1 | 2 ", "Abc| Def\n1| 2\n");
+        assertTableRendering(" Abc  | Def \n --- | --- \n 1 | 2 ", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void paddingWithCodeBlockIndentation() {
-        assertRendering("Abc|Def\n---|---\n    1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n---|---\n    1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void pipesOnOutside() {
-        assertRendering("|Abc|Def|\n|---|---|\n|1|2|", "Abc| Def\n1| 2\n");
+        assertTableRendering("|Abc|Def|\n|---|---|\n|1|2|", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void inlineElements() {
-        assertRendering("*Abc*|Def\n---|---\n1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("*Abc*|Def\n---|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void escapedPipe() {
-        assertRendering("Abc|Def\n---|---\n1\\|2|20", "Abc| Def\n1|2| 20\n");
+        assertTableRendering("Abc|Def\n---|---\n1\\|2|20", "| Abc | Def |\n| --- | --- |\n| 1|2 | 20 |\n");
     }
 
     @Test
     public void alignLeft() {
-        assertRendering("Abc|Def\n:---|---\n1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n:---|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignRight() {
-        assertRendering("Abc|Def\n---:|---\n1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n---:|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignCenter() {
-        assertRendering("Abc|Def\n:---:|---\n1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n:---:|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignCenterSecond() {
-        assertRendering("Abc|Def\n---|:---:\n1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n---|:---:\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignLeftWithSpaces() {
-        assertRendering("Abc|Def\n :--- |---\n1|2", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n :--- |---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignmentMarkerMustBeNextToDashes() {
-        assertRendering("Abc|Def\n: ---|---", "Abc|Def\n: ---|---");
-        assertRendering("Abc|Def\n--- :|---", "Abc|Def\n--- :|---");
-        assertRendering("Abc|Def\n---|: ---", "Abc|Def\n---|: ---");
-        assertRendering("Abc|Def\n---|--- :", "Abc|Def\n---|--- :");
+        assertIsNotTable("Abc|Def\n: ---|---");
+        assertIsNotTable("Abc|Def\n--- :|---");
+        assertIsNotTable("Abc|Def\n---|: ---");
+        assertIsNotTable("Abc|Def\n---|--- :");
     }
 
     @Test
     public void bodyCanNotHaveMoreColumnsThanHead() {
-        assertRendering("Abc|Def\n---|---\n1|2|3", "Abc| Def\n1| 2\n");
+        assertTableRendering("Abc|Def\n---|---\n1|2|3", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void bodyWithFewerColumnsThanHeadResultsInEmptyCells() {
-        assertRendering("Abc|Def|Ghi\n---|---|---\n1|2", "Abc| Def| Ghi\n1| 2| \n");
+        assertTableRendering("Abc|Def|Ghi\n---|---|---\n1|2", "| Abc | Def | Ghi |\n| --- | --- | --- |\n| 1 | 2 | |\n");
     }
 
     @Test
     public void insideBlockQuote() {
-        assertRendering("> Abc|Def\n> ---|---\n> 1|2", "«\nAbc| Def\n1| 2\n»");
+        assertRendering("> Abc|Def\n> ---|---\n> 1|2", "«\n| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n»");
     }
 
     @Test
     public void tableWithLazyContinuationLine() {
-        assertRendering("Abc|Def\n---|---\n1|2\nlazy", "Abc| Def\n1| 2\nlazy| \n");
+        assertTableRendering("Abc|Def\n---|---\n1|2\nlazy", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n| lazy | |\n");
     }
 
     @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));
+    }
+
+    private void assertTableRendering(String source, String expectedResult) {
+        assertIsTable(source);
+        assertRendering(source, expectedResult);
+    }
+
+    private void assertIsTable(String input) {
+        Node parsed = PARSER.parse(input).getFirstChild();
+        assertEquals("Source is not a table", TableBlock.class, parsed.getClass());
+    }
+
+    private void assertIsNotTable(String input) {
+        Node parsed = PARSER.parse(input).getFirstChild();
+        assertNotEquals("Source is a table", TableBlock.class, parsed.getClass());
     }
 }

@@ -6,6 +6,7 @@ import org.commonmark.ext.gfm.tables.TableCell;
 import org.commonmark.ext.gfm.tables.TableHead;
 import org.commonmark.ext.gfm.tables.TableRow;
 import org.commonmark.node.Node;
+import org.commonmark.node.Text;
 import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentWriter;
 
@@ -14,6 +15,8 @@ import org.commonmark.renderer.text.TextContentWriter;
  */
 public class TableTextContentNodeRenderer extends TableNodeRenderer {
 
+    public static final char PIPE = '|';
+    public static final String DELIMITER = "---";
     private final TextContentWriter textContentWriter;
     private final TextContentNodeRendererContext context;
 
@@ -31,6 +34,35 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
 
     protected void renderHead(TableHead tableHead) {
         renderChildren(tableHead);
+        int columnCount = countColumns(tableHead);
+        TableRow tableRow = constructDelimiterRow(columnCount);
+        renderRow(tableRow);
+    }
+
+    private static TableRow constructDelimiterRow(int columnCount) {
+        TableRow tableRow = new TableRow();
+        for (int i = 0; i < columnCount; i++) {
+            Text text = new Text(DELIMITER);
+            TableCell tableCell = new TableCell();
+            tableCell.appendChild(text);
+            tableRow.appendChild(tableCell);
+        }
+        return tableRow;
+    }
+
+    private int countColumns(TableHead tableHead) {
+        Node rowNode = tableHead.getFirstChild();
+        if (rowNode == null) {
+            return 0;
+        }
+        Node cellNode = rowNode.getFirstChild();
+
+        int columnCount = 0;
+        while (cellNode != null) {
+            columnCount++;
+            cellNode = cellNode.getNext();
+        }
+        return columnCount;
     }
 
     protected void renderBody(TableBody tableBody) {
@@ -44,13 +76,18 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
     }
 
     protected void renderCell(TableCell tableCell) {
+        textContentWriter.write(PIPE);
+        textContentWriter.whitespace();
         renderChildren(tableCell);
-        textContentWriter.write('|');
         textContentWriter.whitespace();
     }
 
     private void renderLastCell(TableCell tableCell) {
+        textContentWriter.write(PIPE);
+        textContentWriter.whitespace();
         renderChildren(tableCell);
+        textContentWriter.whitespace();
+        textContentWriter.write(PIPE);
     }
 
     private void renderChildren(Node parent) {
@@ -58,7 +95,7 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
         while (node != null) {
             Node next = node.getNext();
 
-            // For last cell in row, we dont render the delimiter.
+            // For last cell in row, we render the closing delimiter.
             if (node instanceof TableCell && next == null) {
                 renderLastCell((TableCell) node);
             } else {
