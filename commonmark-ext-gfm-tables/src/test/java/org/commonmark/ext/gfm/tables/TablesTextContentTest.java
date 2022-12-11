@@ -85,27 +85,27 @@ public class TablesTextContentTest extends RenderingTestCase {
 
     @Test
     public void alignLeft() {
-        assertTableRendering("Abc|Def\n:---|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
+        assertTableRendering("Abc|Def\n:---|---\n1|2", "| Abc | Def |\n| :--- | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignRight() {
-        assertTableRendering("Abc|Def\n---:|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
+        assertTableRendering("Abc|Def\n---:|---\n1|2", "| Abc | Def |\n| ---: | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignCenter() {
-        assertTableRendering("Abc|Def\n:---:|---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
+        assertTableRendering("Abc|Def\n:---:|---\n1|2", "| Abc | Def |\n| :---: | --- |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignCenterSecond() {
-        assertTableRendering("Abc|Def\n---|:---:\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
+        assertTableRendering("Abc|Def\n---|:---:\n1|2", "| Abc | Def |\n| --- | :---: |\n| 1 | 2 |\n");
     }
 
     @Test
     public void alignLeftWithSpaces() {
-        assertTableRendering("Abc|Def\n :--- |---\n1|2", "| Abc | Def |\n| --- | --- |\n| 1 | 2 |\n");
+        assertTableRendering("Abc|Def\n :--- |---\n1|2", "| Abc | Def |\n| :--- | --- |\n| 1 | 2 |\n");
     }
 
     @Test

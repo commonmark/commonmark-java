@@ -16,7 +16,6 @@ import org.commonmark.renderer.text.TextContentWriter;
 public class TableTextContentNodeRenderer extends TableNodeRenderer {
 
     public static final char PIPE = '|';
-    public static final String DELIMITER = "---";
     private final TextContentWriter textContentWriter;
     private final TextContentNodeRendererContext context;
 
@@ -34,35 +33,8 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
 
     protected void renderHead(TableHead tableHead) {
         renderChildren(tableHead);
-        int columnCount = countColumns(tableHead);
-        TableRow tableRow = constructDelimiterRow(columnCount);
+        TableRow tableRow = constructDelimiterRow(tableHead);
         renderRow(tableRow);
-    }
-
-    private static TableRow constructDelimiterRow(int columnCount) {
-        TableRow tableRow = new TableRow();
-        for (int i = 0; i < columnCount; i++) {
-            Text text = new Text(DELIMITER);
-            TableCell tableCell = new TableCell();
-            tableCell.appendChild(text);
-            tableRow.appendChild(tableCell);
-        }
-        return tableRow;
-    }
-
-    private int countColumns(TableHead tableHead) {
-        Node rowNode = tableHead.getFirstChild();
-        if (rowNode == null) {
-            return 0;
-        }
-        Node cellNode = rowNode.getFirstChild();
-
-        int columnCount = 0;
-        while (cellNode != null) {
-            columnCount++;
-            cellNode = cellNode.getNext();
-        }
-        return columnCount;
     }
 
     protected void renderBody(TableBody tableBody) {
@@ -103,6 +75,39 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
             }
 
             node = next;
+        }
+    }
+
+    private TableRow constructDelimiterRow(TableHead tableHead) {
+        TableRow tableRow = new TableRow();
+
+        Node rowNode = tableHead.getFirstChild();
+        Node node = rowNode.getFirstChild();
+        while (node != null) {
+            TableCell cellNode = (TableCell) node;
+            TableCell.Alignment alignment = cellNode.getAlignment();
+            String delimiter = delimiterBy(alignment);
+
+            Text text = new Text(delimiter);
+            TableCell tableCell = new TableCell();
+            tableCell.appendChild(text);
+            tableRow.appendChild(tableCell);
+
+            node = node.getNext();
+        }
+
+        return tableRow;
+    }
+
+    private String delimiterBy(TableCell.Alignment alignment) {
+        if (alignment == null) {
+            return "---";
+        }
+        switch (alignment) {
+            case LEFT: return ":---";
+            case RIGHT: return "---:";
+            case CENTER: return ":---:";
+            default: throw new IllegalStateException("Unknown alignment: " + alignment);
         }
     }
 }
