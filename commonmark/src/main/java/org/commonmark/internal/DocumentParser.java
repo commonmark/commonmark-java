@@ -411,10 +411,8 @@ public class DocumentParser implements ParserState {
             }
             sb.append(rest);
             content = sb.toString();
-        } else if (index == 0) {
-            content = line.getContent();
         } else {
-            content = line.getContent().subSequence(index, line.getContent().length());
+            content = line.getContent();
         }
         SourceSpan sourceSpan = null;
         if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES) {
