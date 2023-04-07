@@ -237,7 +237,9 @@ public class DocumentParser implements ParserState {
 
             BlockStartImpl blockStart = findBlockStart(blockParser);
             if (blockStart == null) {
-                setNewIndex(nextNonSpace);
+                if (!blockParserFactories.isEmpty()) {
+                    setNewIndex(nextNonSpace);
+                }
                 break;
             }
 

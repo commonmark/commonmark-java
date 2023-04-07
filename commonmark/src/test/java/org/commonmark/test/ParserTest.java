@@ -100,6 +100,35 @@ public class ParserTest {
     }
 
     @Test
+    public void indentationInParagraph() {
+        String given = " - 1 space\n   - 3 spaces\n     - 5 spaces\n\t - tab + space";
+        Parser parser = Parser.builder()
+                .enabledBlockTypes(new HashSet<Class<? extends Block>>())
+                .build();
+        Node document = parser.parse(given);
+
+        assertThat(document.getFirstChild(), instanceOf(Paragraph.class));
+
+        Node list = document.getFirstChild();
+        Node firstChild = list.getFirstChild(); // first item
+        assertEquals(" - 1 space", firstText(firstChild));
+
+        Node secondChild = firstChild.getNext(); // second item
+        assertThat(secondChild, instanceOf(SoftLineBreak.class));
+        assertEquals("   - 3 spaces", firstText(secondChild.getNext()));
+
+        Node fourthChild = secondChild.getNext().getNext();
+        assertThat(fourthChild, instanceOf(SoftLineBreak.class));
+        
+        assertEquals("     - 5 spaces", firstText(fourthChild.getNext()));
+
+        Node sixthChild = fourthChild.getNext().getNext();
+        assertThat(sixthChild, instanceOf(SoftLineBreak.class));
+        
+        assertEquals("\t - tab + space", firstText(sixthChild.getNext()));
+    }
+    
+    @Test
     public void inlineParser() {
         final InlineParser fakeInlineParser = new InlineParser() {
             @Override
