@@ -17,11 +17,11 @@ public class TableBlockParser extends AbstractBlockParser {
 
     private final TableBlock block = new TableBlock();
     private final List<SourceLine> rowLines = new ArrayList<>();
-    private final List<TableCell.Alignment> columns;
+    private final List<TableCellInfo> columns;
 
     private boolean canHaveLazyContinuationLines = true;
 
-    private TableBlockParser(List<TableCell.Alignment> columns, SourceLine headerLine) {
+    private TableBlockParser(List<TableCellInfo> columns, SourceLine headerLine) {
         this.columns = columns;
         this.rowLines.add(headerLine);
     }
@@ -120,7 +120,9 @@ public class TableBlockParser extends AbstractBlockParser {
         }
 
         if (column < columns.size()) {
-            tableCell.setAlignment(columns.get(column));
+            TableCellInfo cellInfo = columns.get(column);
+            tableCell.setAlignment(cellInfo.getAlignment());
+            tableCell.setWidth(cellInfo.getWidth());
         }
 
         CharSequence content = cell.getContent();
@@ -187,11 +189,12 @@ public class TableBlockParser extends AbstractBlockParser {
     // -|-
     // |-|-|
     // --- | ---
-    private static List<TableCell.Alignment> parseSeparator(CharSequence s) {
-        List<TableCell.Alignment> columns = new ArrayList<>();
+    private static List<TableCellInfo> parseSeparator(CharSequence s) {
+        List<TableCellInfo> columns = new ArrayList<>();
         int pipes = 0;
         boolean valid = false;
         int i = 0;
+        int width = 0;
         while (i < s.length()) {
             char c = s.charAt(i);
             switch (c) {
@@ -216,10 +219,12 @@ public class TableBlockParser extends AbstractBlockParser {
                     if (c == ':') {
                         left = true;
                         i++;
+                        width++;
                     }
                     boolean haveDash = false;
                     while (i < s.length() && s.charAt(i) == '-') {
                         i++;
+                        width++;
                         haveDash = true;
                     }
                     if (!haveDash) {
@@ -229,8 +234,10 @@ public class TableBlockParser extends AbstractBlockParser {
                     if (i < s.length() && s.charAt(i) == ':') {
                         right = true;
                         i++;
+                        width++;
                     }
-                    columns.add(getAlignment(left, right));
+                    columns.add(new TableCellInfo(getAlignment(left, right), width));
+                    width = 0;
                     // Next, need another pipe
                     pipes = 0;
                     break;
@@ -270,7 +277,7 @@ public class TableBlockParser extends AbstractBlockParser {
             if (paragraphLines.size() == 1 && Parsing.find('|', paragraphLines.get(0).getContent(), 0) != -1) {
                 SourceLine line = state.getLine();
                 SourceLine separatorLine = line.substring(state.getIndex(), line.getContent().length());
-                List<TableCell.Alignment> columns = parseSeparator(separatorLine.getContent());
+                List<TableCellInfo> columns = parseSeparator(separatorLine.getContent());
                 if (columns != null && !columns.isEmpty()) {
                     SourceLine paragraph = paragraphLines.get(0);
                     List<SourceLine> headerCells = split(paragraph);
@@ -282,6 +289,24 @@ public class TableBlockParser extends AbstractBlockParser {
                 }
             }
             return BlockStart.none();
+        }
+    }
+
+    private static class TableCellInfo {
+        private final TableCell.Alignment alignment;
+        private final int width;
+
+        public TableCell.Alignment getAlignment() {
+            return alignment;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public TableCellInfo(TableCell.Alignment alignment, int width) {
+            this.alignment = alignment;
+            this.width = width;
         }
     }
 }

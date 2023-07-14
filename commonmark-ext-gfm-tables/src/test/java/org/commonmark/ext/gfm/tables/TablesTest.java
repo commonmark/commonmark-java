@@ -750,6 +750,42 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void columnWidthIsRecorded() {
+        AttributeProviderFactory factory = new AttributeProviderFactory() {
+            @Override
+            public AttributeProvider create(AttributeProviderContext context) {
+                return new AttributeProvider() {
+                    @Override
+                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
+                        if (node instanceof TableCell && "th".equals(tagName)) {
+                            attributes.put("width", ((TableCell) node).getWidth() + "em");
+                        }
+                    }
+                };
+            }
+        };
+        HtmlRenderer renderer = HtmlRenderer.builder()
+                .attributeProviderFactory(factory)
+                .extensions(EXTENSIONS)
+                .build();
+        String rendered = renderer.render(PARSER.parse("Abc|Def\n-----|---\n1|2"));
+        assertThat(rendered, is("<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th width=\"5em\">Abc</th>\n" +
+                "<th width=\"3em\">Def</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n"));
+    }
+
+    @Test
     public void sourceSpans() {
         Parser parser = Parser.builder()
                 .extensions(EXTENSIONS)
