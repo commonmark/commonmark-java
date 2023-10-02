@@ -9,15 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [1.8, 11, 17]
+        java: [8, 11, 17, 21]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
 
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.java }}
+          distribution: 'zulu'
 
       - name: Build
         run: mvn -B package javadoc:javadoc
@@ -29,9 +30,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
-          java-version: 1.8
+          java-version: 8
+          distribution: 'zulu'
 
       - name: Build with coverage
         run: mvn -B -Pcoverage clean test jacoco:report-aggregate
@@ -46,9 +48,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
-          java-version: 1.8
+          java-version: 8
+          distribution: 'zulu'
 
       - name: Android Lint checks
         run: cd commonmark-android-test && ./gradlew :app:lint
