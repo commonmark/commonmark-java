@@ -9,3 +9,6 @@
 
 # Maven
 target/
+
+# macOS
+.DS_Store
