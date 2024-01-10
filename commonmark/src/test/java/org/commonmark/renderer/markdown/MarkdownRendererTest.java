@@ -32,6 +32,13 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testIndentedCodeBlocks() {
+        assertRoundTrip("    hi\n");
+        assertRoundTrip("    hi\n    code\n");
+        assertRoundTrip(">     hi\n>     code\n");
+    }
+
+    @Test
     public void testHtmlBlocks() {
         assertRoundTrip("<div>test</div>\n");
     }

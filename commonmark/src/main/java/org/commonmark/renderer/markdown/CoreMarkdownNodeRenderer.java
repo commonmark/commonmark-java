@@ -156,6 +156,21 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
+        String literal = indentedCodeBlock.getLiteral();
+        String[] lines = literal.split("\n");
+        // We need to respect line prefixes which is why we need to write it line by line (e.g. an indented code block
+        // within a block quote)
+        writer.pushPrefix("    ");
+        writer.write("    ");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            writer.write(line);
+            if (i != lines.length - 1) {
+                writer.line();
+            }
+        }
+        writer.popPrefix();
+        writer.block();
     }
 
     @Override
