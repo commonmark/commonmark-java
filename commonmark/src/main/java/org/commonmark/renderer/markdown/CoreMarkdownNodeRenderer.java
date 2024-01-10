@@ -89,6 +89,15 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     @Override
+    public void visit(Emphasis emphasis) {
+        // When emphasis is nested, a different delimiter needs to be used
+        char delimiter = writer.getLastChar() == '*' ? '_' : '*';
+        writer.write(delimiter);
+        super.visit(emphasis);
+        writer.write(delimiter);
+    }
+
+    @Override
     public void visit(FencedCodeBlock fencedCodeBlock) {
     }
 
@@ -148,6 +157,13 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(SoftLineBreak softLineBreak) {
+    }
+
+    @Override
+    public void visit(StrongEmphasis strongEmphasis) {
+        writer.write("**");
+        super.visit(strongEmphasis);
+        writer.write("**");
     }
 
     @Override

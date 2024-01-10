@@ -7,9 +7,14 @@ public class MarkdownWriter {
     private final Appendable buffer;
 
     private boolean prependLine = false;
+    private char lastChar;
 
     public MarkdownWriter(Appendable out) {
         buffer = out;
+    }
+
+    public char getLastChar() {
+        return lastChar;
     }
 
     public void block() {
@@ -32,6 +37,11 @@ public class MarkdownWriter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        int length = s.length();
+        if (length != 0) {
+            lastChar = s.charAt(length - 1);
+        }
     }
 
     private void append(char c) {
@@ -41,6 +51,8 @@ public class MarkdownWriter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        lastChar = c;
     }
 
     private void appendLineIfNeeded() throws IOException {

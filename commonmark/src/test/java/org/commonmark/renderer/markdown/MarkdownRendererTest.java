@@ -44,6 +44,24 @@ public class MarkdownRendererTest {
         assertRoundTrip("`` `foo ``\n");
     }
 
+    @Test
+    public void testEmphasis() {
+        assertRoundTrip("*foo*\n");
+        assertRoundTrip("foo*bar*\n");
+        // When nesting, a different delimiter needs to be used
+        assertRoundTrip("*_foo_*\n");
+        assertRoundTrip("*_*foo*_*\n");
+
+        // Not emphasis (needs * inside words)
+        assertRoundTrip("foo_bar_\n");
+    }
+
+    @Test
+    public void testStrongEmphasis() {
+        assertRoundTrip("**foo**\n");
+        assertRoundTrip("foo**bar**\n");
+    }
+
     private Node parse(String source) {
         return Parser.builder().build().parse(source);
     }
