@@ -5,7 +5,7 @@ import org.commonmark.parser.Parser;
 import org.commonmark.testutil.example.Example;
 
 /**
- * Spec and all extensions, with source spans enabed.
+ * Spec and all extensions, with source spans enabled.
  */
 public class SourceSpanIntegrationTest extends SpecIntegrationTest {
 

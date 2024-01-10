@@ -9,6 +9,7 @@ import org.commonmark.testutil.SpecTestCase;
 import org.commonmark.testutil.example.Example;
 import org.junit.Test;
 
+import static org.commonmark.testutil.Asserts.assertRendering;
 import static org.junit.Assert.fail;
 
 public class SpecCoreTest extends SpecTestCase {
@@ -49,8 +50,12 @@ public class SpecCoreTest extends SpecTestCase {
         });
     }
 
-    @Override
-    protected String render(String source) {
+    @Test
+    public void testHtmlRendering() {
+        assertRendering(example.getSource(), example.getHtml(), render(example.getSource()));
+    }
+
+    private String render(String source) {
         return RENDERER.render(PARSER.parse(source));
     }
 }

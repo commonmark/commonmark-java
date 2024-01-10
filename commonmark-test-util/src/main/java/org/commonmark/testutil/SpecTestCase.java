@@ -10,8 +10,10 @@ import org.junit.runners.Parameterized.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.commonmark.testutil.Asserts.assertRendering;
+
 @RunWith(Parameterized.class)
-public abstract class SpecTestCase extends RenderingTestCase {
+public abstract class SpecTestCase {
 
     protected final Example example;
 
@@ -27,11 +29,6 @@ public abstract class SpecTestCase extends RenderingTestCase {
             data.add(new Object[]{example});
         }
         return data;
-    }
-
-    @Test
-    public void testHtmlRendering() {
-        assertRendering(example.getSource(), example.getHtml());
     }
 
 }
