@@ -103,6 +103,8 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(HardLineBreak hardLineBreak) {
+        writer.write("  ");
+        writer.line();
     }
 
     @Override
@@ -157,6 +159,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(SoftLineBreak softLineBreak) {
+        writer.line();
     }
 
     @Override

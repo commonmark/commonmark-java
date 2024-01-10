@@ -22,6 +22,10 @@ public class MarkdownWriter {
         prependLine = true;
     }
 
+    public void line() {
+        append('\n');
+    }
+
     public void write(String s) {
         append(s);
     }

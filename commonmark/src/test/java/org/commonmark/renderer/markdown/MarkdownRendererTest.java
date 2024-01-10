@@ -62,6 +62,16 @@ public class MarkdownRendererTest {
         assertRoundTrip("foo**bar**\n");
     }
 
+    @Test
+    public void testHardLineBreaks() {
+        assertRoundTrip("foo  \nbar\n");
+    }
+
+    @Test
+    public void testSoftLineBreaks() {
+        assertRoundTrip("foo\nbar\n");
+    }
+
     private Node parse(String source) {
         return Parser.builder().build().parse(source);
     }
