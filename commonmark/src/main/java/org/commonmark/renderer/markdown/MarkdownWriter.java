@@ -3,13 +3,15 @@ package org.commonmark.renderer.markdown;
 import org.commonmark.internal.util.CharMatcher;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 public class MarkdownWriter {
 
     private final Appendable buffer;
 
-    private boolean prependLine = false;
+    private boolean finishBlock = false;
     private char lastChar;
+    private final LinkedList<String> prefixes = new LinkedList<>();
 
     public MarkdownWriter(Appendable out) {
         buffer = out;
@@ -20,19 +22,21 @@ public class MarkdownWriter {
     }
 
     public void block() {
-        append('\n');
-        prependLine = true;
+        finishBlock = true;
     }
 
     public void line() {
         append('\n');
+        writePrefixes();
     }
 
     public void write(String s) {
+        finishBlockIfNeeded();
         append(s);
     }
 
     public void write(char c) {
+        finishBlockIfNeeded();
         append(c);
     }
 
@@ -40,8 +44,8 @@ public class MarkdownWriter {
         if (s.isEmpty()) {
             return;
         }
+        finishBlockIfNeeded();
         try {
-            appendLineIfNeeded();
             for (int i = 0; i < s.length(); i++) {
                 char ch = s.charAt(i);
                 if (ch == '\\' || escape.matches(ch)) {
@@ -56,9 +60,16 @@ public class MarkdownWriter {
         lastChar = s.charAt(s.length() - 1);
     }
 
+    public void pushPrefix(String prefix) {
+        prefixes.addLast(prefix);
+    }
+
+    public void popPrefix() {
+        prefixes.removeLast();
+    }
+
     private void append(String s) {
         try {
-            appendLineIfNeeded();
             buffer.append(s);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -72,7 +83,6 @@ public class MarkdownWriter {
 
     private void append(char c) {
         try {
-            appendLineIfNeeded();
             buffer.append(c);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -81,10 +91,21 @@ public class MarkdownWriter {
         lastChar = c;
     }
 
-    private void appendLineIfNeeded() throws IOException {
-        if (prependLine) {
-            buffer.append('\n');
-            prependLine = false;
+    private void finishBlockIfNeeded() {
+        if (finishBlock) {
+            finishBlock = false;
+            append('\n');
+            writePrefixes();
+            append('\n');
+            writePrefixes();
+        }
+    }
+
+    private void writePrefixes() {
+        if (!prefixes.isEmpty()) {
+            for (String prefix : prefixes) {
+                append(prefix);
+            }
         }
     }
 }

@@ -65,10 +65,16 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     public void visit(Document document) {
         // No rendering itself
         visitChildren(document);
+        writer.line();
     }
 
     @Override
     public void visit(BlockQuote blockQuote) {
+        writer.write("> ");
+        writer.pushPrefix("> ");
+        visitChildren(blockQuote);
+        writer.popPrefix();
+        writer.block();
     }
 
     @Override

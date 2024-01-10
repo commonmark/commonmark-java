@@ -8,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 
 public class MarkdownRendererTest {
 
+    // Leaf blocks
+
     @Test
     public void testThematicBreaks() {
         assertRoundTrip("***\n");
@@ -39,6 +41,18 @@ public class MarkdownRendererTest {
         assertRoundTrip("foo\n");
         assertRoundTrip("foo\n\nbar\n");
     }
+
+    // Container blocks
+
+    @Test
+    public void testBlockQuotes() {
+        assertRoundTrip("> test\n");
+        assertRoundTrip("> foo\n> bar\n");
+        assertRoundTrip("> > foo\n> > bar\n");
+        assertRoundTrip("> # Foo\n> \n> bar\n> baz\n");
+    }
+
+    // Inlines
 
     @Test
     public void testCodeSpans() {
