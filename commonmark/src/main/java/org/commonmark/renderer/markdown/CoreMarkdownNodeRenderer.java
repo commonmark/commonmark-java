@@ -114,6 +114,32 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(FencedCodeBlock fencedCodeBlock) {
+        String literal = fencedCodeBlock.getLiteral();
+        String fence = repeat(String.valueOf(fencedCodeBlock.getFenceChar()), fencedCodeBlock.getFenceLength());
+        int indent = fencedCodeBlock.getFenceIndent();
+
+        if (indent > 0) {
+            String indentPrefix = repeat(" ", indent);
+            writer.write(indentPrefix);
+            writer.pushPrefix(indentPrefix);
+        }
+
+        writer.write(fence);
+        if (fencedCodeBlock.getInfo() != null) {
+            writer.write(fencedCodeBlock.getInfo());
+        }
+        writer.line();
+        String[] lines = literal.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            writer.write(line);
+            writer.line();
+        }
+        writer.write(fence);
+        if (indent > 0) {
+            writer.popPrefix();
+        }
+        writer.block();
     }
 
     @Override
@@ -160,8 +186,8 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         String[] lines = literal.split("\n");
         // We need to respect line prefixes which is why we need to write it line by line (e.g. an indented code block
         // within a block quote)
-        writer.pushPrefix("    ");
         writer.write("    ");
+        writer.pushPrefix("    ");
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             writer.write(line);
@@ -241,6 +267,14 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             }
         }
         return false;
+    }
+
+    private static String repeat(String s, int count) {
+        StringBuilder sb = new StringBuilder(s.length() * count);
+        for (int i = 0; i < count; i++) {
+            sb.append(s);
+        }
+        return sb.toString();
     }
 
     private void writeText(String text) {

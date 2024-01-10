@@ -39,6 +39,14 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testFencedCodeBlocks() {
+        assertRoundTrip("```\ntest\n```\n");
+        assertRoundTrip("~~~~\ntest\n~~~~\n");
+        assertRoundTrip("```info\ntest\n```\n");
+        assertRoundTrip(" ```\n test\n ```\n");
+    }
+
+    @Test
     public void testHtmlBlocks() {
         assertRoundTrip("<div>test</div>\n");
     }
