@@ -1,5 +1,7 @@
 package org.commonmark.renderer.markdown;
 
+import org.commonmark.internal.util.CharMatcher;
+
 import java.io.IOException;
 
 public class MarkdownWriter {
@@ -32,6 +34,26 @@ public class MarkdownWriter {
 
     public void write(char c) {
         append(c);
+    }
+
+    public void writeEscaped(String s, CharMatcher escape) {
+        if (s.isEmpty()) {
+            return;
+        }
+        try {
+            appendLineIfNeeded();
+            for (int i = 0; i < s.length(); i++) {
+                char ch = s.charAt(i);
+                if (ch == '\\' || escape.matches(ch)) {
+                    buffer.append('\\');
+                }
+                buffer.append(ch);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        lastChar = s.charAt(s.length() - 1);
     }
 
     private void append(String s) {

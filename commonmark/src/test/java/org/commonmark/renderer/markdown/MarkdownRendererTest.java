@@ -63,6 +63,30 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testLinks() {
+        assertRoundTrip("[link](/uri)\n");
+        assertRoundTrip("[link](/uri \"title\")\n");
+        assertRoundTrip("[link](</my uri>)\n");
+        assertRoundTrip("[a](<b)c>)\n");
+        assertRoundTrip("[a](<b(c>)\n");
+        assertRoundTrip("[a](<b\\>c>)\n");
+        assertRoundTrip("[a](<b\\\\\\>c>)\n");
+        assertRoundTrip("[a](/uri \"foo \\\" bar\")\n");
+    }
+
+    @Test
+    public void testImages() {
+        assertRoundTrip("![link](/uri)\n");
+        assertRoundTrip("![link](/uri \"title\")\n");
+        assertRoundTrip("![link](</my uri>)\n");
+        assertRoundTrip("![a](<b)c>)\n");
+        assertRoundTrip("![a](<b(c>)\n");
+        assertRoundTrip("![a](<b\\>c>)\n");
+        assertRoundTrip("![a](<b\\\\\\>c>)\n");
+        assertRoundTrip("![a](/uri \"foo \\\" bar\")\n");
+    }
+
+    @Test
     public void testHardLineBreaks() {
         assertRoundTrip("foo  \nbar\n");
     }

@@ -51,7 +51,7 @@ public class SpecMarkdownRendererTest {
         System.out.println("Failed examples by section (total " + fails.size() + "):");
         printCountsBySection(fails);
 
-        int expectedPassed = 263;
+        int expectedPassed = 372;
         assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
     }
 
@@ -65,7 +65,7 @@ public class SpecMarkdownRendererTest {
             bySection.put(example.getSection(), count + 1);
         }
         for (Map.Entry<String, Integer> entry : bySection.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
+            System.out.println(entry.getValue() + ": " + entry.getKey());
         }
     }
 

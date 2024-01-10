@@ -1,5 +1,7 @@
 package org.commonmark.renderer.markdown;
 
+import org.commonmark.internal.util.AsciiMatcher;
+import org.commonmark.internal.util.CharMatcher;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
@@ -12,6 +14,13 @@ import java.util.Set;
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
  */
 public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRenderer {
+
+    private final CharMatcher linkDestinationNeedsAngleBrackets =
+            AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\\').build();
+    private final CharMatcher linkDestinationEscapeInAngleBrackets =
+            AsciiMatcher.builder().c('<').c('>').build();
+    private final CharMatcher linkTitleEscapeInQuotes =
+            AsciiMatcher.builder().c('"').build();
 
     protected final MarkdownNodeRendererContext context;
     private final MarkdownWriter writer;
@@ -133,6 +142,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Image image) {
+        writeLinkLike(image.getTitle(), image.getDestination(), image, "![");
     }
 
     @Override
@@ -141,6 +151,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Link link) {
+        writeLinkLike(link.getTitle(), link.getDestination(), link, "[");
     }
 
     @Override
@@ -199,7 +210,37 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         return backticks;
     }
 
+    private static boolean contains(String s, CharMatcher charMatcher) {
+        for (int i = 0; i < s.length(); i++) {
+            if (charMatcher.matches(s.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void writeText(String text) {
         writer.write(text);
+    }
+
+    private void writeLinkLike(String title, String destination, Node node, String opener) {
+        writer.write(opener);
+        visitChildren(node);
+        writer.write(']');
+        writer.write('(');
+        if (contains(destination, linkDestinationNeedsAngleBrackets)) {
+            writer.write('<');
+            writer.writeEscaped(destination, linkDestinationEscapeInAngleBrackets);
+            writer.write('>');
+        } else {
+            writer.write(destination);
+        }
+        if (title != null) {
+            writer.write(' ');
+            writer.write('"');
+            writer.writeEscaped(title, linkTitleEscapeInQuotes);
+            writer.write('"');
+        }
+        writer.write(')');
     }
 }

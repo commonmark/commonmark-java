@@ -15,6 +15,8 @@ import java.util.List;
  * Note that it does not currently attempt to preserve the exact syntax of the original input Markdown (if any):
  * <ul>
  *     <li>Headings are always output as ATX headings for simplicity</li>
+ *     <li>Escaping might be over-eager, e.g. a plain {@code *} might be escaped
+ *     even though it doesn't need to be in that particular context</li>
  * </ul>
  */
 public class MarkdownRenderer implements Renderer {
