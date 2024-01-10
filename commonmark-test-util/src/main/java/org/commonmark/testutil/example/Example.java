@@ -30,6 +30,10 @@ public class Example {
         return html;
     }
 
+    public String getSection() {
+        return section;
+    }
+
     @Override
     public String toString() {
         return "File \"" + filename + "\" section \"" + section + "\" example " + exampleNumber;

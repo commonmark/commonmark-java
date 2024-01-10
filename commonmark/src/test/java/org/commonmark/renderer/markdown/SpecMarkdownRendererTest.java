@@ -8,7 +8,10 @@ import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
@@ -29,17 +32,41 @@ public class SpecMarkdownRendererTest {
     @Test
     public void testCoverage() {
         List<Example> examples = ExampleReader.readExamples(TestResources.getSpec());
-        int passed = 0;
+        List<Example> passes = new ArrayList<>();
+        List<Example> fails = new ArrayList<>();
         for (Example example : examples) {
             String markdown = renderMarkdown(example.getSource());
             String rendered = renderHtml(markdown);
             if (rendered.equals(example.getHtml())) {
-                passed++;
+                passes.add(example);
+            } else {
+                fails.add(example);
             }
         }
 
+        System.out.println("Failed examples by section:");
+        printCountsBySection(fails);
+        System.out.println();
+
+        System.out.println("Passed examples by section:");
+        printCountsBySection(passes);
+
         int expectedPassed = 151;
-        assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passed, passed >= expectedPassed);
+        assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
+    }
+
+    private static void printCountsBySection(List<Example> examples) {
+        Map<String, Integer> bySection = new LinkedHashMap<>();
+        for (Example example : examples) {
+            Integer count = bySection.get(example.getSection());
+            if (count == null) {
+                count = 0;
+            }
+            bySection.put(example.getSection(), count + 1);
+        }
+        for (Map.Entry<String, Integer> entry : bySection.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
     }
 
     private Node parse(String source) {
