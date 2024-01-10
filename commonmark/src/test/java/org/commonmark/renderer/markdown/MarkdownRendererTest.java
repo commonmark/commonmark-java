@@ -30,6 +30,11 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testHtmlBlocks() {
+        assertRoundTrip("<div>test</div>\n");
+    }
+
+    @Test
     public void testParagraphs() {
         assertRoundTrip("foo\n");
         assertRoundTrip("foo\n\nbar\n");
@@ -84,6 +89,11 @@ public class MarkdownRendererTest {
         assertRoundTrip("![a](<b\\>c>)\n");
         assertRoundTrip("![a](<b\\\\\\>c>)\n");
         assertRoundTrip("![a](/uri \"foo \\\" bar\")\n");
+    }
+
+    @Test
+    public void testHtmlInline() {
+        assertRoundTrip("<del>*foo*</del>\n");
     }
 
     @Test

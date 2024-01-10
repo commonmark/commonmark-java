@@ -134,10 +134,13 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(HtmlInline htmlInline) {
+        writer.write(htmlInline.getLiteral());
     }
 
     @Override
     public void visit(HtmlBlock htmlBlock) {
+        writer.write(htmlBlock.getLiteral());
+        writer.block();
     }
 
     @Override
