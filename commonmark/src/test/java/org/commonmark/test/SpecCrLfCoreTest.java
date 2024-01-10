@@ -4,6 +4,9 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.SpecTestCase;
 import org.commonmark.testutil.example.Example;
+import org.junit.Test;
+
+import static org.commonmark.testutil.Asserts.assertRendering;
 
 /**
  * Same as {@link SpecCoreTest} but converts line endings to Windows-style CR+LF endings before parsing.
@@ -18,8 +21,12 @@ public class SpecCrLfCoreTest extends SpecTestCase {
         super(example);
     }
 
-    @Override
-    protected String render(String source) {
+    @Test
+    public void testHtmlRendering() {
+        assertRendering(example.getSource(), example.getHtml(), render(example.getSource()));
+    }
+
+    private String render(String source) {
         String windowsStyle = source.replace("\n", "\r\n");
         return RENDERER.render(PARSER.parse(windowsStyle));
     }

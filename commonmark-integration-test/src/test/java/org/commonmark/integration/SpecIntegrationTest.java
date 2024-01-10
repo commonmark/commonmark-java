@@ -12,9 +12,12 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.SpecTestCase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
+
+import static org.commonmark.testutil.Asserts.assertRendering;
 
 /**
  * Tests that the spec examples still render the same with all extensions enabled.
@@ -39,17 +42,15 @@ public class SpecIntegrationTest extends SpecTestCase {
     }
 
     @Test
-    @Override
     public void testHtmlRendering() {
         String expectedHtml = OVERRIDDEN_EXAMPLES.get(example.getSource());
         if (expectedHtml != null) {
-            assertRendering(example.getSource(), expectedHtml);
+            assertRendering(example.getSource(), expectedHtml, render(example.getSource()));
         } else {
-            super.testHtmlRendering();
+            assertRendering(example.getSource(), example.getHtml(), render(example.getSource()));
         }
     }
 
-    @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));
     }
