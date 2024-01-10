@@ -35,6 +35,15 @@ public class MarkdownRendererTest {
         assertRoundTrip("foo\n\nbar\n");
     }
 
+    @Test
+    public void testCodeSpans() {
+        assertRoundTrip("`foo`\n");
+        assertRoundTrip("``foo ` bar``\n");
+        assertRoundTrip("```foo `` ` bar```\n");
+
+        assertRoundTrip("`` `foo ``\n");
+    }
+
     private Node parse(String source) {
         return Parser.builder().build().parse(source);
     }

@@ -1,5 +1,6 @@
 package org.commonmark.renderer.markdown;
 
+import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 
@@ -67,6 +68,24 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Code code) {
+        String literal = code.getLiteral();
+        // If the literal includes backticks, we can surround them by using one more backtick.
+        int backticks = findMaxRunLength('`', literal);
+        for (int i = 0; i < backticks + 1; i++) {
+            writer.write('`');
+        }
+        // If the literal starts or ends with a backtick, surround it with a single space.
+        boolean addSpace = literal.startsWith("`") || literal.endsWith("`");
+        if (addSpace) {
+            writer.write(' ');
+        }
+        writer.write(literal);
+        if (addSpace) {
+            writer.write(' ');
+        }
+        for (int i = 0; i < backticks + 1; i++) {
+            writer.write('`');
+        }
     }
 
     @Override
@@ -144,6 +163,21 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             context.render(node);
             node = next;
         }
+    }
+
+    private static int findMaxRunLength(char c, CharSequence s) {
+        int backticks = 0;
+        int start = 0;
+        while (start < s.length()) {
+            int index = Parsing.find(c, s, start);
+            if (index != -1) {
+                start = Parsing.skip(c, s, index + 1, s.length());
+                backticks = Math.max(backticks, start - index);
+            } else {
+                break;
+            }
+        }
+        return backticks;
     }
 
     private void writeText(String text) {
