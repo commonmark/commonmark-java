@@ -24,6 +24,11 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     protected final MarkdownNodeRendererContext context;
     private final MarkdownWriter writer;
+    /**
+     * If we're currently within a {@link BulletList} or {@link OrderedList}, this keeps the context of that list.
+     * It has a parent field so that it can represent a stack (for nested lists).
+     */
+    private ListHolder listHolder;
 
     public CoreMarkdownNodeRenderer(MarkdownNodeRendererContext context) {
         this.context = context;
@@ -79,6 +84,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(BulletList bulletList) {
+        listHolder = new BulletListHolder(listHolder, bulletList);
+        visitChildren(bulletList);
+        listHolder = listHolder.parent;
     }
 
     @Override
@@ -130,8 +138,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         }
         writer.line();
         String[] lines = literal.split("\n");
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
+        for (String line : lines) {
             writer.write(line);
             writer.line();
         }
@@ -206,16 +213,42 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(ListItem listItem) {
+        boolean pushedPrefix = false;
+        if (listHolder instanceof BulletListHolder) {
+            BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
+            String prefix = bulletListHolder.bulletMarker + " ";
+            writer.write(prefix);
+            writer.pushPrefix(repeat(" ", prefix.length()));
+            pushedPrefix = true;
+        } else if (listHolder instanceof OrderedListHolder) {
+            OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
+            String prefix = String.valueOf(orderedListHolder.number) + orderedListHolder.delimiter + " ";
+            orderedListHolder.number++;
+            writer.write(prefix);
+            writer.pushPrefix(repeat(" ", prefix.length()));
+            pushedPrefix = true;
+        }
+        visitChildren(listItem);
+        if (pushedPrefix) {
+            writer.popPrefix();
+        }
     }
 
     @Override
     public void visit(OrderedList orderedList) {
+        listHolder = new OrderedListHolder(listHolder, orderedList);
+        visitChildren(orderedList);
+        listHolder = listHolder.parent;
     }
 
     @Override
     public void visit(Paragraph paragraph) {
         visitChildren(paragraph);
-        writer.block();
+        if (paragraph.getParent() instanceof ListItem) {
+            writer.block();
+        } else {
+            writer.block();
+        }
     }
 
     @Override
@@ -300,5 +333,33 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             writer.write('"');
         }
         writer.write(')');
+    }
+
+    private static class ListHolder {
+        final ListHolder parent;
+
+        protected ListHolder(ListHolder parent) {
+            this.parent = parent;
+        }
+    }
+
+    private static class BulletListHolder extends ListHolder {
+        final char bulletMarker;
+
+        public BulletListHolder(ListHolder parent, BulletList bulletList) {
+            super(parent);
+            this.bulletMarker = bulletList.getBulletMarker();
+        }
+    }
+
+    private static class OrderedListHolder extends ListHolder {
+        final char delimiter;
+        private int number;
+
+        protected OrderedListHolder(ListHolder parent, OrderedList orderedList) {
+            super(parent);
+            delimiter = orderedList.getDelimiter();
+            number = orderedList.getStartNumber();
+        }
     }
 }

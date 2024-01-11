@@ -67,6 +67,25 @@ public class MarkdownRendererTest {
         assertRoundTrip("> # Foo\n> \n> bar\n> baz\n");
     }
 
+    @Test
+    public void testBulletListItems() {
+        assertRoundTrip("* foo\n");
+        assertRoundTrip("- foo\n");
+        assertRoundTrip("+ foo\n");
+        assertRoundTrip("* foo\n  bar\n");
+        assertRoundTrip("* ```\n  code\n  ```\n");
+        assertRoundTrip("* foo\n\n* bar\n");
+
+        // Tight list
+//        assertRoundTrip("* foo\n* bar\n");
+    }
+
+    @Test
+    public void testOrderedListItems() {
+        assertRoundTrip("1. foo\n");
+        assertRoundTrip("2. foo\n\n3. bar\n");
+    }
+
     // Inlines
 
     @Test
