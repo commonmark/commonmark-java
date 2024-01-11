@@ -89,6 +89,14 @@ public class MarkdownRendererTest {
     // Inlines
 
     @Test
+    public void testEscaping() {
+        // These are a bit tricky. We always escape some characters, even though they only need escaping if they would
+        // otherwise result in a different parse result (e.g. a link):
+        assertRoundTrip("\\[a\\](/uri)\n");
+        assertRoundTrip("\\`abc\\`\n");
+    }
+
+    @Test
     public void testCodeSpans() {
         assertRoundTrip("`foo`\n");
         assertRoundTrip("``foo ` bar``\n");

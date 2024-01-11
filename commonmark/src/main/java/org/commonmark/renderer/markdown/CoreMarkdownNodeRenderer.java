@@ -15,6 +15,8 @@ import java.util.Set;
  */
 public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
+    private final CharMatcher textEscape =
+            AsciiMatcher.builder().c('[').c(']').c('<').c('>').c('`').build();
     private final CharMatcher linkDestinationNeedsAngleBrackets =
             AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\\').build();
     private final CharMatcher linkDestinationEscapeInAngleBrackets =
@@ -268,7 +270,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Text text) {
-        writeText(text.getLiteral());
+        writer.writeEscaped(text.getLiteral(), textEscape);
     }
 
     @Override
@@ -311,10 +313,6 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             sb.append(s);
         }
         return sb.toString();
-    }
-
-    private void writeText(String text) {
-        writer.write(text);
     }
 
     private void writeLinkLike(String title, String destination, Node node, String opener) {
