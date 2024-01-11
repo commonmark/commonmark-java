@@ -10,6 +10,7 @@ public class MarkdownWriter {
     private final Appendable buffer;
 
     private boolean finishBlock = false;
+    private boolean tight;
     private char lastChar;
     private final LinkedList<String> prefixes = new LinkedList<>();
 
@@ -96,8 +97,10 @@ public class MarkdownWriter {
             finishBlock = false;
             append('\n');
             writePrefixes();
-            append('\n');
-            writePrefixes();
+            if (!tight) {
+                append('\n');
+                writePrefixes();
+            }
         }
     }
 
@@ -107,5 +110,13 @@ public class MarkdownWriter {
                 append(prefix);
             }
         }
+    }
+
+    public boolean getTight() {
+        return tight;
+    }
+
+    public void setTight(boolean tight) {
+        this.tight = tight;
     }
 }

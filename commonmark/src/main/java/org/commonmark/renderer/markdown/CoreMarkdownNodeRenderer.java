@@ -86,9 +86,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(BulletList bulletList) {
+        boolean oldTight = writer.getTight();
+        writer.setTight(bulletList.isTight());
         listHolder = new BulletListHolder(listHolder, bulletList);
         visitChildren(bulletList);
         listHolder = listHolder.parent;
+        writer.setTight(oldTight);
     }
 
     @Override
@@ -243,9 +246,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(OrderedList orderedList) {
+        boolean oldTight = writer.getTight();
+        writer.setTight(orderedList.isTight());
         listHolder = new OrderedListHolder(listHolder, orderedList);
         visitChildren(orderedList);
         listHolder = listHolder.parent;
+        writer.setTight(oldTight);
     }
 
     @Override
