@@ -44,6 +44,7 @@ public class MarkdownRendererTest {
         assertRoundTrip("~~~~\ntest\n~~~~\n");
         assertRoundTrip("```info\ntest\n```\n");
         assertRoundTrip(" ```\n test\n ```\n");
+        assertRoundTrip("```\n```\n");
     }
 
     @Test

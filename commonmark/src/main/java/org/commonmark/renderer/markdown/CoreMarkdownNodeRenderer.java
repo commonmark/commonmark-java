@@ -142,10 +142,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             writer.write(fencedCodeBlock.getInfo());
         }
         writer.line();
-        String[] lines = literal.split("\n");
-        for (String line : lines) {
-            writer.write(line);
-            writer.line();
+        if (!literal.isEmpty()) {
+            String[] lines = literal.split("\n");
+            for (String line : lines) {
+                writer.write(line);
+                writer.line();
+            }
         }
         writer.write(fence);
         if (indent > 0) {
