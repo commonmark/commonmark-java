@@ -27,7 +27,8 @@ import static org.junit.Assert.assertTrue;
 public class SpecMarkdownRendererTest {
 
     public static final MarkdownRenderer MARKDOWN_RENDERER = MarkdownRenderer.builder().build();
-    public static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().build();
+    // The spec says URL-escaping is optional, but the examples assume that it's enabled.
+    public static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().percentEncodeUrls(true).build();
 
     @Test
     public void testCoverage() {
@@ -51,7 +52,7 @@ public class SpecMarkdownRendererTest {
         System.out.println("Failed examples by section (total " + fails.size() + "):");
         printCountsBySection(fails);
 
-        int expectedPassed = 564;
+        int expectedPassed = 574;
         assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
     }
 
