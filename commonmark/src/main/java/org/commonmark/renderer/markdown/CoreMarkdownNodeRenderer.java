@@ -98,7 +98,10 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             writer.write('`');
         }
         // If the literal starts or ends with a backtick, surround it with a single space.
-        boolean addSpace = literal.startsWith("`") || literal.endsWith("`");
+        // If it starts and ends with a space (but is not only spaces), add an additional space (otherwise they would
+        // get removed on parsing).
+        boolean addSpace = literal.startsWith("`") || literal.endsWith("`") ||
+                (literal.startsWith(" ") && literal.endsWith(" ") && Parsing.hasNonSpace(literal));
         if (addSpace) {
             writer.write(' ');
         }

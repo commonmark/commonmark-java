@@ -95,6 +95,8 @@ public class MarkdownRendererTest {
         assertRoundTrip("```foo `` ` bar```\n");
 
         assertRoundTrip("`` `foo ``\n");
+        assertRoundTrip("``  `  ``\n");
+        assertRoundTrip("` `\n");
     }
 
     @Test
