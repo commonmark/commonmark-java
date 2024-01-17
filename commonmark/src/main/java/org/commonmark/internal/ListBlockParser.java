@@ -217,7 +217,7 @@ public class ListBlockParser extends AbstractBlockParser {
             }
 
             int newColumn = listData.contentColumn;
-            ListItemParser listItemParser = new ListItemParser(newColumn - state.getColumn());
+            ListItemParser listItemParser = new ListItemParser(state.getIndent(), newColumn - state.getColumn());
 
             // prepend the list block if needed
             if (!(matched instanceof ListBlockParser) ||
