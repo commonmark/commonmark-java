@@ -92,6 +92,49 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         visitChildren(bulletList);
         listHolder = listHolder.parent;
         writer.setTight(oldTight);
+        writer.block();
+    }
+
+    @Override
+    public void visit(OrderedList orderedList) {
+        boolean oldTight = writer.getTight();
+        writer.setTight(orderedList.isTight());
+        listHolder = new OrderedListHolder(listHolder, orderedList);
+        visitChildren(orderedList);
+        listHolder = listHolder.parent;
+        writer.setTight(oldTight);
+        writer.block();
+    }
+
+    @Override
+    public void visit(ListItem listItem) {
+        int contentIndent = listItem.getContentIndent();
+        boolean pushedPrefix = false;
+        if (listHolder instanceof BulletListHolder) {
+            BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
+            String marker = repeat(" ", listItem.getMarkerIndent()) + bulletListHolder.bulletMarker;
+            writer.write(marker);
+            writer.write(repeat(" ", contentIndent - marker.length()));
+            writer.pushPrefix(repeat(" ", contentIndent));
+            pushedPrefix = true;
+        } else if (listHolder instanceof OrderedListHolder) {
+            OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
+            String marker = repeat(" ", listItem.getMarkerIndent()) + orderedListHolder.number + orderedListHolder.delimiter;
+            orderedListHolder.number++;
+            writer.write(marker);
+            writer.write(repeat(" ", contentIndent - marker.length()));
+            writer.pushPrefix(repeat(" ", contentIndent));
+            pushedPrefix = true;
+        }
+        if (listItem.getFirstChild() == null) {
+            // Empty list item
+            writer.block();
+        } else {
+            visitChildren(listItem);
+        }
+        if (pushedPrefix) {
+            writer.popPrefix();
+        }
     }
 
     @Override
@@ -222,54 +265,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     @Override
-    public void visit(ListItem listItem) {
-        int contentIndent = listItem.getContentIndent();
-        boolean pushedPrefix = false;
-        if (listHolder instanceof BulletListHolder) {
-            BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
-            String marker = repeat(" ", listItem.getMarkerIndent()) + bulletListHolder.bulletMarker;
-            writer.write(marker);
-            writer.write(repeat(" ", contentIndent - marker.length()));
-            writer.pushPrefix(repeat(" ", contentIndent));
-            pushedPrefix = true;
-        } else if (listHolder instanceof OrderedListHolder) {
-            OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
-            String marker = repeat(" ", listItem.getMarkerIndent()) + orderedListHolder.number + orderedListHolder.delimiter;
-            orderedListHolder.number++;
-            writer.write(marker);
-            writer.write(repeat(" ", contentIndent - marker.length()));
-            writer.pushPrefix(repeat(" ", contentIndent));
-            pushedPrefix = true;
-        }
-        if (listItem.getFirstChild() == null) {
-            // Empty list item
-            writer.block();
-        } else {
-            visitChildren(listItem);
-        }
-        if (pushedPrefix) {
-            writer.popPrefix();
-        }
-    }
-
-    @Override
-    public void visit(OrderedList orderedList) {
-        boolean oldTight = writer.getTight();
-        writer.setTight(orderedList.isTight());
-        listHolder = new OrderedListHolder(listHolder, orderedList);
-        visitChildren(orderedList);
-        listHolder = listHolder.parent;
-        writer.setTight(oldTight);
-    }
-
-    @Override
     public void visit(Paragraph paragraph) {
         visitChildren(paragraph);
-        if (paragraph.getParent() instanceof ListItem) {
-            writer.block();
-        } else {
-            writer.block();
-        }
+        writer.block();
     }
 
     @Override

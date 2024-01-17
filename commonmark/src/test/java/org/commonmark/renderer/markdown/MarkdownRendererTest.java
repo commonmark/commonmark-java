@@ -82,6 +82,8 @@ public class MarkdownRendererTest {
 
         // Tight list
         assertRoundTrip("* foo\n* bar\n");
+        // Tight list where the second item contains a loose list
+        assertRoundTrip("- Foo\n  - Bar\n  \n  - Baz\n");
 
         // List item indent. This is a tricky one, but here the amount of space between the list marker and "one"
         // determines whether "two" is part of the list item or an indented code block.
@@ -102,6 +104,8 @@ public class MarkdownRendererTest {
 
         // Tight list
         assertRoundTrip("1. foo\n2. bar\n");
+        // Tight list where the second item contains a loose list
+        assertRoundTrip("1. Foo\n   1. Bar\n   \n   2. Baz\n");
 
         assertRoundTrip(" 1.  one\n\n    two\n");
     }

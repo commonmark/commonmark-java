@@ -9,7 +9,7 @@ public class MarkdownWriter {
 
     private final Appendable buffer;
 
-    private boolean finishBlock = false;
+    private int blockSeparator = 0;
     private boolean tight;
     private char lastChar;
     private final LinkedList<String> prefixes = new LinkedList<>();
@@ -22,22 +22,13 @@ public class MarkdownWriter {
         return lastChar;
     }
 
-    public void block() {
-        finishBlock = true;
-    }
-
-    public void line() {
-        append('\n');
-        writePrefixes();
-    }
-
     public void write(String s) {
-        finishBlockIfNeeded();
+        flushBlockSeparator();
         append(s);
     }
 
     public void write(char c) {
-        finishBlockIfNeeded();
+        flushBlockSeparator();
         append(c);
     }
 
@@ -45,7 +36,7 @@ public class MarkdownWriter {
         if (s.isEmpty()) {
             return;
         }
-        finishBlockIfNeeded();
+        flushBlockSeparator();
         try {
             for (int i = 0; i < s.length(); i++) {
                 char ch = s.charAt(i);
@@ -59,6 +50,21 @@ public class MarkdownWriter {
         }
 
         lastChar = s.charAt(s.length() - 1);
+    }
+
+    public void line() {
+        append('\n');
+        writePrefixes();
+    }
+
+    /**
+     * Enqueue a block separator to be written before the next text is written. Block separators are not written
+     * straight away because if there are no more blocks to write we don't want a separator (at the end of the document).
+     */
+    public void block() {
+        // Remember whether this should be a tight or loose separator now because tight could get changed in between
+        // this and the next flush.
+        blockSeparator = tight ? 1 : 2;
     }
 
     public void pushPrefix(String prefix) {
@@ -92,18 +98,6 @@ public class MarkdownWriter {
         lastChar = c;
     }
 
-    private void finishBlockIfNeeded() {
-        if (finishBlock) {
-            finishBlock = false;
-            append('\n');
-            writePrefixes();
-            if (!tight) {
-                append('\n');
-                writePrefixes();
-            }
-        }
-    }
-
     private void writePrefixes() {
         if (!prefixes.isEmpty()) {
             for (String prefix : prefixes) {
@@ -112,10 +106,36 @@ public class MarkdownWriter {
         }
     }
 
+    /**
+     * If a block separator has been enqueued with {@link #block()} but not yet written, write it now.
+     */
+    private void flushBlockSeparator() {
+        if (blockSeparator != 0) {
+            append('\n');
+            writePrefixes();
+            if (blockSeparator > 1) {
+                append('\n');
+                writePrefixes();
+            }
+            blockSeparator = 0;
+        }
+    }
+
+    /**
+     * @return whether blocks are currently set to tight or loose, see {@link #setTight(boolean)}
+     */
     public boolean getTight() {
         return tight;
     }
 
+    /**
+     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by a blank line. Tight
+     * is where blocks are not separated by a blank line. Tight blocks are used in lists, if there are no blank lines
+     * within the list.
+     * <p>
+     * Note that changing this does not affect block separators that have already been enqueued (with {@link #block()},
+     * only future ones.
+     */
     public void setTight(boolean tight) {
         this.tight = tight;
     }
