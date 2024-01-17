@@ -223,19 +223,22 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(ListItem listItem) {
+        int contentIndent = listItem.getContentIndent();
         boolean pushedPrefix = false;
         if (listHolder instanceof BulletListHolder) {
             BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
-            String prefix = bulletListHolder.bulletMarker + " ";
-            writer.write(prefix);
-            writer.pushPrefix(repeat(" ", prefix.length()));
+            String marker = repeat(" ", listItem.getMarkerIndent()) + bulletListHolder.bulletMarker;
+            writer.write(marker);
+            writer.write(repeat(" ", contentIndent - marker.length()));
+            writer.pushPrefix(repeat(" ", contentIndent));
             pushedPrefix = true;
         } else if (listHolder instanceof OrderedListHolder) {
             OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
-            String prefix = String.valueOf(orderedListHolder.number) + orderedListHolder.delimiter + " ";
+            String marker = repeat(" ", listItem.getMarkerIndent()) + orderedListHolder.number + orderedListHolder.delimiter;
             orderedListHolder.number++;
-            writer.write(prefix);
-            writer.pushPrefix(repeat(" ", prefix.length()));
+            writer.write(marker);
+            writer.write(repeat(" ", contentIndent - marker.length()));
+            writer.pushPrefix(repeat(" ", contentIndent));
             pushedPrefix = true;
         }
         visitChildren(listItem);

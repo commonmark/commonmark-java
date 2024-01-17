@@ -52,7 +52,7 @@ public class SpecMarkdownRendererTest {
         System.out.println("Failed examples by section (total " + fails.size() + "):");
         printCountsBySection(fails);
 
-        int expectedPassed = 611;
+        int expectedPassed = 613;
         assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
     }
 

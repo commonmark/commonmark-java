@@ -76,9 +76,20 @@ public class MarkdownRendererTest {
         assertRoundTrip("* foo\n  bar\n");
         assertRoundTrip("* ```\n  code\n  ```\n");
         assertRoundTrip("* foo\n\n* bar\n");
+        // Note that the "  " in the second line is not necessary, but it's not wrong either.
+        // We could try to avoid it in a future change, but not sure if necessary.
+        assertRoundTrip("* foo\n  \n  bar\n");
 
         // Tight list
         assertRoundTrip("* foo\n* bar\n");
+
+        // List item indent. This is a tricky one, but here the amount of space between the list marker and "one"
+        // determines whether "two" is part of the list item or an indented code block.
+        // In this case, it's an indented code block because it's not indented enough to be part of the list item.
+        // If the renderer would just use "- one", then "two" would change from being an indented code block to being
+        // a paragraph in the list item! So it is important for the renderer to preserve the content indent of the list
+        // item.
+        assertRoundTrip(" -    one\n\n     two\n");
     }
 
     @Test
@@ -88,6 +99,8 @@ public class MarkdownRendererTest {
 
         // Tight list
         assertRoundTrip("1. foo\n2. bar\n");
+
+        assertRoundTrip(" 1.  one\n\n    two\n");
     }
 
     // Inlines
@@ -173,7 +186,8 @@ public class MarkdownRendererTest {
     }
 
     private String render(String source) {
-        return MarkdownRenderer.builder().build().render(parse(source));
+        Node parsed = parse(source);
+        return MarkdownRenderer.builder().build().render(parsed);
     }
 
     private void assertRoundTrip(String input) {
