@@ -241,7 +241,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             writer.pushPrefix(repeat(" ", contentIndent));
             pushedPrefix = true;
         }
-        visitChildren(listItem);
+        if (listItem.getFirstChild() == null) {
+            // Empty list item
+            writer.block();
+        } else {
+            visitChildren(listItem);
+        }
         if (pushedPrefix) {
             writer.popPrefix();
         }

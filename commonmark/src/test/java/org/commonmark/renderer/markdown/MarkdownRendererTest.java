@@ -90,6 +90,9 @@ public class MarkdownRendererTest {
         // a paragraph in the list item! So it is important for the renderer to preserve the content indent of the list
         // item.
         assertRoundTrip(" -    one\n\n     two\n");
+
+        // Empty list
+        assertRoundTrip("- \n\nFoo\n");
     }
 
     @Test
