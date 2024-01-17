@@ -51,6 +51,16 @@ public class SpecMarkdownRendererTest {
 
         System.out.println("Failed examples by section (total " + fails.size() + "):");
         printCountsBySection(fails);
+        System.out.println();
+
+        System.out.println("Failed examples:");
+        for (Example fail : fails) {
+            System.out.println("Failed: " + fail);
+            System.out.println("````````````````````````````````");
+            System.out.print(fail.getSource());
+            System.out.println("````````````````````````````````");
+            System.out.println();
+        }
 
         int expectedPassed = 621;
         assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
