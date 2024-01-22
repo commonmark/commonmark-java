@@ -259,7 +259,14 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(HtmlBlock htmlBlock) {
-        writer.write(htmlBlock.getLiteral());
+        List<String> lines = getLines(htmlBlock.getLiteral());
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            writer.write(line);
+            if (i != lines.size() - 1) {
+                writer.line();
+            }
+        }
         writer.block();
     }
 

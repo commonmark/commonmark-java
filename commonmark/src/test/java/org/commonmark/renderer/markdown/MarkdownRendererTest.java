@@ -53,6 +53,7 @@ public class MarkdownRendererTest {
     @Test
     public void testHtmlBlocks() {
         assertRoundTrip("<div>test</div>\n");
+        assertRoundTrip("> <div>\n> test\n> </div>\n");
     }
 
     @Test
