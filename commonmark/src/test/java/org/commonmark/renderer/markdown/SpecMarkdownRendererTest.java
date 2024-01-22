@@ -62,7 +62,7 @@ public class SpecMarkdownRendererTest {
             System.out.println();
         }
 
-        int expectedPassed = 625;
+        int expectedPassed = 629;
         assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
     }
 
@@ -89,6 +89,7 @@ public class SpecMarkdownRendererTest {
     }
 
     private String renderHtml(String source) {
-        return HTML_RENDERER.render(parse(source));
+        // The spec uses "rightwards arrow" to show tabs
+        return HTML_RENDERER.render(parse(source)).replace("\t", "\u2192");
     }
 }

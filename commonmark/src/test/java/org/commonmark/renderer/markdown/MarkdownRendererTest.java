@@ -116,6 +116,11 @@ public class MarkdownRendererTest {
     // Inlines
 
     @Test
+    public void testTabs() {
+        assertRoundTrip("a\tb\n");
+    }
+
+    @Test
     public void testEscaping() {
         // These are a bit tricky. We always escape some characters, even though they only need escaping if they would
         // otherwise result in a different parse result (e.g. a link):
