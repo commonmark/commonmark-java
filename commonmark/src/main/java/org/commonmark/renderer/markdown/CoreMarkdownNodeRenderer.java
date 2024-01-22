@@ -8,6 +8,7 @@ import org.commonmark.renderer.NodeRenderer;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -189,7 +190,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         }
         writer.line();
         if (!literal.isEmpty()) {
-            String[] lines = literal.split("\n");
+            List<String> lines = getLines(literal);
             for (String line : lines) {
                 writer.write(line);
                 writer.line();
@@ -243,15 +244,15 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
         String literal = indentedCodeBlock.getLiteral();
-        String[] lines = literal.split("\n");
         // We need to respect line prefixes which is why we need to write it line by line (e.g. an indented code block
         // within a block quote)
         writer.write("    ");
         writer.pushPrefix("    ");
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
+        List<String> lines = getLines(literal);
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
             writer.write(line);
-            if (i != lines.length - 1) {
+            if (i != lines.size() - 1) {
                 writer.line();
             }
         }
@@ -327,6 +328,20 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             sb.append(s);
         }
         return sb.toString();
+    }
+
+    private static List<String> getLines(String literal) {
+        // Without -1, split would discard all trailing empty strings, which is not what we want, e.g. it would
+        // return the same result for "abc", "abc\n" and "abc\n\n".
+        // With -1, it returns ["abc"], ["abc", ""] and ["abc", "", ""].
+        String[] parts = literal.split("\n", -1);
+        if (parts[parts.length - 1].isEmpty()) {
+            // But we don't want the last empty string, as "\n" is used as a line terminator (not a separator),
+            // so return without the last element.
+            return Arrays.asList(parts).subList(0, parts.length - 1);
+        } else {
+            return Arrays.asList(parts);
+        }
     }
 
     private void writeLinkLike(String title, String destination, Node node, String opener) {
