@@ -13,6 +13,10 @@ import java.util.Set;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
+ * <p>
+ * Note that while sometimes it would be easier to record what kind of syntax was used on parsing (e.g. ATX vs Setext
+ * heading), this renderer is intended to also work for documents that were created by directly creating
+ * {@link Node Nodes} instead. So in order to support that, it sometimes needs to do a bit more work.
  */
 public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
@@ -211,11 +215,34 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Heading heading) {
+        if (heading.getLevel() <= 2) {
+            LineBreakVisitor lineBreakVisitor = new LineBreakVisitor();
+            heading.accept(lineBreakVisitor);
+            boolean isMultipleLines = lineBreakVisitor.hasLineBreak();
+
+            if (isMultipleLines) {
+                // Setext headings: Can have multiple lines, but only level 1 or 2
+                visitChildren(heading);
+                writer.line();
+                if (heading.getLevel() == 1) {
+                    // Note that it would be nice to match the length of the contents instead of just using 3, but that's
+                    // not easy.
+                    writer.write("===");
+                } else {
+                    writer.write("---");
+                }
+                writer.block();
+                return;
+            }
+        }
+
+        // ATX headings: Can't have multiple lines, but up to level 6.
         for (int i = 0; i < heading.getLevel(); i++) {
             writer.write('#');
         }
         writer.write(' ');
         visitChildren(heading);
+
         writer.block();
     }
 
@@ -390,6 +417,26 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             super(parent);
             delimiter = orderedList.getDelimiter();
             number = orderedList.getStartNumber();
+        }
+    }
+
+    private static class LineBreakVisitor extends AbstractVisitor {
+        private boolean lineBreak = false;
+
+        public boolean hasLineBreak() {
+            return lineBreak;
+        }
+
+        @Override
+        public void visit(SoftLineBreak softLineBreak) {
+            super.visit(softLineBreak);
+            lineBreak = true;
+        }
+
+        @Override
+        public void visit(HardLineBreak hardLineBreak) {
+            super.visit(hardLineBreak);
+            lineBreak = true;
         }
     }
 }
