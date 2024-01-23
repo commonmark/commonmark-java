@@ -62,7 +62,7 @@ public class SpecMarkdownRendererTest {
             System.out.println();
         }
 
-        int expectedPassed = 646;
+        int expectedPassed = 647;
         assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
     }
 

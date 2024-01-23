@@ -22,6 +22,10 @@ public class AsciiMatcher implements CharMatcher {
         return new Builder(new BitSet());
     }
 
+    public static Builder builder(AsciiMatcher matcher) {
+        return new Builder((BitSet) matcher.set.clone());
+    }
+
     public static class Builder {
         private final BitSet set;
 

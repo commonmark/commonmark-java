@@ -24,6 +24,8 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     private final AsciiMatcher textEscape =
             AsciiMatcher.builder().anyOf("[]<>`*&").build();
+    private final CharMatcher textEscapeInHeading =
+            AsciiMatcher.builder(textEscape).anyOf("#").build();
     private final CharMatcher linkDestinationNeedsAngleBrackets =
             AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\\').build();
     private final CharMatcher linkDestinationEscapeInAngleBrackets =
@@ -366,11 +368,13 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             }
         }
 
+        CharMatcher escape = text.getParent() instanceof Heading ? textEscapeInHeading : textEscape;
+
         if (literal.endsWith("!") && text.getNext() instanceof Link) {
-            writer.writeEscaped(literal.substring(0, literal.length() - 1), textEscape);
+            writer.writeEscaped(literal.substring(0, literal.length() - 1), escape);
             writer.write("\\!");
         } else {
-            writer.writeEscaped(literal, textEscape);
+            writer.writeEscaped(literal, escape);
         }
     }
 
