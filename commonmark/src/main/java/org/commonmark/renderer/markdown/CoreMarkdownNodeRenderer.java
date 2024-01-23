@@ -88,7 +88,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(BlockQuote blockQuote) {
-        writer.write("> ");
+        writer.writePrefix("> ");
         writer.pushPrefix("> ");
         visitChildren(blockQuote);
         writer.popPrefix();
@@ -124,16 +124,16 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         if (listHolder instanceof BulletListHolder) {
             BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
             String marker = repeat(" ", listItem.getMarkerIndent()) + bulletListHolder.bulletMarker;
-            writer.write(marker);
-            writer.write(repeat(" ", contentIndent - marker.length()));
+            writer.writePrefix(marker);
+            writer.writePrefix(repeat(" ", contentIndent - marker.length()));
             writer.pushPrefix(repeat(" ", contentIndent));
             pushedPrefix = true;
         } else if (listHolder instanceof OrderedListHolder) {
             OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
             String marker = repeat(" ", listItem.getMarkerIndent()) + orderedListHolder.number + orderedListHolder.delimiter;
             orderedListHolder.number++;
-            writer.write(marker);
-            writer.write(repeat(" ", contentIndent - marker.length()));
+            writer.writePrefix(marker);
+            writer.writePrefix(repeat(" ", contentIndent - marker.length()));
             writer.pushPrefix(repeat(" ", contentIndent));
             pushedPrefix = true;
         }
@@ -190,7 +190,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
         if (indent > 0) {
             String indentPrefix = repeat(" ", indent);
-            writer.write(indentPrefix);
+            writer.writePrefix(indentPrefix);
             writer.pushPrefix(indentPrefix);
         }
 
@@ -286,7 +286,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         String literal = indentedCodeBlock.getLiteral();
         // We need to respect line prefixes which is why we need to write it line by line (e.g. an indented code block
         // within a block quote)
-        writer.write("    ");
+        writer.writePrefix("    ");
         writer.pushPrefix("    ");
         List<String> lines = getLines(literal);
         for (int i = 0; i < lines.size(); i++) {

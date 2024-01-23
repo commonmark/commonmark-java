@@ -11,7 +11,8 @@ public class MarkdownWriter {
 
     private int blockSeparator = 0;
     private boolean tight;
-    private char lastChar = '\n';
+    private char lastChar;
+    private boolean atLineStart = true;
     private final LinkedList<String> prefixes = new LinkedList<>();
 
     public MarkdownWriter(Appendable out) {
@@ -22,8 +23,11 @@ public class MarkdownWriter {
         return lastChar;
     }
 
+    /**
+     * @return whether we're at the line start (not counting any prefixes), i.e. after a {@link #line} or {@link #block}.
+     */
     public boolean isAtLineStart() {
-        return lastChar == '\n' || blockSeparator > 0;
+        return atLineStart;
     }
 
     public void write(String s) {
@@ -54,11 +58,13 @@ public class MarkdownWriter {
         }
 
         lastChar = s.charAt(s.length() - 1);
+        atLineStart = false;
     }
 
     public void line() {
         append('\n');
         writePrefixes();
+        atLineStart = true;
     }
 
     /**
@@ -69,10 +75,17 @@ public class MarkdownWriter {
         // Remember whether this should be a tight or loose separator now because tight could get changed in between
         // this and the next flush.
         blockSeparator = tight ? 1 : 2;
+        atLineStart = true;
     }
 
     public void pushPrefix(String prefix) {
         prefixes.addLast(prefix);
+    }
+
+    public void writePrefix(String prefix) {
+        boolean tmp = atLineStart;
+        write(prefix);
+        atLineStart = tmp;
     }
 
     public void popPrefix() {
@@ -90,6 +103,7 @@ public class MarkdownWriter {
         if (length != 0) {
             lastChar = s.charAt(length - 1);
         }
+        atLineStart = false;
     }
 
     private void append(char c) {
@@ -100,6 +114,7 @@ public class MarkdownWriter {
         }
 
         lastChar = c;
+        atLineStart = false;
     }
 
     private void writePrefixes() {

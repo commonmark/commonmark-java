@@ -137,6 +137,11 @@ public class MarkdownRendererTest {
         assertRoundTrip("\\## Test\n");
         assertRoundTrip("\\#\n");
         assertRoundTrip("Foo\n\\===\n");
+        // The beginning of the line within the block, so disregarding prefixes
+        assertRoundTrip("> \\- Test\n");
+        assertRoundTrip("- \\- Test\n");
+        // That's not the beginning of the line
+        assertRoundTrip("`a`- foo\n");
 
         // This is a bit more tricky as we need to check for a list start
         assertRoundTrip("1\\. Foo\n");
