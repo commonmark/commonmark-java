@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
@@ -20,14 +22,16 @@ import java.util.Set;
  */
 public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
-    private final CharMatcher textEscape =
-            AsciiMatcher.builder().c('[').c(']').c('<').c('>').c('`').build();
+    private final AsciiMatcher textEscape =
+            AsciiMatcher.builder().anyOf("[]<>`*&").build();
     private final CharMatcher linkDestinationNeedsAngleBrackets =
             AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\\').build();
     private final CharMatcher linkDestinationEscapeInAngleBrackets =
             AsciiMatcher.builder().c('<').c('>').build();
     private final CharMatcher linkTitleEscapeInQuotes =
             AsciiMatcher.builder().c('"').build();
+
+    private final Pattern orderedListMarkerPattern = Pattern.compile("^([0-9]{1,9})([.)])");
 
     protected final MarkdownNodeRendererContext context;
     private final MarkdownWriter writer;
@@ -319,7 +323,55 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Text text) {
-        writer.writeEscaped(text.getLiteral(), textEscape);
+        String literal = text.getLiteral();
+        if (writer.isAtLineStart() && !literal.isEmpty()) {
+            char c = literal.charAt(0);
+            switch (c) {
+                case '-': {
+                    // Would be ambiguous with a bullet list marker, escape
+                    writer.write("\\-");
+                    literal = literal.substring(1);
+                    break;
+                }
+                case '#': {
+                    // Would be ambiguous with an ATX heading, escape
+                    writer.write("\\#");
+                    literal = literal.substring(1);
+                    break;
+                }
+                case '=': {
+                    // Would be ambiguous with a Setext heading, escape
+                    writer.write("\\=");
+                    literal = literal.substring(1);
+                    break;
+                }
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9': {
+                    // Check for ordered list marker
+                    Matcher m = orderedListMarkerPattern.matcher(literal);
+                    if (m.find()) {
+                        writer.write(m.group(1));
+                        writer.write("\\" + m.group(2));
+                        literal = literal.substring(m.end());
+                    }
+                }
+            }
+        }
+
+        if (literal.endsWith("!") && text.getNext() instanceof Link) {
+            writer.writeEscaped(literal.substring(0, literal.length() - 1), textEscape);
+            writer.write("\\!");
+        } else {
+            writer.writeEscaped(literal, textEscape);
+        }
     }
 
     @Override

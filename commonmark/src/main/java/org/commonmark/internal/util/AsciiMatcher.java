@@ -29,6 +29,13 @@ public class AsciiMatcher implements CharMatcher {
             this.set = set;
         }
 
+        public Builder anyOf(String s) {
+            for (int i = 0; i < s.length(); i++) {
+                c(s.charAt(i));
+            }
+            return this;
+        }
+
         public Builder c(char c) {
             if (c > 127) {
                 throw new IllegalArgumentException("Can only match ASCII characters");

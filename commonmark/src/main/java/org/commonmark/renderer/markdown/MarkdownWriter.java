@@ -11,7 +11,7 @@ public class MarkdownWriter {
 
     private int blockSeparator = 0;
     private boolean tight;
-    private char lastChar;
+    private char lastChar = '\n';
     private final LinkedList<String> prefixes = new LinkedList<>();
 
     public MarkdownWriter(Appendable out) {
@@ -20,6 +20,10 @@ public class MarkdownWriter {
 
     public char getLastChar() {
         return lastChar;
+    }
+
+    public boolean isAtLineStart() {
+        return lastChar == '\n' || blockSeparator > 0;
     }
 
     public void write(String s) {

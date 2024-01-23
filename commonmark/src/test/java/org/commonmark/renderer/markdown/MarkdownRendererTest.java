@@ -127,6 +127,22 @@ public class MarkdownRendererTest {
         // otherwise result in a different parse result (e.g. a link):
         assertRoundTrip("\\[a\\](/uri)\n");
         assertRoundTrip("\\`abc\\`\n");
+
+        // Some characters only need to be escaped at the beginning of the line
+        assertRoundTrip("\\- Test\n");
+        assertRoundTrip("\\-\n");
+        assertRoundTrip("Test -\n");
+        assertRoundTrip("Abc\n\n\\- Test\n");
+        assertRoundTrip("\\# Test\n");
+        assertRoundTrip("\\## Test\n");
+        assertRoundTrip("\\#\n");
+        assertRoundTrip("Foo\n\\===\n");
+
+        // This is a bit more tricky as we need to check for a list start
+        assertRoundTrip("1\\. Foo\n");
+        assertRoundTrip("999\\. Foo\n");
+        assertRoundTrip("1\\.\n");
+        assertRoundTrip("1\\) Foo\n");
     }
 
     @Test
