@@ -148,6 +148,11 @@ public class MarkdownRendererTest {
         assertRoundTrip("999\\. Foo\n");
         assertRoundTrip("1\\.\n");
         assertRoundTrip("1\\) Foo\n");
+
+        // Escaped whitespace, wow
+        assertRoundTrip("&#9;foo\n");
+        assertRoundTrip("&#32;   foo\n");
+        assertRoundTrip("foo&#10;&#10;bar\n");
     }
 
     @Test

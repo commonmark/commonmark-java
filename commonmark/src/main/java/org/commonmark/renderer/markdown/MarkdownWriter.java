@@ -48,10 +48,15 @@ public class MarkdownWriter {
         try {
             for (int i = 0; i < s.length(); i++) {
                 char ch = s.charAt(i);
-                if (ch == '\\' || escape.matches(ch)) {
-                    buffer.append('\\');
+                if (ch == '\n') {
+                    // Can't escape this with \, use numeric character reference
+                    buffer.append("&#10;");
+                } else {
+                    if (ch == '\\' || escape.matches(ch)) {
+                        buffer.append('\\');
+                    }
+                    buffer.append(ch);
                 }
-                buffer.append(ch);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

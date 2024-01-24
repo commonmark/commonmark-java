@@ -364,6 +364,17 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                         writer.write("\\" + m.group(2));
                         literal = literal.substring(m.end());
                     }
+                    break;
+                }
+                case '\t': {
+                    writer.write("&#9;");
+                    literal = literal.substring(1);
+                    break;
+                }
+                case ' ': {
+                    writer.write("&#32;");
+                    literal = literal.substring(1);
+                    break;
                 }
             }
         }

@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -62,8 +63,9 @@ public class SpecMarkdownRendererTest {
             System.out.println();
         }
 
-        int expectedPassed = 650;
+        int expectedPassed = 652;
         assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
+        assertEquals(0, fails.size());
     }
 
     private static void printCountsBySection(List<Example> examples) {
