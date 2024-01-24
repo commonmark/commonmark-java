@@ -87,6 +87,114 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     @Override
+    public void visit(ThematicBreak thematicBreak) {
+        writer.write("***");
+        writer.block();
+    }
+
+    @Override
+    public void visit(Heading heading) {
+        if (heading.getLevel() <= 2) {
+            LineBreakVisitor lineBreakVisitor = new LineBreakVisitor();
+            heading.accept(lineBreakVisitor);
+            boolean isMultipleLines = lineBreakVisitor.hasLineBreak();
+
+            if (isMultipleLines) {
+                // Setext headings: Can have multiple lines, but only level 1 or 2
+                visitChildren(heading);
+                writer.line();
+                if (heading.getLevel() == 1) {
+                    // Note that it would be nice to match the length of the contents instead of just using 3, but that's
+                    // not easy.
+                    writer.write("===");
+                } else {
+                    writer.write("---");
+                }
+                writer.block();
+                return;
+            }
+        }
+
+        // ATX headings: Can't have multiple lines, but up to level 6.
+        for (int i = 0; i < heading.getLevel(); i++) {
+            writer.write('#');
+        }
+        writer.write(' ');
+        visitChildren(heading);
+
+        writer.block();
+    }
+
+    @Override
+    public void visit(IndentedCodeBlock indentedCodeBlock) {
+        String literal = indentedCodeBlock.getLiteral();
+        // We need to respect line prefixes which is why we need to write it line by line (e.g. an indented code block
+        // within a block quote)
+        writer.writePrefix("    ");
+        writer.pushPrefix("    ");
+        List<String> lines = getLines(literal);
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            writer.write(line);
+            if (i != lines.size() - 1) {
+                writer.line();
+            }
+        }
+        writer.popPrefix();
+        writer.block();
+    }
+
+    @Override
+    public void visit(FencedCodeBlock fencedCodeBlock) {
+        String literal = fencedCodeBlock.getLiteral();
+        String fence = repeat(String.valueOf(fencedCodeBlock.getFenceChar()), fencedCodeBlock.getFenceLength());
+        int indent = fencedCodeBlock.getFenceIndent();
+
+        if (indent > 0) {
+            String indentPrefix = repeat(" ", indent);
+            writer.writePrefix(indentPrefix);
+            writer.pushPrefix(indentPrefix);
+        }
+
+        writer.write(fence);
+        if (fencedCodeBlock.getInfo() != null) {
+            writer.write(fencedCodeBlock.getInfo());
+        }
+        writer.line();
+        if (!literal.isEmpty()) {
+            List<String> lines = getLines(literal);
+            for (String line : lines) {
+                writer.write(line);
+                writer.line();
+            }
+        }
+        writer.write(fence);
+        if (indent > 0) {
+            writer.popPrefix();
+        }
+        writer.block();
+    }
+
+    @Override
+    public void visit(HtmlBlock htmlBlock) {
+        List<String> lines = getLines(htmlBlock.getLiteral());
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            writer.write(line);
+            if (i != lines.size() - 1) {
+                writer.line();
+            }
+        }
+        writer.block();
+    }
+
+    @Override
+    public void visit(Paragraph paragraph) {
+        visitChildren(paragraph);
+        writer.block();
+    }
+
+    @Override
     public void visit(BlockQuote blockQuote) {
         writer.writePrefix("> ");
         writer.pushPrefix("> ");
@@ -183,34 +291,25 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     @Override
-    public void visit(FencedCodeBlock fencedCodeBlock) {
-        String literal = fencedCodeBlock.getLiteral();
-        String fence = repeat(String.valueOf(fencedCodeBlock.getFenceChar()), fencedCodeBlock.getFenceLength());
-        int indent = fencedCodeBlock.getFenceIndent();
+    public void visit(StrongEmphasis strongEmphasis) {
+        writer.write("**");
+        super.visit(strongEmphasis);
+        writer.write("**");
+    }
 
-        if (indent > 0) {
-            String indentPrefix = repeat(" ", indent);
-            writer.writePrefix(indentPrefix);
-            writer.pushPrefix(indentPrefix);
-        }
+    @Override
+    public void visit(Link link) {
+        writeLinkLike(link.getTitle(), link.getDestination(), link, "[");
+    }
 
-        writer.write(fence);
-        if (fencedCodeBlock.getInfo() != null) {
-            writer.write(fencedCodeBlock.getInfo());
-        }
-        writer.line();
-        if (!literal.isEmpty()) {
-            List<String> lines = getLines(literal);
-            for (String line : lines) {
-                writer.write(line);
-                writer.line();
-            }
-        }
-        writer.write(fence);
-        if (indent > 0) {
-            writer.popPrefix();
-        }
-        writer.block();
+    @Override
+    public void visit(Image image) {
+        writeLinkLike(image.getTitle(), image.getDestination(), image, "![");
+    }
+
+    @Override
+    public void visit(HtmlInline htmlInline) {
+        writer.write(htmlInline.getLiteral());
     }
 
     @Override
@@ -220,107 +319,8 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     @Override
-    public void visit(Heading heading) {
-        if (heading.getLevel() <= 2) {
-            LineBreakVisitor lineBreakVisitor = new LineBreakVisitor();
-            heading.accept(lineBreakVisitor);
-            boolean isMultipleLines = lineBreakVisitor.hasLineBreak();
-
-            if (isMultipleLines) {
-                // Setext headings: Can have multiple lines, but only level 1 or 2
-                visitChildren(heading);
-                writer.line();
-                if (heading.getLevel() == 1) {
-                    // Note that it would be nice to match the length of the contents instead of just using 3, but that's
-                    // not easy.
-                    writer.write("===");
-                } else {
-                    writer.write("---");
-                }
-                writer.block();
-                return;
-            }
-        }
-
-        // ATX headings: Can't have multiple lines, but up to level 6.
-        for (int i = 0; i < heading.getLevel(); i++) {
-            writer.write('#');
-        }
-        writer.write(' ');
-        visitChildren(heading);
-
-        writer.block();
-    }
-
-    @Override
-    public void visit(ThematicBreak thematicBreak) {
-        writer.write("***");
-        writer.block();
-    }
-
-    @Override
-    public void visit(HtmlInline htmlInline) {
-        writer.write(htmlInline.getLiteral());
-    }
-
-    @Override
-    public void visit(HtmlBlock htmlBlock) {
-        List<String> lines = getLines(htmlBlock.getLiteral());
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            writer.write(line);
-            if (i != lines.size() - 1) {
-                writer.line();
-            }
-        }
-        writer.block();
-    }
-
-    @Override
-    public void visit(Image image) {
-        writeLinkLike(image.getTitle(), image.getDestination(), image, "![");
-    }
-
-    @Override
-    public void visit(IndentedCodeBlock indentedCodeBlock) {
-        String literal = indentedCodeBlock.getLiteral();
-        // We need to respect line prefixes which is why we need to write it line by line (e.g. an indented code block
-        // within a block quote)
-        writer.writePrefix("    ");
-        writer.pushPrefix("    ");
-        List<String> lines = getLines(literal);
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            writer.write(line);
-            if (i != lines.size() - 1) {
-                writer.line();
-            }
-        }
-        writer.popPrefix();
-        writer.block();
-    }
-
-    @Override
-    public void visit(Link link) {
-        writeLinkLike(link.getTitle(), link.getDestination(), link, "[");
-    }
-
-    @Override
-    public void visit(Paragraph paragraph) {
-        visitChildren(paragraph);
-        writer.block();
-    }
-
-    @Override
     public void visit(SoftLineBreak softLineBreak) {
         writer.line();
-    }
-
-    @Override
-    public void visit(StrongEmphasis strongEmphasis) {
-        writer.write("**");
-        super.visit(strongEmphasis);
-        writer.write("**");
     }
 
     @Override
