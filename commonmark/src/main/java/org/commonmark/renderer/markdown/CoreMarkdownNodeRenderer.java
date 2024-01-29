@@ -51,26 +51,26 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
         return new HashSet<>(Arrays.asList(
-                Document.class,
-                Heading.class,
-                Paragraph.class,
                 BlockQuote.class,
                 BulletList.class,
+                Code.class,
+                Document.class,
+                Emphasis.class,
                 FencedCodeBlock.class,
+                HardLineBreak.class,
+                Heading.class,
                 HtmlBlock.class,
-                ThematicBreak.class,
+                HtmlInline.class,
+                Image.class,
                 IndentedCodeBlock.class,
                 Link.class,
                 ListItem.class,
                 OrderedList.class,
-                Image.class,
-                Emphasis.class,
+                Paragraph.class,
+                SoftLineBreak.class,
                 StrongEmphasis.class,
                 Text.class,
-                Code.class,
-                HtmlInline.class,
-                SoftLineBreak.class,
-                HardLineBreak.class
+                ThematicBreak.class
         ));
     }
 
@@ -325,6 +325,14 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Text text) {
+        // Text is tricky. In Markdown special characters (`-`, `#` etc.) can be escaped (`\-`, `\#` etc.) so that
+        // they're parsed as plain text. Currently, whether a character was escaped or not is not recorded in the Node,
+        // so here we don't know. If we just wrote out those characters unescaped, the resulting Markdown would change
+        // meaning (turn into a list item, heading, etc.).
+        // You might say "Why not store that in the Node when parsing", but that wouldn't work for the use case where
+        // nodes are constructed directly instead of via parsing. This renderer needs to work for that too.
+        // So currently, when in doubt, we escape. For special characters only occurring at the beginning of a line,
+        // we only escape them then (we wouldn't want to escape every `.` for example).
         String literal = text.getLiteral();
         if (writer.isAtLineStart() && !literal.isEmpty()) {
             char c = literal.charAt(0);
@@ -382,6 +390,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         CharMatcher escape = text.getParent() instanceof Heading ? textEscapeInHeading : textEscape;
 
         if (literal.endsWith("!") && text.getNext() instanceof Link) {
+            // If we wrote the `!` unescaped, it would turn the link into an image instead.
             writer.writeEscaped(literal.substring(0, literal.length() - 1), escape);
             writer.write("\\!");
         } else {
@@ -494,6 +503,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         }
     }
 
+    /**
+     * Visits nodes to check if there are any soft or hard line breaks.
+     */
     private static class LineBreakVisitor extends AbstractVisitor {
         private boolean lineBreak = false;
 
