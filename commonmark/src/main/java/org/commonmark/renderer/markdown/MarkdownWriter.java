@@ -5,6 +5,9 @@ import org.commonmark.internal.util.CharMatcher;
 import java.io.IOException;
 import java.util.LinkedList;
 
+/**
+ * Writer for Markdown (CommonMark) text.
+ */
 public class MarkdownWriter {
 
     private final Appendable buffer;
@@ -19,28 +22,29 @@ public class MarkdownWriter {
         buffer = out;
     }
 
-    public char getLastChar() {
-        return lastChar;
-    }
-
     /**
-     * @return whether we're at the line start (not counting any prefixes), i.e. after a {@link #line} or {@link #block}.
+     * Write the supplied string (raw/unescaped).
      */
-    public boolean isAtLineStart() {
-        return atLineStart;
-    }
-
-    public void write(String s) {
+    public void raw(String s) {
         flushBlockSeparator();
         append(s);
     }
 
-    public void write(char c) {
+    /**
+     * Write the supplied character (raw/unescaped).
+     */
+    public void raw(char c) {
         flushBlockSeparator();
         append(c);
     }
 
-    public void writeEscaped(String s, CharMatcher escape) {
+    /**
+     * Write the supplied string with escaping.
+     *
+     * @param s      the string to write
+     * @param escape which characters to escape
+     */
+    public void text(String s, CharMatcher escape) {
         if (s.isEmpty()) {
             return;
         }
@@ -66,6 +70,9 @@ public class MarkdownWriter {
         atLineStart = false;
     }
 
+    /**
+     * Write a newline (line terminator).
+     */
     public void line() {
         append('\n');
         writePrefixes();
@@ -83,18 +90,65 @@ public class MarkdownWriter {
         atLineStart = true;
     }
 
+    /**
+     * Push a prefix onto the top of the stack. All prefixes are written at the beginning of each line, until the
+     * prefix is popped again.
+     *
+     * @param prefix the raw prefix string
+     */
     public void pushPrefix(String prefix) {
         prefixes.addLast(prefix);
     }
 
+    /**
+     * Write a prefix.
+     *
+     * @param prefix the raw prefix string to write
+     */
     public void writePrefix(String prefix) {
         boolean tmp = atLineStart;
-        write(prefix);
+        raw(prefix);
         atLineStart = tmp;
     }
 
+    /**
+     * Remove the last prefix from the top of the stack.
+     */
     public void popPrefix() {
         prefixes.removeLast();
+    }
+
+    /**
+     * @return the last character that was written
+     */
+    public char getLastChar() {
+        return lastChar;
+    }
+
+    /**
+     * @return whether we're at the line start (not counting any prefixes), i.e. after a {@link #line} or {@link #block}.
+     */
+    public boolean isAtLineStart() {
+        return atLineStart;
+    }
+
+    /**
+     * @return whether blocks are currently set to tight or loose, see {@link #setTight(boolean)}
+     */
+    public boolean getTight() {
+        return tight;
+    }
+
+    /**
+     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by a blank line. Tight
+     * is where blocks are not separated by a blank line. Tight blocks are used in lists, if there are no blank lines
+     * within the list.
+     * <p>
+     * Note that changing this does not affect block separators that have already been enqueued (with {@link #block()},
+     * only future ones.
+     */
+    public void setTight(boolean tight) {
+        this.tight = tight;
     }
 
     private void append(String s) {
@@ -143,24 +197,5 @@ public class MarkdownWriter {
             }
             blockSeparator = 0;
         }
-    }
-
-    /**
-     * @return whether blocks are currently set to tight or loose, see {@link #setTight(boolean)}
-     */
-    public boolean getTight() {
-        return tight;
-    }
-
-    /**
-     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by a blank line. Tight
-     * is where blocks are not separated by a blank line. Tight blocks are used in lists, if there are no blank lines
-     * within the list.
-     * <p>
-     * Note that changing this does not affect block separators that have already been enqueued (with {@link #block()},
-     * only future ones.
-     */
-    public void setTight(boolean tight) {
-        this.tight = tight;
     }
 }

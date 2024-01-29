@@ -88,7 +88,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(ThematicBreak thematicBreak) {
-        writer.write("***");
+        writer.raw("***");
         writer.block();
     }
 
@@ -106,9 +106,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 if (heading.getLevel() == 1) {
                     // Note that it would be nice to match the length of the contents instead of just using 3, but that's
                     // not easy.
-                    writer.write("===");
+                    writer.raw("===");
                 } else {
-                    writer.write("---");
+                    writer.raw("---");
                 }
                 writer.block();
                 return;
@@ -117,9 +117,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
         // ATX headings: Can't have multiple lines, but up to level 6.
         for (int i = 0; i < heading.getLevel(); i++) {
-            writer.write('#');
+            writer.raw('#');
         }
-        writer.write(' ');
+        writer.raw(' ');
         visitChildren(heading);
 
         writer.block();
@@ -135,7 +135,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         List<String> lines = getLines(literal);
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
-            writer.write(line);
+            writer.raw(line);
             if (i != lines.size() - 1) {
                 writer.line();
             }
@@ -156,19 +156,19 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             writer.pushPrefix(indentPrefix);
         }
 
-        writer.write(fence);
+        writer.raw(fence);
         if (fencedCodeBlock.getInfo() != null) {
-            writer.write(fencedCodeBlock.getInfo());
+            writer.raw(fencedCodeBlock.getInfo());
         }
         writer.line();
         if (!literal.isEmpty()) {
             List<String> lines = getLines(literal);
             for (String line : lines) {
-                writer.write(line);
+                writer.raw(line);
                 writer.line();
             }
         }
-        writer.write(fence);
+        writer.raw(fence);
         if (indent > 0) {
             writer.popPrefix();
         }
@@ -180,7 +180,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         List<String> lines = getLines(htmlBlock.getLiteral());
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
-            writer.write(line);
+            writer.raw(line);
             if (i != lines.size() - 1) {
                 writer.line();
             }
@@ -262,7 +262,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         // If the literal includes backticks, we can surround them by using one more backtick.
         int backticks = findMaxRunLength('`', literal);
         for (int i = 0; i < backticks + 1; i++) {
-            writer.write('`');
+            writer.raw('`');
         }
         // If the literal starts or ends with a backtick, surround it with a single space.
         // If it starts and ends with a space (but is not only spaces), add an additional space (otherwise they would
@@ -270,14 +270,14 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         boolean addSpace = literal.startsWith("`") || literal.endsWith("`") ||
                 (literal.startsWith(" ") && literal.endsWith(" ") && Parsing.hasNonSpace(literal));
         if (addSpace) {
-            writer.write(' ');
+            writer.raw(' ');
         }
-        writer.write(literal);
+        writer.raw(literal);
         if (addSpace) {
-            writer.write(' ');
+            writer.raw(' ');
         }
         for (int i = 0; i < backticks + 1; i++) {
-            writer.write('`');
+            writer.raw('`');
         }
     }
 
@@ -285,16 +285,16 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     public void visit(Emphasis emphasis) {
         // When emphasis is nested, a different delimiter needs to be used
         char delimiter = writer.getLastChar() == '*' ? '_' : '*';
-        writer.write(delimiter);
+        writer.raw(delimiter);
         super.visit(emphasis);
-        writer.write(delimiter);
+        writer.raw(delimiter);
     }
 
     @Override
     public void visit(StrongEmphasis strongEmphasis) {
-        writer.write("**");
+        writer.raw("**");
         super.visit(strongEmphasis);
-        writer.write("**");
+        writer.raw("**");
     }
 
     @Override
@@ -309,12 +309,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(HtmlInline htmlInline) {
-        writer.write(htmlInline.getLiteral());
+        writer.raw(htmlInline.getLiteral());
     }
 
     @Override
     public void visit(HardLineBreak hardLineBreak) {
-        writer.write("  ");
+        writer.raw("  ");
         writer.line();
     }
 
@@ -339,19 +339,19 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             switch (c) {
                 case '-': {
                     // Would be ambiguous with a bullet list marker, escape
-                    writer.write("\\-");
+                    writer.raw("\\-");
                     literal = literal.substring(1);
                     break;
                 }
                 case '#': {
                     // Would be ambiguous with an ATX heading, escape
-                    writer.write("\\#");
+                    writer.raw("\\#");
                     literal = literal.substring(1);
                     break;
                 }
                 case '=': {
                     // Would be ambiguous with a Setext heading, escape
-                    writer.write("\\=");
+                    writer.raw("\\=");
                     literal = literal.substring(1);
                     break;
                 }
@@ -368,19 +368,19 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                     // Check for ordered list marker
                     Matcher m = orderedListMarkerPattern.matcher(literal);
                     if (m.find()) {
-                        writer.write(m.group(1));
-                        writer.write("\\" + m.group(2));
+                        writer.raw(m.group(1));
+                        writer.raw("\\" + m.group(2));
                         literal = literal.substring(m.end());
                     }
                     break;
                 }
                 case '\t': {
-                    writer.write("&#9;");
+                    writer.raw("&#9;");
                     literal = literal.substring(1);
                     break;
                 }
                 case ' ': {
-                    writer.write("&#32;");
+                    writer.raw("&#32;");
                     literal = literal.substring(1);
                     break;
                 }
@@ -391,10 +391,10 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
         if (literal.endsWith("!") && text.getNext() instanceof Link) {
             // If we wrote the `!` unescaped, it would turn the link into an image instead.
-            writer.writeEscaped(literal.substring(0, literal.length() - 1), escape);
-            writer.write("\\!");
+            writer.text(literal.substring(0, literal.length() - 1), escape);
+            writer.raw("\\!");
         } else {
-            writer.writeEscaped(literal, escape);
+            writer.text(literal, escape);
         }
     }
 
@@ -455,24 +455,24 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     private void writeLinkLike(String title, String destination, Node node, String opener) {
-        writer.write(opener);
+        writer.raw(opener);
         visitChildren(node);
-        writer.write(']');
-        writer.write('(');
+        writer.raw(']');
+        writer.raw('(');
         if (contains(destination, linkDestinationNeedsAngleBrackets)) {
-            writer.write('<');
-            writer.writeEscaped(destination, linkDestinationEscapeInAngleBrackets);
-            writer.write('>');
+            writer.raw('<');
+            writer.text(destination, linkDestinationEscapeInAngleBrackets);
+            writer.raw('>');
         } else {
-            writer.write(destination);
+            writer.raw(destination);
         }
         if (title != null) {
-            writer.write(' ');
-            writer.write('"');
-            writer.writeEscaped(title, linkTitleEscapeInQuotes);
-            writer.write('"');
+            writer.raw(' ');
+            writer.raw('"');
+            writer.text(title, linkTitleEscapeInQuotes);
+            writer.raw('"');
         }
-        writer.write(')');
+        writer.raw(')');
     }
 
     private static class ListHolder {
