@@ -30,15 +30,15 @@ public class TableMarkdownNodeRenderer extends TableNodeRenderer implements Node
     @Override
     protected void renderBlock(TableBlock node) {
         columns.clear();
+        writer.pushTight(true);
         renderChildren(node);
+        writer.popTight();
         writer.block();
     }
 
     @Override
     protected void renderHead(TableHead node) {
         renderChildren(node);
-        // TODO: Not sure about this.. Should block() detect if a line was already written? Or should line() itself be lazy?
-        writer.line();
         for (TableCell.Alignment columnAlignment : columns) {
             writer.raw('|');
             if (columnAlignment == TableCell.Alignment.LEFT) {
@@ -52,10 +52,7 @@ public class TableMarkdownNodeRenderer extends TableNodeRenderer implements Node
             }
         }
         writer.raw("|");
-        // TODO
-        if (node.getNext() != null) {
-            writer.line();
-        }
+        writer.block();
     }
 
     @Override
@@ -68,10 +65,7 @@ public class TableMarkdownNodeRenderer extends TableNodeRenderer implements Node
         renderChildren(node);
         // Trailing | at the end of the line
         writer.raw("|");
-        // TODO
-        if (node.getNext() != null) {
-            writer.line();
-        }
+        writer.block();
     }
 
     @Override
