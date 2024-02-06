@@ -78,7 +78,7 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
             @Override
             public Set<Character> getSpecialCharacters() {
-                return Collections.emptySet();
+                return Collections.singleton('|');
             }
         });
     }

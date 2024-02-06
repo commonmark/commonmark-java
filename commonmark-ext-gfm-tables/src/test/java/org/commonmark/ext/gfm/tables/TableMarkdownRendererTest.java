@@ -59,6 +59,12 @@ public class TableMarkdownRendererTest {
         assertRoundTrip("|Abc|Def|\n|---|---|\n|Inline HTML|<span>Foo\\|bar</span>|\n");
     }
 
+    @Test
+    public void testEscaped() {
+        // `|` in Text nodes needs to be escaped, otherwise the generated Markdown does not get parsed back as a table
+        assertRoundTrip("\\|Abc\\|\n\\|---\\|\n");
+    }
+
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));
     }
