@@ -10,7 +10,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class TablesMarkdownRenderingTest {
+public class TableMarkdownRendererTest {
 
     private static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
