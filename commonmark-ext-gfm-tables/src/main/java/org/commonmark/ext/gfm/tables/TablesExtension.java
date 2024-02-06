@@ -17,6 +17,9 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Extension for GFM tables using "|" pipes (GitHub Flavored Markdown).
  * <p>
@@ -71,6 +74,11 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
             @Override
             public NodeRenderer create(MarkdownNodeRendererContext context) {
                 return new TableMarkdownNodeRenderer(context);
+            }
+
+            @Override
+            public Set<Character> getSpecialCharacters() {
+                return Collections.emptySet();
             }
         });
     }

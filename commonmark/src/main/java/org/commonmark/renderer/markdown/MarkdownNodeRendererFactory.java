@@ -2,6 +2,8 @@ package org.commonmark.renderer.markdown;
 
 import org.commonmark.renderer.NodeRenderer;
 
+import java.util.Set;
+
 /**
  * Factory for instantiating new node renderers ƒor rendering.
  */
@@ -14,4 +16,10 @@ public interface MarkdownNodeRendererFactory {
      * @return a node renderer
      */
     NodeRenderer create(MarkdownNodeRendererContext context);
+
+    /**
+     * @return the additional special characters that this factory would like to have escaped in normal text; currently
+     * only ASCII characters are allowed
+     */
+    Set<Character> getSpecialCharacters();
 }

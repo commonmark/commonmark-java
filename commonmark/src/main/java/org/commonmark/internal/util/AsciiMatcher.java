@@ -1,6 +1,7 @@
 package org.commonmark.internal.util;
 
 import java.util.BitSet;
+import java.util.Set;
 
 public class AsciiMatcher implements CharMatcher {
     private final BitSet set;
@@ -33,6 +34,14 @@ public class AsciiMatcher implements CharMatcher {
             this.set = set;
         }
 
+        public Builder c(char c) {
+            if (c > 127) {
+                throw new IllegalArgumentException("Can only match ASCII characters");
+            }
+            set.set(c);
+            return this;
+        }
+
         public Builder anyOf(String s) {
             for (int i = 0; i < s.length(); i++) {
                 c(s.charAt(i));
@@ -40,11 +49,10 @@ public class AsciiMatcher implements CharMatcher {
             return this;
         }
 
-        public Builder c(char c) {
-            if (c > 127) {
-                throw new IllegalArgumentException("Can only match ASCII characters");
+        public Builder anyOf(Set<Character> characters) {
+            for (Character c : characters) {
+                c(c);
             }
-            set.set(c);
             return this;
         }
 

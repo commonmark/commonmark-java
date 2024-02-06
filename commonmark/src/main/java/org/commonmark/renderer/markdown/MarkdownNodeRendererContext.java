@@ -2,6 +2,8 @@ package org.commonmark.renderer.markdown;
 
 import org.commonmark.node.Node;
 
+import java.util.Set;
+
 public interface MarkdownNodeRendererContext {
 
     /**
@@ -16,4 +18,10 @@ public interface MarkdownNodeRendererContext {
      * @param node the node to render
      */
     void render(Node node);
+
+    /**
+     * @return additional special characters that need to be escaped if they occur in normal text; currently only ASCII
+     * characters are allowed
+     */
+    Set<Character> getSpecialCharacters();
 }

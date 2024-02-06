@@ -6,8 +6,7 @@ import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.Renderer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Renders nodes to CommonMark Markdown.
@@ -31,6 +30,11 @@ public class MarkdownRenderer implements Renderer {
             @Override
             public NodeRenderer create(MarkdownNodeRendererContext context) {
                 return new CoreMarkdownNodeRenderer(context);
+            }
+
+            @Override
+            public Set<Character> getSpecialCharacters() {
+                return Collections.emptySet();
             }
         });
     }
@@ -111,13 +115,21 @@ public class MarkdownRenderer implements Renderer {
     private class RendererContext implements MarkdownNodeRendererContext {
         private final MarkdownWriter writer;
         private final NodeRendererMap nodeRendererMap = new NodeRendererMap();
+        private final Set<Character> additionalTextEscapes;
 
         private RendererContext(MarkdownWriter writer) {
+            // Set fields that are used by interface
             this.writer = writer;
+            Set<Character> escapes = new HashSet<Character>();
+            for (MarkdownNodeRendererFactory factory : nodeRendererFactories) {
+                escapes.addAll(factory.getSpecialCharacters());
+            }
+            additionalTextEscapes = Collections.unmodifiableSet(escapes);
 
             // The first node renderer for a node type "wins".
             for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
                 MarkdownNodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
+                // Pass in this as context here, which uses the fields set above
                 NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
                 nodeRendererMap.add(nodeRenderer);
             }
@@ -131,6 +143,11 @@ public class MarkdownRenderer implements Renderer {
         @Override
         public void render(Node node) {
             nodeRendererMap.render(node);
+        }
+
+        @Override
+        public Set<Character> getSpecialCharacters() {
+            return additionalTextEscapes;
         }
     }
 }

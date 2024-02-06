@@ -19,10 +19,10 @@ public class StrikethroughMarkdownRendererTest {
     @Test
     public void testStrikethrough() {
         assertRoundTrip("~foo~ ~bar~\n");
-        assertRoundTrip("~~f~oo~~ ~~bar~~\n");
+        assertRoundTrip("~~foo~~ ~~bar~~\n");
+        assertRoundTrip("~~f\\~oo~~ ~~bar~~\n");
 
-        // TODO this new special character needs to be escaped:
-//        assertRoundTrip("\\~foo\\~\n");
+        assertRoundTrip("\\~foo\\~\n");
     }
 
     protected String render(String source) {

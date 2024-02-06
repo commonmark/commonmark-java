@@ -17,6 +17,9 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Extension for GFM strikethrough using {@code ~} or {@code ~~} (GitHub Flavored Markdown).
  * <p>Example input:</p>
@@ -99,6 +102,11 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
             @Override
             public NodeRenderer create(MarkdownNodeRendererContext context) {
                 return new StrikethroughMarkdownNodeRenderer(context);
+            }
+
+            @Override
+            public Set<Character> getSpecialCharacters() {
+                return Collections.singleton('~');
             }
         });
     }

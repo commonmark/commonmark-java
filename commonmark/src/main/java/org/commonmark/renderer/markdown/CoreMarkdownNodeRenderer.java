@@ -22,10 +22,8 @@ import java.util.regex.Pattern;
  */
 public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
-    private final AsciiMatcher textEscape =
-            AsciiMatcher.builder().anyOf("[]<>`*&\n\\").build();
-    private final CharMatcher textEscapeInHeading =
-            AsciiMatcher.builder(textEscape).anyOf("#").build();
+    private final AsciiMatcher textEscape;
+    private final CharMatcher textEscapeInHeading;
     private final CharMatcher linkDestinationNeedsAngleBrackets =
             AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\n').c('\\').build();
     private final CharMatcher linkDestinationEscapeInAngleBrackets =
@@ -46,6 +44,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     public CoreMarkdownNodeRenderer(MarkdownNodeRendererContext context) {
         this.context = context;
         this.writer = context.getWriter();
+
+        textEscape = AsciiMatcher.builder().anyOf("[]<>`*&\n\\").anyOf(context.getSpecialCharacters()).build();
+        textEscapeInHeading = AsciiMatcher.builder(textEscape).anyOf("#").build();
     }
 
     @Override
