@@ -17,25 +17,26 @@ public class MarkdownWriter {
     private char lastChar;
     private boolean atLineStart = true;
     private final LinkedList<String> prefixes = new LinkedList<>();
+    private final LinkedList<CharMatcher> rawEscapes = new LinkedList<>();
 
     public MarkdownWriter(Appendable out) {
         buffer = out;
     }
 
     /**
-     * Write the supplied string (raw/unescaped).
+     * Write the supplied string (raw/unescaped except if {@link #pushRawEscape} was used).
      */
     public void raw(String s) {
         flushBlockSeparator();
-        append(s);
+        write(s, null);
     }
 
     /**
-     * Write the supplied character (raw/unescaped).
+     * Write the supplied character (raw/unescaped except if {@link #pushRawEscape} was used).
      */
     public void raw(char c) {
         flushBlockSeparator();
-        append(c);
+        write(c);
     }
 
     /**
@@ -49,22 +50,7 @@ public class MarkdownWriter {
             return;
         }
         flushBlockSeparator();
-        try {
-            for (int i = 0; i < s.length(); i++) {
-                char ch = s.charAt(i);
-                if (ch == '\n') {
-                    // Can't escape this with \, use numeric character reference
-                    buffer.append("&#10;");
-                } else {
-                    if (ch == '\\' || escape.matches(ch)) {
-                        buffer.append('\\');
-                    }
-                    buffer.append(ch);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        write(s, escape);
 
         lastChar = s.charAt(s.length() - 1);
         atLineStart = false;
@@ -74,7 +60,7 @@ public class MarkdownWriter {
      * Write a newline (line terminator).
      */
     public void line() {
-        append('\n');
+        write('\n');
         writePrefixes();
         atLineStart = true;
     }
@@ -119,6 +105,24 @@ public class MarkdownWriter {
     }
 
     /**
+     * Escape the characters matching the supplied matcher, in all text (text and raw). This might be useful to
+     * extensions that add another layer of syntax, e.g. the tables extension that uses `|` to separate cells and needs
+     * all `|` characters to be escaped (even in code spans).
+     *
+     * @param rawEscape the characters to escape in raw text
+     */
+    public void pushRawEscape(CharMatcher rawEscape) {
+        rawEscapes.add(rawEscape);
+    }
+
+    /**
+     * Remove the last raw escape from the top of the stack.
+     */
+    public void popRawEscape() {
+        rawEscapes.removeLast();
+    }
+
+    /**
      * @return the last character that was written
      */
     public char getLastChar() {
@@ -151,9 +155,16 @@ public class MarkdownWriter {
         this.tight = tight;
     }
 
-    private void append(String s) {
+    private void write(String s, CharMatcher escape) {
         try {
-            buffer.append(s);
+            if (rawEscapes.isEmpty() && escape == null) {
+                // Normal fast path
+                buffer.append(s);
+            } else {
+                for (int i = 0; i < s.length(); i++) {
+                    append(s.charAt(i), escape);
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -165,9 +176,9 @@ public class MarkdownWriter {
         atLineStart = false;
     }
 
-    private void append(char c) {
+    private void write(char c) {
         try {
-            buffer.append(c);
+            append(c, null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -179,7 +190,7 @@ public class MarkdownWriter {
     private void writePrefixes() {
         if (!prefixes.isEmpty()) {
             for (String prefix : prefixes) {
-                append(prefix);
+                write(prefix, null);
             }
         }
     }
@@ -189,13 +200,40 @@ public class MarkdownWriter {
      */
     private void flushBlockSeparator() {
         if (blockSeparator != 0) {
-            append('\n');
+            write('\n');
             writePrefixes();
             if (blockSeparator > 1) {
-                append('\n');
+                write('\n');
                 writePrefixes();
             }
             blockSeparator = 0;
         }
+    }
+
+    private void append(char c, CharMatcher escape) throws IOException {
+        if (needsEscaping(c, escape)) {
+            if (c == '\n') {
+                // Can't escape this with \, use numeric character reference
+                buffer.append("&#10;");
+            } else {
+                buffer.append('\\');
+                buffer.append(c);
+            }
+        } else {
+            buffer.append(c);
+        }
+    }
+
+    private boolean needsEscaping(char c, CharMatcher escape) {
+        return (escape != null && escape.matches(c)) || rawNeedsEscaping(c);
+    }
+
+    private boolean rawNeedsEscaping(char c) {
+        for (CharMatcher rawEscape : rawEscapes) {
+            if (rawEscape.matches(c)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

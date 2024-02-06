@@ -23,15 +23,15 @@ import java.util.regex.Pattern;
 public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
     private final AsciiMatcher textEscape =
-            AsciiMatcher.builder().anyOf("[]<>`*&").build();
+            AsciiMatcher.builder().anyOf("[]<>`*&\n\\").build();
     private final CharMatcher textEscapeInHeading =
             AsciiMatcher.builder(textEscape).anyOf("#").build();
     private final CharMatcher linkDestinationNeedsAngleBrackets =
-            AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\\').build();
+            AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\n').c('\\').build();
     private final CharMatcher linkDestinationEscapeInAngleBrackets =
-            AsciiMatcher.builder().c('<').c('>').build();
+            AsciiMatcher.builder().c('<').c('>').c('\n').c('\\').build();
     private final CharMatcher linkTitleEscapeInQuotes =
-            AsciiMatcher.builder().c('"').build();
+            AsciiMatcher.builder().c('"').c('\n').c('\\').build();
 
     private final Pattern orderedListMarkerPattern = Pattern.compile("^([0-9]{1,9})([.)])");
 

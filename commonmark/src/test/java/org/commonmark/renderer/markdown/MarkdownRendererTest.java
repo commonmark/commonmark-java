@@ -194,6 +194,9 @@ public class MarkdownRendererTest {
         assertRoundTrip("[a](<b\\>c>)\n");
         assertRoundTrip("[a](<b\\\\\\>c>)\n");
         assertRoundTrip("[a](/uri \"foo \\\" bar\")\n");
+        assertRoundTrip("[link](/uri \"tes\\\\\")\n");
+        assertRoundTrip("[link](/url \"test&#10;&#10;\")\n");
+        assertRoundTrip("[link](</url&#10;&#10;>)\n");
     }
 
     @Test

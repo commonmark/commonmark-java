@@ -3,12 +3,16 @@ package org.commonmark.ext.gfm.tables;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
 import org.commonmark.ext.gfm.tables.internal.TableHtmlNodeRenderer;
+import org.commonmark.ext.gfm.tables.internal.TableMarkdownNodeRenderer;
 import org.commonmark.ext.gfm.tables.internal.TableTextContentNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
+import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
@@ -27,7 +31,7 @@ import org.commonmark.renderer.text.TextContentRenderer;
  * @see <a href="https://github.github.com/gfm/#tables-extension-">Tables (extension) in GitHub Flavored Markdown Spec</a>
  */
 public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
-        TextContentRenderer.TextContentRendererExtension {
+        TextContentRenderer.TextContentRendererExtension, MarkdownRenderer.MarkdownRendererExtension {
 
     private TablesExtension() {
     }
@@ -57,6 +61,16 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
             @Override
             public NodeRenderer create(TextContentNodeRendererContext context) {
                 return new TableTextContentNodeRenderer(context);
+            }
+        });
+    }
+
+    @Override
+    public void extend(MarkdownRenderer.Builder rendererBuilder) {
+        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
+            @Override
+            public NodeRenderer create(MarkdownNodeRendererContext context) {
+                return new TableMarkdownNodeRenderer(context);
             }
         });
     }
