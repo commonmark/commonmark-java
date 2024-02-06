@@ -13,10 +13,13 @@ public class MarkdownWriter {
     private final Appendable buffer;
 
     private int blockSeparator = 0;
-    private boolean tight;
     private char lastChar;
     private boolean atLineStart = true;
+
+    // Stacks of settings that affect various rendering behaviors. The common pattern here is that callers use "push" to
+    // change a setting, render some nodes, and then "pop" the setting off the stack again to restore previous state.
     private final LinkedList<String> prefixes = new LinkedList<>();
+    private final LinkedList<Boolean> tight = new LinkedList<>();
     private final LinkedList<CharMatcher> rawEscapes = new LinkedList<>();
 
     public MarkdownWriter(Appendable out) {
@@ -72,7 +75,7 @@ public class MarkdownWriter {
     public void block() {
         // Remember whether this should be a tight or loose separator now because tight could get changed in between
         // this and the next flush.
-        blockSeparator = tight ? 1 : 2;
+        blockSeparator = isTight() ? 1 : 2;
         atLineStart = true;
     }
 
@@ -105,6 +108,25 @@ public class MarkdownWriter {
     }
 
     /**
+     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by a blank line. Tight
+     * is where blocks are not separated by a blank line. Tight blocks are used in lists, if there are no blank lines
+     * within the list.
+     * <p>
+     * Note that changing this does not affect block separators that have already been enqueued with {@link #block()},
+     * only future ones.
+     */
+    public void pushTight(boolean tight) {
+        this.tight.addLast(tight);
+    }
+
+    /**
+     * Remove the last "tight" setting from the top of the stack.
+     */
+    public void popTight() {
+        this.tight.removeLast();
+    }
+
+    /**
      * Escape the characters matching the supplied matcher, in all text (text and raw). This might be useful to
      * extensions that add another layer of syntax, e.g. the tables extension that uses `|` to separate cells and needs
      * all `|` characters to be escaped (even in code spans).
@@ -134,25 +156,6 @@ public class MarkdownWriter {
      */
     public boolean isAtLineStart() {
         return atLineStart;
-    }
-
-    /**
-     * @return whether blocks are currently set to tight or loose, see {@link #setTight(boolean)}
-     */
-    public boolean getTight() {
-        return tight;
-    }
-
-    /**
-     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by a blank line. Tight
-     * is where blocks are not separated by a blank line. Tight blocks are used in lists, if there are no blank lines
-     * within the list.
-     * <p>
-     * Note that changing this does not affect block separators that have already been enqueued (with {@link #block()},
-     * only future ones.
-     */
-    public void setTight(boolean tight) {
-        this.tight = tight;
     }
 
     private void write(String s, CharMatcher escape) {
@@ -222,6 +225,10 @@ public class MarkdownWriter {
         } else {
             buffer.append(c);
         }
+    }
+
+    private boolean isTight() {
+        return !tight.isEmpty() && tight.getLast();
     }
 
     private boolean needsEscaping(char c, CharMatcher escape) {
