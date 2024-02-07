@@ -3,15 +3,22 @@ package org.commonmark.ext.ins;
 import org.commonmark.Extension;
 import org.commonmark.ext.ins.internal.InsDelimiterProcessor;
 import org.commonmark.ext.ins.internal.InsHtmlNodeRenderer;
+import org.commonmark.ext.ins.internal.InsMarkdownNodeRenderer;
 import org.commonmark.ext.ins.internal.InsTextContentNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
+import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Extension for ins using ++
@@ -24,9 +31,7 @@ import org.commonmark.renderer.text.TextContentRenderer;
  * The parsed ins text regions are turned into {@link Ins} nodes.
  * </p>
  */
-public class InsExtension implements Parser.ParserExtension,
-        HtmlRenderer.HtmlRendererExtension,
-        TextContentRenderer.TextContentRendererExtension {
+public class InsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension, TextContentRenderer.TextContentRendererExtension, MarkdownRenderer.MarkdownRendererExtension {
 
     private InsExtension() {
     }
@@ -56,6 +61,23 @@ public class InsExtension implements Parser.ParserExtension,
             @Override
             public NodeRenderer create(TextContentNodeRendererContext context) {
                 return new InsTextContentNodeRenderer(context);
+            }
+        });
+    }
+
+    @Override
+    public void extend(MarkdownRenderer.Builder rendererBuilder) {
+        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
+            @Override
+            public NodeRenderer create(MarkdownNodeRendererContext context) {
+                return new InsMarkdownNodeRenderer(context);
+            }
+
+            @Override
+            public Set<Character> getSpecialCharacters() {
+                // We technically don't need to escape single occurrences of +, but that's all the extension API
+                // exposes currently.
+                return Collections.singleton('+');
             }
         });
     }
