@@ -89,7 +89,8 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(ThematicBreak thematicBreak) {
-        writer.raw("***");
+        // Let's use ___ as it doesn't introduce ambiguity with * or - list item markers
+        writer.raw("___");
         writer.block();
     }
 

@@ -12,10 +12,11 @@ public class MarkdownRendererTest {
 
     @Test
     public void testThematicBreaks() {
-        assertRoundTrip("***\n");
-        // TODO: spec: If you want a thematic break in a list item, use a different bullet:
-
-        assertRoundTrip("***\n\nfoo\n");
+        assertRoundTrip("___\n");
+        assertRoundTrip("___\n\nfoo\n");
+        // List item with hr -> hr needs to not use the same as the marker
+        assertRoundTrip("* ___\n");
+        assertRoundTrip("- ___\n");
     }
 
     @Test
