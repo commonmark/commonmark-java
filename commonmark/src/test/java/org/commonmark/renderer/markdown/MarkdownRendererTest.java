@@ -1,6 +1,6 @@
 package org.commonmark.renderer.markdown;
 
-import org.commonmark.node.Node;
+import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
@@ -173,9 +173,21 @@ public class MarkdownRendererTest {
         // When nesting, a different delimiter needs to be used
         assertRoundTrip("*_foo_*\n");
         assertRoundTrip("*_*foo*_*\n");
+        assertRoundTrip("_*foo*_\n");
 
         // Not emphasis (needs * inside words)
-        assertRoundTrip("foo_bar_\n");
+        assertRoundTrip("foo\\_bar\\_\n");
+
+        // Even when rendering a manually constructed tree, the emphasis delimiter needs to be chosen correctly.
+        Document doc = new Document();
+        Paragraph p = new Paragraph();
+        doc.appendChild(p);
+        Emphasis e1 = new Emphasis();
+        p.appendChild(e1);
+        Emphasis e2 = new Emphasis();
+        e1.appendChild(e2);
+        e2.appendChild(new Text("hi"));
+        assertEquals("*_hi_*\n", render(doc));
     }
 
     @Test
@@ -226,17 +238,21 @@ public class MarkdownRendererTest {
         assertRoundTrip("foo\nbar\n");
     }
 
+    private void assertRoundTrip(String input) {
+        String rendered = parseAndRender(input);
+        assertEquals(input, rendered);
+    }
+
+    private String parseAndRender(String source) {
+        Node parsed = parse(source);
+        return render(parsed);
+    }
+
     private Node parse(String source) {
         return Parser.builder().build().parse(source);
     }
 
-    private String render(String source) {
-        Node parsed = parse(source);
-        return MarkdownRenderer.builder().build().render(parsed);
-    }
-
-    private void assertRoundTrip(String input) {
-        String rendered = render(input);
-        assertEquals(input, rendered);
+    private String render(Node node) {
+        return MarkdownRenderer.builder().build().render(node);
     }
 }

@@ -45,7 +45,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         this.context = context;
         this.writer = context.getWriter();
 
-        textEscape = AsciiMatcher.builder().anyOf("[]<>`*&\n\\").anyOf(context.getSpecialCharacters()).build();
+        textEscape = AsciiMatcher.builder().anyOf("[]<>`*_&\n\\").anyOf(context.getSpecialCharacters()).build();
         textEscapeInHeading = AsciiMatcher.builder(textEscape).anyOf("#").build();
     }
 
@@ -282,8 +282,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Emphasis emphasis) {
-        // When emphasis is nested, a different delimiter needs to be used
-        char delimiter = writer.getLastChar() == '*' ? '_' : '*';
+        String delimiter = emphasis.getOpeningDelimiter();
+        // Use delimiter that was parsed if available
+        if (delimiter == null) {
+            // When emphasis is nested, a different delimiter needs to be used
+            delimiter = writer.getLastChar() == '*' ? "_" : "*";
+        }
         writer.raw(delimiter);
         super.visit(emphasis);
         writer.raw(delimiter);
