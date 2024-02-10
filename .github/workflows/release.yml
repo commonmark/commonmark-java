@@ -19,7 +19,7 @@ jobs:
       - name: Set up Maven Central repository
         uses: actions/setup-java@v2
         with:
-          java-version: 8
+          java-version: 11
           distribution: 'zulu'
           server-id: ossrh
           server-username: MAVEN_USERNAME # env variable to use for username in release
