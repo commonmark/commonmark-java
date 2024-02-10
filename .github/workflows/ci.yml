@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11, 17, 21]
+        java: [11, 17, 21]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -32,7 +32,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: 8
+          java-version: 11
           distribution: 'zulu'
 
       - name: Build with coverage
@@ -50,7 +50,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: 8
+          java-version: 11
           distribution: 'zulu'
 
       - name: Android Lint checks
