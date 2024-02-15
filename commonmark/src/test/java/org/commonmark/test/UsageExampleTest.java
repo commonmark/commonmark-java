@@ -4,6 +4,7 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -22,9 +23,21 @@ public class UsageExampleTest {
     @Test
     public void parseAndRender() {
         Parser parser = Parser.builder().build();
-        Node document = parser.parse("This is *Sparta*");
+        Node document = parser.parse("This is *Markdown*");
         HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
-        assertEquals("<p>This is <em>Sparta</em></p>\n", renderer.render(document));
+        assertEquals("<p>This is <em>Markdown</em></p>\n", renderer.render(document));
+    }
+
+    @Test
+    public void renderToMarkdown() {
+        MarkdownRenderer renderer = MarkdownRenderer.builder().build();
+        Node document = new Document();
+        Heading heading = new Heading();
+        heading.setLevel(2);
+        heading.appendChild(new Text("My title"));
+        document.appendChild(heading);
+
+        assertEquals("## My title\n", renderer.render(document));
     }
 
     @Test

@@ -9,14 +9,17 @@ import org.commonmark.renderer.Renderer;
 import java.util.*;
 
 /**
- * Renders nodes to CommonMark Markdown.
+ * Renders nodes to Markdown (CommonMark syntax); use {@link #builder()} to create a renderer.
  * <p>
- * Note that it does not currently attempt to preserve the exact syntax of the original input Markdown (if any):
+ * Note that it doesn't currently preserve the exact syntax of the original input Markdown (if any):
  * <ul>
  *     <li>Headings are output as ATX headings if possible (multi-line headings need Setext headings)</li>
  *     <li>Escaping might be over-eager, e.g. a plain {@code *} might be escaped
  *     even though it doesn't need to be in that particular context</li>
+ *     <li>Leading whitespace in paragraphs is not preserved</li>
  * </ul>
+ * However, it should produce Markdown that is semantically equivalent to the input, i.e. if the Markdown was parsed
+ * again and compared against the original AST, it should be the same (minus bugs).
  */
 public class MarkdownRenderer implements Renderer {
 
@@ -66,7 +69,7 @@ public class MarkdownRenderer implements Renderer {
      */
     public static class Builder {
 
-        private List<MarkdownNodeRendererFactory> nodeRendererFactories = new ArrayList<>();
+        private final List<MarkdownNodeRendererFactory> nodeRendererFactories = new ArrayList<>();
 
         /**
          * @return the configured {@link MarkdownRenderer}
@@ -106,9 +109,15 @@ public class MarkdownRenderer implements Renderer {
     }
 
     /**
-     * Extension for {@link MarkdownRenderer}.
+     * Extension for {@link MarkdownRenderer} for rendering custom nodes.
      */
     public interface MarkdownRendererExtension extends Extension {
+
+        /**
+         * Extend Markdown rendering, usually by registering custom node renderers using {@link Builder#nodeRendererFactory}.
+         *
+         * @param rendererBuilder the renderer builder to extend
+         */
         void extend(Builder rendererBuilder);
     }
 

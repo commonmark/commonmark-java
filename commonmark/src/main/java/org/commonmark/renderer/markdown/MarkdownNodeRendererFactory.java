@@ -5,7 +5,7 @@ import org.commonmark.renderer.NodeRenderer;
 import java.util.Set;
 
 /**
- * Factory for instantiating new node renderers ƒor rendering.
+ * Factory for instantiating new node renderers for rendering custom nodes.
  */
 public interface MarkdownNodeRendererFactory {
 

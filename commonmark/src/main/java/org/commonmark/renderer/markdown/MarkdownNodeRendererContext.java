@@ -4,6 +4,9 @@ import org.commonmark.node.Node;
 
 import java.util.Set;
 
+/**
+ * Context that is passed to custom node renderers, see {@link MarkdownNodeRendererFactory#create}.
+ */
 public interface MarkdownNodeRendererContext {
 
     /**
