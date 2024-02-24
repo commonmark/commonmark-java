@@ -1,7 +1,6 @@
 package org.commonmark.ext.gfm.tables.internal;
 
 import org.commonmark.ext.gfm.tables.*;
-import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourceSpan;
@@ -9,6 +8,7 @@ import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.block.*;
+import org.commonmark.text.Characters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,11 +39,11 @@ public class TableBlockParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         CharSequence content = state.getLine().getContent();
-        int pipe = Parsing.find('|', content, state.getNextNonSpaceIndex());
+        int pipe = Characters.find('|', content, state.getNextNonSpaceIndex());
         if (pipe != -1) {
             if (pipe == state.getNextNonSpaceIndex()) {
                 // If we *only* have a pipe character (and whitespace), that is not a valid table row and ends the table.
-                if (Parsing.skipSpaceTab(content, pipe + 1, content.length()) == content.length()) {
+                if (Characters.skipSpaceTab(content, pipe + 1, content.length()) == content.length()) {
                     // We also don't want the pipe to be added via lazy continuation.
                     canHaveLazyContinuationLines = false;
                     return BlockContinue.none();
@@ -124,8 +124,8 @@ public class TableBlockParser extends AbstractBlockParser {
         }
 
         CharSequence content = cell.getContent();
-        int start = Parsing.skipSpaceTab(content, 0, content.length());
-        int end = Parsing.skipSpaceTabBackwards(content, content.length() - 1, start);
+        int start = Characters.skipSpaceTab(content, 0, content.length());
+        int end = Characters.skipSpaceTabBackwards(content, content.length() - 1, start);
         inlineParser.parse(SourceLines.of(cell.substring(start, end + 1)), tableCell);
 
         return tableCell;
@@ -133,14 +133,14 @@ public class TableBlockParser extends AbstractBlockParser {
 
     private static List<SourceLine> split(SourceLine line) {
         CharSequence row = line.getContent();
-        int nonSpace = Parsing.skipSpaceTab(row, 0, row.length());
+        int nonSpace = Characters.skipSpaceTab(row, 0, row.length());
         int cellStart = nonSpace;
         int cellEnd = row.length();
         if (row.charAt(nonSpace) == '|') {
             // This row has leading/trailing pipes - skip the leading pipe
             cellStart = nonSpace + 1;
             // Strip whitespace from the end but not the pipe or we could miss an empty ("||") cell
-            int nonSpaceEnd = Parsing.skipSpaceTabBackwards(row, row.length() - 1, cellStart);
+            int nonSpaceEnd = Characters.skipSpaceTabBackwards(row, row.length() - 1, cellStart);
             cellEnd = nonSpaceEnd + 1;
         }
         List<SourceLine> cells = new ArrayList<>();
@@ -267,7 +267,7 @@ public class TableBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             List<SourceLine> paragraphLines = matchedBlockParser.getParagraphLines().getLines();
-            if (paragraphLines.size() == 1 && Parsing.find('|', paragraphLines.get(0).getContent(), 0) != -1) {
+            if (paragraphLines.size() == 1 && Characters.find('|', paragraphLines.get(0).getContent(), 0) != -1) {
                 SourceLine line = state.getLine();
                 SourceLine separatorLine = line.substring(state.getIndex(), line.getContent().length());
                 List<TableCell.Alignment> columns = parseSeparator(separatorLine.getContent());

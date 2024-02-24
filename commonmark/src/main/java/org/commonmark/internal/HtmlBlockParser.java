@@ -1,6 +1,5 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.Paragraph;
@@ -10,6 +9,21 @@ import org.commonmark.parser.block.*;
 import java.util.regex.Pattern;
 
 public class HtmlBlockParser extends AbstractBlockParser {
+
+    private static final String TAGNAME = "[A-Za-z][A-Za-z0-9-]*";
+    private static final String ATTRIBUTENAME = "[a-zA-Z_:][a-zA-Z0-9:._-]*";
+    private static final String UNQUOTEDVALUE = "[^\"'=<>`\\x00-\\x20]+";
+    private static final String SINGLEQUOTEDVALUE = "'[^']*'";
+    private static final String DOUBLEQUOTEDVALUE = "\"[^\"]*\"";
+    private static final String ATTRIBUTEVALUE = "(?:" + UNQUOTEDVALUE + "|" + SINGLEQUOTEDVALUE
+            + "|" + DOUBLEQUOTEDVALUE + ")";
+    private static final String ATTRIBUTEVALUESPEC = "(?:" + "\\s*=" + "\\s*" + ATTRIBUTEVALUE
+            + ")";
+    private static final String ATTRIBUTE = "(?:" + "\\s+" + ATTRIBUTENAME + ATTRIBUTEVALUESPEC
+            + "?)";
+
+    private static final String OPENTAG = "<" + TAGNAME + ATTRIBUTE + "*" + "\\s*/?>";
+    private static final String CLOSETAG = "</" + TAGNAME + "\\s*[>]";
 
     private static final Pattern[][] BLOCK_PATTERNS = new Pattern[][]{
             {null, null}, // not used (no type 0)
@@ -54,7 +68,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
                     null // terminated by blank line
             },
             {
-                    Pattern.compile("^(?:" + Parsing.OPENTAG + '|' + Parsing.CLOSETAG + ")\\s*$", Pattern.CASE_INSENSITIVE),
+                    Pattern.compile("^(?:" + OPENTAG + '|' + CLOSETAG + ")\\s*$", Pattern.CASE_INSENSITIVE),
                     null // terminated by blank line
             }
     };

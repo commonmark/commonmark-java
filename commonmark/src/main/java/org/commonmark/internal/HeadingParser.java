@@ -1,14 +1,15 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.inline.Position;
-import org.commonmark.internal.inline.Scanner;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.Heading;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
+import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.Scanner;
 import org.commonmark.parser.block.*;
+import org.commonmark.text.Characters;
 
 public class HeadingParser extends AbstractBlockParser {
 
@@ -148,8 +149,8 @@ public class HeadingParser extends AbstractBlockParser {
     }
 
     private static boolean isSetextHeadingRest(CharSequence line, int index, char marker) {
-        int afterMarker = Parsing.skip(marker, line, index, line.length());
-        int afterSpace = Parsing.skipSpaceTab(line, afterMarker, line.length());
+        int afterMarker = Characters.skip(marker, line, index, line.length());
+        int afterSpace = Characters.skipSpaceTab(line, afterMarker, line.length());
         return afterSpace >= line.length();
     }
 }

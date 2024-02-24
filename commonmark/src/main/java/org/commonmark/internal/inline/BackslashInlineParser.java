@@ -2,8 +2,8 @@ package org.commonmark.internal.inline;
 
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.HardLineBreak;
-import org.commonmark.node.Node;
 import org.commonmark.node.Text;
+import org.commonmark.parser.beta.Scanner;
 
 import java.util.regex.Pattern;
 

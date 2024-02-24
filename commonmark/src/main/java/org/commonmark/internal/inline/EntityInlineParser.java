@@ -1,8 +1,10 @@
 package org.commonmark.internal.inline;
 
-import org.commonmark.internal.util.AsciiMatcher;
+import org.commonmark.text.AsciiMatcher;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.node.Text;
+import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.Scanner;
 
 /**
  * Attempts to parse a HTML entity or numeric character reference.

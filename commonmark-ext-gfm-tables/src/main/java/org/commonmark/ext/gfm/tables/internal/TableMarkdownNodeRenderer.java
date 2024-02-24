@@ -1,12 +1,11 @@
 package org.commonmark.ext.gfm.tables.internal;
 
 import org.commonmark.ext.gfm.tables.*;
-import org.commonmark.internal.util.AsciiMatcher;
-import org.commonmark.internal.util.CharMatcher;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownWriter;
+import org.commonmark.text.AsciiMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ public class TableMarkdownNodeRenderer extends TableNodeRenderer implements Node
     private final MarkdownWriter writer;
     private final MarkdownNodeRendererContext context;
 
-    private final CharMatcher pipe = AsciiMatcher.builder().c('|').build();
+    private final AsciiMatcher pipe = AsciiMatcher.builder().c('|').build();
 
     private final List<TableCell.Alignment> columns = new ArrayList<>();
 

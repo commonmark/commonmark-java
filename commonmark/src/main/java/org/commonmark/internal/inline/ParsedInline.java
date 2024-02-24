@@ -1,6 +1,7 @@
 package org.commonmark.internal.inline;
 
 import org.commonmark.node.Node;
+import org.commonmark.parser.beta.Position;
 
 public abstract class ParsedInline {
 

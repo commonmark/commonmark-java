@@ -1,7 +1,7 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.inline.Position;
 import org.commonmark.node.Text;
+import org.commonmark.parser.beta.Position;
 
 /**
  * Opening bracket for links (<code>[</code>) or images (<code>![</code>).

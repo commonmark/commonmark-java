@@ -3,6 +3,8 @@ package org.commonmark.internal.inline;
 import org.commonmark.node.Link;
 import org.commonmark.node.Text;
 import org.commonmark.parser.SourceLines;
+import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.Scanner;
 
 import java.util.regex.Pattern;
 
