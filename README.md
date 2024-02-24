@@ -13,13 +13,14 @@ Java library for parsing and rendering [Markdown] text according to the
 Introduction
 ------------
 
-Provides classes for parsing input to an abstract syntax tree of nodes
-(AST), visiting and manipulating nodes, and rendering to HTML. It
-started out as a port of [commonmark.js], but has since evolved into a
-full library with a nice API and the following features:
+Provides classes for parsing input to an abstract syntax tree (AST),
+visiting and manipulating nodes, and rendering to HTML or back to Markdown.
+It started out as a port of [commonmark.js], but has since evolved into an
+extensible library with the following features:
 
 * Small (core has no dependencies, extensions in separate artifacts)
-* Fast (10-20 times faster than pegdown, see benchmarks in repo)
+* Fast (10-20 times faster than [pegdown] which used to be a popular Markdown
+  library, see benchmarks in repo)
 * Flexible (manipulate the AST after parsing, customize HTML rendering)
 * Extensible (tables, strikethrough, autolinking and more, see below)
 
@@ -63,9 +64,9 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 Parser parser = Parser.builder().build();
-Node document = parser.parse("This is *Sparta*");
+Node document = parser.parse("This is *Markdown*");
 HtmlRenderer renderer = HtmlRenderer.builder().build();
-renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
+renderer.render(document);  // "<p>This is <em>Markdown</em></p>\n"
 ```
 
 This uses the parser and renderer with default options. Both builders have
@@ -81,8 +82,23 @@ to which tags are allowed, etc. That is the responsibility of the caller, and
 if you expose the resulting HTML, you probably want to run a sanitizer on it
 after this.
 
-For rendering to plain text, there's also a `TextContentRenderer` with
-a very similar API.
+#### Render to Markdown
+
+```java
+import org.commonmark.node.*;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
+
+MarkdownRenderer renderer = MarkdownRenderer.builder().build();
+Node document = new Document();
+Heading heading = new Heading();
+heading.setLevel(2);
+heading.appendChild(new Text("My title"));
+document.appendChild(heading);
+
+renderer.render(document);  // "## My title\n"
+```
+
+For rendering to plain text with minimal markup, there's also `TextContentRenderer`.
 
 #### Use a visitor to process parsed nodes
 
@@ -390,6 +406,7 @@ BSD (2-clause) licensed, see LICENSE.txt file.
 [CommonMark]: https://commonmark.org/
 [Markdown]: https://daringfireball.net/projects/markdown/
 [commonmark.js]: https://github.com/commonmark/commonmark.js
+[pegdown]: https://github.com/sirthias/pegdown
 [CommonMark Dingus]: https://spec.commonmark.org/dingus/
 [Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22org.commonmark%22
 [Semantic Versioning]: https://semver.org/

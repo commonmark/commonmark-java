@@ -22,7 +22,7 @@ public class TableCell extends CustomNode {
     }
 
     /**
-     * @return the cell alignment
+     * @return the cell alignment or {@code null} if no specific alignment
      */
     public Alignment getAlignment() {
         return alignment;

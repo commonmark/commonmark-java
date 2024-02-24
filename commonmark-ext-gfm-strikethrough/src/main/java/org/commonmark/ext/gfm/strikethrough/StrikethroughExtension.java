@@ -1,17 +1,24 @@
 package org.commonmark.ext.gfm.strikethrough;
 
 import org.commonmark.Extension;
-import org.commonmark.renderer.text.TextContentRenderer;
-import org.commonmark.renderer.text.TextContentNodeRendererContext;
-import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughDelimiterProcessor;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughHtmlNodeRenderer;
+import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughMarkdownNodeRenderer;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughTextContentNodeRenderer;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
+import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
+import org.commonmark.renderer.text.TextContentNodeRendererContext;
+import org.commonmark.renderer.text.TextContentNodeRendererFactory;
+import org.commonmark.renderer.text.TextContentRenderer;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Extension for GFM strikethrough using {@code ~} or {@code ~~} (GitHub Flavored Markdown).
@@ -42,7 +49,7 @@ import org.commonmark.renderer.NodeRenderer;
  * </p>
  */
 public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
-        TextContentRenderer.TextContentRendererExtension {
+        TextContentRenderer.TextContentRendererExtension, MarkdownRenderer.MarkdownRendererExtension {
 
     private final boolean requireTwoTildes;
 
@@ -89,13 +96,28 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
         });
     }
 
+    @Override
+    public void extend(MarkdownRenderer.Builder rendererBuilder) {
+        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
+            @Override
+            public NodeRenderer create(MarkdownNodeRendererContext context) {
+                return new StrikethroughMarkdownNodeRenderer(context);
+            }
+
+            @Override
+            public Set<Character> getSpecialCharacters() {
+                return Collections.singleton('~');
+            }
+        });
+    }
+
     public static class Builder {
 
         private boolean requireTwoTildes = false;
 
         /**
          * @param requireTwoTildes Whether two tilde characters ({@code ~~}) are required for strikethrough or whether
-         * one is also enough. Default is {@code false}; both a single tilde and two tildes can be used for strikethrough.
+         *                         one is also enough. Default is {@code false}; both a single tilde and two tildes can be used for strikethrough.
          * @return {@code this}
          */
         public Builder requireTwoTildes(boolean requireTwoTildes) {
