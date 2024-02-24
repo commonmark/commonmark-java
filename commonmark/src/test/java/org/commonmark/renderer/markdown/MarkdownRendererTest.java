@@ -30,6 +30,7 @@ public class MarkdownRendererTest {
         assertRoundTrip("###### foo\n");
 
         assertRoundTrip("Foo\nbar\n===\n");
+        assertRoundTrip("Foo  \nbar\n===\n");
         assertRoundTrip("[foo\nbar](/url)\n===\n");
 
         assertRoundTrip("# foo\n\nbar\n");
