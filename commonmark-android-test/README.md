@@ -6,7 +6,7 @@ Current `minSdk` is 19
 
 Requirements:
 
-* Java 7 or above
+* Java 11 or above
 * Android SDK 30
 
 Configuration

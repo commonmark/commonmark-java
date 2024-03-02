@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace "org.commonmark.android.test"
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    buildToolsVersion "34.0.0"
 
     defaultConfig {
         applicationId "org.commonmark.android.test"
@@ -13,8 +14,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     packagingOptions {
@@ -41,5 +42,5 @@ android {
 }
 
 dependencies {
-    implementation('org.nibor.autolink:autolink:0.10.0')
+    implementation('org.nibor.autolink:autolink:0.11.0')
 }
