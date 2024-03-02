@@ -1,6 +1,5 @@
 package org.commonmark.test;
 
-import org.commonmark.testutil.Strings;
 import org.junit.Test;
 
 public class SpecialInputTest extends CoreRenderingTestCase {
@@ -95,14 +94,14 @@ public class SpecialInputTest extends CoreRenderingTestCase {
 
     @Test
     public void linkLabelLength() {
-        String label1 = Strings.repeat("a", 999);
+        String label1 = "a".repeat(999);
         assertRendering("[foo][" + label1 + "]\n\n[" + label1 + "]: /", "<p><a href=\"/\">foo</a></p>\n");
         assertRendering("[foo][x" + label1 + "]\n\n[x" + label1 + "]: /",
                 "<p>[foo][x" + label1 + "]</p>\n<p>[x" + label1 + "]: /</p>\n");
         assertRendering("[foo][\n" + label1 + "]\n\n[\n" + label1 + "]: /",
                 "<p>[foo][\n" + label1 + "]</p>\n<p>[\n" + label1 + "]: /</p>\n");
 
-        String label2 = Strings.repeat("a\n", 499);
+        String label2 = "a\n".repeat(499);
         assertRendering("[foo][" + label2 + "]\n\n[" + label2 + "]: /", "<p><a href=\"/\">foo</a></p>\n");
         assertRendering("[foo][12" + label2 + "]\n\n[12" + label2 + "]: /",
                 "<p>[foo][12" + label2 + "]</p>\n<p>[12" + label2 + "]: /</p>\n");

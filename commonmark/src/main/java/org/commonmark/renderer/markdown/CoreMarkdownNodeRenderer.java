@@ -149,11 +149,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     @Override
     public void visit(FencedCodeBlock fencedCodeBlock) {
         String literal = fencedCodeBlock.getLiteral();
-        String fence = repeat(String.valueOf(fencedCodeBlock.getFenceChar()), fencedCodeBlock.getFenceLength());
+        int count = fencedCodeBlock.getFenceLength();
+        String fence = String.valueOf(fencedCodeBlock.getFenceChar()).repeat(count);
         int indent = fencedCodeBlock.getFenceIndent();
 
         if (indent > 0) {
-            String indentPrefix = repeat(" ", indent);
+            String indentPrefix = " ".repeat(indent);
             writer.writePrefix(indentPrefix);
             writer.pushPrefix(indentPrefix);
         }
@@ -231,18 +232,20 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         boolean pushedPrefix = false;
         if (listHolder instanceof BulletListHolder) {
             BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
-            String marker = repeat(" ", listItem.getMarkerIndent()) + bulletListHolder.bulletMarker;
+            int count = listItem.getMarkerIndent();
+            String marker = " ".repeat(count) + bulletListHolder.bulletMarker;
             writer.writePrefix(marker);
-            writer.writePrefix(repeat(" ", contentIndent - marker.length()));
-            writer.pushPrefix(repeat(" ", contentIndent));
+            writer.writePrefix(" ".repeat(contentIndent - marker.length()));
+            writer.pushPrefix(" ".repeat(contentIndent));
             pushedPrefix = true;
         } else if (listHolder instanceof OrderedListHolder) {
             OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
-            String marker = repeat(" ", listItem.getMarkerIndent()) + orderedListHolder.number + orderedListHolder.delimiter;
+            int count = listItem.getMarkerIndent();
+            String marker = " ".repeat(count) + orderedListHolder.number + orderedListHolder.delimiter;
             orderedListHolder.number++;
             writer.writePrefix(marker);
-            writer.writePrefix(repeat(" ", contentIndent - marker.length()));
-            writer.pushPrefix(repeat(" ", contentIndent));
+            writer.writePrefix(" ".repeat(contentIndent - marker.length()));
+            writer.pushPrefix(" ".repeat(contentIndent));
             pushedPrefix = true;
         }
         if (listItem.getFirstChild() == null) {
@@ -434,14 +437,6 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             }
         }
         return false;
-    }
-
-    private static String repeat(String s, int count) {
-        StringBuilder sb = new StringBuilder(s.length() * count);
-        for (int i = 0; i < count; i++) {
-            sb.append(s);
-        }
-        return sb.toString();
     }
 
     private static List<String> getLines(String literal) {

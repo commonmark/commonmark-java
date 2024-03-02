@@ -27,8 +27,11 @@ public class Characters {
         return -1;
     }
 
+    /**
+     * @see <a href="https://spec.commonmark.org/0.31.2/#blank-line">blank line</a>
+     */
     public static boolean isBlank(CharSequence s) {
-        return findNonSpace(s, 0) == -1;
+        return skipSpaceTab(s, 0, s.length()) == s.length();
     }
 
     public static boolean hasNonSpace(CharSequence s) {
@@ -53,7 +56,9 @@ public class Characters {
         return false;
     }
 
-    // See https://spec.commonmark.org/0.29/#punctuation-character
+    /**
+     * @see <a href="https://spec.commonmark.org/0.29/#punctuation-character">punctuation character</a>
+     */
     public static boolean isPunctuationCodePoint(int codePoint) {
         switch (Character.getType(codePoint)) {
             case Character.CONNECTOR_PUNCTUATION:
@@ -82,13 +87,18 @@ public class Characters {
         }
     }
 
+    /**
+     * Check whether the provided code point is a Unicode whitespace character as defined in the spec.
+     *
+     * @see <a href="https://spec.commonmark.org/0.31.2/#unicode-whitespace-character">Unicode whitespace character</a>
+     */
     public static boolean isWhitespaceCodePoint(int codePoint) {
         switch (codePoint) {
             case ' ':
             case '\t':
-            case '\r':
             case '\n':
             case '\f':
+            case '\r':
                 return true;
             default:
                 return Character.getType(codePoint) == Character.SPACE_SEPARATOR;
@@ -137,23 +147,5 @@ public class Characters {
             }
         }
         return lastIndex - 1;
-    }
-
-    private static int findNonSpace(CharSequence s, int startIndex) {
-        int length = s.length();
-        for (int i = startIndex; i < length; i++) {
-            switch (s.charAt(i)) {
-                case ' ':
-                case '\t':
-                case '\n':
-                case '\u000B':
-                case '\f':
-                case '\r':
-                    break;
-                default:
-                    return i;
-            }
-        }
-        return -1;
     }
 }

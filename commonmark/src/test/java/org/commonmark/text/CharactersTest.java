@@ -2,6 +2,7 @@ package org.commonmark.text;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CharactersTest {
@@ -19,5 +20,15 @@ public class CharactersTest {
         for (char c : chars) {
             assertTrue("Expected to be punctuation: " + c, Characters.isPunctuationCodePoint(c));
         }
+    }
+
+    @Test
+    public void isBlank() {
+        assertTrue(Characters.isBlank(""));
+        assertTrue(Characters.isBlank(" "));
+        assertTrue(Characters.isBlank("\t"));
+        assertTrue(Characters.isBlank(" \t"));
+        assertFalse(Characters.isBlank("a"));
+        assertFalse(Characters.isBlank("\f"));
     }
 }
