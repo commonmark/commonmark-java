@@ -24,12 +24,11 @@ extensible library with the following features:
 * Flexible (manipulate the AST after parsing, customize HTML rendering)
 * Extensible (tables, strikethrough, autolinking and more, see below)
 
-The library is supported on Java 11 and later. It works on Android too, but
-that is currently not part of the builds and so only supported on a best-effort
-basis, please report any problems. For Android the minimum API level is 19, see
-the [commonmark-android-test](commonmark-android-test)
+The library is supported on Java 11 and later. It works on Android too,
+but that is on a best-effort basis, please report problems. For Android the
+minimum API level is 19, see the
+[commonmark-android-test](commonmark-android-test)
 directory.
-[commonmark-android-test](commonmark-android-test) directory.
 
 Coordinates for core library (see all on [Maven Central]):
 
