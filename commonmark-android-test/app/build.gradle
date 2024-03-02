@@ -2,13 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "org.commonmark.android.test"
-    compileSdkVersion 30
-    buildToolsVersion "34.0.0"
+    compileSdk 30
 
     defaultConfig {
         applicationId "org.commonmark.android.test"
-        minSdkVersion 19
-        targetSdkVersion 30
+        minSdk 19
+        targetSdk 30
         versionCode 1
         versionName "1.0"
     }
