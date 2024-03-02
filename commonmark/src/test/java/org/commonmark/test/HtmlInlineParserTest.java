@@ -8,7 +8,11 @@ public class HtmlInlineParserTest extends CoreRenderingTestCase {
     public void comment() {
         assertRendering("inline <!---->", "<p>inline <!----></p>\n");
         assertRendering("inline <!-- -> -->", "<p>inline <!-- -> --></p>\n");
-        assertRendering("inline <!--->-->", "<p>inline &lt;!---&gt;--&gt;</p>\n");
+        assertRendering("inline <!-- -- -->", "<p>inline <!-- -- --></p>\n");
+        assertRendering("inline <!-- --->", "<p>inline <!-- ---></p>\n");
+        assertRendering("inline <!-- ---->", "<p>inline <!-- ----></p>\n");
+        assertRendering("inline <!-->-->", "<p>inline <!-->--&gt;</p>\n");
+        assertRendering("inline <!--->-->", "<p>inline <!--->--&gt;</p>\n");
     }
 
     @Test
