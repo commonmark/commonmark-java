@@ -130,7 +130,7 @@ questions it does not answer:
     not require that.  This is hardly a "corner case," and divergences
     between implementations on this issue often lead to surprises for
     users in real documents. (See [this comment by John
-    Gruber](http://article.gmane.org/gmane.text.markdown.general/1997).)
+    Gruber](https://web.archive.org/web/20170611172104/http://article.gmane.org/gmane.text.markdown.general/1997).)
 
 2.  Is a blank line needed before a block quote or heading?
     Most implementations do not require the blank line.  However,
@@ -138,7 +138,7 @@ questions it does not answer:
     also to ambiguities in parsing (note that some implementations
     put the heading inside the blockquote, while others do not).
     (John Gruber has also spoken [in favor of requiring the blank
-    lines](http://article.gmane.org/gmane.text.markdown.general/2146).)
+    lines](https://web.archive.org/web/20170611172104/http://article.gmane.org/gmane.text.markdown.general/2146).)
 
 3.  Is a blank line needed before an indented code block?
     (`Markdown.pl` requires it, but this is not mentioned in the
@@ -171,7 +171,7 @@ questions it does not answer:
     ```
 
     (There are some relevant comments by John Gruber
-    [here](http://article.gmane.org/gmane.text.markdown.general/2554).)
+    [here](https://web.archive.org/web/20170611172104/http://article.gmane.org/gmane.text.markdown.general/2554).)
 
 5.  Can list markers be indented?  Can ordered list markers be right-aligned?
 
@@ -1001,10 +1001,7 @@ interpretable as a [code fence], [ATX heading][ATX headings],
 
 A [setext heading underline](@) is a sequence of
 `=` characters or a sequence of `-` characters, with no more than 3
-spaces indentation and any number of trailing spaces.  If a line
-containing a single `-` can be interpreted as an
-empty [list items], it should be interpreted this way
-and not as a [setext heading underline].
+spaces of indentation and any number of trailing spaces or tabs.
 
 The heading is a level 1 heading if `=` characters are used in
 the [setext heading underline], and a level 2 heading if `-`
@@ -1638,7 +1635,7 @@ has been found, the code block contains all of the lines after the
 opening code fence until the end of the containing block (or
 document).  (An alternative spec would require backtracking in the
 event that a closing code fence is not found.  But this makes parsing
-much less efficient, and there seems to be no real down side to the
+much less efficient, and there seems to be no real downside to the
 behavior described here.)
 
 A fenced code block may interrupt a paragraph, and does not require
@@ -2068,7 +2065,7 @@ followed by an uppercase ASCII letter.\
 `<![CDATA[`.\
 **End condition:** line contains the string `]]>`.
 
-6.  **Start condition:** line begins the string `<` or `</`
+6.  **Start condition:** line begins with the string `<` or `</`
 followed by one of the strings (case-insensitive) `address`,
 `article`, `aside`, `base`, `basefont`, `blockquote`, `body`,
 `caption`, `center`, `col`, `colgroup`, `dd`, `details`, `dialog`,
@@ -5279,7 +5276,7 @@ well.  ([reStructuredText](http://docutils.sourceforge.net/rst.html)
 takes a different approach, requiring blank lines before lists
 even inside other list items.)
 
-In order to solve of unwanted lists in paragraphs with
+In order to solve the problem of unwanted lists in paragraphs with
 hard-wrapped numerals, we allow only lists starting with `1` to
 interrupt paragraphs.  Thus,
 
@@ -6929,7 +6926,7 @@ foo__bar__
 ```````````````````````````````` example
 __foo, __bar__, baz__
 .
-<p><strong>foo, <strong>bar</strong>, baz</strong></p>
+<p><strong>foo, bar, baz</strong></p>
 ````````````````````````````````
 
 
@@ -7200,7 +7197,7 @@ foo***bar***baz
 ```````````````````````````````` example
 foo******bar*********baz
 .
-<p>foo<strong><strong><strong>bar</strong></strong></strong>***baz</p>
+<p>foo<strong>bar</strong>***baz</p>
 ````````````````````````````````
 
 
@@ -7271,21 +7268,21 @@ __foo _bar_ baz__
 ```````````````````````````````` example
 __foo __bar__ baz__
 .
-<p><strong>foo <strong>bar</strong> baz</strong></p>
+<p><strong>foo bar baz</strong></p>
 ````````````````````````````````
 
 
 ```````````````````````````````` example
 ____foo__ bar__
 .
-<p><strong><strong>foo</strong> bar</strong></p>
+<p><strong>foo bar</strong></p>
 ````````````````````````````````
 
 
 ```````````````````````````````` example
 **foo **bar****
 .
-<p><strong>foo <strong>bar</strong></strong></p>
+<p><strong>foo bar</strong></p>
 ````````````````````````````````
 
 
@@ -7570,14 +7567,14 @@ switching delimiters:
 ```````````````````````````````` example
 ****foo****
 .
-<p><strong><strong>foo</strong></strong></p>
+<p><strong>foo</strong></p>
 ````````````````````````````````
 
 
 ```````````````````````````````` example
 ____foo____
 .
-<p><strong><strong>foo</strong></strong></p>
+<p><strong>foo</strong></p>
 ````````````````````````````````
 
 
@@ -7588,7 +7585,7 @@ delimiters:
 ```````````````````````````````` example
 ******foo******
 .
-<p><strong><strong><strong>foo</strong></strong></strong></p>
+<p><strong>foo</strong></p>
 ````````````````````````````````
 
 
@@ -7604,7 +7601,7 @@ Rule 14:
 ```````````````````````````````` example
 _____foo_____
 .
-<p><em><strong><strong>foo</strong></strong></em></p>
+<p><em><strong>foo</strong></em></p>
 ````````````````````````````````
 
 
@@ -9410,10 +9407,9 @@ character, and a `>` character.
 A [closing tag](@) consists of the string `</`, a
 [tag name], optional [whitespace], and the character `>`.
 
-An [HTML comment](@) consists of `<!--` + *text* + `-->`,
-where *text* does not start with `>` or `->`, does not end with `-`,
-and does not contain `--`.  (See the
-[HTML5 spec](http://www.w3.org/TR/html5/syntax.html#comments).)
+An [HTML comment](@) consists of `<!-->`, `<!--->`, or  `<!--`, a string of
+characters not including the string `-->`, and `-->` (see the
+[HTML spec](https://html.spec.whatwg.org/multipage/parsing.html#markup-declaration-open-state)).
 
 A [processing instruction](@)
 consists of the string `<?`, a string
@@ -9554,30 +9550,20 @@ Illegal attributes in closing tag:
 Comments:
 
 ```````````````````````````````` example
-foo <!-- this is a
-comment - with hyphen -->
+foo <!-- this is a --
+comment - with hyphens -->
 .
-<p>foo <!-- this is a
-comment - with hyphen --></p>
+<p>foo <!-- this is a --
+comment - with hyphens --></p>
 ````````````````````````````````
-
-
-```````````````````````````````` example
-foo <!-- not a comment -- two hyphens -->
-.
-<p>foo &lt;!-- not a comment -- two hyphens --&gt;</p>
-````````````````````````````````
-
-
-Not comments:
 
 ```````````````````````````````` example
 foo <!--> foo -->
 
-foo <!-- foo--->
+foo <!---> foo -->
 .
-<p>foo &lt;!--&gt; foo --&gt;</p>
-<p>foo &lt;!-- foo---&gt;</p>
+<p>foo <!--> foo --&gt;</p>
+<p>foo <!---> foo --&gt;</p>
 ````````````````````````````````
 
 
