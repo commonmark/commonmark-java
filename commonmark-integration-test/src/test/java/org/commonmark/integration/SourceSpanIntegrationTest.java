@@ -10,7 +10,7 @@ import org.commonmark.testutil.example.Example;
 public class SourceSpanIntegrationTest extends SpecIntegrationTest {
 
     protected static final Parser PARSER = Parser.builder()
-            .extensions(EXTENSIONS)
+            .extensions(Extensions.ALL_EXTENSIONS)
             .includeSourceSpans(IncludeSourceSpans.BLOCKS)
             .build();
 
