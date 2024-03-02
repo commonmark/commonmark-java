@@ -61,7 +61,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
                             "nav|noframes|" +
                             "ol|optgroup|option|" +
                             "p|param|" +
-                            "section|source|summary|" +
+                            "search|section|summary|" +
                             "table|tbody|td|tfoot|th|thead|title|tr|track|" +
                             "ul" +
                             ")(?:\\s|[/]?[>]|$)", Pattern.CASE_INSENSITIVE),
