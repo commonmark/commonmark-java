@@ -28,15 +28,22 @@ android {
     // we add other modules sources in order for lint to process them (lint operates on sources)
     sourceSets {
         main {
-            java.srcDirs += [
-                    '../../commonmark',
-                    '../../commonmark-ext-autolink',
-                    '../../commonmark-ext-gfm-strikethrough',
-                    '../../commonmark-ext-gfm-tables',
-                    '../../commonmark-ext-heading-anchor',
-                    '../../commonmark-ext-ins',
-                    '../../commonmark-ext-yaml-front-matter'
-            ].collect { "$it/src/main/java" }
+            java {
+                [
+                        '../../commonmark',
+                        '../../commonmark-ext-autolink',
+                        '../../commonmark-ext-gfm-strikethrough',
+                        '../../commonmark-ext-gfm-tables',
+                        '../../commonmark-ext-heading-anchor',
+                        '../../commonmark-ext-ins',
+                        '../../commonmark-ext-yaml-front-matter'
+                ].forEach { d ->
+                    // don't include module-info files, otherwise we get
+                    // "too many module declarations found"
+                    PatternSet patternSet = new PatternSet().exclude('**/module-info.java')
+                    srcDirs += fileTree("$d/src/main/java").matching(patternSet)
+                }
+            }
         }
     }
 }
