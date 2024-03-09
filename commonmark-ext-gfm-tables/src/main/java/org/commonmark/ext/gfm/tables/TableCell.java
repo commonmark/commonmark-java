@@ -34,7 +34,7 @@ public class TableCell extends CustomNode {
     }
 
     /**
-     * @return the cell width
+     * @return the cell width (the number of dash and colon characters in the delimiter row of the table for this column)
      */
     public int getWidth() {
         return width;
