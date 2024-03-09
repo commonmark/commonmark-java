@@ -9,6 +9,7 @@ public class TableCell extends CustomNode {
 
     private boolean header;
     private Alignment alignment;
+    private int width;
 
     /**
      * @return whether the cell is a header or not
@@ -30,6 +31,17 @@ public class TableCell extends CustomNode {
 
     public void setAlignment(Alignment alignment) {
         this.alignment = alignment;
+    }
+
+    /**
+     * @return the cell width (the number of dash and colon characters in the delimiter row of the table for this column)
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
     }
 
     /**
