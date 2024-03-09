@@ -142,8 +142,9 @@ public class HtmlInlineParser implements InlineContentParser {
     }
 
     private static boolean tryComment(Scanner scanner) {
-        // spec: An HTML comment consists of <!-- + text + -->, where text does not start with > or ->, does not end
-        // with -, and does not contain --. (See the HTML5 spec.)
+        // spec: An [HTML comment](@) consists of `<!-->`, `<!--->`, or  `<!--`, a string of
+        // characters not including the string `-->`, and `-->` (see the
+        // [HTML spec](https://html.spec.whatwg.org/multipage/parsing.html#markup-declaration-open-state)).
 
         // Skip first `-`
         scanner.next();
@@ -152,12 +153,12 @@ public class HtmlInlineParser implements InlineContentParser {
         }
 
         if (scanner.next('>') || scanner.next("->")) {
-            return false;
+            return true;
         }
 
         while (scanner.find('-') >= 0) {
-            if (scanner.next("--")) {
-                return scanner.next('>');
+            if (scanner.next("-->")) {
+                return true;
             } else {
                 scanner.next();
             }
