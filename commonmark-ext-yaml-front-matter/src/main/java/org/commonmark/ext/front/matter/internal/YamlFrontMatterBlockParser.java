@@ -2,8 +2,8 @@ package org.commonmark.ext.front.matter.internal;
 
 import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
 import org.commonmark.ext.front.matter.YamlFrontMatterNode;
-import org.commonmark.internal.DocumentBlockParser;
 import org.commonmark.node.Block;
+import org.commonmark.node.Document;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
@@ -119,7 +119,7 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
             CharSequence line = state.getLine().getContent();
             BlockParser parentParser = matchedBlockParser.getMatchedBlockParser();
             // check whether this line is the first line of whole document or not
-            if (parentParser instanceof DocumentBlockParser && parentParser.getBlock().getFirstChild() == null &&
+            if (parentParser.getBlock() instanceof Document && parentParser.getBlock().getFirstChild() == null &&
                     REGEX_BEGIN.matcher(line).matches()) {
                 return BlockStart.of(new YamlFrontMatterBlockParser()).atIndex(state.getNextNonSpaceIndex());
             }

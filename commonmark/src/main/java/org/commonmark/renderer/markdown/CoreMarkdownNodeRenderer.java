@@ -1,10 +1,10 @@
 package org.commonmark.renderer.markdown;
 
-import org.commonmark.internal.util.AsciiMatcher;
-import org.commonmark.internal.util.CharMatcher;
-import org.commonmark.internal.util.Parsing;
+import org.commonmark.text.AsciiMatcher;
 import org.commonmark.node.*;
+import org.commonmark.text.CharMatcher;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.text.Characters;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -268,7 +268,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         // If it starts and ends with a space (but is not only spaces), add an additional space (otherwise they would
         // get removed on parsing).
         boolean addSpace = literal.startsWith("`") || literal.endsWith("`") ||
-                (literal.startsWith(" ") && literal.endsWith(" ") && Parsing.hasNonSpace(literal));
+                (literal.startsWith(" ") && literal.endsWith(" ") && Characters.hasNonSpace(literal));
         if (addSpace) {
             writer.raw(' ');
         }
@@ -416,9 +416,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         int backticks = 0;
         int start = 0;
         while (start < s.length()) {
-            int index = Parsing.find(c, s, start);
+            int index = Characters.find(c, s, start);
             if (index != -1) {
-                start = Parsing.skip(c, s, index + 1, s.length());
+                start = Characters.skip(c, s, index + 1, s.length());
                 backticks = Math.max(backticks, start - index);
             } else {
                 break;
@@ -436,6 +436,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         return false;
     }
 
+    // Keep for Android compat (String.repeat only available on Android 12 and later)
     private static String repeat(String s, int count) {
         StringBuilder sb = new StringBuilder(s.length() * count);
         for (int i = 0; i < count; i++) {

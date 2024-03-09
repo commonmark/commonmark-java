@@ -24,10 +24,11 @@ extensible library with the following features:
 * Flexible (manipulate the AST after parsing, customize HTML rendering)
 * Extensible (tables, strikethrough, autolinking and more, see below)
 
-The library is supported on Java 11 and later. It should work on Android too,
+The library is supported on Java 11 and later. It works on Android too,
 but that is on a best-effort basis, please report problems. For Android the
 minimum API level is 19, see the
-[commonmark-android-test](commonmark-android-test) directory.
+[commonmark-android-test](commonmark-android-test)
+directory.
 
 Coordinates for core library (see all on [Maven Central]):
 
@@ -44,7 +45,8 @@ The module names to use in Java 9 are `org.commonmark`,
 
 Note that for 0.x releases of this library, the API is not considered stable
 yet and may break between minor releases. After 1.0, [Semantic Versioning] will
-be followed.
+be followed. A package containing `beta` means it's not subject to stable API
+guarantees yet; but for normal usage it should not be necessary to use.
 
 See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt)
 file if you're wondering which version of the spec is currently
@@ -399,7 +401,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) file.
 License
 -------
 
-Copyright (c) 2015-2019 Atlassian and others.
+Copyright (c) Atlassian and others.
 
 BSD (2-clause) licensed, see LICENSE.txt file.
 

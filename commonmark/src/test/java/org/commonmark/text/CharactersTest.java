@@ -1,10 +1,11 @@
-package org.commonmark.internal.util;
+package org.commonmark.text;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ParsingTest {
+public class CharactersTest {
 
     @Test
     public void isPunctuation() {
@@ -17,7 +18,17 @@ public class ParsingTest {
         };
 
         for (char c : chars) {
-            assertTrue("Expected to be punctuation: " + c, Parsing.isPunctuationCodePoint(c));
+            assertTrue("Expected to be punctuation: " + c, Characters.isPunctuationCodePoint(c));
         }
+    }
+
+    @Test
+    public void isBlank() {
+        assertTrue(Characters.isBlank(""));
+        assertTrue(Characters.isBlank(" "));
+        assertTrue(Characters.isBlank("\t"));
+        assertTrue(Characters.isBlank(" \t"));
+        assertFalse(Characters.isBlank("a"));
+        assertFalse(Characters.isBlank("\f"));
     }
 }

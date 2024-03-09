@@ -1,6 +1,6 @@
 package org.commonmark.renderer.markdown;
 
-import org.commonmark.internal.util.CharMatcher;
+import org.commonmark.text.CharMatcher;
 
 import java.io.IOException;
 import java.util.LinkedList;

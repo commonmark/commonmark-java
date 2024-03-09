@@ -1,9 +1,11 @@
 package org.commonmark.internal.inline;
 
-import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Code;
 import org.commonmark.node.Text;
 import org.commonmark.parser.SourceLines;
+import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.Scanner;
+import org.commonmark.text.Characters;
 
 /**
  * Attempt to parse backticks, returning either a backtick code span or a literal sequence of backticks.
@@ -31,7 +33,7 @@ public class BackticksInlineParser implements InlineContentParser {
                 if (content.length() >= 3 &&
                         content.charAt(0) == ' ' &&
                         content.charAt(content.length() - 1) == ' ' &&
-                        Parsing.hasNonSpace(content)) {
+                        Characters.hasNonSpace(content)) {
                     content = content.substring(1, content.length() - 1);
                 }
 

@@ -1,8 +1,10 @@
-package org.commonmark.internal.inline;
+package org.commonmark.parser.beta;
 
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
+import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.Scanner;
 import org.junit.Test;
 
 import java.util.Arrays;

@@ -1,8 +1,11 @@
-package org.commonmark.internal.util;
+package org.commonmark.text;
 
 import java.util.BitSet;
 import java.util.Set;
 
+/**
+ * Char matcher that can match ASCII characters efficiently.
+ */
 public class AsciiMatcher implements CharMatcher {
     private final BitSet set;
 

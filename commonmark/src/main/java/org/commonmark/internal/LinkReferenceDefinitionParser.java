@@ -1,13 +1,13 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.inline.Position;
-import org.commonmark.internal.inline.Scanner;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
+import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.Scanner;
 
 import java.util.ArrayList;
 import java.util.List;
