@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -162,6 +163,24 @@ public class SourceSpansTest {
 
         Paragraph paragraph = (Paragraph) document.getLastChild();
         assertEquals(Arrays.asList(SourceSpan.of(1, 0, 4)), paragraph.getSourceSpans());
+    }
+
+    @Test
+    public void linkReferenceDefinitionMultiple() {
+        var doc = PARSER.parse("[foo]: /foo\n[bar]: /bar\n");
+        var def1 = (LinkReferenceDefinition) doc.getFirstChild();
+        var def2 = (LinkReferenceDefinition) doc.getLastChild();
+        assertEquals(List.of(SourceSpan.of(0, 0, 11)), def1.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(1, 0, 11)), def2.getSourceSpans());
+    }
+
+    @Test
+    public void linkReferenceDefinitionWithTitle() {
+        var doc = PARSER.parse("[1]: #not-code \"Text\"\n[foo]: /foo\n");
+        var def1 = (LinkReferenceDefinition) doc.getFirstChild();
+        var def2 = (LinkReferenceDefinition) doc.getLastChild();
+        assertEquals(List.of(SourceSpan.of(0, 0, 21)), def1.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(1, 0, 11)), def2.getSourceSpans());
     }
 
     @Test

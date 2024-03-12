@@ -100,6 +100,10 @@ public class LinkReferenceDefinitionParser {
     }
 
     private boolean startDefinition(Scanner scanner) {
+        // Finish any outstanding references now. We don't do this earlier because we need addSourceSpan to have been
+        // called before we do it.
+        finishReference();
+
         scanner.whitespace();
         if (!scanner.next('[')) {
             return false;
@@ -205,7 +209,6 @@ public class LinkReferenceDefinitionParser {
                 title.append('\n');
             }
         } else {
-            finishReference();
             // There might be another reference instead, try that for the same character.
             state = State.START_DEFINITION;
         }
@@ -235,7 +238,6 @@ public class LinkReferenceDefinitionParser {
             return false;
         }
         referenceValid = true;
-        finishReference();
         paragraphLines.clear();
 
         // See if there's another definition.

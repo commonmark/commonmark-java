@@ -21,7 +21,7 @@ public class Nodes {
      * @param parent    The node to get children from (node itself will not be checked)
      * @param nodeClass The type of node to find
      */
-    public static <T> T find(Node parent, Class<T> nodeClass) {
+    public static <T> T tryFind(Node parent, Class<T> nodeClass) {
         Node node = parent.getFirstChild();
         while (node != null) {
             Node next = node.getNext();
@@ -29,12 +29,24 @@ public class Nodes {
                 //noinspection unchecked
                 return (T) node;
             }
-            T result = find(node, nodeClass);
+            T result = tryFind(node, nodeClass);
             if (result != null) {
                 return result;
             }
             node = next;
         }
         return null;
+    }
+
+    /**
+     * Recursively try to find a node with the given type within the children of the specified node. Throw if node
+     * could not be found.
+     */
+    public static <T> T find(Node parent, Class<T> nodeClass) {
+        var node = tryFind(parent, nodeClass);
+        if (node == null) {
+            throw new IllegalArgumentException("Could not find a " + nodeClass.getSimpleName() + " node in " + parent);
+        }
+        return node;
     }
 }
