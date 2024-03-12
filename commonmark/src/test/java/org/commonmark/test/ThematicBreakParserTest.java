@@ -2,8 +2,6 @@ package org.commonmark.test;
 
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -23,7 +21,6 @@ public class ThematicBreakParserTest {
 
     private static void assertLiteral(String expected, String input) {
         var tb = Nodes.find(PARSER.parse(input), ThematicBreak.class);
-        assertNotNull(tb);
         assertEquals(expected, tb.getLiteral());
     }
 }
