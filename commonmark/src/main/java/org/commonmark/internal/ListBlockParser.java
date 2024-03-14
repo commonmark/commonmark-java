@@ -4,6 +4,8 @@ import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.*;
 
+import java.util.Objects;
+
 public class ListBlockParser extends AbstractBlockParser {
 
     private final ListBlock block;
@@ -90,7 +92,7 @@ public class ListBlockParser extends AbstractBlockParser {
 
         if (inParagraph) {
             // If the list item is ordered, the start number must be 1 to interrupt a paragraph.
-            if (listBlock instanceof OrderedList && ((OrderedList) listBlock).getStartNumber() != 1) {
+            if (listBlock instanceof OrderedList && ((OrderedList) listBlock).getMarkerStartNumber() != 1) {
                 return null;
             }
             // Empty list item can not interrupt a paragraph.
@@ -116,7 +118,7 @@ public class ListBlockParser extends AbstractBlockParser {
             case '*':
                 if (isSpaceTabOrEnd(line, index + 1)) {
                     BulletList bulletList = new BulletList();
-                    bulletList.setBulletMarker(c);
+                    bulletList.setMarker(String.valueOf(c));
                     return new ListMarkerData(bulletList, index + 1);
                 } else {
                     return null;
@@ -154,8 +156,8 @@ public class ListBlockParser extends AbstractBlockParser {
                     if (digits >= 1 && isSpaceTabOrEnd(line, i + 1)) {
                         String number = line.subSequence(index, i).toString();
                         OrderedList orderedList = new OrderedList();
-                        orderedList.setStartNumber(Integer.parseInt(number));
-                        orderedList.setDelimiter(c);
+                        orderedList.setMarkerStartNumber(Integer.parseInt(number));
+                        orderedList.setMarkerDelimiter(String.valueOf(c));
                         return new ListMarkerData(orderedList, i + 1);
                     } else {
                         return null;
@@ -188,15 +190,11 @@ public class ListBlockParser extends AbstractBlockParser {
      */
     private static boolean listsMatch(ListBlock a, ListBlock b) {
         if (a instanceof BulletList && b instanceof BulletList) {
-            return equals(((BulletList) a).getBulletMarker(), ((BulletList) b).getBulletMarker());
+            return Objects.equals(((BulletList) a).getMarker(), ((BulletList) b).getMarker());
         } else if (a instanceof OrderedList && b instanceof OrderedList) {
-            return equals(((OrderedList) a).getDelimiter(), ((OrderedList) b).getDelimiter());
+            return Objects.equals(((OrderedList) a).getMarkerDelimiter(), ((OrderedList) b).getMarkerDelimiter());
         }
         return false;
-    }
-
-    private static boolean equals(Object a, Object b) {
-        return (a == null) ? (b == null) : a.equals(b);
     }
 
     public static class Factory extends AbstractBlockParserFactory {
