@@ -2,8 +2,10 @@ package org.commonmark.renderer.markdown;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
+import org.commonmark.testutil.Asserts;
 import org.junit.Test;
 
+import static org.commonmark.testutil.Asserts.assertRendering;
 import static org.junit.Assert.assertEquals;
 
 public class MarkdownRendererTest {
@@ -104,6 +106,21 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testBulletListItemsFromAst() {
+        var doc = new Document();
+        var list = new BulletList();
+        var item = new ListItem();
+        item.appendChild(new Text("Test"));
+        list.appendChild(item);
+        doc.appendChild(list);
+
+        assertRendering("", "- Test\n", render(doc));
+
+        list.setMarker("*");
+        assertRendering("", "* Test\n", render(doc));
+    }
+
+    @Test
     public void testOrderedListItems() {
         assertRoundTrip("1. foo\n");
         assertRoundTrip("2. foo\n\n3. bar\n");
@@ -114,6 +131,22 @@ public class MarkdownRendererTest {
         assertRoundTrip("1. Foo\n   1. Bar\n   \n   2. Baz\n");
 
         assertRoundTrip(" 1.  one\n\n    two\n");
+    }
+
+    @Test
+    public void testOrderedListItemsFromAst() {
+        var doc = new Document();
+        var list = new OrderedList();
+        var item = new ListItem();
+        item.appendChild(new Text("Test"));
+        list.appendChild(item);
+        doc.appendChild(list);
+
+        assertRendering("", "1. Test\n", render(doc));
+
+        list.setMarkerStartNumber(2);
+        list.setMarkerDelimiter(")");
+        assertRendering("", "2) Test\n", render(doc));
     }
 
     // Inlines

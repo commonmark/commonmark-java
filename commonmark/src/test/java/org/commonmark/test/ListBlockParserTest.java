@@ -60,7 +60,7 @@ public class ListBlockParserTest {
     private void assertListItemIndents(String input, int expectedMarkerIndent, int expectedContentIndent) {
         Node doc = PARSER.parse(input);
         ListItem listItem = Nodes.find(doc, ListItem.class);
-        assertEquals(expectedMarkerIndent, listItem.getMarkerIndent());
-        assertEquals(expectedContentIndent, listItem.getContentIndent());
+        assertEquals(expectedMarkerIndent, (int) listItem.getMarkerIndent());
+        assertEquals(expectedContentIndent, (int) listItem.getContentIndent());
     }
 }

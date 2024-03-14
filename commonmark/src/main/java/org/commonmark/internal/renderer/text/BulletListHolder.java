@@ -3,14 +3,14 @@ package org.commonmark.internal.renderer.text;
 import org.commonmark.node.BulletList;
 
 public class BulletListHolder extends ListHolder {
-    private final char marker;
+    private final String marker;
 
     public BulletListHolder(ListHolder parent, BulletList list) {
         super(parent);
-        marker = list.getBulletMarker();
+        marker = list.getMarker();
     }
 
-    public char getMarker() {
+    public String getMarker() {
         return marker;
     }
 }

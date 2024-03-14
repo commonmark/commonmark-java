@@ -227,33 +227,32 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(ListItem listItem) {
-        int contentIndent = listItem.getContentIndent();
-        boolean pushedPrefix = false;
+        int markerIndent = listItem.getMarkerIndent() != null ? listItem.getMarkerIndent() : 0;
+        String marker;
         if (listHolder instanceof BulletListHolder) {
             BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
-            String marker = repeat(" ", listItem.getMarkerIndent()) + bulletListHolder.bulletMarker;
-            writer.writePrefix(marker);
-            writer.writePrefix(repeat(" ", contentIndent - marker.length()));
-            writer.pushPrefix(repeat(" ", contentIndent));
-            pushedPrefix = true;
+            marker = repeat(" ", markerIndent) + bulletListHolder.marker;
         } else if (listHolder instanceof OrderedListHolder) {
             OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
-            String marker = repeat(" ", listItem.getMarkerIndent()) + orderedListHolder.number + orderedListHolder.delimiter;
+            marker = repeat(" ", markerIndent) + orderedListHolder.number + orderedListHolder.delimiter;
             orderedListHolder.number++;
-            writer.writePrefix(marker);
-            writer.writePrefix(repeat(" ", contentIndent - marker.length()));
-            writer.pushPrefix(repeat(" ", contentIndent));
-            pushedPrefix = true;
+        } else {
+            throw new IllegalStateException("Unknown list holder type: " + listHolder);
         }
+        Integer contentIndent = listItem.getContentIndent();
+        String spaces = contentIndent != null ? repeat(" ", contentIndent - marker.length()) : " ";
+        writer.writePrefix(marker);
+        writer.writePrefix(spaces);
+        writer.pushPrefix(repeat(" ", marker.length() + spaces.length()));
+
         if (listItem.getFirstChild() == null) {
             // Empty list item
             writer.block();
         } else {
             visitChildren(listItem);
         }
-        if (pushedPrefix) {
-            writer.popPrefix();
-        }
+
+        writer.popPrefix();
     }
 
     @Override
@@ -489,22 +488,22 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     private static class BulletListHolder extends ListHolder {
-        final char bulletMarker;
+        final String marker;
 
         public BulletListHolder(ListHolder parent, BulletList bulletList) {
             super(parent);
-            this.bulletMarker = bulletList.getBulletMarker();
+            this.marker = bulletList.getMarker() != null ? bulletList.getMarker() : "-";
         }
     }
 
     private static class OrderedListHolder extends ListHolder {
-        final char delimiter;
+        final String delimiter;
         private int number;
 
         protected OrderedListHolder(ListHolder parent, OrderedList orderedList) {
             super(parent);
-            delimiter = orderedList.getDelimiter();
-            number = orderedList.getStartNumber();
+            delimiter = orderedList.getMarkerDelimiter() != null ? orderedList.getMarkerDelimiter() : ".";
+            number = orderedList.getMarkerStartNumber() != null ? orderedList.getMarkerStartNumber() : 1;
         }
     }
 
