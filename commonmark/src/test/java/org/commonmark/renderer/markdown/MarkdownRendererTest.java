@@ -52,6 +52,23 @@ public class MarkdownRendererTest {
         assertRoundTrip("```info\ntest\n```\n");
         assertRoundTrip(" ```\n test\n ```\n");
         assertRoundTrip("```\n```\n");
+
+        // Preserve the length
+        assertRoundTrip("````\ntest\n````\n");
+        assertRoundTrip("~~~\ntest\n~~~~~~\n");
+    }
+
+    @Test
+    public void testFencedCodeBlocksFromAst() {
+        var doc = new Document();
+        var codeBlock = new FencedCodeBlock();
+        codeBlock.setLiteral("hi code");
+        doc.appendChild(codeBlock);
+
+        assertRendering("", "```\nhi code\n```\n", render(doc));
+
+        codeBlock.setLiteral("hi`\n```\n``test");
+        assertRendering("", "````\nhi`\n```\n``test\n````\n", render(doc));
     }
 
     @Test
