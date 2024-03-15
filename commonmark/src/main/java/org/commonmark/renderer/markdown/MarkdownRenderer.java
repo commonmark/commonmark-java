@@ -14,6 +14,7 @@ import java.util.*;
  * Note that it doesn't currently preserve the exact syntax of the original input Markdown (if any):
  * <ul>
  *     <li>Headings are output as ATX headings if possible (multi-line headings need Setext headings)</li>
+ *     <li>Links are always rendered as inline links (no support for reference links yet)</li>
  *     <li>Escaping might be over-eager, e.g. a plain {@code *} might be escaped
  *     even though it doesn't need to be in that particular context</li>
  *     <li>Leading whitespace in paragraphs is not preserved</li>
