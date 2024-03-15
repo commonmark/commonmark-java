@@ -6,13 +6,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## [Unreleased]
-### Changed
-- Modular JAR: Require at least Java 11 and add a module descriptor (module-info),
-  remove no longer necessary `Automatic-Module-Name` header
+## [0.22.0] - 2024-03-15
+### Added
+- New `MarkdownRenderer` for rendering nodes to Markdown (CommonMark)!
+  Note that while care is taken to produce equivalent Markdown, some differences
+  in the original Markdown (if parsed) are not preserved, such as:
+  - The type of heading used
+  - The type of link used (reference links will be rendered as inline links)
+  - Whether special characters are escaped or not
+  - Leading and trailing whitespace
+- Modular JAR (JPMS): All artifacts now include module descriptors (module-info)
+  so jlink can be used; the old `Automatic-Module-Name` manifest entries were removed
 - New package `org.commonmark.parser.beta` containing classes that are not part of
-  the stable API but are exported from the module (because they might be useful for
-  extension parsers).
+  the stable API but are exported from the module because they might be useful for
+  extension parsers
+- New package `org.commonmark.text` for text related utilities that are useful for
+  both parsing and rendering
+- `TableCell` now has `getWidth` returning the number of dash and colon characters
+  in the delimiter row, useful for rendering proportional width tables (#296)
+- `ThematicBreak` now has `getLiteral` containing the string that was used in the
+  source when parsing (#309)
+- `ListItem` now has `getMarkerIndent` and `getContentIndent` for retrieving the
+  space between the start of the line and the marker/content
+- Deprecated a some properties of `BulletList`, `OrderedList`, `FencedCodeBlock`
+  and replaced with nullable ones because they might not be set when constructing
+  these nodes manually instead of via parsing
+### Changed
+- Java 11 or later is now required (dropping support for Java 8)
+- Update to CommonMark spec 0.31.2
+### Fixed
+- Fix `LinkReferenceDefinition` having null `SourceSpan` when title is present
+  and parsing with source spans option enabled (#310)
 
 ## [0.21.0] - 2022-11-17
 ### Added
@@ -387,7 +411,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
-[Unreleased]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.21.0...HEAD
+[0.22.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.21.0...commonmark-parent-0.22.0
 [0.21.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.20.0...commonmark-parent-0.21.0
 [0.20.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.19.0...commonmark-parent-0.20.0
 [0.19.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.18.2...commonmark-parent-0.19.0
