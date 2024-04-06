@@ -184,6 +184,15 @@ public class SourceSpansTest {
     }
 
     @Test
+    public void linkReferenceDefinitionWithTitleInvalid() {
+        var doc = PARSER.parse("[foo]: /url\n\"title\" ok\n");
+        var def = Nodes.find(doc, LinkReferenceDefinition.class);
+        var paragraph = Nodes.find(doc, Paragraph.class);
+        assertEquals(List.of(SourceSpan.of(0, 0, 11)), def.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(1, 0, 10)), paragraph.getSourceSpans());
+    }
+
+    @Test
     public void linkReferenceDefinitionHeading() {
         // This is probably the trickiest because we have a link reference definition at the start of a paragraph
         // that gets replaced because of a heading. Phew.

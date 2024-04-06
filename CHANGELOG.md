@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Fixed
+- Fix parsing of link reference definitions where it looks like it has a title
+  but it doesn't because it's followed by characters other than space/tab. In that
+  case, the title was set to the partially-parsed title and the source spans were
+  wrong (#315).
+
 ## [0.22.0] - 2024-03-15
 ### Added
 - New `MarkdownRenderer` for rendering nodes to Markdown (CommonMark)!

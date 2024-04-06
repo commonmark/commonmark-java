@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Parser for link reference definitions at the beginning of a paragraph.
  *
- * @see <a href="https://spec.commonmark.org/0.29/#link-reference-definition">Link reference definitions</a>
+ * @see <a href="https://spec.commonmark.org/0.31.2/#link-reference-definitions">Link reference definitions</a>
  */
 public class LinkReferenceDefinitionParser {
 
@@ -70,6 +70,9 @@ public class LinkReferenceDefinitionParser {
             // Parsing failed, which means we fall back to treating text as a paragraph.
             if (!success) {
                 state = State.PARAGRAPH;
+                // If parsing of the title part failed, we still have a valid reference that we can add, and we need to
+                // do it before the source span for this line is added.
+                finishReference();
                 return;
             }
         }
@@ -218,7 +221,8 @@ public class LinkReferenceDefinitionParser {
     private boolean title(Scanner scanner) {
         Position start = scanner.position();
         if (!LinkScanner.scanLinkTitleContent(scanner, titleDelimiter)) {
-            // Invalid title, stop
+            // Invalid title, stop. Title collected so far must not be used.
+            title = null;
             return false;
         }
 
@@ -235,6 +239,8 @@ public class LinkReferenceDefinitionParser {
         scanner.whitespace();
         if (scanner.hasNext()) {
             // spec: No further non-whitespace characters may occur on the line.
+            // Title collected so far must not be used.
+            title = null;
             return false;
         }
         referenceValid = true;

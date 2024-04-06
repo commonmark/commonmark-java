@@ -146,6 +146,30 @@ public class LinkReferenceDefinitionParserTest {
     }
 
     @Test
+    public void testTitleMultiline3() {
+        parse("[foo]: /url");
+        assertEquals(State.START_TITLE, parser.getState());
+        // Note that this looks like a valid title until we parse "bad", at which point we need to treat the whole line
+        // as a paragraph line and discard any already parsed title.
+        parse("\"title\" bad");
+        assertEquals(State.PARAGRAPH, parser.getState());
+
+        assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
+    }
+
+    @Test
+    public void testTitleMultiline4() {
+        parse("[foo]: /url");
+        assertEquals(State.START_TITLE, parser.getState());
+        parse("(title");
+        assertEquals(State.TITLE, parser.getState());
+        parse("foo(");
+        assertEquals(State.PARAGRAPH, parser.getState());
+
+        assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
+    }
+
+    @Test
     public void testTitleInvalid() {
         assertParagraph("[foo]: /url (invalid(");
         assertParagraph("[foo]: </url>'title'");
