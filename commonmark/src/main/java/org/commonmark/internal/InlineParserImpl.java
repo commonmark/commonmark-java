@@ -76,6 +76,12 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return scanner;
     }
 
+    public InlineParser addInlineParser(Character c, List<InlineContentParser> parsers) {
+        this.inlineParsers.put(c, parsers);
+        this.specialCharacters.set(c);
+        return this;
+    }
+
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
         for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
             char opening = delimiterProcessor.getOpeningCharacter();
