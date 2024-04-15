@@ -120,13 +120,12 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         reset(lines);
 
         while (true) {
-            List<? extends Node> nodes = parseInline();
-            if (nodes != null) {
-                for (Node node : nodes) {
-                    block.appendChild(node);
-                }
-            } else {
+            var nodes = parseInline();
+            if (nodes == null) {
                 break;
+            }
+            for (Node node : nodes) {
+                block.appendChild(node);
             }
         }
 
@@ -158,20 +157,20 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         switch (c) {
             case '[':
-                return Collections.singletonList(parseOpenBracket());
+                return List.of(parseOpenBracket());
             case '!':
-                return Collections.singletonList(parseBang());
+                return List.of(parseBang());
             case ']':
-                return Collections.singletonList(parseCloseBracket());
+                return List.of(parseCloseBracket());
             case '\n':
-                return Collections.singletonList(parseLineBreak());
+                return List.of(parseLineBreak());
             case Scanner.END:
                 return null;
         }
 
         // No inline parser, delimiter or other special handling.
         if (!specialCharacters.get(c)) {
-            return Collections.singletonList(parseText());
+            return List.of(parseText());
         }
 
         List<InlineContentParser> inlineParsers = this.inlineParsers.get(c);
@@ -186,7 +185,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                     if (includeSourceSpans && node.getSourceSpans().isEmpty()) {
                         node.setSourceSpans(scanner.getSource(position, scanner.position()).getSourceSpans());
                     }
-                    return Collections.singletonList(node);
+                    return List.of(node);
                 } else {
                     // Reset position
                     scanner.setPosition(position);
@@ -203,7 +202,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         // If we get here, even for a special/delimiter character, we will just treat it as text.
-        return Collections.singletonList(parseText());
+        return List.of(parseText());
     }
 
     /**
