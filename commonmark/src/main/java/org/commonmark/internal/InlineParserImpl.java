@@ -16,10 +16,10 @@ import java.util.*;
 
 public class InlineParserImpl implements InlineParser, InlineParserState {
 
-    private final BitSet specialCharacters;
-    private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final InlineParserContext context;
     private final Map<Character, List<InlineContentParser>> inlineParsers;
+    private final Map<Character, DelimiterProcessor> delimiterProcessors;
+    private final BitSet specialCharacters;
 
     private Scanner scanner;
     private boolean includeSourceSpans;
@@ -37,43 +37,26 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private Bracket lastBracket;
 
     public InlineParserImpl(InlineParserContext inlineParserContext) {
-        this.delimiterProcessors = calculateDelimiterProcessors(inlineParserContext.getCustomDelimiterProcessors());
-
         this.context = inlineParserContext;
-        this.inlineParsers = new HashMap<>();
-        this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
-        this.inlineParsers.put('`', Collections.<InlineContentParser>singletonList(new BackticksInlineParser()));
-        this.inlineParsers.put('&', Collections.<InlineContentParser>singletonList(new EntityInlineParser()));
-        this.inlineParsers.put('<', Arrays.asList(new AutolinkInlineParser(), new HtmlInlineParser()));
-
+        this.inlineParsers = calculateInlineContentParsers();
+        this.delimiterProcessors = calculateDelimiterProcessors(inlineParserContext.getCustomDelimiterProcessors());
         this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), inlineParsers.keySet());
     }
 
-    public static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters, Set<Character> characters) {
-        BitSet bitSet = new BitSet();
-        for (Character c : delimiterCharacters) {
-            bitSet.set(c);
+    private static Map<Character, List<InlineContentParser>> calculateInlineContentParsers() {
+        var map = new HashMap<Character, List<InlineContentParser>>();
+        for (var parser : List.of(new BackslashInlineParser(), new BackticksInlineParser(), new EntityInlineParser(),
+                new AutolinkInlineParser(), new HtmlInlineParser())) {
+            map.computeIfAbsent(parser.getTriggerCharacter(), k -> new ArrayList<>()).add(parser);
         }
-        for (Character c : characters) {
-            bitSet.set(c);
-        }
-        bitSet.set('[');
-        bitSet.set(']');
-        bitSet.set('!');
-        bitSet.set('\n');
-        return bitSet;
-    }
-
-    public static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors) {
-        Map<Character, DelimiterProcessor> map = new HashMap<>();
-        addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()), map);
-        addDelimiterProcessors(delimiterProcessors, map);
         return map;
     }
 
-    @Override
-    public Scanner scanner() {
-        return scanner;
+    private static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors) {
+        var map = new HashMap<Character, DelimiterProcessor>();
+        addDelimiterProcessors(List.of(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()), map);
+        addDelimiterProcessors(delimiterProcessors, map);
+        return map;
     }
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
@@ -107,6 +90,26 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         if (existing != null) {
             throw new IllegalArgumentException("Delimiter processor conflict with delimiter char '" + delimiterChar + "'");
         }
+    }
+
+    private static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters, Set<Character> characters) {
+        BitSet bitSet = new BitSet();
+        for (Character c : delimiterCharacters) {
+            bitSet.set(c);
+        }
+        for (Character c : characters) {
+            bitSet.set(c);
+        }
+        bitSet.set('[');
+        bitSet.set(']');
+        bitSet.set('!');
+        bitSet.set('\n');
+        return bitSet;
+    }
+
+    @Override
+    public Scanner scanner() {
+        return scanner;
     }
 
     /**

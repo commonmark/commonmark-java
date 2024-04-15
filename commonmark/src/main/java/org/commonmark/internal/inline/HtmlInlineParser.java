@@ -27,6 +27,11 @@ public class HtmlInlineParser implements InlineContentParser {
             .build();
 
     @Override
+    public char getTriggerCharacter() {
+        return '<';
+    }
+
+    @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();

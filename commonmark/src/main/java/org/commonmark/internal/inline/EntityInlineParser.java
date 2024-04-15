@@ -17,6 +17,11 @@ public class EntityInlineParser implements InlineContentParser {
     private static final AsciiMatcher entityContinue = entityStart.newBuilder().range('0', '9').build();
 
     @Override
+    public char getTriggerCharacter() {
+        return '&';
+    }
+
+    @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();

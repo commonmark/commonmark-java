@@ -13,6 +13,11 @@ import org.commonmark.text.Characters;
 public class BackticksInlineParser implements InlineContentParser {
 
     @Override
+    public char getTriggerCharacter() {
+        return '`';
+    }
+
+    @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();
