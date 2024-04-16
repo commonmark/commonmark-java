@@ -36,15 +36,19 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      */
     private Bracket lastBracket;
 
-    public InlineParserImpl(InlineParserContext inlineParserContext) {
-        this.context = inlineParserContext;
-        this.inlineParsers = calculateInlineContentParsers();
-        this.delimiterProcessors = calculateDelimiterProcessors(inlineParserContext.getCustomDelimiterProcessors());
+    public InlineParserImpl(InlineParserContext context) {
+        this.context = context;
+        this.inlineParsers = calculateInlineContentParsers(context.getCustomInlineContentParsers());
+        this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
         this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), inlineParsers.keySet());
     }
 
-    private static Map<Character, List<InlineContentParser>> calculateInlineContentParsers() {
+    private static Map<Character, List<InlineContentParser>> calculateInlineContentParsers(List<InlineContentParser> inlineContentParsers) {
         var map = new HashMap<Character, List<InlineContentParser>>();
+        // Custom parsers can override built-in parsers if they want, so make sure they are tried first
+        for (var parser : inlineContentParsers) {
+            map.computeIfAbsent(parser.getTriggerCharacter(), k -> new ArrayList<>()).add(parser);
+        }
         for (var parser : List.of(new BackslashInlineParser(), new BackticksInlineParser(), new EntityInlineParser(),
                 new AutolinkInlineParser(), new HtmlInlineParser())) {
             map.computeIfAbsent(parser.getTriggerCharacter(), k -> new ArrayList<>()).add(parser);

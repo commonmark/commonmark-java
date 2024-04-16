@@ -1,5 +1,6 @@
 package org.commonmark.parser;
 
+import org.commonmark.internal.inline.InlineContentParser;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
@@ -9,6 +10,11 @@ import java.util.List;
  * Context for inline parsing.
  */
 public interface InlineParserContext {
+
+    /**
+     * @return custom inline content parsers that have been configured with {@link Parser.Builder#customInlineContentParser(InlineContentParser)}
+     */
+    List<InlineContentParser> getCustomInlineContentParsers();
 
     /**
      * @return custom delimiter processors that have been configured with {@link Parser.Builder#customDelimiterProcessor(DelimiterProcessor)}
