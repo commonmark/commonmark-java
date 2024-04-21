@@ -16,11 +16,6 @@ public class BackslashInlineParser implements InlineContentParser {
     private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
 
     @Override
-    public char getTriggerCharacter() {
-        return '\\';
-    }
-
-    @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         // Backslash
@@ -35,6 +30,18 @@ public class BackslashInlineParser implements InlineContentParser {
             return ParsedInline.of(new Text(String.valueOf(next)), scanner.position());
         } else {
             return ParsedInline.of(new Text("\\"), scanner.position());
+        }
+    }
+
+    public static class Factory implements InlineContentParserFactory {
+        @Override
+        public char getTriggerCharacter() {
+            return '\\';
+        }
+
+        @Override
+        public InlineContentParser create() {
+            return new BackslashInlineParser();
         }
     }
 }

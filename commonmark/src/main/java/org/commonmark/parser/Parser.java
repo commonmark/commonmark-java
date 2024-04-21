@@ -5,7 +5,7 @@ import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.internal.LinkReferenceDefinitions;
-import org.commonmark.internal.inline.InlineContentParser;
+import org.commonmark.internal.inline.InlineContentParserFactory;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
@@ -30,7 +30,7 @@ import java.util.Set;
 public class Parser {
 
     private final List<BlockParserFactory> blockParserFactories;
-    private final List<InlineContentParser> inlineContentParsers;
+    private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
     private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
@@ -40,13 +40,13 @@ public class Parser {
         this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.enabledBlockTypes);
         this.inlineParserFactory = builder.getInlineParserFactory();
         this.postProcessors = builder.postProcessors;
-        this.inlineContentParsers = builder.inlineContentParsers;
+        this.inlineContentParserFactories = builder.inlineContentParserFactories;
         this.delimiterProcessors = builder.delimiterProcessors;
         this.includeSourceSpans = builder.includeSourceSpans;
 
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
-        this.inlineParserFactory.create(new InlineParserContextImpl(inlineContentParsers, delimiterProcessors, new LinkReferenceDefinitions()));
+        this.inlineParserFactory.create(new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, new LinkReferenceDefinitions()));
     }
 
     /**
@@ -104,7 +104,7 @@ public class Parser {
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParsers, delimiterProcessors, includeSourceSpans);
+        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories, delimiterProcessors, includeSourceSpans);
     }
 
     private Node postProcess(Node document) {
@@ -119,7 +119,7 @@ public class Parser {
      */
     public static class Builder {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
-        private final List<InlineContentParser> inlineContentParsers = new ArrayList<>();
+        private final List<InlineContentParserFactory> inlineContentParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
@@ -222,15 +222,15 @@ public class Parser {
          * Add a custom inline content parser, for additional inline parsing or overriding built-in parsing.
          * <p>
          * Note that parsers are triggered based on a special character as specified by
-         * {@link InlineContentParser#getTriggerCharacter()}. It is possible to register multiple parsers for the same
+         * {@link InlineContentParserFactory#getTriggerCharacter()}. It is possible to register multiple parsers for the same
          * character, or even for some built-in special character such as {@code `}.
          *
-         * @param inlineContentParser
+         * @param inlineContentParserFactory
          * @return
          */
-        public Builder customInlineContentParser(InlineContentParser inlineContentParser) {
-            Objects.requireNonNull(inlineContentParser, "inlineContentParser must not be null");
-            inlineContentParsers.add(inlineContentParser);
+        public Builder customInlineContentParser(InlineContentParserFactory inlineContentParserFactory) {
+            Objects.requireNonNull(inlineContentParserFactory, "inlineContentParser must not be null");
+            inlineContentParserFactories.add(inlineContentParserFactory);
             return this;
         }
 

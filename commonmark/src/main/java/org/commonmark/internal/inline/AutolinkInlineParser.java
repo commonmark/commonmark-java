@@ -20,11 +20,6 @@ public class AutolinkInlineParser implements InlineContentParser {
             .compile("^([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)$");
 
     @Override
-    public char getTriggerCharacter() {
-        return '<';
-    }
-
-    @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         scanner.next();
@@ -50,5 +45,17 @@ public class AutolinkInlineParser implements InlineContentParser {
             }
         }
         return ParsedInline.none();
+    }
+
+    public static class Factory implements InlineContentParserFactory {
+        @Override
+        public char getTriggerCharacter() {
+            return '<';
+        }
+
+        @Override
+        public InlineContentParser create() {
+            return new AutolinkInlineParser();
+        }
     }
 }

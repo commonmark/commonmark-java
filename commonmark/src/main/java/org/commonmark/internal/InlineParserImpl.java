@@ -17,10 +17,11 @@ import java.util.*;
 public class InlineParserImpl implements InlineParser, InlineParserState {
 
     private final InlineParserContext context;
-    private final Map<Character, List<InlineContentParser>> inlineParsers;
+    private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final BitSet specialCharacters;
 
+    private Map<Character, List<InlineContentParser>> inlineParsers;
     private Scanner scanner;
     private boolean includeSourceSpans;
     private int trailingSpaces;
@@ -38,22 +39,20 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
     public InlineParserImpl(InlineParserContext context) {
         this.context = context;
-        this.inlineParsers = calculateInlineContentParsers(context.getCustomInlineContentParsers());
+        this.inlineContentParserFactories = calculateInlineContentParserFactories(context.getCustomInlineContentParserFactories());
         this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
-        this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), inlineParsers.keySet());
+        this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
     }
 
-    private static Map<Character, List<InlineContentParser>> calculateInlineContentParsers(List<InlineContentParser> inlineContentParsers) {
-        var map = new HashMap<Character, List<InlineContentParser>>();
+    private List<InlineContentParserFactory> calculateInlineContentParserFactories(List<InlineContentParserFactory> customFactories) {
         // Custom parsers can override built-in parsers if they want, so make sure they are tried first
-        for (var parser : inlineContentParsers) {
-            map.computeIfAbsent(parser.getTriggerCharacter(), k -> new ArrayList<>()).add(parser);
-        }
-        for (var parser : List.of(new BackslashInlineParser(), new BackticksInlineParser(), new EntityInlineParser(),
-                new AutolinkInlineParser(), new HtmlInlineParser())) {
-            map.computeIfAbsent(parser.getTriggerCharacter(), k -> new ArrayList<>()).add(parser);
-        }
-        return map;
+        var list = new ArrayList<>(customFactories);
+        list.add(new BackslashInlineParser.Factory());
+        list.add(new BackticksInlineParser.Factory());
+        list.add(new EntityInlineParser.Factory());
+        list.add(new AutolinkInlineParser.Factory());
+        list.add(new HtmlInlineParser.Factory());
+        return list;
     }
 
     private static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors) {
@@ -96,19 +95,28 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
     }
 
-    private static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters, Set<Character> characters) {
+    private static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters,
+                                                     List<InlineContentParserFactory> inlineContentParserFactories) {
         BitSet bitSet = new BitSet();
         for (Character c : delimiterCharacters) {
             bitSet.set(c);
         }
-        for (Character c : characters) {
-            bitSet.set(c);
+        for (var factory : inlineContentParserFactories) {
+            bitSet.set(factory.getTriggerCharacter());
         }
         bitSet.set('[');
         bitSet.set(']');
         bitSet.set('!');
         bitSet.set('\n');
         return bitSet;
+    }
+
+    private Map<Character, List<InlineContentParser>> createInlineContentParsers() {
+        var map = new HashMap<Character, List<InlineContentParser>>();
+        for (var factory : inlineContentParserFactories) {
+            map.computeIfAbsent(factory.getTriggerCharacter(), k -> new ArrayList<>()).add(factory.create());
+        }
+        return map;
     }
 
     @Override
@@ -143,6 +151,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.trailingSpaces = 0;
         this.lastDelimiter = null;
         this.lastBracket = null;
+        this.inlineParsers = createInlineContentParsers();
     }
 
     private Text text(SourceLines sourceLines) {

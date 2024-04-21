@@ -1,7 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.internal.InlineParserImpl;
-import org.commonmark.internal.inline.InlineContentParser;
+import org.commonmark.internal.inline.InlineContentParserFactory;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
@@ -43,8 +43,8 @@ public class InlineParserContextTest {
         public InlineParser create(final InlineParserContext inlineParserContext) {
             InlineParserContext wrappedContext = new InlineParserContext() {
                 @Override
-                public List<InlineContentParser> getCustomInlineContentParsers() {
-                    return inlineParserContext.getCustomInlineContentParsers();
+                public List<InlineContentParserFactory> getCustomInlineContentParserFactories() {
+                    return inlineParserContext.getCustomInlineContentParserFactories();
                 }
 
                 @Override

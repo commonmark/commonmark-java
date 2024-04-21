@@ -13,11 +13,6 @@ import org.commonmark.text.Characters;
 public class BackticksInlineParser implements InlineContentParser {
 
     @Override
-    public char getTriggerCharacter() {
-        return '`';
-    }
-
-    @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
         Position start = scanner.position();
@@ -51,5 +46,17 @@ public class BackticksInlineParser implements InlineContentParser {
         SourceLines source = scanner.getSource(start, afterOpening);
         Text text = new Text(source.getContent());
         return ParsedInline.of(text, afterOpening);
+    }
+
+    public static class Factory implements InlineContentParserFactory {
+        @Override
+        public char getTriggerCharacter() {
+            return '`';
+        }
+
+        @Override
+        public InlineContentParser create() {
+            return new BackticksInlineParser();
+        }
     }
 }
