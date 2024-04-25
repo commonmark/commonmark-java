@@ -6,6 +6,8 @@ import org.commonmark.parser.beta.Position;
 import org.commonmark.parser.beta.Scanner;
 import org.commonmark.text.AsciiMatcher;
 
+import java.util.Set;
+
 /**
  * Attempts to parse an HTML entity or numeric character reference.
  */
@@ -56,8 +58,8 @@ public class EntityInlineParser implements InlineContentParser {
     public static class Factory implements InlineContentParserFactory {
 
         @Override
-        public char getTriggerCharacter() {
-            return '&';
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('&');
         }
 
         @Override

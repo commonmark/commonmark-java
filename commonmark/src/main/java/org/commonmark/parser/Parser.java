@@ -219,14 +219,12 @@ public class Parser {
         }
 
         /**
-         * Add a custom inline content parser, for additional inline parsing or overriding built-in parsing.
+         * Add a factory for a custom inline content parser, for additional inline parsing or overriding built-in parsing.
          * <p>
          * Note that parsers are triggered based on a special character as specified by
-         * {@link InlineContentParserFactory#getTriggerCharacter()}. It is possible to register multiple parsers for the same
-         * character, or even for some built-in special character such as {@code `}.
-         *
-         * @param inlineContentParserFactory
-         * @return
+         * {@link InlineContentParserFactory#getTriggerCharacters()}. It is possible to register multiple parsers for the same
+         * character, or even for some built-in special character such as {@code `}. The custom parsers are tried first
+         * in order in which they are registered, and then the built-in ones.
          */
         public Builder customInlineContentParser(InlineContentParserFactory inlineContentParserFactory) {
             Objects.requireNonNull(inlineContentParserFactory, "inlineContentParser must not be null");

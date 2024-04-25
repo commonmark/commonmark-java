@@ -5,6 +5,8 @@ import org.commonmark.parser.beta.Position;
 import org.commonmark.parser.beta.Scanner;
 import org.commonmark.text.AsciiMatcher;
 
+import java.util.Set;
+
 /**
  * Attempt to parse inline HTML.
  */
@@ -204,8 +206,8 @@ public class HtmlInlineParser implements InlineContentParser {
     public static class Factory implements InlineContentParserFactory {
 
         @Override
-        public char getTriggerCharacter() {
-            return '<';
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('<');
         }
 
         @Override

@@ -9,6 +9,8 @@ import org.commonmark.node.Heading;
 import org.commonmark.test.Nodes;
 import org.junit.Test;
 
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 
 public class InlineContentParserTest {
@@ -72,8 +74,8 @@ public class InlineContentParserTest {
 
         static class Factory implements InlineContentParserFactory {
             @Override
-            public char getTriggerCharacter() {
-                return '$';
+            public Set<Character> getTriggerCharacters() {
+                return Set.of('$');
             }
 
             @Override

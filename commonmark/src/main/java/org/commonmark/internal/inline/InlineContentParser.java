@@ -9,7 +9,7 @@ public interface InlineContentParser {
 
     /**
      * Try to parse inline content starting from the current position. Note that the character at the current position
-     * is the {@link InlineContentParserFactory#getTriggerCharacter()} of the factory that created this parser.
+     * is one of {@link InlineContentParserFactory#getTriggerCharacters()} of the factory that created this parser.
      * <p>
      * For a given inline content snippet that is being parsed, this method can be called multiple times: each time a
      * trigger character is encountered.

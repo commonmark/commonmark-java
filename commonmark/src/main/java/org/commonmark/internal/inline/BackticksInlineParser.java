@@ -7,6 +7,8 @@ import org.commonmark.parser.beta.Position;
 import org.commonmark.parser.beta.Scanner;
 import org.commonmark.text.Characters;
 
+import java.util.Set;
+
 /**
  * Attempt to parse backticks, returning either a backtick code span or a literal sequence of backticks.
  */
@@ -50,8 +52,8 @@ public class BackticksInlineParser implements InlineContentParser {
 
     public static class Factory implements InlineContentParserFactory {
         @Override
-        public char getTriggerCharacter() {
-            return '`';
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('`');
         }
 
         @Override

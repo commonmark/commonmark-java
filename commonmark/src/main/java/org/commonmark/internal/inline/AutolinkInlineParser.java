@@ -6,6 +6,7 @@ import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.beta.Position;
 import org.commonmark.parser.beta.Scanner;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -49,8 +50,8 @@ public class AutolinkInlineParser implements InlineContentParser {
 
     public static class Factory implements InlineContentParserFactory {
         @Override
-        public char getTriggerCharacter() {
-            return '<';
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('<');
         }
 
         @Override

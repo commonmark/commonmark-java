@@ -102,7 +102,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             bitSet.set(c);
         }
         for (var factory : inlineContentParserFactories) {
-            bitSet.set(factory.getTriggerCharacter());
+            for (var c : factory.getTriggerCharacters()) {
+                bitSet.set(c);
+            }
         }
         bitSet.set('[');
         bitSet.set(']');
@@ -114,7 +116,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private Map<Character, List<InlineContentParser>> createInlineContentParsers() {
         var map = new HashMap<Character, List<InlineContentParser>>();
         for (var factory : inlineContentParserFactories) {
-            map.computeIfAbsent(factory.getTriggerCharacter(), k -> new ArrayList<>()).add(factory.create());
+            var parser = factory.create();
+            for (var c : factory.getTriggerCharacters()) {
+                map.computeIfAbsent(c, k -> new ArrayList<>()).add(parser);
+            }
         }
         return map;
     }

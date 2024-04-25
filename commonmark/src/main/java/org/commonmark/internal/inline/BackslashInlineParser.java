@@ -5,6 +5,7 @@ import org.commonmark.node.HardLineBreak;
 import org.commonmark.node.Text;
 import org.commonmark.parser.beta.Scanner;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -35,8 +36,8 @@ public class BackslashInlineParser implements InlineContentParser {
 
     public static class Factory implements InlineContentParserFactory {
         @Override
-        public char getTriggerCharacter() {
-            return '\\';
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('\\');
         }
 
         @Override
