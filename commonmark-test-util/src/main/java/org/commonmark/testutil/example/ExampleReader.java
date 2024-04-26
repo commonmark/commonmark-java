@@ -2,7 +2,7 @@ package org.commonmark.testutil.example;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -66,7 +66,7 @@ public class ExampleReader {
         resetContents();
 
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(inputStream, Charset.forName("UTF-8")))) {
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 processLine(line);
