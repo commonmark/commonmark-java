@@ -13,8 +13,7 @@ import java.util.*;
 public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
 
     // Only allow a defined set of attributes to be used.
-    private static final Set<String> SUPPORTED_ATTRIBUTES = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList("width", "height")));
+    private static final Set<String> SUPPORTED_ATTRIBUTES = Set.of("width", "height");
 
     @Override
     public char getOpeningCharacter() {

@@ -17,7 +17,6 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -106,7 +105,7 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
 
             @Override
             public Set<Character> getSpecialCharacters() {
-                return Collections.singleton('~');
+                return Set.of('~');
             }
         });
     }

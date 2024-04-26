@@ -8,7 +8,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class YamlFrontMatterTest extends RenderingTestCase {
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(YamlFrontMatterExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(YamlFrontMatterExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
@@ -243,7 +242,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         Map<String, List<String>> data = visitor.getData();
         assertEquals(1, data.size());
         assertTrue(data.containsKey("hello"));
-        assertEquals(Collections.singletonList("world"), data.get("hello"));
+        assertEquals(List.of("world"), data.get("hello"));
     }
 
     @Test
@@ -256,7 +255,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         Node document = PARSER.parse(input);
         YamlFrontMatterNode node = (YamlFrontMatterNode) document.getFirstChild().getFirstChild();
         node.setKey("see");
-        node.setValues(Collections.singletonList("you"));
+        node.setValues(List.of("you"));
 
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
         document.accept(visitor);
@@ -264,7 +263,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         Map<String, List<String>> data = visitor.getData();
         assertEquals(1, data.size());
         assertTrue(data.containsKey("see"));
-        assertEquals(Collections.singletonList("you"), data.get("see"));
+        assertEquals(List.of("you"), data.get("see"));
     }
 
     @Test

@@ -5,7 +5,6 @@ import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
-import java.util.Collections;
 import java.util.Map;
 
 public class TableHtmlNodeRenderer extends TableNodeRenderer {
@@ -60,14 +59,14 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
     }
 
     private Map<String, String> getAttributes(Node node, String tagName) {
-        return context.extendAttributes(node, tagName, Collections.<String, String>emptyMap());
+        return context.extendAttributes(node, tagName, Map.of());
     }
 
     private Map<String, String> getCellAttributes(TableCell tableCell, String tagName) {
         if (tableCell.getAlignment() != null) {
-            return context.extendAttributes(tableCell, tagName, Collections.singletonMap("align", getAlignValue(tableCell.getAlignment())));
+            return context.extendAttributes(tableCell, tagName, Map.of("align", getAlignValue(tableCell.getAlignment())));
         } else {
-            return context.extendAttributes(tableCell, tagName, Collections.<String, String>emptyMap());
+            return context.extendAttributes(tableCell, tagName, Map.of());
         }
     }
 

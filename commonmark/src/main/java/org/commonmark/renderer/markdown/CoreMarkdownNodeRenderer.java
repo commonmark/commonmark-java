@@ -1,13 +1,11 @@
 package org.commonmark.renderer.markdown;
 
-import org.commonmark.text.AsciiMatcher;
 import org.commonmark.node.*;
-import org.commonmark.text.CharMatcher;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.text.AsciiMatcher;
+import org.commonmark.text.CharMatcher;
 import org.commonmark.text.Characters;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -51,7 +49,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return new HashSet<>(Arrays.asList(
+        return Set.of(
                 BlockQuote.class,
                 BulletList.class,
                 Code.class,
@@ -72,7 +70,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 StrongEmphasis.class,
                 Text.class,
                 ThematicBreak.class
-        ));
+        );
     }
 
     @Override
@@ -470,9 +468,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         if (parts[parts.length - 1].isEmpty()) {
             // But we don't want the last empty string, as "\n" is used as a line terminator (not a separator),
             // so return without the last element.
-            return Arrays.asList(parts).subList(0, parts.length - 1);
+            return List.of(parts).subList(0, parts.length - 1);
         } else {
-            return Arrays.asList(parts);
+            return List.of(parts);
         }
     }
 

@@ -1,13 +1,11 @@
 package org.commonmark.renderer.text;
 
-import org.commonmark.node.*;
-import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.internal.renderer.text.BulletListHolder;
 import org.commonmark.internal.renderer.text.ListHolder;
 import org.commonmark.internal.renderer.text.OrderedListHolder;
+import org.commonmark.node.*;
+import org.commonmark.renderer.NodeRenderer;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -27,7 +25,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return new HashSet<>(Arrays.asList(
+        return Set.of(
                 Document.class,
                 Heading.class,
                 Paragraph.class,
@@ -48,7 +46,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
                 HtmlInline.class,
                 SoftLineBreak.class,
                 HardLineBreak.class
-        ));
+        );
     }
 
     @Override

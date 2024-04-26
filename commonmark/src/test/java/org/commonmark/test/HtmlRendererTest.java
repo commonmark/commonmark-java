@@ -7,7 +7,10 @@ import org.commonmark.renderer.html.*;
 import org.commonmark.testutil.TestResources;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -214,7 +217,7 @@ public class HtmlRendererTest {
                 return new NodeRenderer() {
                     @Override
                     public Set<Class<? extends Node>> getNodeTypes() {
-                        return Collections.<Class<? extends Node>>singleton(Link.class);
+                        return Set.of(Link.class);
                     }
 
                     @Override

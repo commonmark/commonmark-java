@@ -1,28 +1,22 @@
 package org.commonmark.ext.gfm.tables.internal;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.commonmark.ext.gfm.tables.TableBlock;
-import org.commonmark.ext.gfm.tables.TableBody;
-import org.commonmark.ext.gfm.tables.TableCell;
-import org.commonmark.ext.gfm.tables.TableHead;
-import org.commonmark.ext.gfm.tables.TableRow;
+import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
+
+import java.util.Set;
 
 abstract class TableNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return new HashSet<>(Arrays.asList(
+        return Set.of(
                 TableBlock.class,
                 TableHead.class,
                 TableBody.class,
                 TableRow.class,
                 TableCell.class
-        ));
+        );
     }
 
     @Override

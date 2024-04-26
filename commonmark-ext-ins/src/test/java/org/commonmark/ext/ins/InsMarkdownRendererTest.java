@@ -5,14 +5,13 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
 public class InsMarkdownRendererTest {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(InsExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(InsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 

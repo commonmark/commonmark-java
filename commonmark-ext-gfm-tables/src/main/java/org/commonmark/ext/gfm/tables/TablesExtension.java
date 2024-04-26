@@ -17,7 +17,6 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -78,7 +77,7 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
             @Override
             public Set<Character> getSpecialCharacters() {
-                return Collections.singleton('|');
+                return Set.of('|');
             }
         });
     }

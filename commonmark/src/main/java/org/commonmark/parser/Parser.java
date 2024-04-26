@@ -169,7 +169,7 @@ public class Parser {
          * E.g., to only parse headings and lists:
          * <pre>
          *     {@code
-         *     Parser.builder().enabledBlockTypes(new HashSet<>(Arrays.asList(Heading.class, ListBlock.class)));
+         *     Parser.builder().enabledBlockTypes(Set.of(Heading.class, ListBlock.class));
          *     }
          * </pre>
          *

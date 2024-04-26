@@ -17,7 +17,6 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -77,7 +76,7 @@ public class InsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRe
             public Set<Character> getSpecialCharacters() {
                 // We technically don't need to escape single occurrences of +, but that's all the extension API
                 // exposes currently.
-                return Collections.singleton('+');
+                return Set.of('+');
             }
         });
     }

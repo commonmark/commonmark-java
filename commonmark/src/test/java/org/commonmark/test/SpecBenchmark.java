@@ -11,7 +11,6 @@ import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.Collections;
 import java.util.List;
 
 @State(Scope.Benchmark)
@@ -37,7 +36,7 @@ public class SpecBenchmark {
 
     @Benchmark
     public long parseWholeSpec() {
-        return parse(Collections.singletonList(SPEC));
+        return parse(List.of(SPEC));
     }
 
     @Benchmark
@@ -47,7 +46,7 @@ public class SpecBenchmark {
 
     @Benchmark
     public long parseAndRenderWholeSpec() {
-        return parseAndRender(Collections.singletonList(SPEC));
+        return parseAndRender(List.of(SPEC));
     }
 
     @Benchmark

@@ -12,14 +12,13 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class MarkdownRendererIntegrationTest {
 
-    private static final List<Extension> EXTENSIONS = Arrays.asList(
+    private static final List<Extension> EXTENSIONS = List.of(
             AutolinkExtension.create(),
             ImageAttributesExtension.create(),
             InsExtension.create(),

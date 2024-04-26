@@ -4,7 +4,6 @@ import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
-import java.util.Collections;
 import java.util.Map;
 
 public class InsHtmlNodeRenderer extends InsNodeRenderer {
@@ -19,7 +18,7 @@ public class InsHtmlNodeRenderer extends InsNodeRenderer {
 
     @Override
     public void render(Node node) {
-        Map<String, String> attributes = context.extendAttributes(node, "ins", Collections.<String, String>emptyMap());
+        Map<String, String> attributes = context.extendAttributes(node, "ins", Map.of());
         html.tag("ins", attributes);
         renderChildren(node);
         html.tag("/ins");

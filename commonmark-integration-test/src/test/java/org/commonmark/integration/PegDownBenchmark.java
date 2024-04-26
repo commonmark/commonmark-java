@@ -12,7 +12,6 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 
-import java.util.Collections;
 import java.util.List;
 
 @State(Scope.Benchmark)
@@ -32,7 +31,7 @@ public class PegDownBenchmark {
 
     @Benchmark
     public long wholeSpec() {
-        return parseAndRender(Collections.singletonList(SPEC));
+        return parseAndRender(List.of(SPEC));
     }
 
     @Benchmark

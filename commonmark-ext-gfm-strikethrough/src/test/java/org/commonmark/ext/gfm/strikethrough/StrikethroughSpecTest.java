@@ -12,14 +12,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 @RunWith(Parameterized.class)
 public class StrikethroughSpecTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(StrikethroughExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(StrikethroughExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 

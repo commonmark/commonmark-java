@@ -11,15 +11,14 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
 public class InsTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(InsExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(InsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
     private static final TextContentRenderer CONTENT_RENDERER = TextContentRenderer.builder()
@@ -103,7 +102,7 @@ public class InsTest extends RenderingTestCase {
         Node document = parser.parse("hey ++there++\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node ins = block.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 4, 9)),
+        assertEquals(List.of(SourceSpan.of(0, 4, 9)),
                 ins.getSourceSpans());
     }
 

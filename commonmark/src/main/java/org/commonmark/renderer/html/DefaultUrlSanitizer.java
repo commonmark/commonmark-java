@@ -1,9 +1,6 @@
 package org.commonmark.renderer.html;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -15,7 +12,7 @@ public class DefaultUrlSanitizer implements UrlSanitizer {
     private Set<String> protocols;
 
     public DefaultUrlSanitizer() {
-        this(Arrays.asList("http", "https", "mailto"));
+        this(List.of("http", "https", "mailto"));
     }
 
     public DefaultUrlSanitizer(Collection<String> protocols) {

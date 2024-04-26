@@ -9,12 +9,11 @@ import org.commonmark.ext.image.attributes.ImageAttributesExtension;
 import org.commonmark.ext.ins.InsExtension;
 import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class Extensions {
 
-    static final List<Extension> ALL_EXTENSIONS = Arrays.asList(
+    static final List<Extension> ALL_EXTENSIONS = List.of(
             AutolinkExtension.create(),
             ImageAttributesExtension.create(),
             InsExtension.create(),

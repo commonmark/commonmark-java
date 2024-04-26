@@ -12,7 +12,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -126,7 +125,7 @@ public class UsageExampleTest {
         @Override
         public Set<Class<? extends Node>> getNodeTypes() {
             // Return the node types we want to use this renderer for.
-            return Collections.<Class<? extends Node>>singleton(IndentedCodeBlock.class);
+            return Set.of(IndentedCodeBlock.class);
         }
 
         @Override

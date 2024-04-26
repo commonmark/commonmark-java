@@ -1,7 +1,6 @@
 package org.commonmark.node;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,7 +17,7 @@ public class SourceSpans {
     }
 
     public List<SourceSpan> getSourceSpans() {
-        return sourceSpans != null ? sourceSpans : Collections.<SourceSpan>emptyList();
+        return sourceSpans != null ? sourceSpans : List.of();
     }
 
     public void addAllFrom(Iterable<? extends Node> nodes) {
