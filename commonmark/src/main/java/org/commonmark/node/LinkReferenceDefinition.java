@@ -11,7 +11,7 @@ package org.commonmark.node;
  *
  * @see <a href="https://spec.commonmark.org/0.29/#link-reference-definition">Link reference definitions</a>
  */
-public class LinkReferenceDefinition extends Node {
+public class LinkReferenceDefinition extends Block {
 
     private String label;
     private String destination;

@@ -13,6 +13,9 @@ with the exception that 0.x versions can break between minor versions.
   extensions to hook into inline parsing on a deeper level than using delimiter
   processors. It could be used to implement support for math/latex formulas for
   example.
+### Changed
+- `LinkReferenceDefinition` now extends `Block` (it was extending `Node`
+  directly before)
 ### Fixed
 - Fix parsing of link reference definitions where it looks like it has a title
   but it doesn't because it's followed by characters other than space/tab. In that
