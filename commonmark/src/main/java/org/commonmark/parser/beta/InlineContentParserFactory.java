@@ -2,6 +2,11 @@ package org.commonmark.parser.beta;
 
 import java.util.Set;
 
+/**
+ * A factory for extending inline content parsing.
+ * <p>
+ * See {@link org.commonmark.parser.Parser.Builder#customInlineContentParserFactory} for how to register it.
+ */
 public interface InlineContentParserFactory {
 
     /**

@@ -219,7 +219,7 @@ public class Parser {
         }
 
         /**
-         * Add a factory for a custom inline content parser, for additional inline parsing or overriding built-in parsing.
+         * Add a factory for a custom inline content parser, for extending inline parsing or overriding built-in parsing.
          * <p>
          * Note that parsers are triggered based on a special character as specified by
          * {@link InlineContentParserFactory#getTriggerCharacters()}. It is possible to register multiple parsers for the same
@@ -233,11 +233,14 @@ public class Parser {
         }
 
         /**
-         * Add a custom delimiter processor.
+         * Add a custom delimiter processor for inline parsing.
          * <p>
          * Note that multiple delimiter processors with the same characters can be added, as long as they have a
          * different minimum length. In that case, the processor with the shortest matching length is used. Adding more
          * than one delimiter processor with the same character and minimum length is invalid.
+         * <p>
+         * If you want more control over how parsing is done, you might want to use
+         * {@link #customInlineContentParserFactory} instead.
          *
          * @param delimiterProcessor a delimiter processor implementation
          * @return {@code this}
