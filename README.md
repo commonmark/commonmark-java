@@ -221,6 +221,19 @@ elements in the resulting HTML, you can create your own subclass of
 To define the HTML rendering for them, you can use a `NodeRenderer` as
 explained above.
 
+#### Customize parsing
+
+There are a few ways to extend parsing or even override built-in parsing,
+all of them via methods on `Parser.Builder`
+(see [Blocks and inlines](https://spec.commonmark.org/0.31.2/#blocks-and-inlines) in the spec for an overview of blocks/inlines):
+
+- Parsing of specific block types (e.g. headings, code blocks, etc) can be
+  enabled/disabled with `enabledBlockTypes`
+- Parsing of blocks can be extended/overridden with `customBlockParserFactory`
+- Parsing of inline content can be extended/overridden with `customInlineContentParserFactory`
+- Parsing of [delimiters](https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis) in inline content can be
+  extended with `customDelimiterProcessor`
+
 #### Thread-safety
 
 Both the `Parser` and `HtmlRenderer` are designed so that you can

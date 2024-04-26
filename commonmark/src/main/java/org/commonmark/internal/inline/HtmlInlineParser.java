@@ -1,9 +1,10 @@
 package org.commonmark.internal.inline;
 
-import org.commonmark.text.AsciiMatcher;
 import org.commonmark.node.HtmlInline;
-import org.commonmark.parser.beta.Position;
-import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
+import org.commonmark.text.AsciiMatcher;
+
+import java.util.Set;
 
 /**
  * Attempt to parse inline HTML.
@@ -199,5 +200,18 @@ public class HtmlInlineParser implements InlineContentParser {
             return true;
         }
         return false;
+    }
+
+    public static class Factory implements InlineContentParserFactory {
+
+        @Override
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('<');
+        }
+
+        @Override
+        public InlineContentParser create() {
+            return new HtmlInlineParser();
+        }
     }
 }

@@ -1,21 +1,29 @@
 package org.commonmark.internal;
 
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.List;
-import java.util.Map;
 
 public class InlineParserContextImpl implements InlineParserContext {
 
+    private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
     private final LinkReferenceDefinitions linkReferenceDefinitions;
 
-    public InlineParserContextImpl(List<DelimiterProcessor> delimiterProcessors,
+    public InlineParserContextImpl(List<InlineContentParserFactory> inlineContentParserFactories,
+                                   List<DelimiterProcessor> delimiterProcessors,
                                    LinkReferenceDefinitions linkReferenceDefinitions) {
+        this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
         this.linkReferenceDefinitions = linkReferenceDefinitions;
+    }
+
+    @Override
+    public List<InlineContentParserFactory> getCustomInlineContentParserFactories() {
+        return inlineContentParserFactories;
     }
 
     @Override

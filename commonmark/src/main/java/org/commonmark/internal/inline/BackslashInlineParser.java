@@ -3,8 +3,9 @@ package org.commonmark.internal.inline;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.HardLineBreak;
 import org.commonmark.node.Text;
-import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -30,6 +31,18 @@ public class BackslashInlineParser implements InlineContentParser {
             return ParsedInline.of(new Text(String.valueOf(next)), scanner.position());
         } else {
             return ParsedInline.of(new Text("\\"), scanner.position());
+        }
+    }
+
+    public static class Factory implements InlineContentParserFactory {
+        @Override
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('\\');
+        }
+
+        @Override
+        public InlineContentParser create() {
+            return new BackslashInlineParser();
         }
     }
 }

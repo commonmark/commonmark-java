@@ -7,7 +7,7 @@ import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.*;
 import org.commonmark.parser.beta.Scanner;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.text.Characters;
@@ -16,11 +16,12 @@ import java.util.*;
 
 public class InlineParserImpl implements InlineParser, InlineParserState {
 
-    private final BitSet specialCharacters;
-    private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final InlineParserContext context;
-    private final Map<Character, List<InlineContentParser>> inlineParsers;
+    private final List<InlineContentParserFactory> inlineContentParserFactories;
+    private final Map<Character, DelimiterProcessor> delimiterProcessors;
+    private final BitSet specialCharacters;
 
+    private Map<Character, List<InlineContentParser>> inlineParsers;
     private Scanner scanner;
     private boolean includeSourceSpans;
     private int trailingSpaces;
@@ -36,44 +37,29 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      */
     private Bracket lastBracket;
 
-    public InlineParserImpl(InlineParserContext inlineParserContext) {
-        this.delimiterProcessors = calculateDelimiterProcessors(inlineParserContext.getCustomDelimiterProcessors());
-
-        this.context = inlineParserContext;
-        this.inlineParsers = new HashMap<>();
-        this.inlineParsers.put('\\', Collections.<InlineContentParser>singletonList(new BackslashInlineParser()));
-        this.inlineParsers.put('`', Collections.<InlineContentParser>singletonList(new BackticksInlineParser()));
-        this.inlineParsers.put('&', Collections.<InlineContentParser>singletonList(new EntityInlineParser()));
-        this.inlineParsers.put('<', Arrays.asList(new AutolinkInlineParser(), new HtmlInlineParser()));
-
-        this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), inlineParsers.keySet());
+    public InlineParserImpl(InlineParserContext context) {
+        this.context = context;
+        this.inlineContentParserFactories = calculateInlineContentParserFactories(context.getCustomInlineContentParserFactories());
+        this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
+        this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
     }
 
-    public static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters, Set<Character> characters) {
-        BitSet bitSet = new BitSet();
-        for (Character c : delimiterCharacters) {
-            bitSet.set(c);
-        }
-        for (Character c : characters) {
-            bitSet.set(c);
-        }
-        bitSet.set('[');
-        bitSet.set(']');
-        bitSet.set('!');
-        bitSet.set('\n');
-        return bitSet;
+    private List<InlineContentParserFactory> calculateInlineContentParserFactories(List<InlineContentParserFactory> customFactories) {
+        // Custom parsers can override built-in parsers if they want, so make sure they are tried first
+        var list = new ArrayList<>(customFactories);
+        list.add(new BackslashInlineParser.Factory());
+        list.add(new BackticksInlineParser.Factory());
+        list.add(new EntityInlineParser.Factory());
+        list.add(new AutolinkInlineParser.Factory());
+        list.add(new HtmlInlineParser.Factory());
+        return list;
     }
 
-    public static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors) {
-        Map<Character, DelimiterProcessor> map = new HashMap<>();
-        addDelimiterProcessors(Arrays.<DelimiterProcessor>asList(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()), map);
+    private static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors) {
+        var map = new HashMap<Character, DelimiterProcessor>();
+        addDelimiterProcessors(List.of(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()), map);
         addDelimiterProcessors(delimiterProcessors, map);
         return map;
-    }
-
-    @Override
-    public Scanner scanner() {
-        return scanner;
     }
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
@@ -109,6 +95,40 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
     }
 
+    private static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters,
+                                                     List<InlineContentParserFactory> inlineContentParserFactories) {
+        BitSet bitSet = new BitSet();
+        for (Character c : delimiterCharacters) {
+            bitSet.set(c);
+        }
+        for (var factory : inlineContentParserFactories) {
+            for (var c : factory.getTriggerCharacters()) {
+                bitSet.set(c);
+            }
+        }
+        bitSet.set('[');
+        bitSet.set(']');
+        bitSet.set('!');
+        bitSet.set('\n');
+        return bitSet;
+    }
+
+    private Map<Character, List<InlineContentParser>> createInlineContentParsers() {
+        var map = new HashMap<Character, List<InlineContentParser>>();
+        for (var factory : inlineContentParserFactories) {
+            var parser = factory.create();
+            for (var c : factory.getTriggerCharacters()) {
+                map.computeIfAbsent(c, k -> new ArrayList<>()).add(parser);
+            }
+        }
+        return map;
+    }
+
+    @Override
+    public Scanner scanner() {
+        return scanner;
+    }
+
     /**
      * Parse content in block into inline children, appending them to the block node.
      */
@@ -117,13 +137,12 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         reset(lines);
 
         while (true) {
-            List<? extends Node> nodes = parseInline();
-            if (nodes != null) {
-                for (Node node : nodes) {
-                    block.appendChild(node);
-                }
-            } else {
+            var nodes = parseInline();
+            if (nodes == null) {
                 break;
+            }
+            for (Node node : nodes) {
+                block.appendChild(node);
             }
         }
 
@@ -137,6 +156,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.trailingSpaces = 0;
         this.lastDelimiter = null;
         this.lastBracket = null;
+        this.inlineParsers = createInlineContentParsers();
     }
 
     private Text text(SourceLines sourceLines) {
@@ -155,20 +175,20 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         switch (c) {
             case '[':
-                return Collections.singletonList(parseOpenBracket());
+                return List.of(parseOpenBracket());
             case '!':
-                return Collections.singletonList(parseBang());
+                return List.of(parseBang());
             case ']':
-                return Collections.singletonList(parseCloseBracket());
+                return List.of(parseCloseBracket());
             case '\n':
-                return Collections.singletonList(parseLineBreak());
+                return List.of(parseLineBreak());
             case Scanner.END:
                 return null;
         }
 
         // No inline parser, delimiter or other special handling.
         if (!specialCharacters.get(c)) {
-            return Collections.singletonList(parseText());
+            return List.of(parseText());
         }
 
         List<InlineContentParser> inlineParsers = this.inlineParsers.get(c);
@@ -183,7 +203,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                     if (includeSourceSpans && node.getSourceSpans().isEmpty()) {
                         node.setSourceSpans(scanner.getSource(position, scanner.position()).getSourceSpans());
                     }
-                    return Collections.singletonList(node);
+                    return List.of(node);
                 } else {
                     // Reset position
                     scanner.setPosition(position);
@@ -200,7 +220,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         // If we get here, even for a special/delimiter character, we will just treat it as text.
-        return Collections.singletonList(parseText());
+        return List.of(parseText());
     }
 
     /**

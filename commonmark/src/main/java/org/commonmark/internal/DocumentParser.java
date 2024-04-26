@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.*;
@@ -66,6 +67,7 @@ public class DocumentParser implements ParserState {
 
     private final List<BlockParserFactory> blockParserFactories;
     private final InlineParserFactory inlineParserFactory;
+    private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
     private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
@@ -75,9 +77,11 @@ public class DocumentParser implements ParserState {
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
-                          List<DelimiterProcessor> delimiterProcessors, IncludeSourceSpans includeSourceSpans) {
+                          List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
+                          IncludeSourceSpans includeSourceSpans) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
+        this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
         this.includeSourceSpans = includeSourceSpans;
 
@@ -477,7 +481,7 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        InlineParserContextImpl context = new InlineParserContextImpl(delimiterProcessors, definitions);
+        InlineParserContextImpl context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, definitions);
         InlineParser inlineParser = inlineParserFactory.create(context);
 
         for (BlockParser blockParser : allBlockParsers) {

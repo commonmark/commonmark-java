@@ -6,6 +6,7 @@ import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.internal.LinkReferenceDefinitions;
 import org.commonmark.node.*;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -28,6 +30,7 @@ import java.util.Set;
 public class Parser {
 
     private final List<BlockParserFactory> blockParserFactories;
+    private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
     private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
@@ -37,12 +40,13 @@ public class Parser {
         this.blockParserFactories = DocumentParser.calculateBlockParserFactories(builder.blockParserFactories, builder.enabledBlockTypes);
         this.inlineParserFactory = builder.getInlineParserFactory();
         this.postProcessors = builder.postProcessors;
+        this.inlineContentParserFactories = builder.inlineContentParserFactories;
         this.delimiterProcessors = builder.delimiterProcessors;
         this.includeSourceSpans = builder.includeSourceSpans;
 
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
-        this.inlineParserFactory.create(new InlineParserContextImpl(delimiterProcessors, new LinkReferenceDefinitions()));
+        this.inlineParserFactory.create(new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, new LinkReferenceDefinitions()));
     }
 
     /**
@@ -100,7 +104,7 @@ public class Parser {
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, delimiterProcessors, includeSourceSpans);
+        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories, delimiterProcessors, includeSourceSpans);
     }
 
     private Node postProcess(Node document) {
@@ -115,6 +119,7 @@ public class Parser {
      */
     public static class Builder {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
+        private final List<InlineContentParserFactory> inlineContentParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
@@ -169,7 +174,7 @@ public class Parser {
          * </pre>
          *
          * @param enabledBlockTypes A list of block nodes the parser will parse.
-         * If this list is empty, the parser will not recognize any CommonMark core features.
+         *                          If this list is empty, the parser will not recognize any CommonMark core features.
          * @return {@code this}
          */
         public Builder enabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
@@ -196,7 +201,7 @@ public class Parser {
         }
 
         /**
-         * Adds a custom block parser factory.
+         * Add a custom block parser factory.
          * <p>
          * Note that custom factories are applied <em>before</em> the built-in factories. This is so that
          * extensions can change how some syntax is parsed that would otherwise be handled by built-in factories.
@@ -214,11 +219,28 @@ public class Parser {
         }
 
         /**
-         * Adds a custom delimiter processor.
+         * Add a factory for a custom inline content parser, for extending inline parsing or overriding built-in parsing.
+         * <p>
+         * Note that parsers are triggered based on a special character as specified by
+         * {@link InlineContentParserFactory#getTriggerCharacters()}. It is possible to register multiple parsers for the same
+         * character, or even for some built-in special character such as {@code `}. The custom parsers are tried first
+         * in order in which they are registered, and then the built-in ones.
+         */
+        public Builder customInlineContentParserFactory(InlineContentParserFactory inlineContentParserFactory) {
+            Objects.requireNonNull(inlineContentParserFactory, "inlineContentParser must not be null");
+            inlineContentParserFactories.add(inlineContentParserFactory);
+            return this;
+        }
+
+        /**
+         * Add a custom delimiter processor for inline parsing.
          * <p>
          * Note that multiple delimiter processors with the same characters can be added, as long as they have a
          * different minimum length. In that case, the processor with the shortest matching length is used. Adding more
          * than one delimiter processor with the same character and minimum length is invalid.
+         * <p>
+         * If you want more control over how parsing is done, you might want to use
+         * {@link #customInlineContentParserFactory} instead.
          *
          * @param delimiterProcessor a delimiter processor implementation
          * @return {@code this}
@@ -263,15 +285,7 @@ public class Parser {
         }
 
         private InlineParserFactory getInlineParserFactory() {
-            if (inlineParserFactory != null) {
-                return inlineParserFactory;
-            }
-            return new InlineParserFactory() {
-                @Override
-                public InlineParser create(InlineParserContext inlineParserContext) {
-                    return new InlineParserImpl(inlineParserContext);
-                }
-            };
+            return Objects.requireNonNullElseGet(inlineParserFactory, () -> InlineParserImpl::new);
         }
     }
 

@@ -1,13 +1,14 @@
 package org.commonmark.internal.inline;
 
-import org.commonmark.text.AsciiMatcher;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.node.Text;
-import org.commonmark.parser.beta.Position;
-import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
+import org.commonmark.text.AsciiMatcher;
+
+import java.util.Set;
 
 /**
- * Attempts to parse a HTML entity or numeric character reference.
+ * Attempts to parse an HTML entity or numeric character reference.
  */
 public class EntityInlineParser implements InlineContentParser {
 
@@ -51,5 +52,18 @@ public class EntityInlineParser implements InlineContentParser {
     private ParsedInline entity(Scanner scanner, Position start) {
         String text = scanner.getSource(start, scanner.position()).getContent();
         return ParsedInline.of(new Text(Html5Entities.entityToString(text)), scanner.position());
+    }
+
+    public static class Factory implements InlineContentParserFactory {
+
+        @Override
+        public Set<Character> getTriggerCharacters() {
+            return Set.of('&');
+        }
+
+        @Override
+        public InlineContentParser create() {
+            return new EntityInlineParser();
+        }
     }
 }

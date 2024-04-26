@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 with the exception that 0.x versions can break between minor versions.
 
 ## Unreleased
+### Added
+- Support for extending inline parsing with custom inline content parsers! See
+  `Parser.Builder#customInlineContentParserFactory`. This allows users or
+  extensions to hook into inline parsing on a deeper level than using delimiter
+  processors. It could be used to implement support for math/latex formulas for
+  example.
 ### Fixed
 - Fix parsing of link reference definitions where it looks like it has a title
   but it doesn't because it's followed by characters other than space/tab. In that
