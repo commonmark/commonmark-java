@@ -5,7 +5,7 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,14 +21,14 @@ public class HeadingAnchorConfigurationTest {
                 .idSuffix(suffix)
                 .build();
         return HtmlRenderer.builder()
-                .extensions(Arrays.asList(ext))
+                .extensions(List.of(ext))
                 .build();
     }
 
     @Test
     public void testDefaultConfigurationHasNoAdditions() {
         HtmlRenderer renderer = HtmlRenderer.builder()
-                .extensions(Arrays.asList(HeadingAnchorExtension.create()))
+                .extensions(List.of(HeadingAnchorExtension.create()))
                 .build();
         assertThat(doRender(renderer, "# "), equalTo("<h1 id=\"id\"></h1>\n"));
     }

@@ -6,12 +6,11 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Set;
 
 public class TablesTextContentTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(TablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final TextContentRenderer RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS).build();
 

@@ -3,7 +3,9 @@ package org.commonmark.renderer.html;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
@@ -20,7 +22,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return new HashSet<>(Arrays.asList(
+        return Set.of(
                 Document.class,
                 Heading.class,
                 Paragraph.class,
@@ -41,7 +43,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
                 HtmlInline.class,
                 SoftLineBreak.class,
                 HardLineBreak.class
-        ));
+        );
     }
 
     @Override
@@ -135,7 +137,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
-        renderCodeBlock(indentedCodeBlock.getLiteral(), indentedCodeBlock, Collections.<String, String>emptyMap());
+        renderCodeBlock(indentedCodeBlock.getLiteral(), indentedCodeBlock, Map.of());
     }
 
     @Override
@@ -287,7 +289,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     }
 
     private Map<String, String> getAttrs(Node node, String tagName) {
-        return getAttrs(node, tagName, Collections.<String, String>emptyMap());
+        return getAttrs(node, tagName, Map.of());
     }
 
     private Map<String, String> getAttrs(Node node, String tagName, Map<String, String> defaultAttributes) {

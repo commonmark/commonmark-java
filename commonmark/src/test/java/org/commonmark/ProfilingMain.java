@@ -6,7 +6,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ProfilingMain {
@@ -20,7 +19,7 @@ public class ProfilingMain {
         System.out.println("Attach profiler, then press enter to start parsing.");
         System.in.read();
         System.out.println("Parsing");
-        List<Node> nodes = parse(Collections.singletonList(SPEC));
+        List<Node> nodes = parse(List.of(SPEC));
         System.out.println("Finished parsing, press enter to start rendering");
         System.in.read();
         System.out.println(render(nodes));

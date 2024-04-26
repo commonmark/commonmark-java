@@ -7,10 +7,7 @@ import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.Renderer;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Renders a tree of nodes to HTML.
@@ -61,18 +58,14 @@ public class HtmlRenderer implements Renderer {
 
     @Override
     public void render(Node node, Appendable output) {
-        if (node == null) {
-            throw new NullPointerException("node must not be null");
-        }
+        Objects.requireNonNull(node, "node must not be null");
         RendererContext context = new RendererContext(new HtmlWriter(output));
         context.render(node);
     }
 
     @Override
     public String render(Node node) {
-        if (node == null) {
-            throw new NullPointerException("node must not be null");
-        }
+        Objects.requireNonNull(node, "node must not be null");
         StringBuilder sb = new StringBuilder();
         render(node, sb);
         return sb.toString();
@@ -178,9 +171,7 @@ public class HtmlRenderer implements Renderer {
          * @return {@code this}
          */
         public Builder attributeProviderFactory(AttributeProviderFactory attributeProviderFactory) {
-            if (attributeProviderFactory == null) {
-                throw new NullPointerException("attributeProviderFactory must not be null");
-            }
+            Objects.requireNonNull(attributeProviderFactory, "attributeProviderFactory must not be null");
             this.attributeProviderFactories.add(attributeProviderFactory);
             return this;
         }
@@ -196,9 +187,7 @@ public class HtmlRenderer implements Renderer {
          * @return {@code this}
          */
         public Builder nodeRendererFactory(HtmlNodeRendererFactory nodeRendererFactory) {
-            if (nodeRendererFactory == null) {
-                throw new NullPointerException("nodeRendererFactory must not be null");
-            }
+            Objects.requireNonNull(nodeRendererFactory, "nodeRendererFactory must not be null");
             this.nodeRendererFactories.add(nodeRendererFactory);
             return this;
         }
@@ -208,9 +197,7 @@ public class HtmlRenderer implements Renderer {
          * @return {@code this}
          */
         public Builder extensions(Iterable<? extends Extension> extensions) {
-            if (extensions == null) {
-                throw new NullPointerException("extensions must not be null");
-            }
+            Objects.requireNonNull(extensions, "extensions must not be null");
             for (Extension extension : extensions) {
                 if (extension instanceof HtmlRendererExtension) {
                     HtmlRendererExtension htmlRendererExtension = (HtmlRendererExtension) extension;

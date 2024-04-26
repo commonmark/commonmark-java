@@ -10,15 +10,14 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
 public class ImageAttributesTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(ImageAttributesExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(ImageAttributesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
@@ -132,7 +131,7 @@ public class ImageAttributesTest extends RenderingTestCase {
         Node document = parser.parse("x{height=3 width=4}\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node text = block.getFirstChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 19)),
+        assertEquals(List.of(SourceSpan.of(0, 0, 19)),
                 text.getSourceSpans());
     }
 

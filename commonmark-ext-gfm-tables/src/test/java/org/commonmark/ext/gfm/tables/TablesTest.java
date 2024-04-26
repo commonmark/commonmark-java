@@ -12,10 +12,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +20,7 @@ import static org.junit.Assert.assertThat;
 
 public class TablesTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(TablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
@@ -794,49 +791,49 @@ public class TablesTest extends RenderingTestCase {
         Node document = parser.parse("Abc|Def\n---|---\n|1|2\n 3|four|\n|||\n");
 
         TableBlock block = (TableBlock) document.getFirstChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 7), SourceSpan.of(1, 0, 7),
+        assertEquals(List.of(SourceSpan.of(0, 0, 7), SourceSpan.of(1, 0, 7),
                         SourceSpan.of(2, 0, 4), SourceSpan.of(3, 0, 8), SourceSpan.of(4, 0, 3)),
                 block.getSourceSpans());
 
         TableHead head = (TableHead) block.getFirstChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 7)), head.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 0, 7)), head.getSourceSpans());
 
         TableRow headRow = (TableRow) head.getFirstChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 7)), headRow.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 0, 7)), headRow.getSourceSpans());
         TableCell headRowCell1 = (TableCell) headRow.getFirstChild();
         TableCell headRowCell2 = (TableCell) headRow.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 3)), headRowCell1.getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 3)), headRowCell1.getFirstChild().getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(0, 4, 3)), headRowCell2.getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(0, 4, 3)), headRowCell2.getFirstChild().getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 0, 3)), headRowCell1.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 0, 3)), headRowCell1.getFirstChild().getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 4, 3)), headRowCell2.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 4, 3)), headRowCell2.getFirstChild().getSourceSpans());
 
         TableBody body = (TableBody) block.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(2, 0, 4), SourceSpan.of(3, 0, 8), SourceSpan.of(4, 0, 3)), body.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(2, 0, 4), SourceSpan.of(3, 0, 8), SourceSpan.of(4, 0, 3)), body.getSourceSpans());
 
         TableRow bodyRow1 = (TableRow) body.getFirstChild();
-        assertEquals(Arrays.asList(SourceSpan.of(2, 0, 4)), bodyRow1.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(2, 0, 4)), bodyRow1.getSourceSpans());
         TableCell bodyRow1Cell1 = (TableCell) bodyRow1.getFirstChild();
         TableCell bodyRow1Cell2 = (TableCell) bodyRow1.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(2, 1, 1)), bodyRow1Cell1.getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(2, 1, 1)), bodyRow1Cell1.getFirstChild().getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(2, 3, 1)), bodyRow1Cell2.getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(2, 3, 1)), bodyRow1Cell2.getFirstChild().getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(2, 1, 1)), bodyRow1Cell1.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(2, 1, 1)), bodyRow1Cell1.getFirstChild().getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(2, 3, 1)), bodyRow1Cell2.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(2, 3, 1)), bodyRow1Cell2.getFirstChild().getSourceSpans());
 
         TableRow bodyRow2 = (TableRow) body.getFirstChild().getNext();
-        assertEquals(Arrays.asList(SourceSpan.of(3, 0, 8)), bodyRow2.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(3, 0, 8)), bodyRow2.getSourceSpans());
         TableCell bodyRow2Cell1 = (TableCell) bodyRow2.getFirstChild();
         TableCell bodyRow2Cell2 = (TableCell) bodyRow2.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getFirstChild().getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getSourceSpans());
-        assertEquals(Arrays.asList(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getFirstChild().getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(3, 1, 1)), bodyRow2Cell1.getFirstChild().getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(3, 3, 4)), bodyRow2Cell2.getFirstChild().getSourceSpans());
 
         TableRow bodyRow3 = (TableRow) body.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(4, 0, 3)), bodyRow3.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(4, 0, 3)), bodyRow3.getSourceSpans());
         TableCell bodyRow3Cell1 = (TableCell) bodyRow3.getFirstChild();
         TableCell bodyRow3Cell2 = (TableCell) bodyRow3.getLastChild();
-        assertEquals(Collections.emptyList(), bodyRow3Cell1.getSourceSpans());
-        assertEquals(Collections.emptyList(), bodyRow3Cell2.getSourceSpans());
+        assertEquals(List.of(), bodyRow3Cell1.getSourceSpans());
+        assertEquals(List.of(), bodyRow3Cell2.getSourceSpans());
     }
 
     @Override

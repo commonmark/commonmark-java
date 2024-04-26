@@ -12,7 +12,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +28,7 @@ public class InlineParserContextTest {
         String rendered = HtmlRenderer.builder().build().render(parser.parse(input));
 
         // Lookup should pass original label to context
-        assertEquals(Collections.singletonList("FooBarBaz"), inlineParserFactory.lookups);
+        assertEquals(List.of("FooBarBaz"), inlineParserFactory.lookups);
 
         // Context should normalize label for finding reference
         assertEquals("<p><a href=\"/url\">link with special label</a></p>\n", rendered);

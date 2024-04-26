@@ -6,7 +6,6 @@ import org.commonmark.parser.Parser;
 import org.junit.Test;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
@@ -91,7 +90,7 @@ public class SourceSpansTest {
 
         Node document = PARSER.parse("```\nfoo\n```\nbar\n");
         Paragraph paragraph = (Paragraph) document.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(3, 0, 3)), paragraph.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(3, 0, 3)), paragraph.getSourceSpans());
     }
 
     @Test
@@ -134,7 +133,7 @@ public class SourceSpansTest {
 
         Node document = PARSER.parse("* foo\n  * bar\n");
         ListBlock listBlock = (ListBlock) document.getFirstChild().getFirstChild().getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(1, 2, 5)), listBlock.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(1, 2, 5)), listBlock.getSourceSpans());
     }
 
     @Test
@@ -159,10 +158,10 @@ public class SourceSpansTest {
         Node document = PARSER.parse("[foo]: /url\ntext\n");
 
         LinkReferenceDefinition linkReferenceDefinition = (LinkReferenceDefinition) document.getFirstChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 11)), linkReferenceDefinition.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 0, 11)), linkReferenceDefinition.getSourceSpans());
 
         Paragraph paragraph = (Paragraph) document.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(1, 0, 4)), paragraph.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(1, 0, 4)), paragraph.getSourceSpans());
     }
 
     @Test
@@ -199,10 +198,10 @@ public class SourceSpansTest {
         Node document = PARSER.parse("[foo]: /url\nHeading\n===\n");
 
         LinkReferenceDefinition linkReferenceDefinition = (LinkReferenceDefinition) document.getFirstChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 0, 11)), linkReferenceDefinition.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 0, 11)), linkReferenceDefinition.getSourceSpans());
 
         Heading heading = (Heading) document.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(1, 0, 7), SourceSpan.of(2, 0, 3)), heading.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(1, 0, 7), SourceSpan.of(2, 0, 3)), heading.getSourceSpans());
     }
 
     @Test
@@ -296,7 +295,7 @@ public class SourceSpansTest {
 
         Node document = INLINES_PARSER.parse("*hey**");
         Node lastText = document.getFirstChild().getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 5, 1)), lastText.getSourceSpans());
+        assertEquals(List.of(SourceSpan.of(0, 5, 1)), lastText.getSourceSpans());
     }
 
     @Test
@@ -322,7 +321,7 @@ public class SourceSpansTest {
 
     private static void assertSpans(Node rootNode, Class<? extends Node> nodeClass, SourceSpan... expectedSourceSpans) {
         Node node = findNode(rootNode, nodeClass);
-        assertEquals(Arrays.asList(expectedSourceSpans), node.getSourceSpans());
+        assertEquals(List.of(expectedSourceSpans), node.getSourceSpans());
     }
 
     private static Node findNode(Node rootNode, Class<? extends Node> nodeClass) {

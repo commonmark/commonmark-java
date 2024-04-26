@@ -3,12 +3,9 @@ package org.commonmark.parser.beta;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.Position;
-import org.commonmark.parser.beta.Scanner;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -16,7 +13,7 @@ public class ScannerTest {
 
     @Test
     public void testNext() {
-        Scanner scanner = new Scanner(Collections.singletonList(
+        Scanner scanner = new Scanner(List.of(
                 SourceLine.of("foo bar", null)),
                 0, 4);
         assertEquals('b', scanner.peek());
@@ -30,7 +27,7 @@ public class ScannerTest {
 
     @Test
     public void testMultipleLines() {
-        Scanner scanner = new Scanner(Arrays.asList(
+        Scanner scanner = new Scanner(List.of(
                 SourceLine.of("ab", null),
                 SourceLine.of("cde", null)),
                 0, 0);
@@ -71,7 +68,7 @@ public class ScannerTest {
 
     @Test
     public void testCodePoints() {
-        Scanner scanner = new Scanner(Arrays.asList(SourceLine.of("\uD83D\uDE0A", null)), 0, 0);
+        Scanner scanner = new Scanner(List.of(SourceLine.of("\uD83D\uDE0A", null)), 0, 0);
 
         assertTrue(scanner.hasNext());
         assertEquals('\0', scanner.peekPreviousCodePoint());
@@ -87,7 +84,7 @@ public class ScannerTest {
 
     @Test
     public void testTextBetween() {
-        Scanner scanner = new Scanner(Arrays.asList(
+        Scanner scanner = new Scanner(List.of(
                 SourceLine.of("ab", SourceSpan.of(10, 3, 2)),
                 SourceLine.of("cde", SourceSpan.of(11, 4, 3))),
                 0, 0);
@@ -143,12 +140,12 @@ public class ScannerTest {
 
     private void assertSourceLines(SourceLines sourceLines, String expectedContent, SourceSpan... expectedSourceSpans) {
         assertEquals(expectedContent, sourceLines.getContent());
-        assertEquals(Arrays.asList(expectedSourceSpans), sourceLines.getSourceSpans());
+        assertEquals(List.of(expectedSourceSpans), sourceLines.getSourceSpans());
     }
 
     @Test
     public void nextString() {
-        Scanner scanner = Scanner.of(SourceLines.of(Arrays.asList(
+        Scanner scanner = Scanner.of(SourceLines.of(List.of(
                 SourceLine.of("hey ya", null),
                 SourceLine.of("hi", null))));
         assertFalse(scanner.next("hoy"));

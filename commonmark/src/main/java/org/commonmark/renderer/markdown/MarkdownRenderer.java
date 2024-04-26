@@ -38,7 +38,7 @@ public class MarkdownRenderer implements Renderer {
 
             @Override
             public Set<Character> getSpecialCharacters() {
-                return Collections.emptySet();
+                return Set.of();
             }
         });
     }

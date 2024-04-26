@@ -6,12 +6,11 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Set;
 
 public class TaskListItemsTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(TaskListItemsExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(TaskListItemsExtension.create());
     private static final String HTML_CHECKED = "<input type=\"checkbox\" disabled=\"\" checked=\"\">";
     private static final String HTML_UNCHECKED = "<input type=\"checkbox\" disabled=\"\">";
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();

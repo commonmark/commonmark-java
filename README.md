@@ -196,7 +196,7 @@ class IndentedCodeBlockNodeRenderer implements NodeRenderer {
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
         // Return the node types we want to use this renderer for.
-        return Collections.<Class<? extends Node>>singleton(IndentedCodeBlock.class);
+        return Set.of(IndentedCodeBlock.class);
     }
 
     @Override
@@ -274,7 +274,7 @@ Then, configure the extension on the builders:
 ```java
 import org.commonmark.ext.gfm.tables.TablesExtension;
 
-List<Extension> extensions = Arrays.asList(TablesExtension.create());
+List<Extension> extensions = List.of(TablesExtension.create());
 Parser parser = Parser.builder()
         .extensions(extensions)
         .build();

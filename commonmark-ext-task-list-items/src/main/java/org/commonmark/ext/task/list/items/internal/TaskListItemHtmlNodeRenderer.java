@@ -6,7 +6,6 @@ import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +22,7 @@ public class TaskListItemHtmlNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Collections.<Class<? extends Node>>singleton(TaskListItemMarker.class);
+        return Set.of(TaskListItemMarker.class);
     }
 
     @Override

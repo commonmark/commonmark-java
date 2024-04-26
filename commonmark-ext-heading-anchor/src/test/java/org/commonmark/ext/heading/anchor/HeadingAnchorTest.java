@@ -6,12 +6,11 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Set;
 
 public class HeadingAnchorTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = Collections.singleton(HeadingAnchorExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(HeadingAnchorExtension.create());
     private static final Parser PARSER = Parser.builder().build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 

@@ -2,6 +2,8 @@ package org.commonmark.parser;
 
 import org.commonmark.node.SourceSpan;
 
+import java.util.Objects;
+
 /**
  * A line or part of a line from the input source.
  *
@@ -17,10 +19,7 @@ public class SourceLine {
     }
 
     private SourceLine(CharSequence content, SourceSpan sourceSpan) {
-        if (content == null) {
-            throw new NullPointerException("content must not be null");
-        }
-        this.content = content;
+        this.content = Objects.requireNonNull(content, "content must not be null");
         this.sourceSpan = sourceSpan;
     }
 

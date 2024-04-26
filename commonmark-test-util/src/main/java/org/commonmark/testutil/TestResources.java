@@ -4,8 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class TestResources {
@@ -19,7 +18,7 @@ public class TestResources {
     }
 
     public static List<URL> getRegressions() {
-        return Arrays.asList(
+        return List.of(
                 TestResources.class.getResource("/cmark-regression.txt"),
                 TestResources.class.getResource("/commonmark.js-regression.txt")
         );
@@ -27,7 +26,7 @@ public class TestResources {
 
     public static String readAsString(URL url) {
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName("UTF-8")))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);

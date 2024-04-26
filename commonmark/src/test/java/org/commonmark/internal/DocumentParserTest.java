@@ -4,18 +4,16 @@ import org.commonmark.node.*;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class DocumentParserTest {
-    private static List<BlockParserFactory> CORE_FACTORIES = Arrays.<BlockParserFactory>asList(
+    private static final List<BlockParserFactory> CORE_FACTORIES = List.of(
             new BlockQuoteParser.Factory(),
             new HeadingParser.Factory(),
             new FencedCodeBlockParser.Factory(),
@@ -26,10 +24,10 @@ public class DocumentParserTest {
 
     @Test
     public void calculateBlockParserFactories_givenAFullListOfAllowedNodes_includesAllCoreFactories() {
-        List<BlockParserFactory> customParserFactories = Collections.emptyList();
-        Set<Class<? extends Block>> nodes = new HashSet<>(Arrays.asList(BlockQuote.class, Heading.class, FencedCodeBlock.class, HtmlBlock.class, ThematicBreak.class, ListBlock.class, IndentedCodeBlock.class));
+        List<BlockParserFactory> customParserFactories = List.of();
+        var enabledBlockTypes = Set.of(BlockQuote.class, Heading.class, FencedCodeBlock.class, HtmlBlock.class, ThematicBreak.class, ListBlock.class, IndentedCodeBlock.class);
 
-        List<BlockParserFactory> blockParserFactories = DocumentParser.calculateBlockParserFactories(customParserFactories, nodes);
+        List<BlockParserFactory> blockParserFactories = DocumentParser.calculateBlockParserFactories(customParserFactories, enabledBlockTypes);
         assertThat(blockParserFactories.size(), is(CORE_FACTORIES.size()));
 
         for (BlockParserFactory factory : CORE_FACTORIES) {
@@ -39,7 +37,7 @@ public class DocumentParserTest {
 
     @Test
     public void calculateBlockParserFactories_givenAListOfAllowedNodes_includesAssociatedFactories() {
-        List<BlockParserFactory> customParserFactories = Collections.emptyList();
+        List<BlockParserFactory> customParserFactories = List.of();
         Set<Class<? extends Block>> nodes = new HashSet<>();
         nodes.add(IndentedCodeBlock.class);
 

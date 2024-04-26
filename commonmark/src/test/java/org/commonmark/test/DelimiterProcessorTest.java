@@ -13,7 +13,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 
@@ -159,7 +158,7 @@ public class DelimiterProcessorTest extends RenderingTestCase {
 
         @Override
         public Set<Class<? extends Node>> getNodeTypes() {
-            return Collections.<Class<? extends Node>>singleton(UpperCaseNode.class);
+            return Set.of(UpperCaseNode.class);
         }
 
         @Override

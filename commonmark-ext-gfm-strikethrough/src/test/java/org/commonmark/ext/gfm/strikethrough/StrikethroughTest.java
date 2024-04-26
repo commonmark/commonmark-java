@@ -14,15 +14,14 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 
 public class StrikethroughTest extends RenderingTestCase {
 
-    private static final Set<Extension> EXTENSIONS = singleton(StrikethroughExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(StrikethroughExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
     private static final TextContentRenderer CONTENT_RENDERER = TextContentRenderer.builder()
@@ -98,7 +97,7 @@ public class StrikethroughTest extends RenderingTestCase {
     @Test
     public void requireTwoTildesOption() {
         Parser parser = Parser.builder()
-                .extensions(singleton(StrikethroughExtension.builder()
+                .extensions(Set.of(StrikethroughExtension.builder()
                         .requireTwoTildes(true)
                         .build()))
                 .customDelimiterProcessor(new SubscriptDelimiterProcessor())
@@ -118,7 +117,7 @@ public class StrikethroughTest extends RenderingTestCase {
         Node document = parser.parse("hey ~~there~~\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node strikethrough = block.getLastChild();
-        assertEquals(Arrays.asList(SourceSpan.of(0, 4, 9)),
+        assertEquals(List.of(SourceSpan.of(0, 4, 9)),
                 strikethrough.getSourceSpans());
     }
 
