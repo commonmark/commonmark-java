@@ -1,11 +1,11 @@
 package org.commonmark.parser;
 
+import org.commonmark.node.CustomNode;
+import org.commonmark.node.Heading;
 import org.commonmark.parser.beta.InlineContentParser;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.beta.InlineParserState;
 import org.commonmark.parser.beta.ParsedInline;
-import org.commonmark.node.CustomNode;
-import org.commonmark.node.Heading;
 import org.commonmark.test.Nodes;
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ public class InlineContentParserTest {
 
     @Test
     public void customInlineContentParser() {
-        var parser = Parser.builder().customInlineContentParser(new DollarInlineParser.Factory()).build();
+        var parser = Parser.builder().customInlineContentParserFactory(new DollarInlineParser.Factory()).build();
         var doc = parser.parse("Test: $hey *there*$ $you$\n\n# Heading $heading$\n");
         var inline1 = Nodes.find(doc, DollarInline.class);
         assertEquals("hey *there*", inline1.getLiteral());

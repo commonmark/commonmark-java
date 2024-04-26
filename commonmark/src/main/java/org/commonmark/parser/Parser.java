@@ -5,8 +5,8 @@ import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.internal.LinkReferenceDefinitions;
-import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.*;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
@@ -226,7 +226,7 @@ public class Parser {
          * character, or even for some built-in special character such as {@code `}. The custom parsers are tried first
          * in order in which they are registered, and then the built-in ones.
          */
-        public Builder customInlineContentParser(InlineContentParserFactory inlineContentParserFactory) {
+        public Builder customInlineContentParserFactory(InlineContentParserFactory inlineContentParserFactory) {
             Objects.requireNonNull(inlineContentParserFactory, "inlineContentParser must not be null");
             inlineContentParserFactories.add(inlineContentParserFactory);
             return this;
