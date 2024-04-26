@@ -4,6 +4,7 @@ import org.commonmark.internal.util.Escaping;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 public class HtmlWriter {
 
@@ -13,9 +14,7 @@ public class HtmlWriter {
     private char lastChar = 0;
 
     public HtmlWriter(Appendable out) {
-        if (out == null) {
-            throw new NullPointerException("out must not be null");
-        }
+        Objects.requireNonNull(out, "out must not be null");
         this.buffer = out;
     }
 

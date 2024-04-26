@@ -67,9 +67,7 @@ public class Parser {
      * @return the root node
      */
     public Node parse(String input) {
-        if (input == null) {
-            throw new NullPointerException("input must not be null");
-        }
+        Objects.requireNonNull(input, "input must not be null");
         DocumentParser documentParser = createDocumentParser();
         Node document = documentParser.parse(input);
         return postProcess(document);
@@ -94,10 +92,7 @@ public class Parser {
      * @throws IOException when reading throws an exception
      */
     public Node parseReader(Reader input) throws IOException {
-        if (input == null) {
-            throw new NullPointerException("input must not be null");
-        }
-
+        Objects.requireNonNull(input, "input must not be null");
         DocumentParser documentParser = createDocumentParser();
         Node document = documentParser.parse(input);
         return postProcess(document);
@@ -138,9 +133,7 @@ public class Parser {
          * @return {@code this}
          */
         public Builder extensions(Iterable<? extends Extension> extensions) {
-            if (extensions == null) {
-                throw new NullPointerException("extensions must not be null");
-            }
+            Objects.requireNonNull(extensions, "extensions must not be null");
             for (Extension extension : extensions) {
                 if (extension instanceof ParserExtension) {
                     ParserExtension parserExtension = (ParserExtension) extension;
@@ -178,9 +171,7 @@ public class Parser {
          * @return {@code this}
          */
         public Builder enabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
-            if (enabledBlockTypes == null) {
-                throw new NullPointerException("enabledBlockTypes must not be null");
-            }
+            Objects.requireNonNull(enabledBlockTypes, "enabledBlockTypes must not be null");
             DocumentParser.checkEnabledBlockTypes(enabledBlockTypes);
             this.enabledBlockTypes = enabledBlockTypes;
             return this;
@@ -211,9 +202,7 @@ public class Parser {
          * @return {@code this}
          */
         public Builder customBlockParserFactory(BlockParserFactory blockParserFactory) {
-            if (blockParserFactory == null) {
-                throw new NullPointerException("blockParserFactory must not be null");
-            }
+            Objects.requireNonNull(blockParserFactory, "blockParserFactory must not be null");
             blockParserFactories.add(blockParserFactory);
             return this;
         }
@@ -246,17 +235,13 @@ public class Parser {
          * @return {@code this}
          */
         public Builder customDelimiterProcessor(DelimiterProcessor delimiterProcessor) {
-            if (delimiterProcessor == null) {
-                throw new NullPointerException("delimiterProcessor must not be null");
-            }
+            Objects.requireNonNull(delimiterProcessor, "delimiterProcessor must not be null");
             delimiterProcessors.add(delimiterProcessor);
             return this;
         }
 
         public Builder postProcessor(PostProcessor postProcessor) {
-            if (postProcessor == null) {
-                throw new NullPointerException("postProcessor must not be null");
-            }
+            Objects.requireNonNull(postProcessor, "postProcessor must not be null");
             postProcessors.add(postProcessor);
             return this;
         }
