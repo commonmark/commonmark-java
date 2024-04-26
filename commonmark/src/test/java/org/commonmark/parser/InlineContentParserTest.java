@@ -1,9 +1,9 @@
 package org.commonmark.parser;
 
-import org.commonmark.internal.inline.InlineContentParser;
-import org.commonmark.internal.inline.InlineContentParserFactory;
-import org.commonmark.internal.inline.InlineParserState;
-import org.commonmark.internal.inline.ParsedInline;
+import org.commonmark.parser.beta.InlineContentParser;
+import org.commonmark.parser.beta.InlineContentParserFactory;
+import org.commonmark.parser.beta.InlineParserState;
+import org.commonmark.parser.beta.ParsedInline;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Heading;
 import org.commonmark.test.Nodes;

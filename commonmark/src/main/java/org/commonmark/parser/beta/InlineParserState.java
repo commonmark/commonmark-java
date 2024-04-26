@@ -1,7 +1,4 @@
-package org.commonmark.internal.inline;
-
-import org.commonmark.parser.beta.Position;
-import org.commonmark.parser.beta.Scanner;
+package org.commonmark.parser.beta;
 
 public interface InlineParserState {
 

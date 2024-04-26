@@ -2,8 +2,7 @@ package org.commonmark.internal.inline;
 
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.node.Text;
-import org.commonmark.parser.beta.Position;
-import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
 import org.commonmark.text.AsciiMatcher;
 
 import java.util.Set;

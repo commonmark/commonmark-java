@@ -1,6 +1,6 @@
 package org.commonmark.parser;
 
-import org.commonmark.internal.inline.InlineContentParserFactory;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 

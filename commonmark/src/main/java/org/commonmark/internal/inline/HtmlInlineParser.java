@@ -1,8 +1,7 @@
 package org.commonmark.internal.inline;
 
 import org.commonmark.node.HtmlInline;
-import org.commonmark.parser.beta.Position;
-import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
 import org.commonmark.text.AsciiMatcher;
 
 import java.util.Set;

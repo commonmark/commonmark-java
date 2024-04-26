@@ -1,6 +1,6 @@
 package org.commonmark.internal;
 
-import org.commonmark.internal.inline.InlineContentParserFactory;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.*;

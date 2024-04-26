@@ -1,4 +1,4 @@
-package org.commonmark.internal.inline;
+package org.commonmark.parser.beta;
 
 import java.util.Set;
 

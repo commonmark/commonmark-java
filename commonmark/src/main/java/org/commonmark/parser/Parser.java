@@ -5,7 +5,7 @@ import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.internal.LinkReferenceDefinitions;
-import org.commonmark.internal.inline.InlineContentParserFactory;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.*;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;

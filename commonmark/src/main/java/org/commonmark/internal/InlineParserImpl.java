@@ -7,7 +7,7 @@ import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.Position;
+import org.commonmark.parser.beta.*;
 import org.commonmark.parser.beta.Scanner;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.text.Characters;

@@ -1,4 +1,4 @@
-package org.commonmark.internal.inline;
+package org.commonmark.parser.beta;
 
 /**
  * Parser for a type of inline content. Registered via a {@link InlineContentParserFactory} and created by its

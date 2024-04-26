@@ -3,8 +3,7 @@ package org.commonmark.internal.inline;
 import org.commonmark.node.Code;
 import org.commonmark.node.Text;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.Position;
-import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
 import org.commonmark.text.Characters;
 
 import java.util.Set;

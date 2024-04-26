@@ -1,7 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.internal.InlineParserImpl;
-import org.commonmark.internal.inline.InlineContentParserFactory;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
