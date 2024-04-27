@@ -1,9 +1,9 @@
 package org.commonmark.internal;
 
-import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.*;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.text.Characters;
@@ -126,7 +126,7 @@ public class DocumentParser implements ParserState {
                 lineStart = lineBreak + 1;
             }
         }
-        if (input.length() > 0 && (lineStart == 0 || lineStart < input.length())) {
+        if (!input.isEmpty() && (lineStart == 0 || lineStart < input.length())) {
             String line = input.substring(lineStart);
             parseLine(line);
         }
@@ -189,7 +189,7 @@ public class DocumentParser implements ParserState {
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
      */
-    private void parseLine(CharSequence ln) {
+    private void parseLine(String ln) {
         setLine(ln);
 
         // For each containing block, try to parse the associated line start.
@@ -314,13 +314,13 @@ public class DocumentParser implements ParserState {
         }
     }
 
-    private void setLine(CharSequence ln) {
+    private void setLine(String ln) {
         lineIndex++;
         index = 0;
         column = 0;
         columnIsInTab = false;
 
-        CharSequence lineContent = prepareLine(ln);
+        String lineContent = prepareLine(ln);
         SourceSpan sourceSpan = null;
         if (includeSourceSpans != IncludeSourceSpans.NONE) {
             sourceSpan = SourceSpan.of(lineIndex, 0, lineContent.length());
@@ -550,29 +550,11 @@ public class DocumentParser implements ParserState {
     /**
      * Prepares the input line replacing {@code \0}
      */
-    private static CharSequence prepareLine(CharSequence line) {
-        // Avoid building a new string in the majority of cases (no \0)
-        StringBuilder sb = null;
-        int length = line.length();
-        for (int i = 0; i < length; i++) {
-            char c = line.charAt(i);
-            if (c == '\0') {
-                if (sb == null) {
-                    sb = new StringBuilder(length);
-                    sb.append(line, 0, i);
-                }
-                sb.append('\uFFFD');
-            } else {
-                if (sb != null) {
-                    sb.append(c);
-                }
-            }
-        }
-
-        if (sb != null) {
-            return sb.toString();
-        } else {
+    private static String prepareLine(String line) {
+        if (line.indexOf('\0') == -1) {
             return line;
+        } else {
+            return line.replace('\0', '\uFFFD');
         }
     }
 
