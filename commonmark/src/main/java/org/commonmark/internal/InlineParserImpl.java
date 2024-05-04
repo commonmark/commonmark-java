@@ -7,8 +7,8 @@ import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.*;
 import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.text.Characters;
 
@@ -295,107 +295,103 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         if (!opener.allowed) {
-            // Matching opener but it's not allowed, just return a literal.
+            // Matching opener, but it's not allowed, just return a literal.
             removeLastBracket();
             return text(scanner.getSource(beforeClose, afterClose));
         }
 
-        // Check to see if we have a link/image
-        String dest = null;
-        String title = null;
-
-        // Maybe a inline link like `[foo](/uri "title")`
-        if (scanner.next('(')) {
-            scanner.whitespace();
-            dest = parseLinkDestination(scanner);
-            if (dest == null) {
-                scanner.setPosition(afterClose);
-            } else {
-                int whitespace = scanner.whitespace();
-                // title needs a whitespace before
-                if (whitespace >= 1) {
-                    title = parseLinkTitle(scanner);
-                    scanner.whitespace();
-                }
-                if (!scanner.next(')')) {
-                    // Don't have a closing `)`, so it's not a destination and title -> reset.
-                    // Note that something like `[foo](` could be valid, `(` will just be text.
-                    scanner.setPosition(afterClose);
-                    dest = null;
-                    title = null;
-                }
-            }
-        }
-
-        // Maybe a reference link like `[foo][bar]`, `[foo][]` or `[foo]`.
-        // Note that even `[foo](` could be a valid link if there's a reference, which is why this is not just an `else`
-        // here.
-        if (dest == null) {
-            // See if there's a link label like `[bar]` or `[]`
-            String ref = parseLinkLabel(scanner);
-            if (ref == null) {
-                scanner.setPosition(afterClose);
-            }
-            if ((ref == null || ref.isEmpty()) && !opener.bracketAfter) {
-                // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
-                // But it can only be a reference when there's no (unescaped) bracket in it.
-                // If there is, we don't even need to try to look up the reference. This is an optimization.
-                ref = scanner.getSource(opener.contentPosition, beforeClose).getContent();
-            }
-
-            if (ref != null) {
-                LinkReferenceDefinition definition = context.getLinkReferenceDefinition(ref);
-                if (definition != null) {
-                    dest = definition.getDestination();
-                    title = definition.getTitle();
-                }
-            }
-        }
-
-        if (dest != null) {
-            // If we got here, we have a link or image
-            Node linkOrImage = opener.image ? new Image(dest, title) : new Link(dest, title);
-
-            // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
-            Node node = opener.node.getNext();
-            while (node != null) {
-                Node next = node.getNext();
-                linkOrImage.appendChild(node);
-                node = next;
-            }
-
-            if (includeSourceSpans) {
-                linkOrImage.setSourceSpans(scanner.getSource(opener.markerPosition, scanner.position()).getSourceSpans());
-            }
-
-            // Process delimiters such as emphasis inside link/image
-            processDelimiters(opener.previousDelimiter);
-            mergeChildTextNodes(linkOrImage);
-            // We don't need the corresponding text node anymore, we turned it into a link/image node
-            opener.node.unlink();
-            removeLastBracket();
-
-            // Links within links are not allowed. We found this link, so there can be no other link around it.
-            if (!opener.image) {
-                Bracket bracket = lastBracket;
-                while (bracket != null) {
-                    if (!bracket.image) {
-                        // Disallow link opener. It will still get matched, but will not result in a link.
-                        bracket.allowed = false;
-                    }
-                    bracket = bracket.previous;
-                }
-            }
-
+        var linkOrImage = parseLinkOrImage(opener, beforeClose);
+        if (linkOrImage != null) {
             return linkOrImage;
-
-        } else {
-            // No link or image, parse just the bracket as text and continue
-            removeLastBracket();
-
-            scanner.setPosition(afterClose);
-            return text(scanner.getSource(beforeClose, afterClose));
         }
+        scanner.setPosition(afterClose);
+
+        // Nothing parsed, just parse the bracket as text and continue
+        removeLastBracket();
+        return text(scanner.getSource(beforeClose, afterClose));
+    }
+
+    private Node parseLinkOrImage(Bracket opener, Position beforeClose) {
+        // Check to see if we have a link (or image, with a ! in front). The different types:
+        // - Inline:       `[foo](/uri)` or with optional title `[foo](/uri "title")`
+        // - Reference links
+        //   - Full:      `[foo][bar]` (foo is the text and bar is the label that needs to match a reference)
+        //   - Collapsed: `[foo][]`    (foo is both the text and label)
+        //   - Shortcut:  `[foo]`      (foo is both the text and label)
+
+        // Starting position is after the closing `]`
+        Position afterClose = scanner.position();
+
+        // Maybe an inline link/image
+        var destinationTitle = parseInlineDestinationTitle(scanner);
+        if (destinationTitle != null) {
+            var linkOrImage = opener.image
+                    ? new Image(destinationTitle.destination, destinationTitle.title)
+                    : new Link(destinationTitle.destination, destinationTitle.title);
+            return processLinkOrImage(opener, linkOrImage);
+        }
+        // Not an inline link/image, rewind back to after `]`.
+        scanner.setPosition(afterClose);
+
+        // Maybe a reference link/image like `[foo][bar]`, `[foo][]` or `[foo]`.
+        // Note that even `[foo](` could be a valid link if foo is a reference, which is why we try this even if the `(`
+        // failed to be parsed as an inline link/image before.
+
+        // See if there's a link label like `[bar]` or `[]`
+        String ref = parseLinkLabel(scanner);
+        if ((ref == null || ref.isEmpty()) && !opener.bracketAfter) {
+            // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
+            // But it can only be a reference when there's no (unescaped) bracket in it.
+            // If there is, we don't even need to try to look up the reference. This is an optimization.
+            ref = scanner.getSource(opener.contentPosition, beforeClose).getContent();
+        }
+
+        if (ref != null) {
+            LinkReferenceDefinition definition = context.getLinkReferenceDefinition(ref);
+            if (definition != null) {
+                var linkOrImage = opener.image
+                        ? new Image(definition.getDestination(), definition.getTitle())
+                        : new Link(definition.getDestination(), definition.getTitle());
+                return processLinkOrImage(opener, linkOrImage);
+            }
+        }
+
+        return null;
+    }
+
+    private Node processLinkOrImage(Bracket opener, Node linkOrImage) {
+        // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
+        Node node = opener.node.getNext();
+        while (node != null) {
+            Node next = node.getNext();
+            linkOrImage.appendChild(node);
+            node = next;
+        }
+
+        if (includeSourceSpans) {
+            linkOrImage.setSourceSpans(scanner.getSource(opener.markerPosition, scanner.position()).getSourceSpans());
+        }
+
+        // Process delimiters such as emphasis inside link/image
+        processDelimiters(opener.previousDelimiter);
+        mergeChildTextNodes(linkOrImage);
+        // We don't need the corresponding text node anymore, we turned it into a link/image node
+        opener.node.unlink();
+        removeLastBracket();
+
+        // Links within links are not allowed. We found this link, so there can be no other link around it.
+        if (!opener.image) {
+            Bracket bracket = lastBracket;
+            while (bracket != null) {
+                if (!bracket.image) {
+                    // Disallow link opener. It will still get matched, but will not result in a link.
+                    bracket.allowed = false;
+                }
+                bracket = bracket.previous;
+            }
+        }
+
+        return linkOrImage;
     }
 
     private void addBracket(Bracket bracket) {
@@ -410,9 +406,38 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     /**
+     * Try to parse the destination and an optional title for an inline link/image.
+     */
+    private static DestinationTitle parseInlineDestinationTitle(Scanner scanner) {
+        if (!scanner.next('(')) {
+            return null;
+        }
+
+        scanner.whitespace();
+        String dest = parseLinkDestination(scanner);
+        if (dest == null) {
+            return null;
+        }
+
+        String title = null;
+        int whitespace = scanner.whitespace();
+        // title needs a whitespace before
+        if (whitespace >= 1) {
+            title = parseLinkTitle(scanner);
+            scanner.whitespace();
+        }
+        if (!scanner.next(')')) {
+            // Don't have a closing `)`, so it's not a destination and title.
+            // Note that something like `[foo](` could still be valid later, `(` will just be text.
+            return null;
+        }
+        return new DestinationTitle(dest, title);
+    }
+
+    /**
      * Attempt to parse link destination, returning the string or null if no match.
      */
-    private String parseLinkDestination(Scanner scanner) {
+    private static String parseLinkDestination(Scanner scanner) {
         char delimiter = scanner.peek();
         Position start = scanner.position();
         if (!LinkScanner.scanLinkDestination(scanner)) {
@@ -434,7 +459,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
-    private String parseLinkTitle(Scanner scanner) {
+    private static String parseLinkTitle(Scanner scanner) {
         Position start = scanner.position();
         if (!LinkScanner.scanLinkTitle(scanner)) {
             return null;
@@ -449,7 +474,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     /**
      * Attempt to parse a link label, returning the label between the brackets or null.
      */
-    String parseLinkLabel(Scanner scanner) {
+    static String parseLinkLabel(Scanner scanner) {
         if (!scanner.next('[')) {
             return null;
         }
@@ -770,6 +795,19 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             this.characters = characters;
             this.canOpen = canOpen;
             this.canClose = canClose;
+        }
+    }
+
+    /**
+     * A destination and optional title for a link or image.
+     */
+    private static class DestinationTitle {
+        final String destination;
+        final String title;
+
+        public DestinationTitle(String destination, String title) {
+            this.destination = destination;
+            this.title = title;
         }
     }
 }

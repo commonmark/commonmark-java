@@ -41,7 +41,7 @@ public class Bracket {
     public boolean allowed = true;
 
     /**
-     * Whether there is an unescaped bracket (opening or closing) anywhere after this opening bracket.
+     * Whether there is an unescaped bracket (opening or closing) after this opening bracket in the text parsed so far.
      */
     public boolean bracketAfter = false;
 
