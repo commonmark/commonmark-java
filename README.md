@@ -36,7 +36,7 @@ Coordinates for core library (see all on [Maven Central]):
 <dependency>
     <groupId>org.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.21.0</version>
+    <version>0.22.0</version>
 </dependency>
 ```
 
@@ -265,7 +265,7 @@ First, add an additional dependency (see [Maven Central] for others):
 <dependency>
     <groupId>org.commonmark</groupId>
     <artifactId>commonmark-ext-gfm-tables</artifactId>
-    <version>0.21.0</version>
+    <version>0.22.0</version>
 </dependency>
 ```
 
