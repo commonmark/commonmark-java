@@ -6,7 +6,7 @@ public abstract class ListBlock extends Block {
 
     /**
      * @return whether this list is tight or loose
-     * @see <a href="https://spec.commonmark.org/0.28/#tight">CommonMark Spec for tight lists</a>
+     * @see <a href="https://spec.commonmark.org/0.31.2/#tight">CommonMark Spec for tight lists</a>
      */
     public boolean isTight() {
         return tight;
