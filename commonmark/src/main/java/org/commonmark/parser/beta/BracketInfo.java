@@ -19,8 +19,14 @@ public interface BracketInfo {
 
     ReferenceType referenceType();
 
+    /**
+     * The text between the first brackets, e.g. `foo` in `[foo][bar]`.
+     */
     String text();
 
+    /**
+     * The label, or null for shortcut links (in which case {@link #text()} should be used as the label).
+     */
     String label();
 
     Position afterTextBracket();

@@ -6,6 +6,7 @@ import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.internal.LinkReferenceDefinitions;
 import org.commonmark.node.*;
+import org.commonmark.parser.beta.BracketProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
@@ -32,6 +33,7 @@ public class Parser {
     private final List<BlockParserFactory> blockParserFactories;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final List<BracketProcessor> bracketProcessors;
     private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
     private final IncludeSourceSpans includeSourceSpans;
@@ -42,11 +44,14 @@ public class Parser {
         this.postProcessors = builder.postProcessors;
         this.inlineContentParserFactories = builder.inlineContentParserFactories;
         this.delimiterProcessors = builder.delimiterProcessors;
+        this.bracketProcessors = builder.bracketProcessors;
         this.includeSourceSpans = builder.includeSourceSpans;
 
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
-        this.inlineParserFactory.create(new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, new LinkReferenceDefinitions()));
+        var context = new InlineParserContextImpl(
+                inlineContentParserFactories, delimiterProcessors, bracketProcessors, new LinkReferenceDefinitions());
+        this.inlineParserFactory.create(context);
     }
 
     /**
@@ -99,7 +104,8 @@ public class Parser {
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories, delimiterProcessors, includeSourceSpans);
+        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories,
+                delimiterProcessors, bracketProcessors, includeSourceSpans);
     }
 
     private Node postProcess(Node document) {
@@ -116,6 +122,7 @@ public class Parser {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<InlineContentParserFactory> inlineContentParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
+        private final List<BracketProcessor> bracketProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
         private InlineParserFactory inlineParserFactory;
@@ -237,6 +244,15 @@ public class Parser {
         public Builder customDelimiterProcessor(DelimiterProcessor delimiterProcessor) {
             Objects.requireNonNull(delimiterProcessor, "delimiterProcessor must not be null");
             delimiterProcessors.add(delimiterProcessor);
+            return this;
+        }
+
+        /**
+         * TODO
+         */
+        public Builder bracketProcessor(BracketProcessor bracketProcessor) {
+            Objects.requireNonNull(bracketProcessor, "bracketProcessor must not be null");
+            bracketProcessors.add(bracketProcessor);
             return this;
         }
 

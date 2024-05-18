@@ -2,6 +2,7 @@ package org.commonmark.ext.footnotes;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.footnotes.internal.FootnoteBlockParser;
+import org.commonmark.ext.footnotes.internal.FootnoteBracketProcessor;
 import org.commonmark.parser.Parser;
 
 /**
@@ -19,6 +20,8 @@ public class FootnotesExtension implements Parser.ParserExtension {
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        parserBuilder.customBlockParserFactory(new FootnoteBlockParser.Factory());
+        parserBuilder
+                .customBlockParserFactory(new FootnoteBlockParser.Factory())
+                .bracketProcessor(new FootnoteBracketProcessor());
     }
 }

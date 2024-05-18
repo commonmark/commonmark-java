@@ -19,6 +19,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final InlineParserContext context;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
+    private final List<BracketProcessor> bracketProcessors;
     private final BitSet specialCharacters;
 
     private Map<Character, List<InlineContentParser>> inlineParsers;
@@ -41,6 +42,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.context = context;
         this.inlineContentParserFactories = calculateInlineContentParserFactories(context.getCustomInlineContentParserFactories());
         this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
+        this.bracketProcessors = calculateBracketProcessors(context.getCustomBracketProcessors());
         this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
     }
 
@@ -52,6 +54,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         list.add(new EntityInlineParser.Factory());
         list.add(new AutolinkInlineParser.Factory());
         list.add(new HtmlInlineParser.Factory());
+        return list;
+    }
+
+    private List<BracketProcessor> calculateBracketProcessors(List<BracketProcessor> bracketProcessors) {
+        // Custom bracket processors can override the built-in behavior, so make sure they are tried first
+        var list = new ArrayList<>(bracketProcessors);
+        list.add(new CoreBracketProcessor());
         return list;
     }
 
@@ -383,18 +392,24 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
         };
 
-        // TODO: Configurable and multiple processors
-        // TODO: Reset scanner on fail
-        // TODO: Should inline links also go through this, maybe? That would allow e.g. the image attributes extension
-        //  to use it to parse the attributes, I think. It would also be clearer: Every type of link goes through this.
-        var bracketResult = new CoreBracketProcessor().process(bracketInfo, scanner, context);
-        if (bracketResult instanceof BracketResultImpl) {
-            var type = ((BracketResultImpl) bracketResult).getType();
-            var node = ((BracketResultImpl) bracketResult).getNode();
-            var position = ((BracketResultImpl) bracketResult).getPosition();
-            var startFromBracket = ((BracketResultImpl) bracketResult).isStartFromBracket();
+        var processorStartPosition = scanner.position();
 
-            switch (type) {
+        for (var bracketProcessor : bracketProcessors) {
+            // TODO: Should inline links also go through this, maybe? That would allow e.g. the image attributes extension
+            //  to use it to parse the attributes, I think. It would also be clearer: Every type of link goes through this.
+            var bracketResult = bracketProcessor.process(bracketInfo, scanner, context);
+            if (!(bracketResult instanceof BracketResultImpl)) {
+                // Reset position in case the processor used the scanner, and it didn't work out.
+                scanner.setPosition(processorStartPosition);
+                continue;
+            }
+
+            var result = (BracketResultImpl) bracketResult;
+            var node = result.getNode();
+            var position = result.getPosition();
+            var startFromBracket = result.isStartFromBracket();
+
+            switch (result.getType()) {
                 case WRAP:
                     scanner.setPosition(position);
                     // TODO: startFromBracket

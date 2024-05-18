@@ -1,6 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.internal.InlineParserImpl;
+import org.commonmark.parser.beta.BracketProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParser;
@@ -49,6 +50,11 @@ public class InlineParserContextTest {
                 @Override
                 public List<DelimiterProcessor> getCustomDelimiterProcessors() {
                     return inlineParserContext.getCustomDelimiterProcessors();
+                }
+
+                @Override
+                public List<BracketProcessor> getCustomBracketProcessors() {
+                    return inlineParserContext.getCustomBracketProcessors();
                 }
 
                 @Override
