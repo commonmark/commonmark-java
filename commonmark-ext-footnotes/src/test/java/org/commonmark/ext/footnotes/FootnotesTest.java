@@ -19,7 +19,7 @@ public class FootnotesTest {
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
 
     @Test
-    public void testBlockStart() {
+    public void testDefBlockStart() {
         for (var s : List.of("1", "a")) {
             var doc = PARSER.parse("[^" + s + "]: footnote\n");
             var def = find(doc, FootnoteDefinition.class);
@@ -37,7 +37,8 @@ public class FootnotesTest {
     }
 
     @Test
-    public void testBlockStartInterrupts() {
+    public void testDefBlockStartInterrupts() {
+        // This is different from a link reference definition, which can only be at the start of paragraphs.
         var doc = PARSER.parse("test\n[^1]: footnote\n");
         var paragraph = find(doc, Paragraph.class);
         var def = find(doc, FootnoteDefinition.class);
@@ -46,7 +47,7 @@ public class FootnotesTest {
     }
 
     @Test
-    public void testMultiple() {
+    public void testDefMultiple() {
         var doc = PARSER.parse("[^1]: foo\n[^2]: bar\n");
         var defs = findAll(doc, FootnoteDefinition.class);
         assertEquals("1", defs.get(0).getLabel());
@@ -54,7 +55,7 @@ public class FootnotesTest {
     }
 
     @Test
-    public void testBlockStartAfterLinkReferenceDefinition() {
+    public void testDefBlockStartAfterLinkReferenceDefinition() {
         var doc = PARSER.parse("[foo]: /url\n[^1]: footnote\n");
         var linkReferenceDef = find(doc, LinkReferenceDefinition.class);
         var footnotesDef = find(doc, FootnoteDefinition.class);
@@ -63,15 +64,42 @@ public class FootnotesTest {
     }
 
     @Test
-    public void testBlockContinue() {
-        var doc = PARSER.parse("[^1]: footnote\nstill\n");
+    public void testDefContainsParagraph() {
+        var doc = PARSER.parse("[^1]: footnote\n");
         var def = find(doc, FootnoteDefinition.class);
-        assertEquals("1", def.getLabel());
-        assertNull(tryFind(doc, Paragraph.class));
+        var paragraph = (Paragraph) def.getFirstChild();
+        var text = (Text) paragraph.getFirstChild();
+        assertEquals("footnote", text.getLiteral());
     }
 
     @Test
-    public void testFootnotesDefinitionInterruptedByOthers() {
+    public void testDefContainsMultipleLines() {
+        var doc = PARSER.parse("[^1]: footnote\nstill\n");
+        var def = find(doc, FootnoteDefinition.class);
+        assertEquals("1", def.getLabel());
+        var paragraph = (Paragraph) def.getFirstChild();
+        var text1 = (Text) paragraph.getFirstChild();
+        var text2 = (Text) paragraph.getLastChild();
+        assertEquals("footnote", text1.getLiteral());
+        assertEquals("still", text2.getLiteral());
+    }
+
+    @Test
+    public void testDefContainsList() {
+        var doc = PARSER.parse("[^1]: - foo\n    - bar\n");
+        var def = find(doc, FootnoteDefinition.class);
+        assertEquals("1", def.getLabel());
+        var list = (BulletList) def.getFirstChild();
+        var item1 = (ListItem) list.getFirstChild();
+        var item2 = (ListItem) list.getLastChild();
+        var text1 = (Text) item1.getFirstChild().getFirstChild();
+        var text2 = (Text) item2.getFirstChild().getFirstChild();
+        assertEquals("foo", text1.getLiteral());
+        assertEquals("bar", text2.getLiteral());
+    }
+
+    @Test
+    public void testDefInterruptedByOthers() {
         var doc = PARSER.parse("[^1]: footnote\n# Heading\n");
         var def = find(doc, FootnoteDefinition.class);
         var heading = find(doc, Heading.class);

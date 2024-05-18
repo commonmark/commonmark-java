@@ -18,16 +18,26 @@ public class FootnoteBlockParser extends AbstractBlockParser {
     }
 
     @Override
-    public boolean canHaveLazyContinuationLines() {
+    public boolean isContainer() {
+        return true;
+    }
+
+    @Override
+    public boolean canContain(Block childBlock) {
         return true;
     }
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        // We're not continuing to give other block parsers a chance to interrupt this definition.
-        // But if no other block parser applied (including another FootnotesBlockParser), we will
-        // accept the line via lazy continuation.
-        return BlockContinue.none();
+        if (parserState.getIndent() >= 4) {
+            // It looks like content needs to be indented by 4 so that it's part of a footnote (instead of starting a new block).
+            return BlockContinue.atColumn(4);
+        } else {
+            // We're not continuing to give other block parsers a chance to interrupt this definition.
+            // But if no other block parser applied (including another FootnotesBlockParser), we will
+            // accept the line via lazy continuation (same as a block quote).
+            return BlockContinue.none();
+        }
     }
 
     public static class Factory implements BlockParserFactory {
@@ -47,12 +57,14 @@ public class FootnoteBlockParser extends AbstractBlockParser {
             // Now at first label character (if any)
             index++;
 
-            for (int i = index; i < content.length(); i++) {
-                var c = content.charAt(i);
-                if (c == ']') {
-                    if (i > index) {
-                        var label = content.subSequence(index, i).toString();
-                        return BlockStart.of(new FootnoteBlockParser(label));
+            var labelStart = index;
+
+            for (index = labelStart; index < content.length(); index++) {
+                var c = content.charAt(index);
+                if (c == ']' && index + 1 < content.length() && content.charAt(index + 1) == ':') {
+                    if (index > labelStart) {
+                        var label = content.subSequence(labelStart, index).toString();
+                        return BlockStart.of(new FootnoteBlockParser(label)).atIndex(index + 2);
                     } else {
                         return BlockStart.none();
                     }
