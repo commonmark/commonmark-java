@@ -337,22 +337,84 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // Note that even `[foo](` could be a valid link if foo is a reference, which is why we try this even if the `(`
         // failed to be parsed as an inline link/image before.
 
+        String text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
+
         // See if there's a link label like `[bar]` or `[]`
-        String ref = parseLinkLabel(scanner);
-        if ((ref == null || ref.isEmpty()) && !opener.bracketAfter) {
-            // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
-            // But it can only be a reference when there's no (unescaped) bracket in it.
-            // If there is, we don't even need to try to look up the reference. This is an optimization.
-            ref = scanner.getSource(opener.contentPosition, beforeClose).getContent();
+        String label = parseLinkLabel(scanner);
+        if (label == null) {
+            // No label, rewind back
+            scanner.setPosition(afterClose);
+        }
+        var referenceType = label == null ?
+                BracketInfo.ReferenceType.SHORTCUT : label.isEmpty() ?
+                BracketInfo.ReferenceType.COLLAPSED :
+                BracketInfo.ReferenceType.FULL;
+        if ((referenceType == BracketInfo.ReferenceType.SHORTCUT || referenceType == BracketInfo.ReferenceType.COLLAPSED)
+                && opener.bracketAfter) {
+            // In case of SHORTCUT or COLLAPSED, the text is used as the reference. But the reference is not allowed to
+            // contain an unescaped bracket, so if that's the case we don't need to continue. This is an optimization.
+            return null;
         }
 
-        if (ref != null) {
-            LinkReferenceDefinition definition = context.getLinkReferenceDefinition(ref);
-            if (definition != null) {
-                var linkOrImage = opener.image
-                        ? new Image(definition.getDestination(), definition.getTitle())
-                        : new Link(definition.getDestination(), definition.getTitle());
-                return processLinkOrImage(opener, linkOrImage);
+        var bracketInfo = new BracketInfo() {
+            @Override
+            public OpenerType openerType() {
+                return opener.image ? OpenerType.IMAGE : OpenerType.LINK;
+            }
+
+            @Override
+            public ReferenceType referenceType() {
+                return referenceType;
+            }
+
+            @Override
+            public String text() {
+                return text;
+            }
+
+            @Override
+            public String label() {
+                return label;
+            }
+
+            @Override
+            public Position afterTextBracket() {
+                return afterClose;
+            }
+        };
+
+        // TODO: Configurable and multiple processors
+        // TODO: Reset scanner on fail
+        // TODO: Should inline links also go through this, maybe? That would allow e.g. the image attributes extension
+        //  to use it to parse the attributes, I think. It would also be clearer: Every type of link goes through this.
+        var bracketResult = new CoreBracketProcessor().process(bracketInfo, scanner, context);
+        if (bracketResult instanceof BracketResultImpl) {
+            var type = ((BracketResultImpl) bracketResult).getType();
+            var node = ((BracketResultImpl) bracketResult).getNode();
+            var position = ((BracketResultImpl) bracketResult).getPosition();
+            var startFromBracket = ((BracketResultImpl) bracketResult).isStartFromBracket();
+
+            switch (type) {
+                case WRAP:
+                    scanner.setPosition(position);
+                    // TODO: startFromBracket
+                    return processLinkOrImage(opener, node);
+                case REPLACE:
+                    scanner.setPosition(position);
+
+                    // Remove delimiters (but keep text nodes)
+                    while (lastDelimiter != null && lastDelimiter != opener.previousDelimiter) {
+                        removeDelimiterKeepNode(lastDelimiter);
+                    }
+
+                    removeLastBracket();
+
+                    // TODO: startFromBracket needs to split the opening node.. Maybe we should just keep ! and [
+                    //  as separate nodes in Bracket
+                    for (Node n = opener.node; n != null; n = n.getNext()) {
+                        n.unlink();
+                    }
+                    return node;
             }
         }
 
