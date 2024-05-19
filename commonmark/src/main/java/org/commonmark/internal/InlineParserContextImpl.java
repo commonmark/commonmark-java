@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.node.DefinitionMap;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.beta.BracketProcessor;
@@ -13,12 +14,12 @@ public class InlineParserContextImpl implements InlineParserContext {
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
     private final List<BracketProcessor> bracketProcessors;
-    private final LinkReferenceDefinitions linkReferenceDefinitions;
+    private final DefinitionMap<LinkReferenceDefinition> linkReferenceDefinitions;
 
     public InlineParserContextImpl(List<InlineContentParserFactory> inlineContentParserFactories,
                                    List<DelimiterProcessor> delimiterProcessors,
                                    List<BracketProcessor> bracketProcessors,
-                                   LinkReferenceDefinitions linkReferenceDefinitions) {
+                                   DefinitionMap<LinkReferenceDefinition> linkReferenceDefinitions) {
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
         this.bracketProcessors = bracketProcessors;

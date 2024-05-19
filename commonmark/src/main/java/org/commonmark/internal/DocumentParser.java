@@ -2,7 +2,10 @@ package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
-import org.commonmark.parser.*;
+import org.commonmark.parser.IncludeSourceSpans;
+import org.commonmark.parser.InlineParserFactory;
+import org.commonmark.parser.SourceLine;
+import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.beta.BracketProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.*;
@@ -73,7 +76,7 @@ public class DocumentParser implements ParserState {
     private final List<BracketProcessor> bracketProcessors;
     private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
-    private final LinkReferenceDefinitions definitions = new LinkReferenceDefinitions();
+    private final DefinitionMap<LinkReferenceDefinition> linkReferenceDefinitions = new DefinitionMap<>();
 
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
@@ -472,11 +475,14 @@ public class DocumentParser implements ParserState {
     }
 
     private void addDefinitionsFrom(ParagraphParser paragraphParser) {
+        // TODO: Generalize this allow block parsers to add definitions by their types.
+        //  We'll keep a map for each type, e.g. one for LinkReferenceDefinition, one for FootnoteDefinition, etc :)
+        //  The context then allows lookup with the type and label
         for (LinkReferenceDefinition definition : paragraphParser.getDefinitions()) {
             // Add nodes into document before paragraph.
             paragraphParser.getBlock().insertBefore(definition);
 
-            definitions.add(definition);
+            linkReferenceDefinitions.putIfAbsent(definition.getLabel(), definition);
         }
     }
 
@@ -484,7 +490,7 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, bracketProcessors, definitions);
+        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, bracketProcessors, linkReferenceDefinitions);
         var inlineParser = inlineParserFactory.create(context);
 
         for (var blockParser : allBlockParsers) {
