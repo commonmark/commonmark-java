@@ -76,7 +76,7 @@ public class DocumentParser implements ParserState {
     private final List<BracketProcessor> bracketProcessors;
     private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
-    private final DefinitionMap<LinkReferenceDefinition> linkReferenceDefinitions = new DefinitionMap<>();
+    private final Definitions definitions = new Definitions();
 
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
@@ -463,34 +463,10 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Finalize a block. Close it and do any necessary postprocessing, e.g. setting the content of blocks and
-     * collecting link reference definitions from paragraphs.
-     */
-    private void finalize(BlockParser blockParser) {
-        if (blockParser instanceof ParagraphParser) {
-            addDefinitionsFrom((ParagraphParser) blockParser);
-        }
-
-        blockParser.closeBlock();
-    }
-
-    private void addDefinitionsFrom(ParagraphParser paragraphParser) {
-        // TODO: Generalize this allow block parsers to add definitions by their types.
-        //  We'll keep a map for each type, e.g. one for LinkReferenceDefinition, one for FootnoteDefinition, etc :)
-        //  The context then allows lookup with the type and label
-        for (LinkReferenceDefinition definition : paragraphParser.getDefinitions()) {
-            // Add nodes into document before paragraph.
-            paragraphParser.getBlock().insertBefore(definition);
-
-            linkReferenceDefinitions.putIfAbsent(definition.getLabel(), definition);
-        }
-    }
-
-    /**
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, bracketProcessors, linkReferenceDefinitions);
+        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, bracketProcessors, definitions);
         var inlineParser = inlineParserFactory.create(context);
 
         for (var blockParser : allBlockParsers) {
@@ -529,7 +505,7 @@ public class DocumentParser implements ParserState {
             // block parser got the current paragraph content using MatchedBlockParser#getContentString. In case the
             // paragraph started with link reference definitions, we parse and strip them before the block parser gets
             // the content. We want to keep them.
-            // If no replacement happens, we collect the definitions as part of finalizing paragraph blocks.
+            // If no replacement happens, we collect the definitions as part of finalizing blocks.
             addDefinitionsFrom(paragraphParser);
         }
 
@@ -553,6 +529,21 @@ public class DocumentParser implements ParserState {
             // separate interface (e.g. BlockParserWithInlines) so that we only have to remember those that actually
             // have inlines to parse.
             allBlockParsers.add(blockParser);
+        }
+    }
+
+    /**
+     * Finalize a block. Close it and do any necessary postprocessing, e.g. setting the content of blocks and
+     * collecting link reference definitions from paragraphs.
+     */
+    private void finalize(BlockParser blockParser) {
+        addDefinitionsFrom(blockParser);
+        blockParser.closeBlock();
+    }
+
+    private void addDefinitionsFrom(BlockParser blockParser) {
+        for (var definitionMap : blockParser.getDefinitions()) {
+            definitions.addDefinitions(definitionMap);
         }
     }
 

@@ -114,6 +114,12 @@ public class FootnotesTest {
         assertEquals("foo", ref.getLabel());
     }
 
+    @Test
+    public void testReferenceNoDefinition() {
+        var doc = PARSER.parse("Test [^foo]\n");
+        assertNull(tryFind(doc, FootnoteReference.class));
+    }
+
     // Interesting test cases:
 
     // Test [foo][^bar]

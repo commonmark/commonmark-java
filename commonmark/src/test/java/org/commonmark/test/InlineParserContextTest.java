@@ -59,8 +59,13 @@ public class InlineParserContextTest {
 
                 @Override
                 public LinkReferenceDefinition getLinkReferenceDefinition(String label) {
+                    return getDefinition(LinkReferenceDefinition.class, label);
+                }
+
+                @Override
+                public <D> D getDefinition(Class<D> type, String label) {
                     lookups.add(label);
-                    return inlineParserContext.getLinkReferenceDefinition(label);
+                    return inlineParserContext.getDefinition(type, label);
                 }
             };
 

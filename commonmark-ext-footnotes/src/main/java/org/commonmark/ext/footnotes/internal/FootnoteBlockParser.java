@@ -2,7 +2,10 @@ package org.commonmark.ext.footnotes.internal;
 
 import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.node.Block;
+import org.commonmark.node.DefinitionMap;
 import org.commonmark.parser.block.*;
+
+import java.util.List;
 
 public class FootnoteBlockParser extends AbstractBlockParser {
 
@@ -38,6 +41,13 @@ public class FootnoteBlockParser extends AbstractBlockParser {
             // accept the line via lazy continuation (same as a block quote).
             return BlockContinue.none();
         }
+    }
+
+    @Override
+    public List<DefinitionMap<?>> getDefinitions() {
+        var map = new DefinitionMap<>(FootnoteDefinition.class);
+        map.putIfAbsent(block.getLabel(), block);
+        return List.of(map);
     }
 
     public static class Factory implements BlockParserFactory {

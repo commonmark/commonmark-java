@@ -32,10 +32,23 @@ public interface InlineParserContext {
     /**
      * Look up a {@link LinkReferenceDefinition} for a given label.
      * <p>
-     * Note that the label is not normalized yet; implementations are responsible for normalizing before lookup.
+     * Note that the passed in label does not need to be normalized; implementations are responsible for doing the
+     * normalization before lookup.
      *
      * @param label the link label to look up
      * @return the definition if one exists, {@code null} otherwise
+     * @deprecated use {@link #getDefinition} with {@link LinkReferenceDefinition} instead
      */
+    @Deprecated
     LinkReferenceDefinition getLinkReferenceDefinition(String label);
+
+    /**
+     * Look up a definition of a type for a given label.
+     * <p>
+     * Note that the passed in label does not need to be normalized; implementations are responsible for doing the
+     * normalization before lookup.
+     *
+     * @return the definition if one exists, null otherwise
+     */
+    <D> D getDefinition(Class<D> type, String label);
 }

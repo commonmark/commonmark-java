@@ -1,6 +1,7 @@
 package org.commonmark.parser;
 
 import org.commonmark.Extension;
+import org.commonmark.internal.Definitions;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
@@ -49,7 +50,7 @@ public class Parser {
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
         var context = new InlineParserContextImpl(
-                inlineContentParserFactories, delimiterProcessors, bracketProcessors, new DefinitionMap<>());
+                inlineContentParserFactories, delimiterProcessors, bracketProcessors, new Definitions());
         this.inlineParserFactory.create(context);
     }
 

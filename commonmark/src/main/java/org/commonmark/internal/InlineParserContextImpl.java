@@ -1,6 +1,5 @@
 package org.commonmark.internal;
 
-import org.commonmark.node.DefinitionMap;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.beta.BracketProcessor;
@@ -14,16 +13,16 @@ public class InlineParserContextImpl implements InlineParserContext {
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
     private final List<BracketProcessor> bracketProcessors;
-    private final DefinitionMap<LinkReferenceDefinition> linkReferenceDefinitions;
+    private final Definitions definitions;
 
     public InlineParserContextImpl(List<InlineContentParserFactory> inlineContentParserFactories,
                                    List<DelimiterProcessor> delimiterProcessors,
                                    List<BracketProcessor> bracketProcessors,
-                                   DefinitionMap<LinkReferenceDefinition> linkReferenceDefinitions) {
+                                   Definitions definitions) {
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
         this.bracketProcessors = bracketProcessors;
-        this.linkReferenceDefinitions = linkReferenceDefinitions;
+        this.definitions = definitions;
     }
 
     @Override
@@ -43,6 +42,11 @@ public class InlineParserContextImpl implements InlineParserContext {
 
     @Override
     public LinkReferenceDefinition getLinkReferenceDefinition(String label) {
-        return linkReferenceDefinitions.get(label);
+        return definitions.getDefinition(LinkReferenceDefinition.class, label);
+    }
+
+    @Override
+    public <D> D getDefinition(Class<D> type, String label) {
+        return definitions.getDefinition(type, label);
     }
 }

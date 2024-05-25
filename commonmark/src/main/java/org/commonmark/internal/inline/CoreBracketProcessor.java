@@ -2,6 +2,7 @@ package org.commonmark.internal.inline;
 
 import org.commonmark.node.Image;
 import org.commonmark.node.Link;
+import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.beta.BracketInfo;
 import org.commonmark.parser.beta.BracketProcessor;
@@ -14,7 +15,7 @@ public class CoreBracketProcessor implements BracketProcessor {
     public BracketResult process(BracketInfo bracketInfo, Scanner scanner, InlineParserContext context) {
         var label = bracketInfo.label();
         var ref = label != null && !label.isEmpty() ? label : bracketInfo.text();
-        var def = context.getLinkReferenceDefinition(ref);
+        var def = context.getDefinition(LinkReferenceDefinition.class, ref);
         if (def != null) {
             if (bracketInfo.openerType() == BracketInfo.OpenerType.IMAGE) {
                 return BracketResult.wrapTextIn(new Image(def.getDestination(), def.getTitle()), scanner.position());
