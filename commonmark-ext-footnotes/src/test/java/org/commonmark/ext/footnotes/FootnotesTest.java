@@ -120,6 +120,19 @@ public class FootnotesTest {
         assertNull(tryFind(doc, FootnoteReference.class));
     }
 
+    @Test
+    public void testRefWithEmphasis() {
+        var doc = PARSER.parse("Test [^*foo*]\n\n[^*foo*]: def");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals("*foo*", ref.getLabel());
+        assertNull(ref.getFirstChild());
+        var paragraph = doc.getFirstChild();
+        var text = (Text) paragraph.getFirstChild();
+        assertEquals("Test ", text.getLiteral());
+        assertEquals(ref, text.getNext());
+        assertEquals(ref, paragraph.getLastChild());
+    }
+
     // Interesting test cases:
 
     // Test [foo][^bar]

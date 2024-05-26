@@ -13,7 +13,7 @@ public interface BracketResult {
     }
 
     static BracketResult replaceWith(Node node, Position position) {
-        return new BracketResultImpl(BracketResultImpl.Type.WRAP, node, position);
+        return new BracketResultImpl(BracketResultImpl.Type.REPLACE, node, position);
     }
 
     BracketResult startFromBracket();

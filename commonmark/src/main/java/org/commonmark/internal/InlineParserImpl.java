@@ -426,8 +426,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
                     // TODO: startFromBracket needs to split the opening node.. Maybe we should just keep ! and [
                     //  as separate nodes in Bracket
-                    for (Node n = opener.node; n != null; n = n.getNext()) {
+                    Node n = opener.node;
+                    while (n != null) {
+                        var next = n.getNext();
                         n.unlink();
+                        n = next;
                     }
                     return node;
             }
