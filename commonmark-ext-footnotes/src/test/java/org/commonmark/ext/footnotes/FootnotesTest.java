@@ -179,19 +179,24 @@ public class FootnotesTest {
         assertNull(tryFind(doc, FootnoteReference.class));
     }
 
-    // Interesting test cases:
+    @Test
+    public void testPreferReferenceLink() {
+        // This is tricky because `[^*foo*][foo]` is a valid link already. If `[foo]` was not defined, the first bracket
+        // would be a footnote.
+        var doc = PARSER.parse("Test [^*foo*][foo]\n\n[^*foo*]: /url\n\n[foo]: /url");
+        assertNull(tryFind(doc, FootnoteReference.class));
+    }
 
-    // Test [^*foo*][foo]
-    //
-    // [^*foo*]: /url
-    //
-    // [foo]: /url
-    //
-    // vs
-    //
-    // Test [^*foo*][foo]
-    //
-    // [^*foo*]: /url
+    @Test
+    public void testReferenceLinkWithoutDefinition() {
+        // Similar to previous test but there's no definition
+        var doc = PARSER.parse("Test [^*foo*][foo]\n\n[^*foo*]: def\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals("*foo*", ref.getLabel());
+        var paragraph = (Paragraph) doc.getFirstChild();
+        assertText("Test ", paragraph.getFirstChild());
+        assertText("[foo]", paragraph.getLastChild());
+    }
 
     private static <T> T find(Node parent, Class<T> nodeClass) {
         return Objects.requireNonNull(tryFind(parent, nodeClass), "Could not find a " + nodeClass.getSimpleName() + " node in " + parent);
