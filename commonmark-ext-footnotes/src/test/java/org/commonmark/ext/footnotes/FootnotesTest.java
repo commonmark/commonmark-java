@@ -122,7 +122,7 @@ public class FootnotesTest {
 
     @Test
     public void testRefWithEmphasis() {
-        var doc = PARSER.parse("Test [^*foo*]\n\n[^*foo*]: def");
+        var doc = PARSER.parse("Test [^*foo*]\n\n[^*foo*]: def\n");
         var ref = find(doc, FootnoteReference.class);
         assertEquals("*foo*", ref.getLabel());
         assertNull(ref.getFirstChild());
@@ -131,6 +131,16 @@ public class FootnotesTest {
         assertEquals("Test ", text.getLiteral());
         assertEquals(ref, text.getNext());
         assertEquals(ref, paragraph.getLastChild());
+    }
+
+    @Test
+    public void testRefAfterBang() {
+        var doc = PARSER.parse("Test![^foo]\n\n[^foo]: def\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals("foo", ref.getLabel());
+        var paragraph = doc.getFirstChild();
+        var text = (Text) paragraph.getFirstChild();
+        assertEquals("Test!", text.getLiteral());
     }
 
     // Interesting test cases:

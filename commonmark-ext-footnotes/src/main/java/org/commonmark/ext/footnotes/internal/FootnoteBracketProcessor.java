@@ -20,7 +20,8 @@ public class FootnoteBracketProcessor implements BracketProcessor {
             if (def != null) {
                 // For footnotes, we only ever consume the text part of the link, not the label part (if any).
                 var position = bracketInfo.afterTextBracket();
-                return BracketResult.replaceWith(new FootnoteReference(label), position);
+                // If the marker is `![`, we don't want to include the `!`, so start from bracket
+                return BracketResult.replaceWith(new FootnoteReference(label), position).startFromBracket();
             }
         }
         return BracketResult.none();

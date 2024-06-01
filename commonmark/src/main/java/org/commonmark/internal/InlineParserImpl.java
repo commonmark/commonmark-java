@@ -186,7 +186,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             case '[':
                 return List.of(parseOpenBracket());
             case '!':
-                return List.of(parseBang());
+                return parseBang();
             case ']':
                 return List.of(parseCloseBracket());
             case '\n':
@@ -272,18 +272,20 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * If next character is [, and ! delimiter to delimiter stack and add a text node to block's children.
      * Otherwise just add a text node.
      */
-    private Node parseBang() {
-        Position start = scanner.position();
+    private List<? extends Node> parseBang() {
+        var bangPosition = scanner.position();
         scanner.next();
+        var bracketPosition = scanner.position();
         if (scanner.next('[')) {
-            Position contentPosition = scanner.position();
-            Text node = text(scanner.getSource(start, contentPosition));
+            var contentPosition = scanner.position();
+            var bangNode = text(scanner.getSource(bangPosition, bracketPosition));
+            var bracketNode = text(scanner.getSource(bracketPosition, contentPosition));
 
             // Add entry to stack for this opener
-            addBracket(Bracket.image(node, start, contentPosition, lastBracket, lastDelimiter));
-            return node;
+            addBracket(Bracket.image(bangNode, bangPosition, bracketNode, bracketPosition, contentPosition, lastBracket, lastDelimiter));
+            return List.of(bangNode, bracketNode);
         } else {
-            return text(scanner.getSource(start, scanner.position()));
+            return List.of(text(scanner.getSource(bangPosition, scanner.position())));
         }
     }
 
@@ -337,7 +339,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             var linkOrImage = opener.image
                     ? new Image(destinationTitle.destination, destinationTitle.title)
                     : new Link(destinationTitle.destination, destinationTitle.title);
-            return processLinkOrImage(opener, linkOrImage);
+            return processLinkOrImage(opener, linkOrImage, false);
         }
         // Not an inline link/image, rewind back to after `]`.
         scanner.setPosition(afterClose);
@@ -412,8 +414,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             switch (result.getType()) {
                 case WRAP:
                     scanner.setPosition(position);
-                    // TODO: startFromBracket
-                    return processLinkOrImage(opener, node);
+                    return processLinkOrImage(opener, node, startFromBracket);
                 case REPLACE:
                     scanner.setPosition(position);
 
@@ -424,9 +425,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
                     removeLastBracket();
 
-                    // TODO: startFromBracket needs to split the opening node.. Maybe we should just keep ! and [
-                    //  as separate nodes in Bracket
-                    Node n = opener.node;
+                    Node n = opener.bangNode == null || startFromBracket ? opener.bracketNode : opener.bangNode;
                     while (n != null) {
                         var next = n.getNext();
                         n.unlink();
@@ -439,9 +438,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return null;
     }
 
-    private Node processLinkOrImage(Bracket opener, Node linkOrImage) {
+    private Node processLinkOrImage(Bracket opener, Node linkOrImage, boolean startFromBracket) {
         // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
-        Node node = opener.node.getNext();
+        Node node = opener.bracketNode.getNext();
         while (node != null) {
             Node next = node.getNext();
             linkOrImage.appendChild(node);
@@ -449,14 +448,18 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         if (includeSourceSpans) {
-            linkOrImage.setSourceSpans(scanner.getSource(opener.markerPosition, scanner.position()).getSourceSpans());
+            var startPosition = opener.bangPosition == null || startFromBracket ? opener.bracketPosition : opener.bangPosition;
+            linkOrImage.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
         }
 
         // Process delimiters such as emphasis inside link/image
         processDelimiters(opener.previousDelimiter);
         mergeChildTextNodes(linkOrImage);
         // We don't need the corresponding text node anymore, we turned it into a link/image node
-        opener.node.unlink();
+        if (opener.bangNode != null && !startFromBracket) {
+            opener.bangNode.unlink();
+        }
+        opener.bracketNode.unlink();
         removeLastBracket();
 
         // Links within links are not allowed. We found this link, so there can be no other link around it.

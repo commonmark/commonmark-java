@@ -1,6 +1,5 @@
 package org.commonmark.internal.inline;
 
-import org.commonmark.internal.InlineParserImpl;
 import org.commonmark.node.Node;
 import org.commonmark.parser.beta.BracketResult;
 import org.commonmark.parser.beta.Position;
