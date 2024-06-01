@@ -68,8 +68,7 @@ public class FootnotesTest {
         var doc = PARSER.parse("[^1]: footnote\n");
         var def = find(doc, FootnoteDefinition.class);
         var paragraph = (Paragraph) def.getFirstChild();
-        var text = (Text) paragraph.getFirstChild();
-        assertEquals("footnote", text.getLiteral());
+        assertText("footnote", paragraph.getFirstChild());
     }
 
     @Test
@@ -78,10 +77,8 @@ public class FootnotesTest {
         var def = find(doc, FootnoteDefinition.class);
         assertEquals("1", def.getLabel());
         var paragraph = (Paragraph) def.getFirstChild();
-        var text1 = (Text) paragraph.getFirstChild();
-        var text2 = (Text) paragraph.getLastChild();
-        assertEquals("footnote", text1.getLiteral());
-        assertEquals("still", text2.getLiteral());
+        assertText("footnote", paragraph.getFirstChild());
+        assertText("still", paragraph.getLastChild());
     }
 
     @Test
@@ -92,10 +89,8 @@ public class FootnotesTest {
         var list = (BulletList) def.getFirstChild();
         var item1 = (ListItem) list.getFirstChild();
         var item2 = (ListItem) list.getLastChild();
-        var text1 = (Text) item1.getFirstChild().getFirstChild();
-        var text2 = (Text) item2.getFirstChild().getFirstChild();
-        assertEquals("foo", text1.getLiteral());
-        assertEquals("bar", text2.getLiteral());
+        assertText("foo", item1.getFirstChild().getFirstChild());
+        assertText("bar", item2.getFirstChild().getFirstChild());
     }
 
     @Test
@@ -104,7 +99,7 @@ public class FootnotesTest {
         var def = find(doc, FootnoteDefinition.class);
         var heading = find(doc, Heading.class);
         assertEquals("1", def.getLabel());
-        assertEquals("Heading", ((Text) heading.getFirstChild()).getLiteral());
+        assertText("Heading", heading.getFirstChild());
     }
 
     @Test
@@ -121,7 +116,8 @@ public class FootnotesTest {
     }
 
     @Test
-    public void testRefWithEmphasis() {
+    public void testRefWithEmphasisInside() {
+        // No emphasis inside footnote reference, should just be treated as text
         var doc = PARSER.parse("Test [^*foo*]\n\n[^*foo*]: def\n");
         var ref = find(doc, FootnoteReference.class);
         assertEquals("*foo*", ref.getLabel());
@@ -134,46 +130,56 @@ public class FootnotesTest {
     }
 
     @Test
+    public void testRefWithEmphasisAround() {
+        // Emphasis around footnote reference, the * inside needs to be removed from emphasis processing
+        var doc = PARSER.parse("Test *abc [^foo*] def*\n\n[^foo*]: def\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals("foo*", ref.getLabel());
+        assertText("abc ", ref.getPrevious());
+        assertText(" def", ref.getNext());
+        var em = find(doc, Emphasis.class);
+        assertEquals(em, ref.getParent());
+    }
+
+    @Test
     public void testRefAfterBang() {
         var doc = PARSER.parse("Test![^foo]\n\n[^foo]: def\n");
         var ref = find(doc, FootnoteReference.class);
         assertEquals("foo", ref.getLabel());
         var paragraph = doc.getFirstChild();
-        var text = (Text) paragraph.getFirstChild();
-        assertEquals("Test!", text.getLiteral());
+        assertText("Test!", paragraph.getFirstChild());
+    }
+
+    @Test
+    public void testRefAsLabelOnly() {
+        // [^bar] is a footnote but [foo] is just text, because full reference links (text `foo`, label `^bar`) don't
+        // resolve as footnotes. If `[foo][^bar]` fails to parse as a bracket, `[^bar]` by itself needs to be tried.
+        var doc = PARSER.parse("Test [foo][^bar]\n\n[^bar]: footnote\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals("bar", ref.getLabel());
+        var paragraph = doc.getFirstChild();
+        assertText("Test [foo]", paragraph.getFirstChild());
+    }
+
+    @Test
+    public void testRefWithEmptyLabel() {
+        // [^bar] is a footnote but [] is just text, because collapsed reference links don't resolve as footnotes
+        var doc = PARSER.parse("Test [^bar][]\n\n[^bar]: footnote\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals("bar", ref.getLabel());
+        var paragraph = doc.getFirstChild();
+        assertText("Test ", paragraph.getFirstChild());
+        assertText("[]", paragraph.getLastChild());
+    }
+
+    @Test
+    public void testRefWithBracket() {
+        // Not a footnote, [ needs to be escaped
+        var doc = PARSER.parse("Test [^f[oo]\n\n[^f[oo]: /url\n");
+        assertNull(tryFind(doc, FootnoteReference.class));
     }
 
     // Interesting test cases:
-
-    // Test [foo][^bar]
-    //
-    // [^bar]: footnote
-    //
-    // -> [^bar] is a footnote but [foo] is just text, because full reference links don't resolve as footnotes
-
-    // Test [^bar][]
-    //
-    // [^bar]: footnote
-    //
-    // -> [^bar] is a footnote but [] is just text, because collapsed reference links don't resolve as footnotes
-
-    // Test [^f[oo]
-    //
-    // [^f[oo]: /url
-    //
-    // -> Not a footnote, [ needs to be escaped
-
-    // Test [^*foo*]
-    //
-    // [^*foo*]: /url
-    //
-    // -> No emphasis inside footnote reference
-
-    // Test *abc [^foo*] def*
-    //
-    // [^foo*]: /url
-    //
-    // -> Emphasis around footnote reference
 
     // Test [^*foo*][foo]
     //
@@ -186,12 +192,6 @@ public class FootnotesTest {
     // Test [^*foo*][foo]
     //
     // [^*foo*]: /url
-
-    // Test ![^foo]
-    //
-    // [^foo]: note
-    //
-    // -> Not an image
 
     private static <T> T find(Node parent, Class<T> nodeClass) {
         return Objects.requireNonNull(tryFind(parent, nodeClass), "Could not find a " + nodeClass.getSimpleName() + " node in " + parent);
@@ -211,5 +211,10 @@ public class FootnotesTest {
             nodes.addAll(findAll(node, nodeClass));
         }
         return nodes;
+    }
+
+    private static void assertText(String expected, Node node) {
+        var text = (Text) node;
+        assertEquals(expected, text.getLiteral());
     }
 }
