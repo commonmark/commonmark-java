@@ -33,13 +33,14 @@ public class DefinitionMap<D> {
     }
 
     /**
-     * Store a new definition unless one is already in the map.
+     * Store a new definition unless one is already in the map. If there is no definition for that label, return null.
+     * Otherwise, return the existing definition.
      */
-    public void putIfAbsent(String label, D definition) {
+    public D putIfAbsent(String label, D definition) {
         String normalizedLabel = Escaping.normalizeLabelContent(label);
 
         // spec: When there are multiple matching link reference definitions, the first is used
-        definitions.putIfAbsent(normalizedLabel, definition);
+        return definitions.putIfAbsent(normalizedLabel, definition);
     }
 
     /**

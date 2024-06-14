@@ -20,4 +20,10 @@ public interface NodeRenderer {
      * @param node the node to render, will be an instance of one of {@link #getNodeTypes()}
      */
     void render(Node node);
+
+    default void beforeRoot(Node node) {
+    }
+
+    default void afterRoot(Node node) {
+    }
 }
