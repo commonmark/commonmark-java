@@ -129,20 +129,29 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         if (def.getLastChild() instanceof Paragraph) {
             // Add backlinks into last paragraph before "p". This is what GFM does.
             var lastParagraph = (Paragraph) def.getLastChild();
-            renderChildren(def, lastParagraph);
+            var node = def.getFirstChild();
+            while (node != lastParagraph) {
+                if (node instanceof Paragraph) {
+                    // Because we're manually rendering the <p> for the last paragraph, do the same for all other
+                    // paragraphs for consistency (Paragraph rendering might be overwritten by a custom renderer).
+                    html.tag("p", context.extendAttributes(node, "p", Map.of()));
+                    renderChildren(node);
+                    html.tag("/p");
+                    html.line();
+                } else {
+                    context.render(node);
+                }
+                node = node.getNext();
+            }
 
-            html.line();
-            // This is a tiny bit strange, we're rendering the <p> ourselves here instead of delegating the rendering.
-            // What if the rendering was overwritten to not use <p>, or do something else entirely?
-            // TODO: I think it would be better if we rendered *all* paragraphs ourselves in this case, for consistency.
             html.tag("p", context.extendAttributes(lastParagraph, "p", Map.of()));
-            renderChildren(lastParagraph, null);
+            renderChildren(lastParagraph);
             html.raw(" ");
             renderBackrefs(def, referencedDefinition);
             html.tag("/p");
             html.line();
         } else {
-            renderChildren(def, null);
+            renderChildren(def);
             html.line();
             renderBackrefs(def, referencedDefinition);
         }
@@ -187,9 +196,9 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         return "fn-" + label;
     }
 
-    private void renderChildren(Node parent, Node until) {
+    private void renderChildren(Node parent) {
         Node node = parent.getFirstChild();
-        while (node != until) {
+        while (node != null) {
             Node next = node.getNext();
             context.render(node);
             node = next;
