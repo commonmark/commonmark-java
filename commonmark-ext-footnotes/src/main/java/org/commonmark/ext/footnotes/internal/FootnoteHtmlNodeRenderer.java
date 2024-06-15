@@ -31,17 +31,12 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     /**
      * All definitions (even potentially unused ones), for looking up references
      */
-    private DefinitionMap<FootnoteDefinition> definitions;
+    private DefinitionMap<FootnoteDefinition> definitionMap;
 
-    // TODO: Might be nicer to have one map with a record instead.
     /**
-     * Definitions that were referenced, and the reference IDs. In order in which they should be rendered.
+     * Definitions that were referenced, in order in which they should be rendered.
      */
-    private final Map<FootnoteDefinition, List<String>> references = new LinkedHashMap<>();
-    /**
-     * The number of the definition (i.e. 1, 2).
-     */
-    private final Map<FootnoteDefinition, Integer> definitionNumbers = new HashMap<>();
+    private final Map<FootnoteDefinition, ReferencedDefinition> referencedDefinitions = new LinkedHashMap<>();
 
     public FootnoteHtmlNodeRenderer(HtmlNodeRendererContext context) {
         this.html = context.getWriter();
@@ -58,7 +53,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         // Collect definitions so we can look them up when encountering a reference later
         var visitor = new FootnotesVisitor();
         node.accept(visitor);
-        definitions = visitor.definitions;
+        definitionMap = visitor.definitions;
     }
 
     @Override
@@ -69,7 +64,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     }
 
     private void renderReference(FootnoteReference ref) {
-        var def = definitions.get(ref.getLabel());
+        var def = definitionMap.get(ref.getLabel());
         if (def == null) {
             // A reference without a corresponding definition is rendered as plain text
             html.text("[^" + ref.getLabel() + "]");
@@ -77,15 +72,14 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         }
 
         // The first referenced definition gets number 1, second one 2, etc.
-        var definitionNumber = definitionNumbers.computeIfAbsent(def, k -> definitionNumbers.size() + 1);
-
-        var refs = references.computeIfAbsent(def, k -> new ArrayList<>());
+        var referencedDef = referencedDefinitions.computeIfAbsent(def, k -> new ReferencedDefinition(referencedDefinitions.size() + 1));
+        var definitionNumber = referencedDef.definitionNumber;
         // The reference number for that particular definition. E.g. if there's two references for the same definition,
         // the first one is 1, the second one 2, etc. This is needed to give each reference a unique ID so that each
         // reference can get its own backlink from the definition.
-        var refNumber = refs.size() + 1;
+        var refNumber = referencedDef.references.size() + 1;
         var id = referenceId(def.getLabel(), refNumber);
-        refs.add(id);
+        referencedDef.references.add(id);
 
         html.tag("sup", context.extendAttributes(ref, "sup", Map.of("class", "footnote-ref")));
 
@@ -103,11 +97,11 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     @Override
     public void afterRoot(Node node) {
         // Now render the referenced definitions if there are any
-        if (references.isEmpty()) {
+        if (referencedDefinitions.isEmpty()) {
             return;
         }
 
-        var firstDef = references.keySet().iterator().next();
+        var firstDef = referencedDefinitions.keySet().iterator().next();
         var attrs = new LinkedHashMap<String, String>();
         attrs.put("class", "footnotes");
         attrs.put("data-footnotes", null);
@@ -115,11 +109,8 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         html.line();
         html.tag("ol");
         html.line();
-        for (var entry : references.entrySet()) {
-            var def = entry.getKey();
-            var refs = entry.getValue();
-            int number = Objects.requireNonNull(definitionNumbers.get(def));
-            renderDefinition(def, number, refs);
+        for (var entry : referencedDefinitions.entrySet()) {
+            renderDefinition(entry.getKey(), entry.getValue());
         }
         html.tag("/ol");
         html.line();
@@ -127,7 +118,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         html.line();
     }
 
-    private void renderDefinition(FootnoteDefinition def, int defNumber, List<String> references) {
+    private void renderDefinition(FootnoteDefinition def, ReferencedDefinition referencedDefinition) {
         // <ol> etc
         var id = definitionId(def.getLabel());
         var attrs = new LinkedHashMap<String, String>();
@@ -147,24 +138,25 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
             html.tag("p", context.extendAttributes(lastParagraph, "p", Map.of()));
             renderChildren(lastParagraph, null);
             html.raw(" ");
-            renderBackrefs(def, defNumber, references);
+            renderBackrefs(def, referencedDefinition);
             html.tag("/p");
             html.line();
         } else {
             renderChildren(def, null);
             html.line();
-            renderBackrefs(def, defNumber, references);
+            renderBackrefs(def, referencedDefinition);
         }
 
         html.tag("/li");
         html.line();
     }
 
-    private void renderBackrefs(FootnoteDefinition def, int defNumber, List<String> refs) {
+    private void renderBackrefs(FootnoteDefinition def, ReferencedDefinition referencedDefinition) {
+        var refs = referencedDefinition.references;
         for (int i = 0; i < refs.size(); i++) {
             var ref = refs.get(i);
             var refNumber = i + 1;
-            var idx = defNumber + (refNumber > 1 ? ("-" + refNumber) : "");
+            var idx = referencedDefinition.definitionNumber + (refNumber > 1 ? ("-" + refNumber) : "");
 
             var attrs = new LinkedHashMap<String, String>();
             attrs.put("href", "#" + ref);
@@ -214,6 +206,21 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
                 var def = (FootnoteDefinition) customBlock;
                 definitions.putIfAbsent(def.getLabel(), def);
             }
+        }
+    }
+
+    private static class ReferencedDefinition {
+        /**
+         * The definition number, starting from 1, and in order in which they're referenced.
+         */
+        final int definitionNumber;
+        /**
+         * The IDs of references for this definition, for backrefs.
+         */
+        final List<String> references = new ArrayList<>();
+
+        ReferencedDefinition(int definitionNumber) {
+            this.definitionNumber = definitionNumber;
         }
     }
 }
