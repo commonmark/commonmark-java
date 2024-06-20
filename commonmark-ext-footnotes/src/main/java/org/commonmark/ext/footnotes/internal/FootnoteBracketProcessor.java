@@ -12,25 +12,29 @@ import org.commonmark.parser.beta.Scanner;
 public class FootnoteBracketProcessor implements BracketProcessor {
     @Override
     public BracketResult process(BracketInfo bracketInfo, Scanner scanner, InlineParserContext context) {
-        // TODO: Does parsing need to be more strict here?
         var text = bracketInfo.text();
-        if (text.startsWith("^")) {
-            if (bracketInfo.label() != null && context.getDefinition(LinkReferenceDefinition.class, bracketInfo.label()) != null) {
-                // If there's a label after the text and the label has a definition -> it's a link, and it should
-                // take preference.
-                return BracketResult.none();
-            }
-
-            var label = text.substring(1);
-            // Check if we have a definition, otherwise ignore (same behavior as for link reference definitions)
-            var def = context.getDefinition(FootnoteDefinition.class, label);
-            if (def != null) {
-                // For footnotes, we only ever consume the text part of the link, not the label part (if any).
-                var position = bracketInfo.afterTextBracket();
-                // If the marker is `![`, we don't want to include the `!`, so start from bracket
-                return BracketResult.replaceWith(new FootnoteReference(label), position).startFromBracket();
-            }
+        if (!text.startsWith("^")) {
+            // Footnote reference needs to start with [^
+            return BracketResult.none();
         }
-        return BracketResult.none();
+
+        if (bracketInfo.label() != null && context.getDefinition(LinkReferenceDefinition.class, bracketInfo.label()) != null) {
+            // If there's a label after the text and the label has a definition -> it's a link, and it should take
+            // preference, e.g. in `[^foo][bar]` if `[bar]` has a definition, `[^foo]` won't be a footnote reference.
+            return BracketResult.none();
+        }
+
+        var label = text.substring(1);
+        // Check if we have a definition, otherwise ignore (same behavior as for link reference definitions).
+        // Note that the definition parser already checked the syntax of the label, we don't need to check again.
+        var def = context.getDefinition(FootnoteDefinition.class, label);
+        if (def == null) {
+            return BracketResult.none();
+        }
+
+        // For footnotes, we only ever consume the text part of the link, not the label part (if any)
+        var position = bracketInfo.afterTextBracket();
+        // If the marker is `![`, we don't want to include the `!`, so start from bracket
+        return BracketResult.replaceWith(new FootnoteReference(label), position).startFromBracket();
     }
 }
