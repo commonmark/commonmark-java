@@ -44,6 +44,14 @@ public class FootnotesTest {
     }
 
     @Test
+    public void testDefBlockStartIndented() {
+        var doc1 = PARSER.parse("   [^1]: footnote\n");
+        assertEquals("1", find(doc1, FootnoteDefinition.class).getLabel());
+        var doc2 = PARSER.parse("    [^1]: footnote\n");
+        assertNull(tryFind(doc2, FootnoteDefinition.class));
+    }
+
+    @Test
     public void testDefMultiple() {
         var doc = PARSER.parse("[^1]: foo\n[^2]: bar\n");
         var defs = findAll(doc, FootnoteDefinition.class);

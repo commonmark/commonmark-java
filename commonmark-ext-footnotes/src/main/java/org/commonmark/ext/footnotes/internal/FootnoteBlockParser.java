@@ -54,9 +54,11 @@ public class FootnoteBlockParser extends AbstractBlockParser {
 
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            var content = state.getLine().getContent();
-            // TODO: Can it be indented? Maybe less than code block indent.
+            if (state.getIndent() >= 4) {
+                return BlockStart.none();
+            }
             var index = state.getNextNonSpaceIndex();
+            var content = state.getLine().getContent();
             if (content.charAt(index) != '[' || index + 1 >= content.length()) {
                 return BlockStart.none();
             }
@@ -66,7 +68,6 @@ public class FootnoteBlockParser extends AbstractBlockParser {
             }
             // Now at first label character (if any)
             index++;
-
             var labelStart = index;
 
             for (index = labelStart; index < content.length(); index++) {
