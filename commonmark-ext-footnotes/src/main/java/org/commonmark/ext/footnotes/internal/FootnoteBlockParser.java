@@ -71,17 +71,20 @@ public class FootnoteBlockParser extends AbstractBlockParser {
 
             for (index = labelStart; index < content.length(); index++) {
                 var c = content.charAt(index);
-                if (c == ']' && index + 1 < content.length() && content.charAt(index + 1) == ':') {
-                    if (index > labelStart) {
-                        var label = content.subSequence(labelStart, index).toString();
-                        return BlockStart.of(new FootnoteBlockParser(label)).atIndex(index + 2);
-                    } else {
+                switch (c) {
+                    case ']':
+                        if (index > labelStart && index + 1 < content.length() && content.charAt(index + 1) == ':') {
+                            var label = content.subSequence(labelStart, index).toString();
+                            return BlockStart.of(new FootnoteBlockParser(label)).atIndex(index + 2);
+                        } else {
+                            return BlockStart.none();
+                        }
+                    case ' ':
+                    case '\r':
+                    case '\n':
+                    case '\0':
+                    case '\t':
                         return BlockStart.none();
-                    }
-                }
-                // TODO: Check what GitHub actually does here, e.g. tabs, control characters, other Unicode whitespace
-                if (Character.isWhitespace(c)) {
-                    return BlockStart.none();
                 }
             }
 

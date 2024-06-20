@@ -20,20 +20,17 @@ public class FootnotesTest {
 
     @Test
     public void testDefBlockStart() {
-        for (var s : List.of("1", "a")) {
+        for (var s : List.of("1", "a", "^", "*", "\\a", "\uD83D\uDE42", "&")) {
             var doc = PARSER.parse("[^" + s + "]: footnote\n");
             var def = find(doc, FootnoteDefinition.class);
-            // TODO: Should label be "^1" instead?
             assertEquals(s, def.getLabel());
         }
 
-        for (var s : List.of("", " ", "a b")) {
-            var doc = PARSER.parse("[^" + s + "]: footnote\n");
-            assertNull(tryFind(doc, FootnoteDefinition.class));
+        for (var s : List.of("", " ", "a b", "]", "\r", "\n", "\t")) {
+            var input = "[^" + s + "]: footnote\n";
+            var doc = PARSER.parse(input);
+            assertNull("input: " + input, tryFind(doc, FootnoteDefinition.class));
         }
-
-        // TODO: Test what characters are allowed for the label, e.g.
-        //  [^], [^ ], [^^], [^[], [^*], [^\], [^\a], [^🙂], tab?, [^&], [^&amp;]
     }
 
     @Test
