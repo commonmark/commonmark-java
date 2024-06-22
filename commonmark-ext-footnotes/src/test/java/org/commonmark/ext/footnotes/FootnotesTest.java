@@ -2,6 +2,7 @@ package org.commonmark.ext.footnotes;
 
 import org.commonmark.Extension;
 import org.commonmark.node.*;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.junit.Test;
 
@@ -178,15 +179,15 @@ public class FootnotesTest {
     }
 
     @Test
-    public void testInlineLinkTakesPrecedence() {
-        var doc = PARSER.parse("Test [^bar](/url)\n\n[^bar]: footnote\n");
+    public void testRefWithBracket() {
+        // Not a footnote, [ needs to be escaped
+        var doc = PARSER.parse("Test [^f[oo]\n\n[^f[oo]: /url\n");
         assertNull(tryFind(doc, FootnoteReference.class));
     }
 
     @Test
-    public void testRefWithBracket() {
-        // Not a footnote, [ needs to be escaped
-        var doc = PARSER.parse("Test [^f[oo]\n\n[^f[oo]: /url\n");
+    public void testPreferInlineLink() {
+        var doc = PARSER.parse("Test [^bar](/url)\n\n[^bar]: footnote\n");
         assertNull(tryFind(doc, FootnoteReference.class));
     }
 
@@ -207,6 +208,18 @@ public class FootnotesTest {
         var paragraph = (Paragraph) doc.getFirstChild();
         assertText("Test ", paragraph.getFirstChild());
         assertText("[foo]", paragraph.getLastChild());
+    }
+
+    @Test
+    public void testSourcePositions() {
+        var parser = Parser.builder().extensions(EXTENSIONS).includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
+
+        var doc = parser.parse("Test [^foo]\n\n[^foo]: /url\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals(ref.getSourceSpans(), List.of(SourceSpan.of(0, 5, 6)));
+
+        var def = find(doc, FootnoteDefinition.class);
+        assertEquals(def.getSourceSpans(), List.of(SourceSpan.of(2, 0, 12)));
     }
 
     private static <T> T find(Node parent, Class<T> nodeClass) {

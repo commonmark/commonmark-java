@@ -345,24 +345,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             switch (result.getType()) {
                 case WRAP:
                     scanner.setPosition(position);
-                    return processLinkOrImage(opener, node, startFromBracket);
+                    return wrapBracket(opener, node, startFromBracket);
                 case REPLACE:
                     scanner.setPosition(position);
-
-                    // Remove delimiters (but keep text nodes)
-                    while (lastDelimiter != null && lastDelimiter != opener.previousDelimiter) {
-                        removeDelimiterKeepNode(lastDelimiter);
-                    }
-
-                    removeLastBracket();
-
-                    Node n = opener.bangNode == null || startFromBracket ? opener.bracketNode : opener.bangNode;
-                    while (n != null) {
-                        var next = n.getNext();
-                        n.unlink();
-                        n = next;
-                    }
-                    return node;
+                    return replaceBracket(opener, node, startFromBracket);
             }
         }
 
@@ -415,23 +401,23 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return new BracketInfoImpl(openerType, referenceType, text, label, null, null, afterClose);
     }
 
-    private Node processLinkOrImage(Bracket opener, Node linkOrImage, boolean startFromBracket) {
+    private Node wrapBracket(Bracket opener, Node wrapperNode, boolean startFromBracket) {
         // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
-        Node node = opener.bracketNode.getNext();
-        while (node != null) {
-            Node next = node.getNext();
-            linkOrImage.appendChild(node);
-            node = next;
+        Node n = opener.bracketNode.getNext();
+        while (n != null) {
+            Node next = n.getNext();
+            wrapperNode.appendChild(n);
+            n = next;
         }
 
         if (includeSourceSpans) {
             var startPosition = opener.bangPosition == null || startFromBracket ? opener.bracketPosition : opener.bangPosition;
-            linkOrImage.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
+            wrapperNode.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
         }
 
         // Process delimiters such as emphasis inside link/image
         processDelimiters(opener.previousDelimiter);
-        mergeChildTextNodes(linkOrImage);
+        mergeChildTextNodes(wrapperNode);
         // We don't need the corresponding text node anymore, we turned it into a link/image node
         if (opener.bangNode != null && !startFromBracket) {
             opener.bangNode.unlink();
@@ -451,7 +437,30 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
         }
 
-        return linkOrImage;
+        return wrapperNode;
+    }
+
+    private Node replaceBracket(Bracket opener, Node node, boolean startFromBracket) {
+        // Remove delimiters (but keep text nodes)
+        while (lastDelimiter != null && lastDelimiter != opener.previousDelimiter) {
+            removeDelimiterKeepNode(lastDelimiter);
+        }
+
+        if (includeSourceSpans) {
+            var startPosition = opener.bangPosition == null || startFromBracket ? opener.bracketPosition : opener.bangPosition;
+            node.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
+        }
+
+        removeLastBracket();
+
+        // Remove nodes that we added since the opener, because we're replacing them
+        Node n = opener.bangNode == null || startFromBracket ? opener.bracketNode : opener.bangNode;
+        while (n != null) {
+            var next = n.getNext();
+            n.unlink();
+            n = next;
+        }
+        return node;
     }
 
     private void addBracket(Bracket bracket) {
