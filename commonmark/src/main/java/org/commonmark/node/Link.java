@@ -46,6 +46,9 @@ public class Link extends Node {
         this.destination = destination;
     }
 
+    /**
+     * @return the title or null
+     */
     public String getTitle() {
         return title;
     }

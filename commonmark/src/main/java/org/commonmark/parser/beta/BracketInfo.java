@@ -29,5 +29,15 @@ public interface BracketInfo {
      */
     String label();
 
+    /**
+     * The destination if available, e.g. in `[foo](destination)`, or null
+     */
+    String destination();
+
+    /**
+     * The title if available, e.g. in `[foo](destination "title")`, or null
+     */
+    String title();
+
     Position afterTextBracket();
 }

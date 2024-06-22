@@ -323,82 +323,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private Node parseLinkOrImage(Bracket opener, Position beforeClose) {
-        // Check to see if we have a link (or image, with a ! in front). The different types:
-        // - Inline:       `[foo](/uri)` or with optional title `[foo](/uri "title")`
-        // - Reference links
-        //   - Full:      `[foo][bar]` (foo is the text and bar is the label that needs to match a reference)
-        //   - Collapsed: `[foo][]`    (foo is both the text and label)
-        //   - Shortcut:  `[foo]`      (foo is both the text and label)
-
-        // Starting position is after the closing `]`
-        Position afterClose = scanner.position();
-
-        // Maybe an inline link/image
-        var destinationTitle = parseInlineDestinationTitle(scanner);
-        if (destinationTitle != null) {
-            var linkOrImage = opener.image
-                    ? new Image(destinationTitle.destination, destinationTitle.title)
-                    : new Link(destinationTitle.destination, destinationTitle.title);
-            return processLinkOrImage(opener, linkOrImage, false);
-        }
-        // Not an inline link/image, rewind back to after `]`.
-        scanner.setPosition(afterClose);
-
-        // Maybe a reference link/image like `[foo][bar]`, `[foo][]` or `[foo]`.
-        // Note that even `[foo](` could be a valid link if foo is a reference, which is why we try this even if the `(`
-        // failed to be parsed as an inline link/image before.
-
-        String text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
-
-        // See if there's a link label like `[bar]` or `[]`
-        String label = parseLinkLabel(scanner);
-        if (label == null) {
-            // No label, rewind back
-            scanner.setPosition(afterClose);
-        }
-        var referenceType = label == null ?
-                BracketInfo.ReferenceType.SHORTCUT : label.isEmpty() ?
-                BracketInfo.ReferenceType.COLLAPSED :
-                BracketInfo.ReferenceType.FULL;
-        if ((referenceType == BracketInfo.ReferenceType.SHORTCUT || referenceType == BracketInfo.ReferenceType.COLLAPSED)
-                && opener.bracketAfter) {
-            // In case of SHORTCUT or COLLAPSED, the text is used as the reference. But the reference is not allowed to
-            // contain an unescaped bracket, so if that's the case we don't need to continue. This is an optimization.
+        var bracketInfo = parseBracketInfo(opener, beforeClose);
+        if (bracketInfo == null) {
             return null;
         }
-
-        var bracketInfo = new BracketInfo() {
-            @Override
-            public OpenerType openerType() {
-                return opener.image ? OpenerType.IMAGE : OpenerType.LINK;
-            }
-
-            @Override
-            public ReferenceType referenceType() {
-                return referenceType;
-            }
-
-            @Override
-            public String text() {
-                return text;
-            }
-
-            @Override
-            public String label() {
-                return label;
-            }
-
-            @Override
-            public Position afterTextBracket() {
-                return afterClose;
-            }
-        };
-
         var processorStartPosition = scanner.position();
 
         for (var bracketProcessor : bracketProcessors) {
-            // TODO: Should inline links also go through this, maybe? That would allow e.g. the image attributes extension
-            //  to use it to parse the attributes, I think. It would also be clearer: Every type of link goes through this.
             var bracketResult = bracketProcessor.process(bracketInfo, scanner, context);
             if (!(bracketResult instanceof BracketResultImpl)) {
                 // Reset position in case the processor used the scanner, and it didn't work out.
@@ -436,6 +367,52 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         return null;
+    }
+
+    private BracketInfo parseBracketInfo(Bracket opener, Position beforeClose) {
+        // Check to see if we have a link (or image, with a ! in front). The different types:
+        // - Inline:       `[foo](/uri)` or with optional title `[foo](/uri "title")`
+        // - Reference links
+        //   - Full:      `[foo][bar]` (foo is the text and bar is the label that needs to match a reference)
+        //   - Collapsed: `[foo][]`    (foo is both the text and label)
+        //   - Shortcut:  `[foo]`      (foo is both the text and label)
+
+        var openerType = opener.image ? BracketInfo.OpenerType.IMAGE : BracketInfo.OpenerType.LINK;
+        String text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
+
+        // Starting position is after the closing `]`
+        Position afterClose = scanner.position();
+
+        // Maybe an inline link/image
+        var destinationTitle = parseInlineDestinationTitle(scanner);
+        if (destinationTitle != null) {
+            return new BracketInfoImpl(openerType, null, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
+        }
+        // Not an inline link/image, rewind back to after `]`.
+        scanner.setPosition(afterClose);
+
+        // Maybe a reference link/image like `[foo][bar]`, `[foo][]` or `[foo]`.
+        // Note that even `[foo](` could be a valid link if foo is a reference, which is why we try this even if the `(`
+        // failed to be parsed as an inline link/image before.
+
+        // See if there's a link label like `[bar]` or `[]`
+        String label = parseLinkLabel(scanner);
+        if (label == null) {
+            // No label, rewind back
+            scanner.setPosition(afterClose);
+        }
+        var referenceType = label == null ?
+                BracketInfo.ReferenceType.SHORTCUT : label.isEmpty() ?
+                BracketInfo.ReferenceType.COLLAPSED :
+                BracketInfo.ReferenceType.FULL;
+        if ((referenceType == BracketInfo.ReferenceType.SHORTCUT || referenceType == BracketInfo.ReferenceType.COLLAPSED)
+                && opener.bracketAfter) {
+            // In case of SHORTCUT or COLLAPSED, the text is used as the reference. But the reference is not allowed to
+            // contain an unescaped bracket, so if that's the case we don't need to continue. This is an optimization.
+            return null;
+        }
+
+        return new BracketInfoImpl(openerType, referenceType, text, label, null, null, afterClose);
     }
 
     private Node processLinkOrImage(Bracket opener, Node linkOrImage, boolean startFromBracket) {
@@ -891,6 +868,63 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         public DestinationTitle(String destination, String title) {
             this.destination = destination;
             this.title = title;
+        }
+    }
+
+    private static class BracketInfoImpl implements BracketInfo {
+
+        private final OpenerType openerType;
+        private final ReferenceType referenceType;
+        private final String text;
+        private final String label;
+        private final String destination;
+        private final String title;
+        private final Position afterTextBracket;
+
+        private BracketInfoImpl(OpenerType openerType, ReferenceType referenceType, String text, String label,
+                                String destination, String title, Position afterTextBracket) {
+            this.openerType = openerType;
+            this.referenceType = referenceType;
+            this.text = text;
+            this.label = label;
+            this.destination = destination;
+            this.title = title;
+            this.afterTextBracket = afterTextBracket;
+        }
+
+        @Override
+        public OpenerType openerType() {
+            return openerType;
+        }
+
+        @Override
+        public ReferenceType referenceType() {
+            return referenceType;
+        }
+
+        @Override
+        public String text() {
+            return text;
+        }
+
+        @Override
+        public String label() {
+            return label;
+        }
+
+        @Override
+        public String destination() {
+            return destination;
+        }
+
+        @Override
+        public String title() {
+            return title;
+        }
+
+        @Override
+        public Position afterTextBracket() {
+            return afterTextBracket;
         }
     }
 }

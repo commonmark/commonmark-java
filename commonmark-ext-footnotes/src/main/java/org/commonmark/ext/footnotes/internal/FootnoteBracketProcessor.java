@@ -12,6 +12,11 @@ import org.commonmark.parser.beta.Scanner;
 public class FootnoteBracketProcessor implements BracketProcessor {
     @Override
     public BracketResult process(BracketInfo bracketInfo, Scanner scanner, InlineParserContext context) {
+        if (bracketInfo.destination() != null) {
+            // If it's an inline link, it can't be a footnote reference
+            return BracketResult.none();
+        }
+
         var text = bracketInfo.text();
         if (!text.startsWith("^")) {
             // Footnote reference needs to start with [^

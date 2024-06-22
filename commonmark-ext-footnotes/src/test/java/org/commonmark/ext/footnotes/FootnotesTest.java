@@ -178,6 +178,12 @@ public class FootnotesTest {
     }
 
     @Test
+    public void testInlineLinkTakesPrecedence() {
+        var doc = PARSER.parse("Test [^bar](/url)\n\n[^bar]: footnote\n");
+        assertNull(tryFind(doc, FootnoteReference.class));
+    }
+
+    @Test
     public void testRefWithBracket() {
         // Not a footnote, [ needs to be escaped
         var doc = PARSER.parse("Test [^f[oo]\n\n[^f[oo]: /url\n");
