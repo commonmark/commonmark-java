@@ -6,7 +6,7 @@ import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.BracketProcessor;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
@@ -73,7 +73,7 @@ public class DocumentParser implements ParserState {
     private final InlineParserFactory inlineParserFactory;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
-    private final List<BracketProcessor> bracketProcessors;
+    private final List<LinkProcessor> linkProcessors;
     private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
     private final Definitions definitions = new Definitions();
@@ -83,12 +83,12 @@ public class DocumentParser implements ParserState {
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
                           List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          List<BracketProcessor> bracketProcessors, IncludeSourceSpans includeSourceSpans) {
+                          List<LinkProcessor> linkProcessors, IncludeSourceSpans includeSourceSpans) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
-        this.bracketProcessors = bracketProcessors;
+        this.linkProcessors = linkProcessors;
         this.includeSourceSpans = includeSourceSpans;
 
         this.documentBlockParser = new DocumentBlockParser();
@@ -466,7 +466,7 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, bracketProcessors, definitions);
+        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, linkProcessors, definitions);
         var inlineParser = inlineParserFactory.create(context);
 
         for (var blockParser : allBlockParsers) {

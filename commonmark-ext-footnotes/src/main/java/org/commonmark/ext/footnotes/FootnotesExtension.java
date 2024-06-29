@@ -2,7 +2,7 @@ package org.commonmark.ext.footnotes;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.footnotes.internal.FootnoteBlockParser;
-import org.commonmark.ext.footnotes.internal.FootnoteBracketProcessor;
+import org.commonmark.ext.footnotes.internal.FootnoteLinkProcessor;
 import org.commonmark.ext.footnotes.internal.FootnoteHtmlNodeRenderer;
 import org.commonmark.ext.footnotes.internal.FootnoteMarkdownNodeRenderer;
 import org.commonmark.parser.Parser;
@@ -32,7 +32,7 @@ public class FootnotesExtension implements Parser.ParserExtension,
     public void extend(Parser.Builder parserBuilder) {
         parserBuilder
                 .customBlockParserFactory(new FootnoteBlockParser.Factory())
-                .bracketProcessor(new FootnoteBracketProcessor());
+                .linkProcessor(new FootnoteLinkProcessor());
     }
 
     @Override

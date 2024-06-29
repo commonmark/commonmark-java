@@ -2,7 +2,7 @@ package org.commonmark.internal;
 
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParserContext;
-import org.commonmark.parser.beta.BracketProcessor;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
@@ -12,16 +12,16 @@ public class InlineParserContextImpl implements InlineParserContext {
 
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
-    private final List<BracketProcessor> bracketProcessors;
+    private final List<LinkProcessor> linkProcessors;
     private final Definitions definitions;
 
     public InlineParserContextImpl(List<InlineContentParserFactory> inlineContentParserFactories,
                                    List<DelimiterProcessor> delimiterProcessors,
-                                   List<BracketProcessor> bracketProcessors,
+                                   List<LinkProcessor> linkProcessors,
                                    Definitions definitions) {
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
-        this.bracketProcessors = bracketProcessors;
+        this.linkProcessors = linkProcessors;
         this.definitions = definitions;
     }
 
@@ -36,8 +36,8 @@ public class InlineParserContextImpl implements InlineParserContext {
     }
 
     @Override
-    public List<BracketProcessor> getCustomBracketProcessors() {
-        return bracketProcessors;
+    public List<LinkProcessor> getCustomLinkProcessors() {
+        return linkProcessors;
     }
 
     @Override

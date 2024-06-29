@@ -1,12 +1,12 @@
 package org.commonmark.internal.inline;
 
 import org.commonmark.node.Node;
-import org.commonmark.parser.beta.BracketResult;
+import org.commonmark.parser.beta.LinkResult;
 import org.commonmark.parser.beta.Position;
 
-public class BracketResultImpl implements BracketResult {
+public class LinkResultImpl implements LinkResult {
     @Override
-    public BracketResult startFromBracket() {
+    public LinkResult startFromBracket() {
         startFromBracket = true;
         return this;
     }
@@ -22,7 +22,7 @@ public class BracketResultImpl implements BracketResult {
 
     private boolean startFromBracket;
 
-    public BracketResultImpl(Type type, Node node, Position position) {
+    public LinkResultImpl(Type type, Node node, Position position) {
         this.type = type;
         this.node = node;
         this.position = position;

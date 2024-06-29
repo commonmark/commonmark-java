@@ -1,6 +1,6 @@
 package org.commonmark.parser.beta;
 
-public interface BracketInfo {
+public interface LinkInfo {
     enum OpenerType {
         // An image (a `!` before the `[`)
         IMAGE,

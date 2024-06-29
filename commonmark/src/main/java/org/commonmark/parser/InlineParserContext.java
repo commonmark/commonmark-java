@@ -1,7 +1,7 @@
 package org.commonmark.parser;
 
 import org.commonmark.node.LinkReferenceDefinition;
-import org.commonmark.parser.beta.BracketProcessor;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
@@ -27,7 +27,7 @@ public interface InlineParserContext {
     /**
      * TODO
      */
-    List<BracketProcessor> getCustomBracketProcessors();
+    List<LinkProcessor> getCustomLinkProcessors();
 
     /**
      * Look up a {@link LinkReferenceDefinition} for a given label.

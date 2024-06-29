@@ -19,7 +19,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final InlineParserContext context;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
-    private final List<BracketProcessor> bracketProcessors;
+    private final List<LinkProcessor> linkProcessors;
     private final BitSet specialCharacters;
 
     private Map<Character, List<InlineContentParser>> inlineParsers;
@@ -42,7 +42,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.context = context;
         this.inlineContentParserFactories = calculateInlineContentParserFactories(context.getCustomInlineContentParserFactories());
         this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
-        this.bracketProcessors = calculateBracketProcessors(context.getCustomBracketProcessors());
+        this.linkProcessors = calculateLinkProcessors(context.getCustomLinkProcessors());
         this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
     }
 
@@ -57,10 +57,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return list;
     }
 
-    private List<BracketProcessor> calculateBracketProcessors(List<BracketProcessor> bracketProcessors) {
-        // Custom bracket processors can override the built-in behavior, so make sure they are tried first
-        var list = new ArrayList<>(bracketProcessors);
-        list.add(new CoreBracketProcessor());
+    private List<LinkProcessor> calculateLinkProcessors(List<LinkProcessor> linkProcessors) {
+        // Custom link processors can override the built-in behavior, so make sure they are tried first
+        var list = new ArrayList<>(linkProcessors);
+        list.add(new CoreLinkProcessor());
         return list;
     }
 
@@ -329,15 +329,15 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
         var processorStartPosition = scanner.position();
 
-        for (var bracketProcessor : bracketProcessors) {
-            var bracketResult = bracketProcessor.process(bracketInfo, scanner, context);
-            if (!(bracketResult instanceof BracketResultImpl)) {
+        for (var linkProcessor : linkProcessors) {
+            var linkResult = linkProcessor.process(bracketInfo, scanner, context);
+            if (!(linkResult instanceof LinkResultImpl)) {
                 // Reset position in case the processor used the scanner, and it didn't work out.
                 scanner.setPosition(processorStartPosition);
                 continue;
             }
 
-            var result = (BracketResultImpl) bracketResult;
+            var result = (LinkResultImpl) linkResult;
             var node = result.getNode();
             var position = result.getPosition();
             var startFromBracket = result.isStartFromBracket();
@@ -355,7 +355,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return null;
     }
 
-    private BracketInfo parseBracketInfo(Bracket opener, Position beforeClose) {
+    private LinkInfo parseBracketInfo(Bracket opener, Position beforeClose) {
         // Check to see if we have a link (or image, with a ! in front). The different types:
         // - Inline:       `[foo](/uri)` or with optional title `[foo](/uri "title")`
         // - Reference links
@@ -363,7 +363,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         //   - Collapsed: `[foo][]`    (foo is both the text and label)
         //   - Shortcut:  `[foo]`      (foo is both the text and label)
 
-        var openerType = opener.image ? BracketInfo.OpenerType.IMAGE : BracketInfo.OpenerType.LINK;
+        var openerType = opener.image ? LinkInfo.OpenerType.IMAGE : LinkInfo.OpenerType.LINK;
         String text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
 
         // Starting position is after the closing `]`
@@ -372,7 +372,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // Maybe an inline link/image
         var destinationTitle = parseInlineDestinationTitle(scanner);
         if (destinationTitle != null) {
-            return new BracketInfoImpl(openerType, null, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
+            return new LinkInfoImpl(openerType, null, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
         }
         // Not an inline link/image, rewind back to after `]`.
         scanner.setPosition(afterClose);
@@ -388,17 +388,17 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             scanner.setPosition(afterClose);
         }
         var referenceType = label == null ?
-                BracketInfo.ReferenceType.SHORTCUT : label.isEmpty() ?
-                BracketInfo.ReferenceType.COLLAPSED :
-                BracketInfo.ReferenceType.FULL;
-        if ((referenceType == BracketInfo.ReferenceType.SHORTCUT || referenceType == BracketInfo.ReferenceType.COLLAPSED)
+                LinkInfo.ReferenceType.SHORTCUT : label.isEmpty() ?
+                LinkInfo.ReferenceType.COLLAPSED :
+                LinkInfo.ReferenceType.FULL;
+        if ((referenceType == LinkInfo.ReferenceType.SHORTCUT || referenceType == LinkInfo.ReferenceType.COLLAPSED)
                 && opener.bracketAfter) {
             // In case of SHORTCUT or COLLAPSED, the text is used as the reference. But the reference is not allowed to
             // contain an unescaped bracket, so if that's the case we don't need to continue. This is an optimization.
             return null;
         }
 
-        return new BracketInfoImpl(openerType, referenceType, text, label, null, null, afterClose);
+        return new LinkInfoImpl(openerType, referenceType, text, label, null, null, afterClose);
     }
 
     private Node wrapBracket(Bracket opener, Node wrapperNode, boolean startFromBracket) {
@@ -880,7 +880,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
     }
 
-    private static class BracketInfoImpl implements BracketInfo {
+    private static class LinkInfoImpl implements LinkInfo {
 
         private final OpenerType openerType;
         private final ReferenceType referenceType;
@@ -890,8 +890,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         private final String title;
         private final Position afterTextBracket;
 
-        private BracketInfoImpl(OpenerType openerType, ReferenceType referenceType, String text, String label,
-                                String destination, String title, Position afterTextBracket) {
+        private LinkInfoImpl(OpenerType openerType, ReferenceType referenceType, String text, String label,
+                             String destination, String title, Position afterTextBracket) {
             this.openerType = openerType;
             this.referenceType = referenceType;
             this.text = text;
