@@ -31,6 +31,11 @@ public class FootnoteMarkdownRendererTest {
         assertRoundTrip("Test [^foo]\n\n[^foo]: - foo\n    - bar\n");
     }
 
+    @Test
+    public void testBackslashInLabel() {
+        assertRoundTrip("[^\\foo]\n\n[^\\foo]: note\n");
+    }
+
     private void assertRoundTrip(String input) {
         String rendered = parseAndRender(input);
         assertEquals(input, rendered);

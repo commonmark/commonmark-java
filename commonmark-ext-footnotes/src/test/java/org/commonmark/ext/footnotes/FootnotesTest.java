@@ -21,7 +21,7 @@ public class FootnotesTest {
 
     @Test
     public void testDefBlockStart() {
-        for (var s : List.of("1", "a", "^", "*", "\\a", "\uD83D\uDE42", "&")) {
+        for (var s : List.of("1", "a", "^", "*", "\\a", "\uD83D\uDE42", "&0")) {
             var doc = PARSER.parse("[^" + s + "]: footnote\n");
             var def = find(doc, FootnoteDefinition.class);
             assertEquals(s, def.getLabel());
@@ -183,6 +183,15 @@ public class FootnotesTest {
         // Not a footnote, [ needs to be escaped
         var doc = PARSER.parse("Test [^f[oo]\n\n[^f[oo]: /url\n");
         assertNull(tryFind(doc, FootnoteReference.class));
+    }
+
+    @Test
+    public void testRefWithBackslash() {
+        var doc = PARSER.parse("[^\\foo]\n\n[^\\foo]: note\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertEquals("\\foo", ref.getLabel());
+        var def = find(doc, FootnoteDefinition.class);
+        assertEquals("\\foo", def.getLabel());
     }
 
     @Test

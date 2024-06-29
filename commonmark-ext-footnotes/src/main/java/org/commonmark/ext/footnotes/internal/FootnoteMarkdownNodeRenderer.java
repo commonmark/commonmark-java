@@ -40,7 +40,7 @@ public class FootnoteMarkdownNodeRenderer implements NodeRenderer {
 
     private void renderReference(FootnoteReference ref) {
         writer.raw("[^");
-        // TODO: raw or text? Can the label contain characters that need to be escaped?
+        // The label is parsed as-is without escaping, so we can render it back as-is
         writer.raw(ref.getLabel());
         writer.raw("]");
     }
