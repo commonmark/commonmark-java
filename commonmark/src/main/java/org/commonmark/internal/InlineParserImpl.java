@@ -323,14 +323,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private Node parseLinkOrImage(Bracket opener, Position beforeClose) {
-        var bracketInfo = parseBracketInfo(opener, beforeClose);
-        if (bracketInfo == null) {
+        var linkInfo = parseLinkInfo(opener, beforeClose);
+        if (linkInfo == null) {
             return null;
         }
         var processorStartPosition = scanner.position();
 
         for (var linkProcessor : linkProcessors) {
-            var linkResult = linkProcessor.process(bracketInfo, scanner, context);
+            var linkResult = linkProcessor.process(linkInfo, scanner, context);
             if (!(linkResult instanceof LinkResultImpl)) {
                 // Reset position in case the processor used the scanner, and it didn't work out.
                 scanner.setPosition(processorStartPosition);
@@ -355,7 +355,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return null;
     }
 
-    private LinkInfo parseBracketInfo(Bracket opener, Position beforeClose) {
+    private LinkInfo parseLinkInfo(Bracket opener, Position beforeClose) {
         // Check to see if we have a link (or image, with a ! in front). The different types:
         // - Inline:       `[foo](/uri)` or with optional title `[foo](/uri "title")`
         // - Reference links
@@ -372,7 +372,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // Maybe an inline link/image
         var destinationTitle = parseInlineDestinationTitle(scanner);
         if (destinationTitle != null) {
-            return new LinkInfoImpl(openerType, null, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
+            return new LinkInfoImpl(openerType, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
         }
         // Not an inline link/image, rewind back to after `]`.
         scanner.setPosition(afterClose);
@@ -387,18 +387,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             // No label, rewind back
             scanner.setPosition(afterClose);
         }
-        var referenceType = label == null ?
-                LinkInfo.ReferenceType.SHORTCUT : label.isEmpty() ?
-                LinkInfo.ReferenceType.COLLAPSED :
-                LinkInfo.ReferenceType.FULL;
-        if ((referenceType == LinkInfo.ReferenceType.SHORTCUT || referenceType == LinkInfo.ReferenceType.COLLAPSED)
-                && opener.bracketAfter) {
-            // In case of SHORTCUT or COLLAPSED, the text is used as the reference. But the reference is not allowed to
+        var textIsReference = label == null || label.isEmpty();
+        if (opener.bracketAfter && textIsReference) {
+            // In case of shortcut or collapsed links, the text is used as the reference. But the reference is not allowed to
             // contain an unescaped bracket, so if that's the case we don't need to continue. This is an optimization.
             return null;
         }
 
-        return new LinkInfoImpl(openerType, referenceType, text, label, null, null, afterClose);
+        return new LinkInfoImpl(openerType, text, label, null, null, afterClose);
     }
 
     private Node wrapBracket(Bracket opener, Node wrapperNode, boolean startFromBracket) {
@@ -883,17 +879,15 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private static class LinkInfoImpl implements LinkInfo {
 
         private final OpenerType openerType;
-        private final ReferenceType referenceType;
         private final String text;
         private final String label;
         private final String destination;
         private final String title;
         private final Position afterTextBracket;
 
-        private LinkInfoImpl(OpenerType openerType, ReferenceType referenceType, String text, String label,
+        private LinkInfoImpl(OpenerType openerType, String text, String label,
                              String destination, String title, Position afterTextBracket) {
             this.openerType = openerType;
-            this.referenceType = referenceType;
             this.text = text;
             this.label = label;
             this.destination = destination;
@@ -904,11 +898,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         @Override
         public OpenerType openerType() {
             return openerType;
-        }
-
-        @Override
-        public ReferenceType referenceType() {
-            return referenceType;
         }
 
         @Override

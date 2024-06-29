@@ -1,5 +1,27 @@
 package org.commonmark.parser.beta;
 
+/**
+ * A parsed link or image. There are different types of links.
+ * <p>
+ * Inline links:
+ * <pre>
+ * [text](destination)
+ * [text](destination "title")
+ * </pre>
+ * <p>
+ * Reference links, which have different subtypes. Full::
+ * <pre>
+ * [text][label]
+ * </pre>
+ * Collapsed (label is ""):
+ * <pre>
+ * [text][]
+ * </pre>
+ * Shortcut (label is null):
+ * <pre>
+ * [text]
+ * </pre>
+ */
 public interface LinkInfo {
     enum OpenerType {
         // An image (a `!` before the `[`)
@@ -8,16 +30,8 @@ public interface LinkInfo {
         LINK
     }
 
-    enum ReferenceType {
-        FULL,
-        COLLAPSED,
-        SHORTCUT
-    }
-
     // TODO: We could also expose the opener Text (`[` or `![`)
     OpenerType openerType();
-
-    ReferenceType referenceType();
 
     /**
      * The text between the first brackets, e.g. `foo` in `[foo][bar]`.
@@ -25,7 +39,7 @@ public interface LinkInfo {
     String text();
 
     /**
-     * The label, or null for shortcut links (in which case {@link #text()} should be used as the label).
+     * The label, or null for inline links or for shortcut links (in which case {@link #text()} should be used as the label).
      */
     String label();
 
@@ -39,5 +53,12 @@ public interface LinkInfo {
      */
     String title();
 
+    /**
+     * The position after the text bracket, e.g.:
+     * <pre>
+     * [foo][bar]
+     *      ^
+     * </pre>
+     */
     Position afterTextBracket();
 }
