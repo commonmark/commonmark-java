@@ -4,6 +4,7 @@ import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.node.Block;
 import org.commonmark.node.DefinitionMap;
 import org.commonmark.parser.block.*;
+import org.commonmark.text.Characters;
 
 import java.util.List;
 
@@ -76,7 +77,9 @@ public class FootnoteBlockParser extends AbstractBlockParser {
                     case ']':
                         if (index > labelStart && index + 1 < content.length() && content.charAt(index + 1) == ':') {
                             var label = content.subSequence(labelStart, index).toString();
-                            return BlockStart.of(new FootnoteBlockParser(label)).atIndex(index + 2);
+                            // After the colon, any number of spaces is skipped (not part of the content)
+                            var afterSpaces = Characters.skipSpaceTab(content, index + 2, content.length());
+                            return BlockStart.of(new FootnoteBlockParser(label)).atIndex(afterSpaces);
                         } else {
                             return BlockStart.none();
                         }

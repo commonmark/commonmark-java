@@ -78,6 +78,22 @@ public class FootnotesTest {
     }
 
     @Test
+    public void testDefBlockStartSpacesAfterColon() {
+        var doc = PARSER.parse("[^1]:        footnote\n");
+        var def = find(doc, FootnoteDefinition.class);
+        var paragraph = (Paragraph) def.getFirstChild();
+        assertText("footnote", paragraph.getFirstChild());
+    }
+
+    @Test
+    public void testDefContainsIndentedCodeBlock() {
+        var doc = PARSER.parse("[^1]:\n        code\n");
+        var def = find(doc, FootnoteDefinition.class);
+        var codeBlock = (IndentedCodeBlock) def.getFirstChild();
+        assertEquals("code\n", codeBlock.getLiteral());
+    }
+
+    @Test
     public void testDefContainsMultipleLines() {
         var doc = PARSER.parse("[^1]: footnote\nstill\n");
         var def = find(doc, FootnoteDefinition.class);
