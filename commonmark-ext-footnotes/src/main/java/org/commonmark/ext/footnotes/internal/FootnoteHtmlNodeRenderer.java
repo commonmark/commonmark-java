@@ -8,6 +8,7 @@ import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * HTML rendering for footnotes.
@@ -38,6 +39,11 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
      */
     private final Map<FootnoteDefinition, ReferencedDefinition> referencedDefinitions = new LinkedHashMap<>();
 
+    /**
+     * Information about references that should be rendered as footnotes.
+     */
+    private final Map<FootnoteReference, ReferenceInfo> references = new HashMap<>();
+
     public FootnoteHtmlNodeRenderer(HtmlNodeRendererContext context) {
         this.html = context.getWriter();
         this.context = context;
@@ -51,23 +57,69 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     @Override
     public void beforeRoot(Node node) {
         // Collect definitions so we can look them up when encountering a reference later
-        var visitor = new FootnotesVisitor();
+        var visitor = new DefinitionVisitor();
         node.accept(visitor);
         definitionMap = visitor.definitions;
+
+        // Register references in the main text. References inside definitions will be done later.
+        node.accept(new ReferenceVisitor(false, this::registerReference));
     }
 
     @Override
     public void render(Node node) {
         if (node instanceof FootnoteReference) {
-            renderReference((FootnoteReference) node);
+            var ref = (FootnoteReference) node;
+            // This is called for all references, even ones inside definitions that we render at the end.
+            renderReference(ref, references.get(ref));
         }
     }
 
-    private void renderReference(FootnoteReference ref) {
+    @Override
+    public void afterRoot(Node node) {
+        // Now render the referenced definitions if there are any.
+        if (referencedDefinitions.isEmpty()) {
+            return;
+        }
+
+        var firstDef = referencedDefinitions.keySet().iterator().next();
+        var attrs = new LinkedHashMap<String, String>();
+        attrs.put("class", "footnotes");
+        attrs.put("data-footnotes", null);
+        html.tag("section", context.extendAttributes(firstDef, "section", attrs));
+        html.line();
+        html.tag("ol");
+        html.line();
+
+        // Check whether there are any footnotes inside the definitions that we're about to render. For those, we might
+        // need to render more definitions. So do a breadth-first search to find all relevant definition.
+        var check = new LinkedList<>(referencedDefinitions.keySet());
+        while (!check.isEmpty()) {
+            var def = check.removeFirst();
+            def.accept(new ReferenceVisitor(true, ref -> {
+                var d = definitionMap.get(ref.getLabel());
+                if (d != null) {
+                    if (!referencedDefinitions.containsKey(d)) {
+                        check.addLast(d);
+                    }
+                    registerReference(ref);
+                }
+            }));
+        }
+
+        for (var entry : referencedDefinitions.entrySet()) {
+            // This will also render any footnote references inside definitions
+            renderDefinition(entry.getKey(), entry.getValue());
+        }
+
+        html.tag("/ol");
+        html.line();
+        html.tag("/section");
+        html.line();
+    }
+
+    private void registerReference(FootnoteReference ref) {
         var def = definitionMap.get(ref.getLabel());
         if (def == null) {
-            // A reference without a corresponding definition is rendered as plain text
-            html.text("[^" + ref.getLabel() + "]");
             return;
         }
 
@@ -81,41 +133,29 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         var id = referenceId(def.getLabel(), refNumber);
         referencedDef.references.add(id);
 
-        html.tag("sup", context.extendAttributes(ref, "sup", Map.of("class", "footnote-ref")));
+        var definitionId = definitionId(def.getLabel());
 
-        var href = "#" + definitionId(def.getLabel());
-        var attrs = new LinkedHashMap<String, String>();
-        attrs.put("href", href);
-        attrs.put("id", id);
-        attrs.put("data-footnote-ref", null);
-        html.tag("a", context.extendAttributes(ref, "a", attrs));
-        html.raw(String.valueOf(definitionNumber));
-        html.tag("/a");
-        html.tag("/sup");
+        references.put(ref, new ReferenceInfo(id, definitionId, definitionNumber));
     }
 
-    @Override
-    public void afterRoot(Node node) {
-        // Now render the referenced definitions if there are any
-        if (referencedDefinitions.isEmpty()) {
+    private void renderReference(FootnoteReference ref, ReferenceInfo referenceInfo) {
+        if (referenceInfo == null) {
+            // A reference without a corresponding definition is rendered as plain text
+            html.text("[^" + ref.getLabel() + "]");
             return;
         }
 
-        var firstDef = referencedDefinitions.keySet().iterator().next();
+        html.tag("sup", context.extendAttributes(ref, "sup", Map.of("class", "footnote-ref")));
+
+        var href = "#" + referenceInfo.definitionId;
         var attrs = new LinkedHashMap<String, String>();
-        attrs.put("class", "footnotes");
-        attrs.put("data-footnotes", null);
-        html.tag("section", context.extendAttributes(firstDef, "section", attrs));
-        html.line();
-        html.tag("ol");
-        html.line();
-        for (var entry : referencedDefinitions.entrySet()) {
-            renderDefinition(entry.getKey(), entry.getValue());
-        }
-        html.tag("/ol");
-        html.line();
-        html.tag("/section");
-        html.line();
+        attrs.put("href", href);
+        attrs.put("id", referenceInfo.id);
+        attrs.put("data-footnote-ref", null);
+        html.tag("a", context.extendAttributes(ref, "a", attrs));
+        html.raw(String.valueOf(referenceInfo.definitionNumber));
+        html.tag("/a");
+        html.tag("/sup");
     }
 
     private void renderDefinition(FootnoteDefinition def, ReferencedDefinition referencedDefinition) {
@@ -127,7 +167,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         html.line();
 
         if (def.getLastChild() instanceof Paragraph) {
-            // Add backlinks into last paragraph before "p". This is what GFM does.
+            // Add backlinks into last paragraph before </p>. This is what GFM does.
             var lastParagraph = (Paragraph) def.getLastChild();
             var node = def.getFirstChild();
             while (node != lastParagraph) {
@@ -205,7 +245,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         }
     }
 
-    private static class FootnotesVisitor extends AbstractVisitor {
+    private static class DefinitionVisitor extends AbstractVisitor {
 
         private final DefinitionMap<FootnoteDefinition> definitions = new DefinitionMap<>(FootnoteDefinition.class);
 
@@ -214,6 +254,39 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
             if (customBlock instanceof FootnoteDefinition) {
                 var def = (FootnoteDefinition) customBlock;
                 definitions.putIfAbsent(def.getLabel(), def);
+            } else {
+                super.visit(customBlock);
+            }
+        }
+    }
+
+    private static class ReferenceVisitor extends AbstractVisitor {
+        private final boolean inspectDefinitions;
+        private final Consumer<FootnoteReference> consumer;
+
+        private ReferenceVisitor(boolean inspectDefinitions, Consumer<FootnoteReference> consumer) {
+            this.inspectDefinitions = inspectDefinitions;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void visit(CustomNode customNode) {
+            if (customNode instanceof FootnoteReference) {
+                var ref = (FootnoteReference) customNode;
+                consumer.accept(ref);
+            } else {
+                super.visit(customNode);
+            }
+        }
+
+        @Override
+        public void visit(CustomBlock customBlock) {
+            if (customBlock instanceof FootnoteDefinition) {
+                if (inspectDefinitions) {
+                    super.visit(customBlock);
+                }
+            } else {
+                super.visit(customBlock);
             }
         }
     }
@@ -229,6 +302,27 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         final List<String> references = new ArrayList<>();
 
         ReferencedDefinition(int definitionNumber) {
+            this.definitionNumber = definitionNumber;
+        }
+    }
+
+    private static class ReferenceInfo {
+        /**
+         * The ID of the reference; in the corresponding definition, a link back to this reference will be rendered.
+         */
+        private final String id;
+        /**
+         * The ID of the definition, for linking to the definition.
+         */
+        private final String definitionId;
+        /**
+         * The definition number, rendered in superscript.
+         */
+        private final int definitionNumber;
+
+        private ReferenceInfo(String id, String definitionId, int definitionNumber) {
+            this.id = id;
+            this.definitionId = definitionId;
             this.definitionNumber = definitionNumber;
         }
     }
