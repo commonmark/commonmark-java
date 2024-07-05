@@ -98,20 +98,7 @@ public class FootnoteHtmlRendererTest extends RenderingTestCase {
                         "</section>\n");
     }
 
-    // Text in footnote definitions can reference other footnotes, even ones that aren't referenced in the main text.
-    // This makes them tricky because it's not enough to just go through the main text for references.
-    // And before we can render a definition, we need to know all references (because we add links back to references).
-    //
-    // In other words, footnotes form a directed graph. Footnotes can reference each other so cycles are possible too.
-    //
-    // One way to implement it, which is what cmark-gfm does, is to go through the whole document (including definitions)
-    // and find all references in order. That guarantees that all definitions are found, but it has strange results for
-    // ordering or when the reference is in an unreferenced definition, see tests below.
-    // In graph terms, it renders all definitions that have an incoming edge, no matter whether they are connected to
-    // the main text or not.
-    //
-    // The way we implement it is by starting with the footnotes from the main text. Then from the referenced
-    // definitions, run a breadth-first search to find all remaining relevant footnote definitions.
+    // See docs on FootnoteHtmlNodeRenderer about nested footnotes.
 
     @Test
     public void testNestedFootnotesSimple() {

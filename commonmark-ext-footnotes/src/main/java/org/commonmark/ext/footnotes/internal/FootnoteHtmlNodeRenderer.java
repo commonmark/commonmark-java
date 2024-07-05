@@ -23,6 +23,29 @@ import java.util.function.Consumer;
  * <li>Definitions are ordered by number</li>
  * <li>Definitions have links back to their references (one or more)</li>
  * </ul>
+ *
+ * <h4>Nested footnotes</h4>
+ * Text in footnote definitions can reference other footnotes, even ones that aren't referenced in the main text.
+ * This makes them tricky because it's not enough to just go through the main text for references.
+ * And before we can render a definition, we need to know all references (because we add links back to references).
+ * <p>
+ * In other words, footnotes form a directed graph. Footnotes can reference each other so cycles are possible too.
+ * <p>
+ * One way to implement it, which is what cmark-gfm does, is to go through the whole document (including definitions)
+ * and find all references in order. That guarantees that all definitions are found, but it has strange results for
+ * ordering or when the reference is in an unreferenced definition, see tests. In graph terms, it renders all
+ * definitions that have an incoming edge, no matter whether they are connected to the main text or not.
+ * <p>
+ * The way we implement it:
+ * <ol>
+ * <li>Start with the references in the main text; we can render them as we go</li>
+ * <li>After the main text is rendered, we have the referenced definitions, but there might be more from definition text</li>
+ * <li>To find the remaining definitions, we visit the definitions from before to look at references</li>
+ * <li>Repeat (breadth-first search) until we've found all definitions (note that we can't render before that's done because of backrefs)</li>
+ * <li>Now render the definitions (and any references inside)</li>
+ * </ol>
+ * This means we only render definitions whose references are actually rendered, and in a meaningful order (all main
+ * text footnotes first, then any nested ones).
  */
 public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
@@ -40,7 +63,8 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     private final Map<FootnoteDefinition, ReferencedDefinition> referencedDefinitions = new LinkedHashMap<>();
 
     /**
-     * Information about references that should be rendered as footnotes.
+     * Information about references that should be rendered as footnotes. This doesn't contain all references, just the
+     * ones from inside definitions.
      */
     private final Map<FootnoteReference, ReferenceInfo> references = new HashMap<>();
 
@@ -56,21 +80,20 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
     @Override
     public void beforeRoot(Node node) {
-        // Collect definitions so we can look them up when encountering a reference later
+        // Collect all definitions first, so we can look them up when encountering a reference later.
         var visitor = new DefinitionVisitor();
         node.accept(visitor);
         definitionMap = visitor.definitions;
-
-        // Register references in the main text. References inside definitions will be done later.
-        node.accept(new ReferenceVisitor(false, this::registerReference));
     }
 
     @Override
     public void render(Node node) {
         if (node instanceof FootnoteReference) {
-            var ref = (FootnoteReference) node;
             // This is called for all references, even ones inside definitions that we render at the end.
-            renderReference(ref, references.get(ref));
+            var ref = (FootnoteReference) node;
+            // Use containsKey because if value is null, we don't need to try registering again.
+            var info = references.containsKey(ref) ? references.get(ref) : registerReference(ref);
+            renderReference(ref, info);
         }
     }
 
@@ -95,13 +118,13 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         var check = new LinkedList<>(referencedDefinitions.keySet());
         while (!check.isEmpty()) {
             var def = check.removeFirst();
-            def.accept(new ReferenceVisitor(true, ref -> {
+            def.accept(new ReferenceVisitor(ref -> {
                 var d = definitionMap.get(ref.getLabel());
                 if (d != null) {
                     if (!referencedDefinitions.containsKey(d)) {
                         check.addLast(d);
                     }
-                    registerReference(ref);
+                    references.put(ref, registerReference(ref));
                 }
             }));
         }
@@ -117,10 +140,10 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         html.line();
     }
 
-    private void registerReference(FootnoteReference ref) {
+    private ReferenceInfo registerReference(FootnoteReference ref) {
         var def = definitionMap.get(ref.getLabel());
         if (def == null) {
-            return;
+            return null;
         }
 
         // The first referenced definition gets number 1, second one 2, etc.
@@ -135,7 +158,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
         var definitionId = definitionId(def.getLabel());
 
-        references.put(ref, new ReferenceInfo(id, definitionId, definitionNumber));
+        return new ReferenceInfo(id, definitionId, definitionNumber);
     }
 
     private void renderReference(FootnoteReference ref, ReferenceInfo referenceInfo) {
@@ -261,11 +284,9 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     }
 
     private static class ReferenceVisitor extends AbstractVisitor {
-        private final boolean inspectDefinitions;
         private final Consumer<FootnoteReference> consumer;
 
-        private ReferenceVisitor(boolean inspectDefinitions, Consumer<FootnoteReference> consumer) {
-            this.inspectDefinitions = inspectDefinitions;
+        private ReferenceVisitor(Consumer<FootnoteReference> consumer) {
             this.consumer = consumer;
         }
 
@@ -276,17 +297,6 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
                 consumer.accept(ref);
             } else {
                 super.visit(customNode);
-            }
-        }
-
-        @Override
-        public void visit(CustomBlock customBlock) {
-            if (customBlock instanceof FootnoteDefinition) {
-                if (inspectDefinitions) {
-                    super.visit(customBlock);
-                }
-            } else {
-                super.visit(customBlock);
             }
         }
     }
