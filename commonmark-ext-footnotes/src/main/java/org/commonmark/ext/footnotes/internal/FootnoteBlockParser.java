@@ -8,6 +8,9 @@ import org.commonmark.text.Characters;
 
 import java.util.List;
 
+/**
+ * Parser for a single {@link FootnoteDefinition} block.
+ */
 public class FootnoteBlockParser extends AbstractBlockParser {
 
     private final FootnoteDefinition block;

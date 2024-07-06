@@ -9,6 +9,9 @@ import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.LinkResult;
 import org.commonmark.parser.beta.Scanner;
 
+/**
+ * For turning e.g. <code>[^foo]</code> into a {@link FootnoteReference}.
+ */
 public class FootnoteLinkProcessor implements LinkProcessor {
     @Override
     public LinkResult process(LinkInfo linkInfo, Scanner scanner, InlineParserContext context) {
