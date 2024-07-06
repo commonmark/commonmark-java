@@ -48,10 +48,7 @@ public class FootnoteMarkdownNodeRenderer implements NodeRenderer {
     private void renderDefinition(FootnoteDefinition def) {
         writer.raw("[^");
         writer.raw(def.getLabel());
-        writer.raw("]:");
-        if (def.getFirstChild() instanceof Paragraph) {
-            writer.raw(" ");
-        }
+        writer.raw("]: ");
 
         writer.pushPrefix("    ");
         writer.pushTight(true);
