@@ -21,16 +21,27 @@ package org.commonmark.parser.beta;
  * <pre>
  * [text]
  * </pre>
+ * Images use the same syntax as links but with a {@code !} in front, e.g. {@code ![text](destination)}.
  */
 public interface LinkInfo {
     enum OpenerType {
-        // An image (a `!` before the `[`)
+        /**
+         * An image (a {@code !} before the {@code [})
+         */
         IMAGE,
-        // A link
+        /**
+         * A link
+         */
         LINK
     }
 
-    // TODO: We could also expose the opener Text (`[` or `![`)
+    /**
+     * The type of opener of this link/image:
+     * <ul>
+     * <li>{@link OpenerType#LINK} for links like {@code [text...}</li>
+     * <li>{@link OpenerType#IMAGE} for images like {@code ![text...}</li>
+     * </ul>
+     */
     OpenerType openerType();
 
     /**

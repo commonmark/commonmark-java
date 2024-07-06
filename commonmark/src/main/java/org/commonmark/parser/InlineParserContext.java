@@ -25,7 +25,7 @@ public interface InlineParserContext {
     List<DelimiterProcessor> getCustomDelimiterProcessors();
 
     /**
-     * TODO
+     * @return custom link processors that have been configured with {@link Parser.Builder#linkProcessor}.
      */
     List<LinkProcessor> getCustomLinkProcessors();
 

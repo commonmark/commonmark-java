@@ -248,7 +248,13 @@ public class Parser {
         }
 
         /**
-         * TODO
+         * Add a custom link/image processor for inline parsing.
+         * <p>
+         * Multiple link processors can be added, and will be tried in order in which they were added. If no link
+         * processor applies, the normal behavior applies. That means these can override built-in link parsing.
+         *
+         * @param linkProcessor a link processor implementation
+         * @return {@code this}
          */
         public Builder linkProcessor(LinkProcessor linkProcessor) {
             Objects.requireNonNull(linkProcessor, "linkProcessor must not be null");
