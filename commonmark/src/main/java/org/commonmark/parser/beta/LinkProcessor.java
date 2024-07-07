@@ -13,14 +13,14 @@ import org.commonmark.parser.InlineParserContext;
  * [text]
  * [text][]
  * [text][label]
- * </pre>
+ * </code></pre>
  * And images:
  * <pre><code>
  * ![text](destination)
  * ![text]
  * ![text][]
  * ![text][label]
- * </pre>
+ * </code></pre>
  * See {@link LinkInfo} for accessing various parts of the parsed link/image.
  * <p>
  * The processor can then inspect the link/image and decide what to do with it by returning the appropriate
