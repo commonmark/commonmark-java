@@ -2,6 +2,7 @@ package org.commonmark.internal;
 
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
+import org.commonmark.node.DefinitionMap;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;

@@ -7,8 +7,8 @@ import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.*;
 import org.commonmark.parser.beta.Scanner;
+import org.commonmark.parser.beta.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.text.Characters;
 
@@ -19,6 +19,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final InlineParserContext context;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
+    private final List<LinkProcessor> linkProcessors;
     private final BitSet specialCharacters;
 
     private Map<Character, List<InlineContentParser>> inlineParsers;
@@ -41,6 +42,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.context = context;
         this.inlineContentParserFactories = calculateInlineContentParserFactories(context.getCustomInlineContentParserFactories());
         this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
+        this.linkProcessors = calculateLinkProcessors(context.getCustomLinkProcessors());
         this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
     }
 
@@ -52,6 +54,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         list.add(new EntityInlineParser.Factory());
         list.add(new AutolinkInlineParser.Factory());
         list.add(new HtmlInlineParser.Factory());
+        return list;
+    }
+
+    private List<LinkProcessor> calculateLinkProcessors(List<LinkProcessor> linkProcessors) {
+        // Custom link processors can override the built-in behavior, so make sure they are tried first
+        var list = new ArrayList<>(linkProcessors);
+        list.add(new CoreLinkProcessor());
         return list;
     }
 
@@ -177,7 +186,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             case '[':
                 return List.of(parseOpenBracket());
             case '!':
-                return List.of(parseBang());
+                return parseBang();
             case ']':
                 return List.of(parseCloseBracket());
             case '\n':
@@ -263,18 +272,20 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
      * If next character is [, and ! delimiter to delimiter stack and add a text node to block's children.
      * Otherwise just add a text node.
      */
-    private Node parseBang() {
-        Position start = scanner.position();
+    private List<? extends Node> parseBang() {
+        var bangPosition = scanner.position();
         scanner.next();
+        var bracketPosition = scanner.position();
         if (scanner.next('[')) {
-            Position contentPosition = scanner.position();
-            Text node = text(scanner.getSource(start, contentPosition));
+            var contentPosition = scanner.position();
+            var bangNode = text(scanner.getSource(bangPosition, bracketPosition));
+            var bracketNode = text(scanner.getSource(bracketPosition, contentPosition));
 
             // Add entry to stack for this opener
-            addBracket(Bracket.image(node, start, contentPosition, lastBracket, lastDelimiter));
-            return node;
+            addBracket(Bracket.image(bangNode, bangPosition, bracketNode, bracketPosition, contentPosition, lastBracket, lastDelimiter));
+            return List.of(bangNode, bracketNode);
         } else {
-            return text(scanner.getSource(start, scanner.position()));
+            return List.of(text(scanner.getSource(bangPosition, scanner.position())));
         }
     }
 
@@ -295,107 +306,157 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         if (!opener.allowed) {
-            // Matching opener but it's not allowed, just return a literal.
+            // Matching opener, but it's not allowed, just return a literal.
             removeLastBracket();
             return text(scanner.getSource(beforeClose, afterClose));
         }
 
-        // Check to see if we have a link/image
-        String dest = null;
-        String title = null;
-
-        // Maybe a inline link like `[foo](/uri "title")`
-        if (scanner.next('(')) {
-            scanner.whitespace();
-            dest = parseLinkDestination(scanner);
-            if (dest == null) {
-                scanner.setPosition(afterClose);
-            } else {
-                int whitespace = scanner.whitespace();
-                // title needs a whitespace before
-                if (whitespace >= 1) {
-                    title = parseLinkTitle(scanner);
-                    scanner.whitespace();
-                }
-                if (!scanner.next(')')) {
-                    // Don't have a closing `)`, so it's not a destination and title -> reset.
-                    // Note that something like `[foo](` could be valid, `(` will just be text.
-                    scanner.setPosition(afterClose);
-                    dest = null;
-                    title = null;
-                }
-            }
-        }
-
-        // Maybe a reference link like `[foo][bar]`, `[foo][]` or `[foo]`.
-        // Note that even `[foo](` could be a valid link if there's a reference, which is why this is not just an `else`
-        // here.
-        if (dest == null) {
-            // See if there's a link label like `[bar]` or `[]`
-            String ref = parseLinkLabel(scanner);
-            if (ref == null) {
-                scanner.setPosition(afterClose);
-            }
-            if ((ref == null || ref.isEmpty()) && !opener.bracketAfter) {
-                // If the second label is empty `[foo][]` or missing `[foo]`, then the first label is the reference.
-                // But it can only be a reference when there's no (unescaped) bracket in it.
-                // If there is, we don't even need to try to look up the reference. This is an optimization.
-                ref = scanner.getSource(opener.contentPosition, beforeClose).getContent();
-            }
-
-            if (ref != null) {
-                LinkReferenceDefinition definition = context.getLinkReferenceDefinition(ref);
-                if (definition != null) {
-                    dest = definition.getDestination();
-                    title = definition.getTitle();
-                }
-            }
-        }
-
-        if (dest != null) {
-            // If we got here, we have a link or image
-            Node linkOrImage = opener.image ? new Image(dest, title) : new Link(dest, title);
-
-            // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
-            Node node = opener.node.getNext();
-            while (node != null) {
-                Node next = node.getNext();
-                linkOrImage.appendChild(node);
-                node = next;
-            }
-
-            if (includeSourceSpans) {
-                linkOrImage.setSourceSpans(scanner.getSource(opener.markerPosition, scanner.position()).getSourceSpans());
-            }
-
-            // Process delimiters such as emphasis inside link/image
-            processDelimiters(opener.previousDelimiter);
-            mergeChildTextNodes(linkOrImage);
-            // We don't need the corresponding text node anymore, we turned it into a link/image node
-            opener.node.unlink();
-            removeLastBracket();
-
-            // Links within links are not allowed. We found this link, so there can be no other link around it.
-            if (!opener.image) {
-                Bracket bracket = lastBracket;
-                while (bracket != null) {
-                    if (!bracket.image) {
-                        // Disallow link opener. It will still get matched, but will not result in a link.
-                        bracket.allowed = false;
-                    }
-                    bracket = bracket.previous;
-                }
-            }
-
+        var linkOrImage = parseLinkOrImage(opener, beforeClose);
+        if (linkOrImage != null) {
             return linkOrImage;
-
-        } else {
-            // No link or image, parse just the bracket as text and continue
-            removeLastBracket();
-
-            scanner.setPosition(afterClose);
-            return text(scanner.getSource(beforeClose, afterClose));
         }
+        scanner.setPosition(afterClose);
+
+        // Nothing parsed, just parse the bracket as text and continue
+        removeLastBracket();
+        return text(scanner.getSource(beforeClose, afterClose));
+    }
+
+    private Node parseLinkOrImage(Bracket opener, Position beforeClose) {
+        var linkInfo = parseLinkInfo(opener, beforeClose);
+        if (linkInfo == null) {
+            return null;
+        }
+        var processorStartPosition = scanner.position();
+
+        for (var linkProcessor : linkProcessors) {
+            var linkResult = linkProcessor.process(linkInfo, scanner, context);
+            if (!(linkResult instanceof LinkResultImpl)) {
+                // Reset position in case the processor used the scanner, and it didn't work out.
+                scanner.setPosition(processorStartPosition);
+                continue;
+            }
+
+            var result = (LinkResultImpl) linkResult;
+            var node = result.getNode();
+            var position = result.getPosition();
+            var startFromBracket = result.isStartFromBracket();
+
+            switch (result.getType()) {
+                case WRAP:
+                    scanner.setPosition(position);
+                    return wrapBracket(opener, node, startFromBracket);
+                case REPLACE:
+                    scanner.setPosition(position);
+                    return replaceBracket(opener, node, startFromBracket);
+            }
+        }
+
+        return null;
+    }
+
+    private LinkInfo parseLinkInfo(Bracket opener, Position beforeClose) {
+        // Check to see if we have a link (or image, with a ! in front). The different types:
+        // - Inline:       `[foo](/uri)` or with optional title `[foo](/uri "title")`
+        // - Reference links
+        //   - Full:      `[foo][bar]` (foo is the text and bar is the label that needs to match a reference)
+        //   - Collapsed: `[foo][]`    (foo is both the text and label)
+        //   - Shortcut:  `[foo]`      (foo is both the text and label)
+
+        var openerType = opener.image ? LinkInfo.OpenerType.IMAGE : LinkInfo.OpenerType.LINK;
+        String text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
+
+        // Starting position is after the closing `]`
+        Position afterClose = scanner.position();
+
+        // Maybe an inline link/image
+        var destinationTitle = parseInlineDestinationTitle(scanner);
+        if (destinationTitle != null) {
+            return new LinkInfoImpl(openerType, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
+        }
+        // Not an inline link/image, rewind back to after `]`.
+        scanner.setPosition(afterClose);
+
+        // Maybe a reference link/image like `[foo][bar]`, `[foo][]` or `[foo]`.
+        // Note that even `[foo](` could be a valid link if foo is a reference, which is why we try this even if the `(`
+        // failed to be parsed as an inline link/image before.
+
+        // See if there's a link label like `[bar]` or `[]`
+        String label = parseLinkLabel(scanner);
+        if (label == null) {
+            // No label, rewind back
+            scanner.setPosition(afterClose);
+        }
+        var textIsReference = label == null || label.isEmpty();
+        if (opener.bracketAfter && textIsReference) {
+            // In case of shortcut or collapsed links, the text is used as the reference. But the reference is not allowed to
+            // contain an unescaped bracket, so if that's the case we don't need to continue. This is an optimization.
+            return null;
+        }
+
+        return new LinkInfoImpl(openerType, text, label, null, null, afterClose);
+    }
+
+    private Node wrapBracket(Bracket opener, Node wrapperNode, boolean startFromBracket) {
+        // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
+        Node n = opener.bracketNode.getNext();
+        while (n != null) {
+            Node next = n.getNext();
+            wrapperNode.appendChild(n);
+            n = next;
+        }
+
+        if (includeSourceSpans) {
+            var startPosition = opener.bangPosition == null || startFromBracket ? opener.bracketPosition : opener.bangPosition;
+            wrapperNode.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
+        }
+
+        // Process delimiters such as emphasis inside link/image
+        processDelimiters(opener.previousDelimiter);
+        mergeChildTextNodes(wrapperNode);
+        // We don't need the corresponding text node anymore, we turned it into a link/image node
+        if (opener.bangNode != null && !startFromBracket) {
+            opener.bangNode.unlink();
+        }
+        opener.bracketNode.unlink();
+        removeLastBracket();
+
+        // Links within links are not allowed. We found this link, so there can be no other link around it.
+        if (!opener.image) {
+            Bracket bracket = lastBracket;
+            while (bracket != null) {
+                if (!bracket.image) {
+                    // Disallow link opener. It will still get matched, but will not result in a link.
+                    bracket.allowed = false;
+                }
+                bracket = bracket.previous;
+            }
+        }
+
+        return wrapperNode;
+    }
+
+    private Node replaceBracket(Bracket opener, Node node, boolean startFromBracket) {
+        // Remove delimiters (but keep text nodes)
+        while (lastDelimiter != null && lastDelimiter != opener.previousDelimiter) {
+            removeDelimiterKeepNode(lastDelimiter);
+        }
+
+        if (includeSourceSpans) {
+            var startPosition = opener.bangPosition == null || startFromBracket ? opener.bracketPosition : opener.bangPosition;
+            node.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
+        }
+
+        removeLastBracket();
+
+        // Remove nodes that we added since the opener, because we're replacing them
+        Node n = opener.bangNode == null || startFromBracket ? opener.bracketNode : opener.bangNode;
+        while (n != null) {
+            var next = n.getNext();
+            n.unlink();
+            n = next;
+        }
+        return node;
     }
 
     private void addBracket(Bracket bracket) {
@@ -410,9 +471,38 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     /**
+     * Try to parse the destination and an optional title for an inline link/image.
+     */
+    private static DestinationTitle parseInlineDestinationTitle(Scanner scanner) {
+        if (!scanner.next('(')) {
+            return null;
+        }
+
+        scanner.whitespace();
+        String dest = parseLinkDestination(scanner);
+        if (dest == null) {
+            return null;
+        }
+
+        String title = null;
+        int whitespace = scanner.whitespace();
+        // title needs a whitespace before
+        if (whitespace >= 1) {
+            title = parseLinkTitle(scanner);
+            scanner.whitespace();
+        }
+        if (!scanner.next(')')) {
+            // Don't have a closing `)`, so it's not a destination and title.
+            // Note that something like `[foo](` could still be valid later, `(` will just be text.
+            return null;
+        }
+        return new DestinationTitle(dest, title);
+    }
+
+    /**
      * Attempt to parse link destination, returning the string or null if no match.
      */
-    private String parseLinkDestination(Scanner scanner) {
+    private static String parseLinkDestination(Scanner scanner) {
         char delimiter = scanner.peek();
         Position start = scanner.position();
         if (!LinkScanner.scanLinkDestination(scanner)) {
@@ -434,7 +524,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     /**
      * Attempt to parse link title (sans quotes), returning the string or null if no match.
      */
-    private String parseLinkTitle(Scanner scanner) {
+    private static String parseLinkTitle(Scanner scanner) {
         Position start = scanner.position();
         if (!LinkScanner.scanLinkTitle(scanner)) {
             return null;
@@ -449,7 +539,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     /**
      * Attempt to parse a link label, returning the label between the brackets or null.
      */
-    String parseLinkLabel(Scanner scanner) {
+    static String parseLinkLabel(Scanner scanner) {
         if (!scanner.next('[')) {
             return null;
         }
@@ -770,6 +860,69 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             this.characters = characters;
             this.canOpen = canOpen;
             this.canClose = canClose;
+        }
+    }
+
+    /**
+     * A destination and optional title for a link or image.
+     */
+    private static class DestinationTitle {
+        final String destination;
+        final String title;
+
+        public DestinationTitle(String destination, String title) {
+            this.destination = destination;
+            this.title = title;
+        }
+    }
+
+    private static class LinkInfoImpl implements LinkInfo {
+
+        private final OpenerType openerType;
+        private final String text;
+        private final String label;
+        private final String destination;
+        private final String title;
+        private final Position afterTextBracket;
+
+        private LinkInfoImpl(OpenerType openerType, String text, String label,
+                             String destination, String title, Position afterTextBracket) {
+            this.openerType = openerType;
+            this.text = text;
+            this.label = label;
+            this.destination = destination;
+            this.title = title;
+            this.afterTextBracket = afterTextBracket;
+        }
+
+        @Override
+        public OpenerType openerType() {
+            return openerType;
+        }
+
+        @Override
+        public String text() {
+            return text;
+        }
+
+        @Override
+        public String label() {
+            return label;
+        }
+
+        @Override
+        public String destination() {
+            return destination;
+        }
+
+        @Override
+        public String title() {
+            return title;
+        }
+
+        @Override
+        public Position afterTextBracket() {
+            return afterTextBracket;
         }
     }
 }

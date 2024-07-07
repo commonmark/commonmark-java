@@ -1,6 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.internal.InlineParserImpl;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParser;
@@ -52,9 +53,19 @@ public class InlineParserContextTest {
                 }
 
                 @Override
+                public List<LinkProcessor> getCustomLinkProcessors() {
+                    return inlineParserContext.getCustomLinkProcessors();
+                }
+
+                @Override
                 public LinkReferenceDefinition getLinkReferenceDefinition(String label) {
+                    return getDefinition(LinkReferenceDefinition.class, label);
+                }
+
+                @Override
+                public <D> D getDefinition(Class<D> type, String label) {
                     lookups.add(label);
-                    return inlineParserContext.getLinkReferenceDefinition(label);
+                    return inlineParserContext.getDefinition(type, label);
                 }
             };
 

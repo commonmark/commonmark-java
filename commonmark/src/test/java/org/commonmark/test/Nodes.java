@@ -4,6 +4,7 @@ import org.commonmark.node.Node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Nodes {
 
@@ -43,10 +44,7 @@ public class Nodes {
      * could not be found.
      */
     public static <T> T find(Node parent, Class<T> nodeClass) {
-        var node = tryFind(parent, nodeClass);
-        if (node == null) {
-            throw new IllegalArgumentException("Could not find a " + nodeClass.getSimpleName() + " node in " + parent);
-        }
-        return node;
+        return Objects.requireNonNull(tryFind(parent, nodeClass),
+                "Could not find a " + nodeClass.getSimpleName() + " node in " + parent);
     }
 }

@@ -1,11 +1,12 @@
 package org.commonmark.parser;
 
 import org.commonmark.Extension;
+import org.commonmark.internal.Definitions;
 import org.commonmark.internal.DocumentParser;
 import org.commonmark.internal.InlineParserContextImpl;
 import org.commonmark.internal.InlineParserImpl;
-import org.commonmark.internal.LinkReferenceDefinitions;
 import org.commonmark.node.*;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.BlockParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
@@ -32,6 +33,7 @@ public class Parser {
     private final List<BlockParserFactory> blockParserFactories;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final List<LinkProcessor> linkProcessors;
     private final InlineParserFactory inlineParserFactory;
     private final List<PostProcessor> postProcessors;
     private final IncludeSourceSpans includeSourceSpans;
@@ -42,11 +44,14 @@ public class Parser {
         this.postProcessors = builder.postProcessors;
         this.inlineContentParserFactories = builder.inlineContentParserFactories;
         this.delimiterProcessors = builder.delimiterProcessors;
+        this.linkProcessors = builder.linkProcessors;
         this.includeSourceSpans = builder.includeSourceSpans;
 
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
-        this.inlineParserFactory.create(new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, new LinkReferenceDefinitions()));
+        var context = new InlineParserContextImpl(
+                inlineContentParserFactories, delimiterProcessors, linkProcessors, new Definitions());
+        this.inlineParserFactory.create(context);
     }
 
     /**
@@ -99,7 +104,8 @@ public class Parser {
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories, delimiterProcessors, includeSourceSpans);
+        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories,
+                delimiterProcessors, linkProcessors, includeSourceSpans);
     }
 
     private Node postProcess(Node document) {
@@ -116,6 +122,7 @@ public class Parser {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<InlineContentParserFactory> inlineContentParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
+        private final List<LinkProcessor> linkProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private Set<Class<? extends Block>> enabledBlockTypes = DocumentParser.getDefaultBlockParserTypes();
         private InlineParserFactory inlineParserFactory;
@@ -237,6 +244,21 @@ public class Parser {
         public Builder customDelimiterProcessor(DelimiterProcessor delimiterProcessor) {
             Objects.requireNonNull(delimiterProcessor, "delimiterProcessor must not be null");
             delimiterProcessors.add(delimiterProcessor);
+            return this;
+        }
+
+        /**
+         * Add a custom link/image processor for inline parsing.
+         * <p>
+         * Multiple link processors can be added, and will be tried in order in which they were added. If no link
+         * processor applies, the normal behavior applies. That means these can override built-in link parsing.
+         *
+         * @param linkProcessor a link processor implementation
+         * @return {@code this}
+         */
+        public Builder linkProcessor(LinkProcessor linkProcessor) {
+            Objects.requireNonNull(linkProcessor, "linkProcessor must not be null");
+            linkProcessors.add(linkProcessor);
             return this;
         }
 

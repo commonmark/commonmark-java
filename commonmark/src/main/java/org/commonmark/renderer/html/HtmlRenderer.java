@@ -60,7 +60,9 @@ public class HtmlRenderer implements Renderer {
     public void render(Node node, Appendable output) {
         Objects.requireNonNull(node, "node must not be null");
         RendererContext context = new RendererContext(new HtmlWriter(output));
+        context.beforeRoot(node);
         context.render(node);
+        context.afterRoot(node);
     }
 
     @Override
@@ -225,15 +227,13 @@ public class HtmlRenderer implements Renderer {
             this.htmlWriter = htmlWriter;
 
             attributeProviders = new ArrayList<>(attributeProviderFactories.size());
-            for (AttributeProviderFactory attributeProviderFactory : attributeProviderFactories) {
+            for (var attributeProviderFactory : attributeProviderFactories) {
                 attributeProviders.add(attributeProviderFactory.create(this));
             }
 
-            // The first node renderer for a node type "wins".
-            for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
-                HtmlNodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
-                NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
-                nodeRendererMap.add(nodeRenderer);
+            for (var factory : nodeRendererFactories) {
+                var renderer = factory.create(this);
+                nodeRendererMap.add(renderer);
             }
         }
 
@@ -281,6 +281,14 @@ public class HtmlRenderer implements Renderer {
         @Override
         public void render(Node node) {
             nodeRendererMap.render(node);
+        }
+
+        public void beforeRoot(Node node) {
+            nodeRendererMap.beforeRoot(node);
+        }
+
+        public void afterRoot(Node node) {
+            nodeRendererMap.afterRoot(node);
         }
 
         private void setCustomAttributes(Node node, String tagName, Map<String, String> attrs) {
