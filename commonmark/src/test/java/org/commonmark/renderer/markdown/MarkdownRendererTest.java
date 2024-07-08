@@ -19,6 +19,14 @@ public class MarkdownRendererTest {
         // List item with hr -> hr needs to not use the same as the marker
         assertRoundTrip("* ___\n");
         assertRoundTrip("- ___\n");
+
+        // Preserve the literal
+        assertRoundTrip("----\n");
+        assertRoundTrip("*****\n");
+
+        // Apply fallback for null literal
+        ThematicBreak node = new ThematicBreak();
+        assertEquals("___", render(node));
     }
 
     @Test
