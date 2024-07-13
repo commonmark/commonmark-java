@@ -1,6 +1,7 @@
 package org.commonmark.ext.footnotes;
 
 import org.commonmark.Extension;
+import org.commonmark.ext.footnotes.internal.InlineFootnoteMarker;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
@@ -233,6 +234,49 @@ public class FootnotesTest {
         var paragraph = (Paragraph) doc.getFirstChild();
         assertText("Test ", paragraph.getFirstChild());
         assertText("[foo]", paragraph.getLastChild());
+    }
+
+    @Test
+    public void testInlineFootnote() {
+        var extension = FootnotesExtension.builder().inlineFootnotes(true).build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+
+        {
+            var doc = parser.parse("Test ^[inline footnote]");
+            assertText("Test ", doc.getFirstChild().getFirstChild());
+            var fn = find(doc, InlineFootnote.class);
+            assertText("inline footnote", fn.getFirstChild());
+            assertNull(tryFind(doc, InlineFootnoteMarker.class));
+        }
+
+        {
+            var doc = parser.parse("Test \\^[not inline footnote]");
+            assertNull(tryFind(doc, InlineFootnote.class));
+        }
+
+        {
+            var doc = parser.parse("Test ^[not inline footnote");
+            assertNull(tryFind(doc, InlineFootnote.class));
+            assertNull(tryFind(doc, InlineFootnoteMarker.class));
+            var t = doc.getFirstChild().getFirstChild();
+            // This is not ideal; text nodes aren't merged after post-processing
+            assertText("Test ", t);
+            assertText("^", t.getNext());
+            assertText("[not inline footnote", t.getNext().getNext());
+        }
+
+        {
+            // This is a tricky one because the code span in the link text
+            // includes the `]` (and doesn't need to be escaped). Therefore
+            // inline footnote parsing has to do full link text parsing/inline parsing.
+            // https://spec.commonmark.org/0.31.2/#link-text
+
+            var doc = parser.parse("^[test `bla]`]");
+            var fn = find(doc, InlineFootnote.class);
+            assertText("test ", fn.getFirstChild());
+            var code = fn.getFirstChild().getNext();
+            assertEquals("bla]", ((Code) code).getLiteral());
+        }
     }
 
     @Test

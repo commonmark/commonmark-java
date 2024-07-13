@@ -1,11 +1,9 @@
 package org.commonmark.ext.footnotes;
 
 import org.commonmark.Extension;
-import org.commonmark.ext.footnotes.internal.FootnoteBlockParser;
-import org.commonmark.ext.footnotes.internal.FootnoteLinkProcessor;
-import org.commonmark.ext.footnotes.internal.FootnoteHtmlNodeRenderer;
-import org.commonmark.ext.footnotes.internal.FootnoteMarkdownNodeRenderer;
+import org.commonmark.ext.footnotes.internal.*;
 import org.commonmark.parser.Parser;
+import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
@@ -30,6 +28,8 @@ import java.util.Set;
  * the source. The footnotes will be numbered starting from 1, then 2, etc, depending on the order in which they appear
  * in the text (and not dependent on the label). The footnote reference is a link to the footnote, and from the footnote
  * there is a link back to the reference (or multiple).
+ * <p>
+ * There is also optional support for inline footnotes, use {@link #builder()} and then set {@link Builder#inlineFootnotes}.
  *
  * @see <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes">GitHub docs for footnotes</a>
  */
@@ -37,11 +37,21 @@ public class FootnotesExtension implements Parser.ParserExtension,
         HtmlRenderer.HtmlRendererExtension,
         MarkdownRenderer.MarkdownRendererExtension {
 
-    private FootnotesExtension() {
+    private final boolean inlineFootnotes;
+
+    private FootnotesExtension(boolean inlineFootnotes) {
+        this.inlineFootnotes = inlineFootnotes;
     }
 
+    /**
+     * The extension with the default configuration (no support for inline footnotes).
+     */
     public static Extension create() {
-        return new FootnotesExtension();
+        return builder().build();
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -49,6 +59,10 @@ public class FootnotesExtension implements Parser.ParserExtension,
         parserBuilder
                 .customBlockParserFactory(new FootnoteBlockParser.Factory())
                 .linkProcessor(new FootnoteLinkProcessor());
+        if (inlineFootnotes) {
+            parserBuilder.customInlineContentParserFactory(new InlineFootnoteMarkerParser.Factory())
+                    .postProcessor(new InlineFootnoteMarkerRemover());
+        }
     }
 
     @Override
@@ -69,5 +83,25 @@ public class FootnotesExtension implements Parser.ParserExtension,
                 return Set.of();
             }
         });
+    }
+
+    public static class Builder {
+
+        private boolean inlineFootnotes = false;
+
+        /**
+         * Enable support for inline footnotes without definitions, e.g.:
+         * <pre>
+         * Some text^[this is an inline footnote]
+         * </pre>
+         */
+        public Builder inlineFootnotes(boolean inlineFootnotes) {
+            this.inlineFootnotes = inlineFootnotes;
+            return this;
+        }
+
+        public FootnotesExtension build() {
+            return new FootnotesExtension(inlineFootnotes);
+        }
     }
 }

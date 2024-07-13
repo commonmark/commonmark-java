@@ -1,5 +1,8 @@
 package org.commonmark.parser.beta;
 
+import org.commonmark.node.Node;
+import org.commonmark.node.Text;
+
 /**
  * A parsed link or image. There are different types of links.
  * <p>
@@ -45,6 +48,11 @@ public interface LinkInfo {
     OpenerType openerType();
 
     /**
+     * The text node of the opening bracket {@code [}.
+     */
+    Text openingBracket();
+
+    /**
      * The text between the first brackets, e.g. `foo` in `[foo][bar]`.
      */
     String text();
@@ -65,7 +73,7 @@ public interface LinkInfo {
     String title();
 
     /**
-     * The position after the text bracket, e.g.:
+     * The position after the closing text bracket, e.g.:
      * <pre>
      * [foo][bar]
      *      ^
