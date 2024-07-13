@@ -1,10 +1,9 @@
 package org.commonmark.parser.beta;
 
-import org.commonmark.node.Node;
 import org.commonmark.node.Text;
 
 /**
- * A parsed link or image. There are different types of links.
+ * A parsed link/image. There are different types of links.
  * <p>
  * Inline links:
  * <pre>
@@ -24,28 +23,15 @@ import org.commonmark.node.Text;
  * <pre>
  * [text]
  * </pre>
- * Images use the same syntax as links but with a {@code !} in front, e.g. {@code ![text](destination)}.
+ * Images use the same syntax as links but with a {@code !} {@link #marker()} front, e.g. {@code ![text](destination)}.
  */
 public interface LinkInfo {
-    enum OpenerType {
-        /**
-         * An image (a {@code !} before the {@code [})
-         */
-        IMAGE,
-        /**
-         * A link
-         */
-        LINK
-    }
 
     /**
-     * The type of opener of this link/image:
-     * <ul>
-     * <li>{@link OpenerType#LINK} for links like {@code [text...}</li>
-     * <li>{@link OpenerType#IMAGE} for images like {@code ![text...}</li>
-     * </ul>
+     * The marker if present, or null. A marker is e.g. {@code !} for an image, or a custom marker as specified in
+     * {@link org.commonmark.parser.Parser.Builder#linkMarker}.
      */
-    OpenerType openerType();
+    Text marker();
 
     /**
      * The text node of the opening bracket {@code [}.

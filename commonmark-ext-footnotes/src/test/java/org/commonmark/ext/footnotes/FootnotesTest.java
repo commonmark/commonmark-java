@@ -1,7 +1,6 @@
 package org.commonmark.ext.footnotes;
 
 import org.commonmark.Extension;
-import org.commonmark.ext.footnotes.internal.InlineFootnoteMarker;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
@@ -246,7 +245,6 @@ public class FootnotesTest {
             assertText("Test ", doc.getFirstChild().getFirstChild());
             var fn = find(doc, InlineFootnote.class);
             assertText("inline footnote", fn.getFirstChild());
-            assertNull(tryFind(doc, InlineFootnoteMarker.class));
         }
 
         {
@@ -257,12 +255,8 @@ public class FootnotesTest {
         {
             var doc = parser.parse("Test ^[not inline footnote");
             assertNull(tryFind(doc, InlineFootnote.class));
-            assertNull(tryFind(doc, InlineFootnoteMarker.class));
             var t = doc.getFirstChild().getFirstChild();
-            // This is not ideal; text nodes aren't merged after post-processing
-            assertText("Test ", t);
-            assertText("^", t.getNext());
-            assertText("[not inline footnote", t.getNext().getNext());
+            assertText("Test ^[not inline footnote", t);
         }
 
         {
@@ -276,6 +270,14 @@ public class FootnotesTest {
             assertText("test ", fn.getFirstChild());
             var code = fn.getFirstChild().getNext();
             assertEquals("bla]", ((Code) code).getLiteral());
+        }
+
+        {
+            var doc = parser.parse("^[with a [link](url)]");
+            var fn = find(doc, InlineFootnote.class);
+            assertText("with a ", fn.getFirstChild());
+            var link = fn.getFirstChild().getNext();
+            assertEquals("url", ((Link) link).getDestination());
         }
     }
 

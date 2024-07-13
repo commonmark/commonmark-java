@@ -6,6 +6,7 @@ import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Context for inline parsing.
@@ -28,6 +29,11 @@ public interface InlineParserContext {
      * @return custom link processors that have been configured with {@link Parser.Builder#linkProcessor}.
      */
     List<LinkProcessor> getCustomLinkProcessors();
+
+    /**
+     * @return custom link markers that have been configured with {@link Parser.Builder#linkMarker}.
+     */
+    Set<Character> getCustomLinkMarkers();
 
     /**
      * Look up a {@link LinkReferenceDefinition} for a given label.

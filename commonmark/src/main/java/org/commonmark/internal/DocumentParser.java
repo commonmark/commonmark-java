@@ -74,6 +74,7 @@ public class DocumentParser implements ParserState {
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
     private final List<LinkProcessor> linkProcessors;
+    private final Set<Character> linkMarkers;
     private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
     private final Definitions definitions = new Definitions();
@@ -83,12 +84,13 @@ public class DocumentParser implements ParserState {
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
                           List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          List<LinkProcessor> linkProcessors, IncludeSourceSpans includeSourceSpans) {
+                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers, IncludeSourceSpans includeSourceSpans) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
         this.linkProcessors = linkProcessors;
+        this.linkMarkers = linkMarkers;
         this.includeSourceSpans = includeSourceSpans;
 
         this.documentBlockParser = new DocumentBlockParser();
@@ -466,7 +468,7 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, linkProcessors, definitions);
+        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, linkProcessors, linkMarkers, definitions);
         var inlineParser = inlineParserFactory.create(context);
 
         for (var blockParser : allBlockParsers) {

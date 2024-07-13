@@ -6,8 +6,8 @@ import org.commonmark.parser.beta.Position;
 
 public class LinkResultImpl implements LinkResult {
     @Override
-    public LinkResult startFromBracket() {
-        startFromBracket = true;
+    public LinkResult includeMarker() {
+        includeMarker = true;
         return this;
     }
 
@@ -20,7 +20,7 @@ public class LinkResultImpl implements LinkResult {
     private final Node node;
     private final Position position;
 
-    private boolean startFromBracket;
+    private boolean includeMarker = false;
 
     public LinkResultImpl(Type type, Node node, Position position) {
         this.type = type;
@@ -40,7 +40,7 @@ public class LinkResultImpl implements LinkResult {
         return position;
     }
 
-    public boolean isStartFromBracket() {
-        return startFromBracket;
+    public boolean isIncludeMarker() {
+        return includeMarker;
     }
 }

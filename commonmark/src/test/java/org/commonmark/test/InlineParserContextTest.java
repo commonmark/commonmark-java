@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -55,6 +56,11 @@ public class InlineParserContextTest {
                 @Override
                 public List<LinkProcessor> getCustomLinkProcessors() {
                     return inlineParserContext.getCustomLinkProcessors();
+                }
+
+                @Override
+                public Set<Character> getCustomLinkMarkers() {
+                    return inlineParserContext.getCustomLinkMarkers();
                 }
 
                 @Override
