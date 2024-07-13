@@ -372,7 +372,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // Maybe an inline link/image
         var destinationTitle = parseInlineDestinationTitle(scanner);
         if (destinationTitle != null) {
-            return new LinkInfoImpl(openerType, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
+            return new LinkInfoImpl(openerType, opener.bracketNode, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
         }
         // Not an inline link/image, rewind back to after `]`.
         scanner.setPosition(afterClose);
@@ -394,7 +394,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             return null;
         }
 
-        return new LinkInfoImpl(openerType, text, label, null, null, afterClose);
+        return new LinkInfoImpl(openerType, opener.bracketNode, text, label, null, null, afterClose);
     }
 
     private Node wrapBracket(Bracket opener, Node wrapperNode, boolean startFromBracket) {
@@ -879,15 +879,17 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private static class LinkInfoImpl implements LinkInfo {
 
         private final OpenerType openerType;
+        private final Text openingBracket;
         private final String text;
         private final String label;
         private final String destination;
         private final String title;
         private final Position afterTextBracket;
 
-        private LinkInfoImpl(OpenerType openerType, String text, String label,
+        private LinkInfoImpl(OpenerType openerType, Text openingBracket, String text, String label,
                              String destination, String title, Position afterTextBracket) {
             this.openerType = openerType;
+            this.openingBracket = openingBracket;
             this.text = text;
             this.label = label;
             this.destination = destination;
@@ -898,6 +900,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         @Override
         public OpenerType openerType() {
             return openerType;
+        }
+
+        @Override
+        public Text openingBracket() {
+            return openingBracket;
         }
 
         @Override
