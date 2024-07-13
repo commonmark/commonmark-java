@@ -4,19 +4,19 @@ import org.commonmark.node.Text;
 import org.commonmark.parser.beta.Position;
 
 /**
- * Opening bracket for links (<code>[</code>) or images (<code>![</code>).
+ * Opening bracket for links ({@code [}), images ({@code ![}), or links with other markers.
  */
 public class Bracket {
 
     /**
-     * The node of {@code !} if present, null otherwise.
+     * The node of a marker such as {@code !} if present, null otherwise.
      */
-    public final Text bangNode;
+    public final Text markerNode;
 
     /**
-     * The position of {@code !} if present, null otherwise.
+     * The position of the marker if present, null otherwise.
      */
-    public final Position bangPosition;
+    public final Position markerPosition;
 
     /**
      * The node of {@code [}.
@@ -32,11 +32,6 @@ public class Bracket {
      * The position of the content (after the opening bracket)
      */
     public final Position contentPosition;
-
-    /**
-     * Whether this is an image or link.
-     */
-    public final boolean image;
 
     /**
      * Previous bracket.
@@ -59,20 +54,19 @@ public class Bracket {
     public boolean bracketAfter = false;
 
     static public Bracket link(Text bracketNode, Position bracketPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
-        return new Bracket(null, null, bracketNode, bracketPosition, contentPosition, previous, previousDelimiter, false);
+        return new Bracket(null, null, bracketNode, bracketPosition, contentPosition, previous, previousDelimiter);
     }
 
-    static public Bracket image(Text bangNode, Position bangPosition, Text bracketNode, Position bracketPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
-        return new Bracket(bangNode, bangPosition, bracketNode, bracketPosition, contentPosition, previous, previousDelimiter, true);
+    static public Bracket withMarker(Text markerNode, Position markerPosition, Text bracketNode, Position bracketPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
+        return new Bracket(markerNode, markerPosition, bracketNode, bracketPosition, contentPosition, previous, previousDelimiter);
     }
 
-    private Bracket(Text bangNode, Position bangPosition, Text bracketNode, Position bracketPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter, boolean image) {
-        this.bangNode = bangNode;
-        this.bangPosition = bangPosition;
+    private Bracket(Text markerNode, Position markerPosition, Text bracketNode, Position bracketPosition, Position contentPosition, Bracket previous, Delimiter previousDelimiter) {
+        this.markerNode = markerNode;
+        this.markerPosition = markerPosition;
         this.bracketNode = bracketNode;
         this.bracketPosition = bracketPosition;
         this.contentPosition = contentPosition;
-        this.image = image;
         this.previous = previous;
         this.previousDelimiter = previousDelimiter;
     }

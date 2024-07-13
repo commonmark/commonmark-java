@@ -60,8 +60,7 @@ public class FootnotesExtension implements Parser.ParserExtension,
                 .customBlockParserFactory(new FootnoteBlockParser.Factory())
                 .linkProcessor(new FootnoteLinkProcessor());
         if (inlineFootnotes) {
-            parserBuilder.customInlineContentParserFactory(new InlineFootnoteMarkerParser.Factory())
-                    .postProcessor(new InlineFootnoteMarkerRemover());
+            parserBuilder.linkMarker('^');
         }
     }
 

@@ -44,8 +44,7 @@ public interface LinkResult {
     }
 
     /**
-     * Instead of processing the full node (e.g. {@code ![image]}, only start from the bracket (e.g. {@code [image]}).
-     * This is useful for excluding the {@code !} character denoting an image. It will just be left as text instead.
+     * If a {@link LinkInfo#marker()} is present, include it in processing (i.e. treat it the same way as the brackets).
      */
-    LinkResult startFromBracket();
+    LinkResult includeMarker();
 }

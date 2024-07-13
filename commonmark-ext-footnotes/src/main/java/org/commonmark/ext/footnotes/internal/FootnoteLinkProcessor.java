@@ -19,10 +19,10 @@ public class FootnoteLinkProcessor implements LinkProcessor {
     @Override
     public LinkResult process(LinkInfo linkInfo, Scanner scanner, InlineParserContext context) {
 
-        var beforeBracket = linkInfo.openingBracket().getPrevious();
-        if (beforeBracket instanceof InlineFootnoteMarker) {
-            beforeBracket.unlink();
-            return LinkResult.wrapTextIn(new InlineFootnote(), linkInfo.afterTextBracket());
+        if (linkInfo.marker() != null && linkInfo.marker().getLiteral().equals("^")) {
+            // An inline footnote like ^[footnote text]. Note that we only get the marker here if the option is enabled
+            // on the extension.
+            return LinkResult.wrapTextIn(new InlineFootnote(), linkInfo.afterTextBracket()).includeMarker();
         }
 
         if (linkInfo.destination() != null) {
@@ -53,6 +53,6 @@ public class FootnoteLinkProcessor implements LinkProcessor {
         // For footnotes, we only ever consume the text part of the link, not the label part (if any)
         var position = linkInfo.afterTextBracket();
         // If the marker is `![`, we don't want to include the `!`, so start from bracket
-        return LinkResult.replaceWith(new FootnoteReference(label), position).startFromBracket();
+        return LinkResult.replaceWith(new FootnoteReference(label), position);
     }
 }

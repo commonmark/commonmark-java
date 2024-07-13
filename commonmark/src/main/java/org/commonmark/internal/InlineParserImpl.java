@@ -21,6 +21,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final Map<Character, DelimiterProcessor> delimiterProcessors;
     private final List<LinkProcessor> linkProcessors;
     private final BitSet specialCharacters;
+    private final BitSet linkMarkers;
 
     private Map<Character, List<InlineContentParser>> inlineParsers;
     private Scanner scanner;
@@ -43,7 +44,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.inlineContentParserFactories = calculateInlineContentParserFactories(context.getCustomInlineContentParserFactories());
         this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
         this.linkProcessors = calculateLinkProcessors(context.getCustomLinkProcessors());
-        this.specialCharacters = calculateSpecialCharacters(this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
+        this.linkMarkers = calculateLinkMarkers(context.getCustomLinkMarkers());
+        this.specialCharacters = calculateSpecialCharacters(linkMarkers, this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
     }
 
     private List<InlineContentParserFactory> calculateInlineContentParserFactories(List<InlineContentParserFactory> customFactories) {
@@ -104,9 +106,19 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
     }
 
-    private static BitSet calculateSpecialCharacters(Set<Character> delimiterCharacters,
+    private static BitSet calculateLinkMarkers(Set<Character> linkMarkers) {
+        var bitSet = new BitSet();
+        for (var c : linkMarkers) {
+            bitSet.set(c);
+        }
+        bitSet.set('!');
+        return bitSet;
+    }
+
+    private static BitSet calculateSpecialCharacters(BitSet linkMarkers,
+                                                     Set<Character> delimiterCharacters,
                                                      List<InlineContentParserFactory> inlineContentParserFactories) {
-        BitSet bitSet = new BitSet();
+        BitSet bitSet = (BitSet) linkMarkers.clone();
         for (Character c : delimiterCharacters) {
             bitSet.set(c);
         }
@@ -185,14 +197,22 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         switch (c) {
             case '[':
                 return List.of(parseOpenBracket());
-            case '!':
-                return parseBang();
             case ']':
                 return List.of(parseCloseBracket());
             case '\n':
                 return List.of(parseLineBreak());
             case Scanner.END:
                 return null;
+        }
+
+        if (linkMarkers.get(c)) {
+            var markerPosition = scanner.position();
+            var nodes = parseLinkMarker();
+            if (nodes != null) {
+                return nodes;
+            }
+            // Reset and try other things (e.g. inline parsers below)
+            scanner.setPosition(markerPosition);
         }
 
         // No inline parser, delimiter or other special handling.
@@ -269,23 +289,23 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     /**
-     * If next character is [, and ! delimiter to delimiter stack and add a text node to block's children.
-     * Otherwise just add a text node.
+     * If next character is {@code [}, add a bracket to the stack.
+     * Otherwise, return null.
      */
-    private List<? extends Node> parseBang() {
-        var bangPosition = scanner.position();
+    private List<? extends Node> parseLinkMarker() {
+        var markerPosition = scanner.position();
         scanner.next();
         var bracketPosition = scanner.position();
         if (scanner.next('[')) {
             var contentPosition = scanner.position();
-            var bangNode = text(scanner.getSource(bangPosition, bracketPosition));
+            var bangNode = text(scanner.getSource(markerPosition, bracketPosition));
             var bracketNode = text(scanner.getSource(bracketPosition, contentPosition));
 
             // Add entry to stack for this opener
-            addBracket(Bracket.image(bangNode, bangPosition, bracketNode, bracketPosition, contentPosition, lastBracket, lastDelimiter));
+            addBracket(Bracket.withMarker(bangNode, markerPosition, bracketNode, bracketPosition, contentPosition, lastBracket, lastDelimiter));
             return List.of(bangNode, bracketNode);
         } else {
-            return List.of(text(scanner.getSource(bangPosition, scanner.position())));
+            return null;
         }
     }
 
@@ -340,15 +360,15 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             var result = (LinkResultImpl) linkResult;
             var node = result.getNode();
             var position = result.getPosition();
-            var startFromBracket = result.isStartFromBracket();
+            var includeMarker = result.isIncludeMarker();
 
             switch (result.getType()) {
                 case WRAP:
                     scanner.setPosition(position);
-                    return wrapBracket(opener, node, startFromBracket);
+                    return wrapBracket(opener, node, includeMarker);
                 case REPLACE:
                     scanner.setPosition(position);
-                    return replaceBracket(opener, node, startFromBracket);
+                    return replaceBracket(opener, node, includeMarker);
             }
         }
 
@@ -363,7 +383,6 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         //   - Collapsed: `[foo][]`    (foo is both the text and label)
         //   - Shortcut:  `[foo]`      (foo is both the text and label)
 
-        var openerType = opener.image ? LinkInfo.OpenerType.IMAGE : LinkInfo.OpenerType.LINK;
         String text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
 
         // Starting position is after the closing `]`
@@ -372,7 +391,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // Maybe an inline link/image
         var destinationTitle = parseInlineDestinationTitle(scanner);
         if (destinationTitle != null) {
-            return new LinkInfoImpl(openerType, opener.bracketNode, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
+            return new LinkInfoImpl(opener.markerNode, opener.bracketNode, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
         }
         // Not an inline link/image, rewind back to after `]`.
         scanner.setPosition(afterClose);
@@ -388,16 +407,16 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             scanner.setPosition(afterClose);
         }
         var textIsReference = label == null || label.isEmpty();
-        if (opener.bracketAfter && textIsReference) {
+        if (opener.bracketAfter && textIsReference && opener.markerNode == null) {
             // In case of shortcut or collapsed links, the text is used as the reference. But the reference is not allowed to
             // contain an unescaped bracket, so if that's the case we don't need to continue. This is an optimization.
             return null;
         }
 
-        return new LinkInfoImpl(openerType, opener.bracketNode, text, label, null, null, afterClose);
+        return new LinkInfoImpl(opener.markerNode, opener.bracketNode, text, label, null, null, afterClose);
     }
 
-    private Node wrapBracket(Bracket opener, Node wrapperNode, boolean startFromBracket) {
+    private Node wrapBracket(Bracket opener, Node wrapperNode, boolean includeMarker) {
         // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the link
         Node n = opener.bracketNode.getNext();
         while (n != null) {
@@ -407,7 +426,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         if (includeSourceSpans) {
-            var startPosition = opener.bangPosition == null || startFromBracket ? opener.bracketPosition : opener.bangPosition;
+            var startPosition = includeMarker && opener.markerPosition != null ? opener.markerPosition : opener.bracketPosition;
             wrapperNode.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
         }
 
@@ -415,17 +434,17 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         processDelimiters(opener.previousDelimiter);
         mergeChildTextNodes(wrapperNode);
         // We don't need the corresponding text node anymore, we turned it into a link/image node
-        if (opener.bangNode != null && !startFromBracket) {
-            opener.bangNode.unlink();
+        if (includeMarker && opener.markerNode != null) {
+            opener.markerNode.unlink();
         }
         opener.bracketNode.unlink();
         removeLastBracket();
 
         // Links within links are not allowed. We found this link, so there can be no other link around it.
-        if (!opener.image) {
+        if (opener.markerNode == null) {
             Bracket bracket = lastBracket;
             while (bracket != null) {
-                if (!bracket.image) {
+                if (bracket.markerNode == null) {
                     // Disallow link opener. It will still get matched, but will not result in a link.
                     bracket.allowed = false;
                 }
@@ -436,21 +455,21 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return wrapperNode;
     }
 
-    private Node replaceBracket(Bracket opener, Node node, boolean startFromBracket) {
+    private Node replaceBracket(Bracket opener, Node node, boolean includeMarker) {
         // Remove delimiters (but keep text nodes)
         while (lastDelimiter != null && lastDelimiter != opener.previousDelimiter) {
             removeDelimiterKeepNode(lastDelimiter);
         }
 
         if (includeSourceSpans) {
-            var startPosition = opener.bangPosition == null || startFromBracket ? opener.bracketPosition : opener.bangPosition;
+            var startPosition = includeMarker && opener.markerPosition != null ? opener.markerPosition : opener.bracketPosition;
             node.setSourceSpans(scanner.getSource(startPosition, scanner.position()).getSourceSpans());
         }
 
         removeLastBracket();
 
         // Remove nodes that we added since the opener, because we're replacing them
-        Node n = opener.bangNode == null || startFromBracket ? opener.bracketNode : opener.bangNode;
+        Node n = includeMarker && opener.markerNode != null ? opener.markerNode : opener.bracketNode;
         while (n != null) {
             var next = n.getNext();
             n.unlink();
@@ -878,7 +897,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
     private static class LinkInfoImpl implements LinkInfo {
 
-        private final OpenerType openerType;
+        private final Text marker;
         private final Text openingBracket;
         private final String text;
         private final String label;
@@ -886,9 +905,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         private final String title;
         private final Position afterTextBracket;
 
-        private LinkInfoImpl(OpenerType openerType, Text openingBracket, String text, String label,
+        private LinkInfoImpl(Text marker, Text openingBracket, String text, String label,
                              String destination, String title, Position afterTextBracket) {
-            this.openerType = openerType;
+            this.marker = marker;
             this.openingBracket = openingBracket;
             this.text = text;
             this.label = label;
@@ -898,8 +917,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         @Override
-        public OpenerType openerType() {
-            return openerType;
+        public Text marker() {
+            return marker;
         }
 
         @Override
