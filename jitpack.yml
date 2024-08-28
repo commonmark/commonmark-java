@@ -1,2 +1,0 @@
-before_install:
-  - sdk install maven 3.6.3
