@@ -94,10 +94,44 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void sanitizedUrlsShouldAllowSafeProtocols() {
+        Paragraph paragraph = new Paragraph();
+        Link link = new Link();
+        link.setDestination("http://google.com");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"http://google.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+
+        paragraph = new Paragraph();
+        link = new Link();
+        link.setDestination("https://google.com");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+
+        paragraph = new Paragraph();
+        link = new Link();
+        link.setDestination("mailto:foo@bar.example.com");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"mailto:foo@bar.example.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+
+        String image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAQSURBVBhXY/iPBVBf8P9/AG8TY51nJdgkAAAAAElFTkSuQmCC";
+        paragraph = new Paragraph();
+        link = new Link();
+        link.setDestination(image);
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"" + image + "\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+    }
+
+    @Test
     public void sanitizedUrlsShouldFilterDangerousProtocols() {
         Paragraph paragraph = new Paragraph();
         Link link = new Link();
         link.setDestination("javascript:alert(5);");
+        paragraph.appendChild(link);
+        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+
+        paragraph = new Paragraph();
+        link = new Link();
+        link.setDestination("ftp://google.com");
         paragraph.appendChild(link);
         assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
     }
