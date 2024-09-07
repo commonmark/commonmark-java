@@ -10,6 +10,7 @@ import org.commonmark.testutil.Asserts;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
 public class FootnoteHtmlRendererTest extends RenderingTestCase {
@@ -208,6 +209,23 @@ public class FootnoteHtmlRendererTest extends RenderingTestCase {
     }
 
     @Test
+    public void testInlineFootnotes() {
+        assertRenderingInline("Test ^[inline *footnote*]",
+                "<p>Test <sup class=\"footnote-ref\"><a href=\"#fn1\" id=\"fnref1\" data-footnote-ref>1</a></sup></p>\n" +
+                        "<section class=\"footnotes\" data-footnotes>\n" +
+                        "<ol>\n" +
+                        "<li id=\"fn1\">\n" +
+                        "<p>inline <em>footnote</em> <a href=\"#fnref1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "</ol>\n" +
+                        "</section>\n");
+
+        // TODO: Tricky ones like inline footnote referencing a normal one, and a definition containing an inline one.
+        // TODO: Nested inline footnotes?
+        // TODO: Inline and normal ones mixed, keys need to be unique
+    }
+
+    @Test
     public void testRenderNodesDirectly() {
         // Everything should work as expected when rendering from nodes directly (no parsing step).
         var doc = new Document();
@@ -235,5 +253,12 @@ public class FootnoteHtmlRendererTest extends RenderingTestCase {
     @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));
+    }
+
+    private static void assertRenderingInline(String source, String expected) {
+        var extension = FootnotesExtension.builder().inlineFootnotes(true).build();
+        var parser = Parser.builder().extensions(List.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(List.of(extension)).build();
+        Asserts.assertRendering(source, expected, renderer.render(parser.parse(source)));
     }
 }
