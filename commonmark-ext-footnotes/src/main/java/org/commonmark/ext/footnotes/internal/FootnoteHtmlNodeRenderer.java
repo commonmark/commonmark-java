@@ -67,7 +67,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
      * Information about references that should be rendered as footnotes. This doesn't contain all references, just the
      * ones from inside definitions.
      */
-    private final Map<FootnoteReference, ReferenceInfo> references = new HashMap<>();
+    private final Map<Node, ReferenceInfo> references = new HashMap<>();
 
     public FootnoteHtmlNodeRenderer(HtmlNodeRendererContext context) {
         this.html = context.getWriter();
@@ -91,6 +91,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     public void render(Node node) {
         if (node instanceof FootnoteReference) {
             // This is called for all references, even ones inside definitions that we render at the end.
+            // Inside definitions, we have registered the reference already.
             var ref = (FootnoteReference) node;
             // Use containsKey because if value is null, we don't need to try registering again.
             var info = references.containsKey(ref) ? references.get(ref) : tryRegisterReference(ref);
@@ -101,13 +102,16 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
                 html.text("[^" + ref.getLabel() + "]");
             }
         } else if (node instanceof InlineFootnote) {
-            var info = registerReference(node, null);
+            var info = references.get(node);
+            if (info == null) {
+                info = registerReference(node, null);
+            }
             renderReference(node, info);
         }
     }
 
     @Override
-    public void afterRoot(Node node) {
+    public void afterRoot(Node rootNode) {
         // Now render the referenced definitions if there are any.
         if (referencedDefinitions.isEmpty()) {
             return;
@@ -127,13 +131,19 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         var check = new LinkedList<>(referencedDefinitions.keySet());
         while (!check.isEmpty()) {
             var def = check.removeFirst();
-            def.accept(new ReferenceVisitor(ref -> {
-                var d = definitionMap.get(ref.getLabel());
-                if (d != null) {
-                    if (!referencedDefinitions.containsKey(d)) {
-                        check.addLast(d);
+            def.accept(new ShallowReferenceVisitor(def, node -> {
+                if (node instanceof FootnoteReference) {
+                    var ref = (FootnoteReference) node;
+                    var d = definitionMap.get(ref.getLabel());
+                    if (d != null) {
+                        if (!referencedDefinitions.containsKey(d)) {
+                            check.addLast(d);
+                        }
+                        references.put(ref, registerReference(d, d.getLabel()));
                     }
-                    references.put(ref, registerReference(d, d.getLabel()));
+                } else if (node instanceof InlineFootnote) {
+                    check.addLast(node);
+                    references.put(node, registerReference(node, null));
                 }
             }));
         }
@@ -307,18 +317,31 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         }
     }
 
-    private static class ReferenceVisitor extends AbstractVisitor {
-        private final Consumer<FootnoteReference> consumer;
+    /**
+     * Visit footnote references/inline footnotes inside the parent (but not the parent itself). We want a shallow visit
+     * because the caller wants to control when to descend.
+     */
+    private static class ShallowReferenceVisitor extends AbstractVisitor {
+        private final Node parent;
+        private final Consumer<Node> consumer;
 
-        private ReferenceVisitor(Consumer<FootnoteReference> consumer) {
+        private ShallowReferenceVisitor(Node parent, Consumer<Node> consumer) {
+            this.parent = parent;
             this.consumer = consumer;
         }
 
         @Override
         public void visit(CustomNode customNode) {
             if (customNode instanceof FootnoteReference) {
-                var ref = (FootnoteReference) customNode;
-                consumer.accept(ref);
+                consumer.accept(customNode);
+            } else if (customNode instanceof InlineFootnote) {
+                if (customNode == parent) {
+                    // Descend into the parent (inline footnotes can contain inline footnotes)
+                    super.visit(customNode);
+                } else {
+                    // Don't descend here because we want to be shallow.
+                    consumer.accept(customNode);
+                }
             } else {
                 super.visit(customNode);
             }

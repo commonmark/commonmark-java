@@ -221,9 +221,86 @@ public class FootnoteHtmlRendererTest extends RenderingTestCase {
                         "</section>\n");
 
         // TODO: Tricky ones like inline footnote referencing a normal one, and a definition containing an inline one.
-        // TODO: Nested inline footnotes?
-        // TODO: Inline and normal ones mixed, keys need to be unique
     }
+
+    @Test
+    public void testInlineFootnotesNested() {
+        assertRenderingInline("Test ^[inline ^[nested]]",
+                "<p>Test <sup class=\"footnote-ref\"><a href=\"#fn1\" id=\"fnref1\" data-footnote-ref>1</a></sup></p>\n" +
+                        "<section class=\"footnotes\" data-footnotes>\n" +
+                        "<ol>\n" +
+                        "<li id=\"fn1\">\n" +
+                        "<p>inline <sup class=\"footnote-ref\"><a href=\"#fn2\" id=\"fnref2\" data-footnote-ref>2</a></sup> <a href=\"#fnref1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "<li id=\"fn2\">\n" +
+                        "<p>nested <a href=\"#fnref2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "</ol>\n" +
+                        "</section>\n");
+    }
+
+    @Test
+    public void testInlineFootnoteWithReference() {
+        // This is a bit tricky because the IDs need to be unique.
+        assertRenderingInline("Test ^[inline [^1]]\n" +
+                        "\n" +
+                        "[^1]: normal",
+                "<p>Test <sup class=\"footnote-ref\"><a href=\"#fn1\" id=\"fnref1\" data-footnote-ref>1</a></sup></p>\n" +
+                        "<section class=\"footnotes\" data-footnotes>\n" +
+                        "<ol>\n" +
+                        "<li id=\"fn1\">\n" +
+                        "<p>inline <sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>2</a></sup> <a href=\"#fnref1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "<li id=\"fn-1\">\n" +
+                        "<p>normal <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "</ol>\n" +
+                        "</section>\n");
+    }
+
+    @Test
+    public void testInlineFootnoteInsideDefinition() {
+        assertRenderingInline("Test [^1]\n" +
+                        "\n" +
+                        "[^1]: Definition ^[inline]\n",
+                "<p>Test <sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup></p>\n" +
+                        "<section class=\"footnotes\" data-footnotes>\n" +
+                        "<ol>\n" +
+                        "<li id=\"fn-1\">\n" +
+                        "<p>Definition <sup class=\"footnote-ref\"><a href=\"#fn2\" id=\"fnref2\" data-footnote-ref>2</a></sup> <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "<li id=\"fn2\">\n" +
+                        "<p>inline <a href=\"#fnref2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "</ol>\n" +
+                        "</section>\n");
+    }
+
+    @Test
+    public void testInlineFootnoteInsideDefinition2() {
+        // Tricky because of the nested inline footnote which we want to visit after foo (breadth-first).
+        assertRenderingInline("Test [^1]\n" +
+                        "\n" +
+                        "[^1]: Definition ^[inline ^[nested]] ^[foo]\n",
+                "<p>Test <sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup></p>\n" +
+                        "<section class=\"footnotes\" data-footnotes>\n" +
+                        "<ol>\n" +
+                        "<li id=\"fn-1\">\n" +
+                        "<p>Definition <sup class=\"footnote-ref\"><a href=\"#fn2\" id=\"fnref2\" data-footnote-ref>2</a></sup> <sup class=\"footnote-ref\"><a href=\"#fn3\" id=\"fnref3\" data-footnote-ref>3</a></sup> <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "<li id=\"fn2\">\n" +
+                        "<p>inline <sup class=\"footnote-ref\"><a href=\"#fn4\" id=\"fnref4\" data-footnote-ref>4</a></sup> <a href=\"#fnref2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "<li id=\"fn3\">\n" +
+                        "<p>foo <a href=\"#fnref3\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"3\" aria-label=\"Back to reference 3\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "<li id=\"fn4\">\n" +
+                        "<p>nested <a href=\"#fnref4\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"4\" aria-label=\"Back to reference 4\">↩</a></p>\n" +
+                        "</li>\n" +
+                        "</ol>\n" +
+                        "</section>\n");
+    }
+
 
     @Test
     public void testRenderNodesDirectly() {
