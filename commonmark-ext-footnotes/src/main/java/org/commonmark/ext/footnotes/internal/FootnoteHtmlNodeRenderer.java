@@ -80,10 +80,10 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     }
 
     @Override
-    public void beforeRoot(Node node) {
+    public void beforeRoot(Node rootNode) {
         // Collect all definitions first, so we can look them up when encountering a reference later.
         var visitor = new DefinitionVisitor();
-        node.accept(visitor);
+        rootNode.accept(visitor);
         definitionMap = visitor.definitions;
     }
 

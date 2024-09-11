@@ -21,9 +21,9 @@ public interface NodeRenderer {
      */
     void render(Node node);
 
-    default void beforeRoot(Node node) {
+    default void beforeRoot(Node rootNode) {
     }
 
-    default void afterRoot(Node node) {
+    default void afterRoot(Node rootNode) {
     }
 }
