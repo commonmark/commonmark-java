@@ -366,9 +366,11 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                     break;
                 }
                 case '=': {
-                    // Would be ambiguous with a Setext heading, escape
-                    writer.raw("\\=");
-                    literal = literal.substring(1);
+                    // Would be ambiguous with a Setext heading, escape unless it's the first line in the block
+                    if (text.getPrevious() != null) {
+                        writer.raw("\\=");
+                        literal = literal.substring(1);
+                    }
                     break;
                 }
                 case '0':
