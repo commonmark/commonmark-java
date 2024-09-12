@@ -219,8 +219,6 @@ public class FootnoteHtmlRendererTest extends RenderingTestCase {
                         "</li>\n" +
                         "</ol>\n" +
                         "</section>\n");
-
-        // TODO: Tricky ones like inline footnote referencing a normal one, and a definition containing an inline one.
     }
 
     @Test
