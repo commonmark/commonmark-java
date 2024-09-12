@@ -21,9 +21,19 @@ public interface NodeRenderer {
      */
     void render(Node node);
 
+    /**
+     * Called before the root node is rendered, to do any initial processing at the start.
+     *
+     * @param rootNode the root (top-level) node
+     */
     default void beforeRoot(Node rootNode) {
     }
 
+    /**
+     * Called after the root node is rendered, to do any final processing at the end.
+     *
+     * @param rootNode the root (top-level) node
+     */
     default void afterRoot(Node rootNode) {
     }
 }
