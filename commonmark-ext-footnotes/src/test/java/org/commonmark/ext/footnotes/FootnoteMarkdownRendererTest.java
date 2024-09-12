@@ -11,7 +11,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 
 public class FootnoteMarkdownRendererTest {
-    private static final Set<Extension> EXTENSIONS = Set.of(FootnotesExtension.create());
+    private static final Set<Extension> EXTENSIONS = Set.of(FootnotesExtension.builder().inlineFootnotes(true).build());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 
@@ -34,6 +34,11 @@ public class FootnoteMarkdownRendererTest {
     @Test
     public void testBackslashInLabel() {
         assertRoundTrip("[^\\foo]\n\n[^\\foo]: note\n");
+    }
+
+    @Test
+    public void testInline() {
+        assertRoundTrip("^[test *foo*]\n");
     }
 
     private void assertRoundTrip(String input) {

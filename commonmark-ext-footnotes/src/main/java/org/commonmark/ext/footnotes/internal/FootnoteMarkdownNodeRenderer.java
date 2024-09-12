@@ -2,6 +2,7 @@ package org.commonmark.ext.footnotes.internal;
 
 import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.ext.footnotes.FootnoteReference;
+import org.commonmark.ext.footnotes.InlineFootnote;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
@@ -26,13 +27,15 @@ public class FootnoteMarkdownNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(FootnoteReference.class, FootnoteDefinition.class);
+        return Set.of(FootnoteReference.class, InlineFootnote.class, FootnoteDefinition.class);
     }
 
     @Override
     public void render(Node node) {
         if (node instanceof FootnoteReference) {
             renderReference((FootnoteReference) node);
+        } else if (node instanceof InlineFootnote) {
+            renderInline((InlineFootnote) node);
         } else if (node instanceof FootnoteDefinition) {
             renderDefinition((FootnoteDefinition) node);
         }
@@ -42,6 +45,12 @@ public class FootnoteMarkdownNodeRenderer implements NodeRenderer {
         writer.raw("[^");
         // The label is parsed as-is without escaping, so we can render it back as-is
         writer.raw(ref.getLabel());
+        writer.raw("]");
+    }
+
+    private void renderInline(InlineFootnote inlineFootnote) {
+        writer.raw("^[");
+        renderChildren(inlineFootnote);
         writer.raw("]");
     }
 
