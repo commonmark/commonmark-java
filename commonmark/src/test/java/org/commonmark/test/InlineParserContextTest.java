@@ -1,6 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.internal.InlineParserImpl;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParser;
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -52,9 +54,24 @@ public class InlineParserContextTest {
                 }
 
                 @Override
+                public List<LinkProcessor> getCustomLinkProcessors() {
+                    return inlineParserContext.getCustomLinkProcessors();
+                }
+
+                @Override
+                public Set<Character> getCustomLinkMarkers() {
+                    return inlineParserContext.getCustomLinkMarkers();
+                }
+
+                @Override
                 public LinkReferenceDefinition getLinkReferenceDefinition(String label) {
+                    return getDefinition(LinkReferenceDefinition.class, label);
+                }
+
+                @Override
+                public <D> D getDefinition(Class<D> type, String label) {
                     lookups.add(label);
-                    return inlineParserContext.getLinkReferenceDefinition(label);
+                    return inlineParserContext.getDefinition(type, label);
                 }
             };
 

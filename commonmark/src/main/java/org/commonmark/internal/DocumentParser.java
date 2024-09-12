@@ -2,7 +2,11 @@ package org.commonmark.internal;
 
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
-import org.commonmark.parser.*;
+import org.commonmark.parser.IncludeSourceSpans;
+import org.commonmark.parser.InlineParserFactory;
+import org.commonmark.parser.SourceLine;
+import org.commonmark.parser.SourceLines;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.block.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
@@ -69,20 +73,24 @@ public class DocumentParser implements ParserState {
     private final InlineParserFactory inlineParserFactory;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final List<LinkProcessor> linkProcessors;
+    private final Set<Character> linkMarkers;
     private final IncludeSourceSpans includeSourceSpans;
     private final DocumentBlockParser documentBlockParser;
-    private final LinkReferenceDefinitions definitions = new LinkReferenceDefinitions();
+    private final Definitions definitions = new Definitions();
 
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
                           List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          IncludeSourceSpans includeSourceSpans) {
+                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers, IncludeSourceSpans includeSourceSpans) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
+        this.linkProcessors = linkProcessors;
+        this.linkMarkers = linkMarkers;
         this.includeSourceSpans = includeSourceSpans;
 
         this.documentBlockParser = new DocumentBlockParser();
@@ -457,34 +465,13 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Finalize a block. Close it and do any necessary postprocessing, e.g. setting the content of blocks and
-     * collecting link reference definitions from paragraphs.
-     */
-    private void finalize(BlockParser blockParser) {
-        if (blockParser instanceof ParagraphParser) {
-            addDefinitionsFrom((ParagraphParser) blockParser);
-        }
-
-        blockParser.closeBlock();
-    }
-
-    private void addDefinitionsFrom(ParagraphParser paragraphParser) {
-        for (LinkReferenceDefinition definition : paragraphParser.getDefinitions()) {
-            // Add nodes into document before paragraph.
-            paragraphParser.getBlock().insertBefore(definition);
-
-            definitions.add(definition);
-        }
-    }
-
-    /**
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        InlineParserContextImpl context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, definitions);
-        InlineParser inlineParser = inlineParserFactory.create(context);
+        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, linkProcessors, linkMarkers, definitions);
+        var inlineParser = inlineParserFactory.create(context);
 
-        for (BlockParser blockParser : allBlockParsers) {
+        for (var blockParser : allBlockParsers) {
             blockParser.parseInlines(inlineParser);
         }
     }
@@ -520,7 +507,7 @@ public class DocumentParser implements ParserState {
             // block parser got the current paragraph content using MatchedBlockParser#getContentString. In case the
             // paragraph started with link reference definitions, we parse and strip them before the block parser gets
             // the content. We want to keep them.
-            // If no replacement happens, we collect the definitions as part of finalizing paragraph blocks.
+            // If no replacement happens, we collect the definitions as part of finalizing blocks.
             addDefinitionsFrom(paragraphParser);
         }
 
@@ -544,6 +531,21 @@ public class DocumentParser implements ParserState {
             // separate interface (e.g. BlockParserWithInlines) so that we only have to remember those that actually
             // have inlines to parse.
             allBlockParsers.add(blockParser);
+        }
+    }
+
+    /**
+     * Finalize a block. Close it and do any necessary postprocessing, e.g. setting the content of blocks and
+     * collecting link reference definitions from paragraphs.
+     */
+    private void finalize(BlockParser blockParser) {
+        addDefinitionsFrom(blockParser);
+        blockParser.closeBlock();
+    }
+
+    private void addDefinitionsFrom(BlockParser blockParser) {
+        for (var definitionMap : blockParser.getDefinitions()) {
+            definitions.addDefinitions(definitionMap);
         }
     }
 

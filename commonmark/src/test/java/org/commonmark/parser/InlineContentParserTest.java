@@ -2,6 +2,8 @@ package org.commonmark.parser;
 
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Heading;
+import org.commonmark.node.Image;
+import org.commonmark.node.Text;
 import org.commonmark.parser.beta.InlineContentParser;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.beta.InlineParserState;
@@ -33,6 +35,19 @@ public class InlineContentParserTest {
         assertEquals(0, inline1.getIndex());
         assertEquals(1, inline2.getIndex());
         assertEquals(0, inline3.getIndex());
+    }
+
+    @Test
+    public void bangInlineContentParser() {
+        // See if using ! for a custom inline content parser works.
+        // ![] is used for images, but if it's not followed by a [, it should be possible to parse it differently.
+        var parser = Parser.builder().customInlineContentParserFactory(new BangInlineParser.Factory()).build();
+        var doc = parser.parse("![image](url) !notimage");
+        var image = Nodes.find(doc, Image.class);
+        assertEquals("url", image.getDestination());
+        assertEquals(" ", ((Text) image.getNext()).getLiteral());
+        assertEquals(BangInline.class, image.getNext().getNext().getClass());
+        assertEquals("notimage", ((Text) image.getNext().getNext().getNext()).getLiteral());
     }
 
     private static class DollarInline extends CustomNode {
@@ -81,6 +96,31 @@ public class InlineContentParserTest {
             @Override
             public InlineContentParser create() {
                 return new DollarInlineParser();
+            }
+        }
+    }
+
+    private static class BangInline extends CustomNode {
+    }
+
+    private static class BangInlineParser implements InlineContentParser {
+
+        @Override
+        public ParsedInline tryParse(InlineParserState inlineParserState) {
+            var scanner = inlineParserState.scanner();
+            scanner.next();
+            return ParsedInline.of(new BangInline(), scanner.position());
+        }
+
+        static class Factory implements InlineContentParserFactory {
+            @Override
+            public Set<Character> getTriggerCharacters() {
+                return Set.of('!');
+            }
+
+            @Override
+            public InlineContentParser create() {
+                return new BangInlineParser();
             }
         }
     }

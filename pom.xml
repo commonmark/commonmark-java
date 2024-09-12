@@ -16,6 +16,7 @@
     <modules>
         <module>commonmark</module>
         <module>commonmark-ext-autolink</module>
+        <module>commonmark-ext-footnotes</module>
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
         <module>commonmark-ext-heading-anchor</module>
@@ -63,7 +64,7 @@
                         <detectOfflineLinks>false</detectOfflineLinks>
                         <offlineLinks>
                             <offlineLink>
-                                <url>http://static.javadoc.io/org.commonmark/commonmark/${project.version}/
+                                <url>https://static.javadoc.io/org.commonmark/commonmark/${project.version}/
                                 </url>
                                 <location>${commonmark.javadoc.location}</location>
                             </offlineLink>

@@ -38,12 +38,14 @@ public class HtmlWriter {
         append("<");
         append(name);
         if (attrs != null && !attrs.isEmpty()) {
-            for (Map.Entry<String, String> attrib : attrs.entrySet()) {
+            for (var attr : attrs.entrySet()) {
                 append(" ");
-                append(Escaping.escapeHtml(attrib.getKey()));
-                append("=\"");
-                append(Escaping.escapeHtml(attrib.getValue()));
-                append("\"");
+                append(Escaping.escapeHtml(attr.getKey()));
+                if (attr.getValue() != null) {
+                    append("=\"");
+                    append(Escaping.escapeHtml(attr.getValue()));
+                    append("\"");
+                }
             }
         }
         if (voidElement) {
