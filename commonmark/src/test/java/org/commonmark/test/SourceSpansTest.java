@@ -205,6 +205,66 @@ public class SourceSpansTest {
     }
 
     @Test
+    public void lazyContinuationLines() {
+        {
+            // From https://spec.commonmark.org/0.31.2/#example-250
+            // Wrong source span for the inner block quote for the second line.
+            var doc = PARSER.parse("> > > foo\nbar\n");
+
+            var bq1 = (BlockQuote) doc.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 0, 9), SourceSpan.of(1, 0, 3)), bq1.getSourceSpans());
+            var bq2 = (BlockQuote) bq1.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 2, 7), SourceSpan.of(1, 0, 3)), bq2.getSourceSpans());
+            var bq3 = (BlockQuote) bq2.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 4, 5), SourceSpan.of(1, 0, 3)), bq3.getSourceSpans());
+            var paragraph = (Paragraph) bq3.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 6, 3), SourceSpan.of(1, 0, 3)), paragraph.getSourceSpans());
+        }
+
+        {
+            // Adding one character to the last line remove blockQuote3 source for the second line
+            var doc = PARSER.parse("> > > foo\nbars\n");
+
+            var bq1 = (BlockQuote) doc.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 0, 9), SourceSpan.of(1, 0, 4)), bq1.getSourceSpans());
+            var bq2 = (BlockQuote) bq1.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 2, 7), SourceSpan.of(1, 0, 4)), bq2.getSourceSpans());
+            var bq3 = (BlockQuote) bq2.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 4, 5), SourceSpan.of(1, 0, 4)), bq3.getSourceSpans());
+            var paragraph = (Paragraph) bq3.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 6, 3), SourceSpan.of(1, 0, 4)), paragraph.getSourceSpans());
+        }
+
+        {
+            // From https://spec.commonmark.org/0.31.2/#example-292
+            var doc = PARSER.parse("> 1. > Blockquote\ncontinued here.");
+
+            var bq1 = (BlockQuote) doc.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 0, 17), SourceSpan.of(1, 0, 15)), bq1.getSourceSpans());
+            var orderedList = (OrderedList) bq1.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 2, 15), SourceSpan.of(1, 0, 15)), orderedList.getSourceSpans());
+            var listItem = (ListItem) orderedList.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 2, 15), SourceSpan.of(1, 0, 15)), listItem.getSourceSpans());
+            var bq2 = (BlockQuote) listItem.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 5, 12), SourceSpan.of(1, 0, 15)), bq2.getSourceSpans());
+            var paragraph = (Paragraph) bq2.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 7, 10), SourceSpan.of(1, 0, 15)), paragraph.getSourceSpans());
+        }
+
+        {
+            // Lazy continuation line for nested blockquote
+            var doc = PARSER.parse("> > foo\n> bar\n");
+
+            var bq1 = (BlockQuote) doc.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 0, 7), SourceSpan.of(1, 0, 5)), bq1.getSourceSpans());
+            var bq2 = (BlockQuote) bq1.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 2, 5), SourceSpan.of(1, 2, 3)), bq2.getSourceSpans());
+            var paragraph = (Paragraph) bq2.getLastChild();
+            assertEquals(List.of(SourceSpan.of(0, 4, 3), SourceSpan.of(1, 2, 3)), paragraph.getSourceSpans());
+        }
+    }
+
+    @Test
     public void visualCheck() {
         assertEquals("(> {[* <foo>]})\n(> {[  <bar>]})\n(> {⸢* ⸤baz⸥⸣})\n",
                 visualizeSourceSpans("> * foo\n>   bar\n> * baz\n"));

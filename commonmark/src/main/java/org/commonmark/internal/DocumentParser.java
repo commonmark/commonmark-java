@@ -288,7 +288,7 @@ public class DocumentParser implements ParserState {
         // What remains at the offset is a text line. Add the text to the
         // appropriate block.
 
-        // First check for a lazy paragraph continuation:
+        // First check for a lazy continuation line
         if (!startedNewBlock && !isBlank() &&
                 getActiveBlockParser().canHaveLazyContinuationLines()) {
             openBlockParsers.get(openBlockParsers.size() - 1).sourceIndex = lastIndex;
@@ -441,10 +441,12 @@ public class DocumentParser implements ParserState {
 
     private void addSourceSpans() {
         if (includeSourceSpans != IncludeSourceSpans.NONE) {
-            // Don't add source spans for Document itself (it would get the whole source text)
+            // Don't add source spans for Document itself (it would get the whole source text), so start at 1, not 0
             for (int i = 1; i < openBlockParsers.size(); i++) {
-                OpenBlockParser openBlockParser = openBlockParsers.get(i);
-                int blockIndex = openBlockParser.sourceIndex;
+                var openBlockParser = openBlockParsers.get(i);
+                // In case of a lazy continuation line, the index is less than where the block parser would expect the
+                // contents to start, so let's use whichever is smaller.
+                int blockIndex = Math.min(openBlockParser.sourceIndex, index);
                 int length = line.getContent().length() - blockIndex;
                 if (length != 0) {
                     openBlockParser.blockParser.addSourceSpan(SourceSpan.of(lineIndex, blockIndex, length));
