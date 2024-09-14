@@ -69,13 +69,15 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(Paragraph paragraph) {
-        boolean inTightList = isInTightList(paragraph);
-        if (!inTightList) {
+        boolean omitP = isInTightList(paragraph) || //
+                (context.shouldOmitSingleParagraphP() && paragraph.getParent() instanceof Document && //
+                        paragraph.getPrevious() == null && paragraph.getNext() == null);
+        if (!omitP) {
             html.line();
             html.tag("p", getAttrs(paragraph, "p"));
         }
         visitChildren(paragraph);
-        if (!inTightList) {
+        if (!omitP) {
             html.tag("/p");
             html.line();
         }
