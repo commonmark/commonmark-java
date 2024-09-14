@@ -197,6 +197,9 @@ public class MarkdownRendererTest {
         assertRoundTrip("\\## Test\n");
         assertRoundTrip("\\#\n");
         assertRoundTrip("Foo\n\\===\n");
+        // Only needs to be escaped after some text, not at beginning of paragraph
+        assertRoundTrip("===\n");
+        assertRoundTrip("a\n\n===\n");
         // The beginning of the line within the block, so disregarding prefixes
         assertRoundTrip("> \\- Test\n");
         assertRoundTrip("- \\- Test\n");
