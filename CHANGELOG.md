@@ -6,25 +6,43 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.23.0] - 2024-09-16
 ### Added
-- Support for extending inline parsing with custom inline content parsers! See
-  `Parser.Builder#customInlineContentParserFactory`. This allows users or
-  extensions to hook into inline parsing on a deeper level than using delimiter
-  processors. It could be used to implement support for math/latex formulas for
-  example.
+- New extension for footnotes!
+  - Syntax:
+    ```
+    Main text[^1]
+    
+    [^1]: Additional text in a footnote
+    ```
+  - Inline footnotes like `^[inline footnote]` are also supported when enabled
+    via an option in `FootnotesExtension.Builder`
+  - Use class `FootnotesExtension` in artifact `commonmark-ext-footnotes` (#332)
+- New option `omitSingleParagraphP` in `HtmlRenderer.Builder` for not using `<p>` 
+  tags for when a document only has one paragraph (#150)
+- Support for custom link processing during inline parsing (e.g. `[foo]`),
+  see `Parser.Builder#linkProcessor`
+- Support for extending inline parsing with custom inline content parsers. See
+  `Parser.Builder#customInlineContentParserFactory`. This allows users/extensions
+  to hook into inline parsing on a deeper level than before (e.g. with delimiter
+  processors). It can be used to add support for math/latex formulas or other inline
+  syntax. (#321)
 ### Changed
+- The default `DefaultUrlSanitizer` now also allows `data` as a protocol. Use the
+  constructor with a list to customize this. (#329)
 - `LinkReferenceDefinition` now extends `Block` (it was extending `Node`
   directly before)
+- `MarkdownRenderer`: Don't escape `=` text if it's the first node in a block (#335)
 ### Fixed
-- Fix parsing of link reference definitions where it looks like it has a title
-  but it doesn't because it's followed by characters other than space/tab. In that
-  case, the title was set to the partially-parsed title and the source spans were
-  wrong (#315).
+- Fix parsing of link reference definitions with incorrect title syntax (followed
+  by characters other than space/tab). In that case, the title was set to the
+  partially-parsed title and the source spans were wrong. (#315)
+- Fix source spans of blocks with lazy continuation lines (#337)
+- `MarkdownRenderer`: Preserve thematic break literals (#331)
 
 ## [0.22.0] - 2024-03-15
 ### Added
-- New `MarkdownRenderer` for rendering nodes to Markdown (CommonMark)!
+- New `MarkdownRenderer` for rendering nodes to Markdown (CommonMark) (#306)!
   Note that while care is taken to produce equivalent Markdown, some differences
   in the original Markdown (if parsed) are not preserved, such as:
   - The type of heading used
@@ -397,7 +415,7 @@ API breaking changes (caused by changes in spec):
 - Rename `HorizontalRule` to `ThematicBreak`
 - Rename `HtmlTag` to `HtmlInline`
 - Replace `MatchedBlockParser#getParagraphStartLine` with `#getParagraphContent`
-  that returns the current content if the the matched block is a paragraph
+  that returns the current content if the matched block is a paragraph
 
 ## [0.3.2] - 2016-01-07
 ### Fixed
@@ -427,6 +445,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
+[0.23.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.22.0...commonmark-parent-0.23.0
 [0.22.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.21.0...commonmark-parent-0.22.0
 [0.21.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.20.0...commonmark-parent-0.21.0
 [0.20.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.19.0...commonmark-parent-0.20.0
