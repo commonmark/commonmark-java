@@ -4,6 +4,8 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
+import org.commonmark.testutil.Asserts;
+import org.commonmark.testutil.RenderingTestCase;
 import org.commonmark.testutil.TestResources;
 import org.junit.Test;
 
@@ -306,6 +308,12 @@ public class HtmlRendererTest {
 
         assertEquals("Here I have a test <a href=\"http://www.google.com\">link</a>",
                 defaultRenderer().render(document));
+    }
+
+    @Test
+    public void omitSingleParagraphP() {
+        var renderer = HtmlRenderer.builder().omitSingleParagraphP(true).build();
+        assertEquals("hi <em>there</em>", renderer.render(parse("hi *there*")));
     }
 
     @Test

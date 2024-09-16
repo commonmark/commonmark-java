@@ -22,17 +22,19 @@ public class HtmlRenderer implements Renderer {
 
     private final String softbreak;
     private final boolean escapeHtml;
+    private final boolean percentEncodeUrls;
+    private final boolean omitSingleParagraphP;
     private final boolean sanitizeUrls;
     private final UrlSanitizer urlSanitizer;
-    private final boolean percentEncodeUrls;
     private final List<AttributeProviderFactory> attributeProviderFactories;
     private final List<HtmlNodeRendererFactory> nodeRendererFactories;
 
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
-        this.sanitizeUrls = builder.sanitizeUrls;
         this.percentEncodeUrls = builder.percentEncodeUrls;
+        this.omitSingleParagraphP = builder.omitSingleParagraphP;
+        this.sanitizeUrls = builder.sanitizeUrls;
         this.urlSanitizer = builder.urlSanitizer;
         this.attributeProviderFactories = new ArrayList<>(builder.attributeProviderFactories);
 
@@ -83,6 +85,7 @@ public class HtmlRenderer implements Renderer {
         private boolean sanitizeUrls = false;
         private UrlSanitizer urlSanitizer = new DefaultUrlSanitizer();
         private boolean percentEncodeUrls = false;
+        private boolean omitSingleParagraphP = false;
         private List<AttributeProviderFactory> attributeProviderFactories = new ArrayList<>();
         private List<HtmlNodeRendererFactory> nodeRendererFactories = new ArrayList<>();
 
@@ -167,6 +170,17 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
+         * Whether documents that only contain a single paragraph should be rendered without the {@code <p>} tag. Set to
+         * {@code true} to render without the tag; the default of {@code false} always renders the tag.
+         *
+         * @return {@code this}
+         */
+        public Builder omitSingleParagraphP(boolean omitSingleParagraphP) {
+            this.omitSingleParagraphP = omitSingleParagraphP;
+            return this;
+        }
+
+        /**
          * Add a factory for an attribute provider for adding/changing HTML attributes to the rendered tags.
          *
          * @param attributeProviderFactory the attribute provider factory to add
@@ -240,6 +254,11 @@ public class HtmlRenderer implements Renderer {
         @Override
         public boolean shouldEscapeHtml() {
             return escapeHtml;
+        }
+
+        @Override
+        public boolean shouldOmitSingleParagraphP() {
+            return omitSingleParagraphP;
         }
 
         @Override
