@@ -430,7 +430,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) file.
 License
 -------
 
-Copyright (c) Atlassian and others.
+Copyright (c) 2015, Robin Stocker
 
 BSD (2-clause) licensed, see LICENSE.txt file.
 
