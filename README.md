@@ -36,7 +36,7 @@ Coordinates for core library (see all on [Maven Central]):
 <dependency>
     <groupId>org.commonmark</groupId>
     <artifactId>commonmark</artifactId>
-    <version>0.22.0</version>
+    <version>0.23.0</version>
 </dependency>
 ```
 
@@ -233,6 +233,7 @@ all of them via methods on `Parser.Builder`
 - Parsing of inline content can be extended/overridden with `customInlineContentParserFactory`
 - Parsing of [delimiters](https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis) in inline content can be
   extended with `customDelimiterProcessor`
+- Processing of links can be customized with `linkProcessor` and `linkMarker`
 
 #### Thread-safety
 
@@ -265,7 +266,7 @@ First, add an additional dependency (see [Maven Central] for others):
 <dependency>
     <groupId>org.commonmark</groupId>
     <artifactId>commonmark-ext-gfm-tables</artifactId>
-    <version>0.22.0</version>
+    <version>0.23.0</version>
 </dependency>
 ```
 
@@ -306,6 +307,21 @@ Use class `StrikethroughExtension` in artifact `commonmark-ext-gfm-strikethrough
 Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
+
+### Footnotes
+
+Enables footnotes like in [GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
+or [Pandoc](https://pandoc.org/MANUAL.html#footnotes):
+
+```
+Main text[^1]
+
+[^1]: Additional text in a footnote
+```
+
+Inline footnotes like `^[inline footnote]` are also supported when enabled via `FootnotesExtension.Builder#inlineFootnotes`.
+
+Use class `FootnotesExtension` in artifact `commonmark-ext-footnotes`.
 
 ### Heading anchor
 
