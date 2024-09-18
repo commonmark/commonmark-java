@@ -187,7 +187,7 @@ public class Parser {
         }
 
         /**
-         * Whether to calculate {@link org.commonmark.node.SourceSpan} for {@link Node}.
+         * Whether to calculate source positions for parsed {@link Node Nodes}, see {@link Node#getSourceSpans()}.
          * <p>
          * By default, source spans are disabled.
          *
