@@ -416,6 +416,14 @@ You can also find other extensions in the wild:
 
 * [commonmark-ext-notifications](https://github.com/McFoggy/commonmark-ext-notifications): this extension allows to easily create notifications/admonitions paragraphs like `INFO`, `SUCCESS`, `WARNING` or `ERROR`
 
+Used by
+-------
+
+Some users of this library (feel free to raise a PR if you want to be added):
+* Atlassian (where the library was initially developed)
+* Java (OpenJDK), see [here](https://github.com/openjdk/jdk/blob/3895b8fc0b2c6d187080dba6fe08297adad4a480/src/jdk.internal.md/share/classes/module-info.java)
+* Gitiles/Gerrit, see [here](https://gerrit-review.googlesource.com/c/gitiles/+/353794)
+
 See also
 --------
 
