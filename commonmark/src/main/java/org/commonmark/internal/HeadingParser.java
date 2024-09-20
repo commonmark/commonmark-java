@@ -69,7 +69,7 @@ public class HeadingParser extends AbstractBlockParser {
     }
 
     // spec: An ATX heading consists of a string of characters, parsed as inline content, between an opening sequence of
-    // 1–6 unescaped # characters and an optional closing sequence of any number of unescaped # characters. The opening
+    // 1-6 unescaped # characters and an optional closing sequence of any number of unescaped # characters. The opening
     // sequence of # characters must be followed by a space or by the end of line. The optional closing sequence of #s
     // must be preceded by a space and may be followed by spaces only.
     private static HeadingParser getAtxHeading(SourceLine line) {

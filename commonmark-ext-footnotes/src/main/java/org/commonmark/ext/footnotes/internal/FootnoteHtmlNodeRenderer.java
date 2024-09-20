@@ -267,7 +267,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
                 html.tag("/sup");
             }
             // U+21A9 LEFTWARDS ARROW WITH HOOK
-            html.raw("↩");
+            html.raw("\u21A9");
             html.tag("/a");
             if (i + 1 < refs.size()) {
                 html.raw(" ");

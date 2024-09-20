@@ -62,9 +62,11 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(BlockQuote blockQuote) {
-        textContent.write('«');
+        // LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+        textContent.write('\u00AB');
         visitChildren(blockQuote);
-        textContent.write('»');
+        // RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+        textContent.write('\u00BB');
 
         writeEndOfLineIfNeeded(blockQuote, null);
     }

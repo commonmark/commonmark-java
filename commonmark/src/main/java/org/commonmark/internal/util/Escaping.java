@@ -115,11 +115,11 @@ public class Escaping {
     public static String normalizeLabelContent(String input) {
         String trimmed = input.trim();
 
-        // This is necessary to correctly case fold "ẞ" to "SS":
-        // "ẞ".toLowerCase(Locale.ROOT)  -> "ß"
-        // "ß".toUpperCase(Locale.ROOT)  -> "SS"
+        // This is necessary to correctly case fold "\u1E9E" (LATIN CAPITAL LETTER SHARP S) to "SS":
+        // "\u1E9E".toLowerCase(Locale.ROOT)  -> "\u00DF" (LATIN SMALL LETTER SHARP S)
+        // "\u00DF".toUpperCase(Locale.ROOT)  -> "SS"
         // Note that doing upper first (or only upper without lower) wouldn't work because:
-        // "ẞ".toUpperCase(Locale.ROOT)  -> "ẞ"
+        // "\u1E9E".toUpperCase(Locale.ROOT)  -> "\u1E9E"
         String caseFolded = trimmed.toLowerCase(Locale.ROOT).toUpperCase(Locale.ROOT);
 
         return WHITESPACE.matcher(caseFolded).replaceAll(" ");
