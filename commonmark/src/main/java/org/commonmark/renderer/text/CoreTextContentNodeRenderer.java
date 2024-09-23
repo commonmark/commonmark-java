@@ -65,25 +65,20 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
         // LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
         textContent.write('\u00AB');
         visitChildren(blockQuote);
+        textContent.resetBlock();
         // RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
         textContent.write('\u00BB');
 
-        writeEndOfLineIfNeeded(blockQuote, null);
+        textContent.block();
     }
 
     @Override
     public void visit(BulletList bulletList) {
-        if (listHolder != null) {
-            writeEndOfLine();
-        }
+        // TODO: isTight()
         listHolder = new BulletListHolder(listHolder, bulletList);
         visitChildren(bulletList);
-        writeEndOfLineIfNeeded(bulletList, null);
-        if (listHolder.getParent() != null) {
-            listHolder = listHolder.getParent();
-        } else {
-            listHolder = null;
-        }
+        textContent.block();
+        listHolder = listHolder.getParent();
     }
 
     @Override
@@ -95,31 +90,40 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(FencedCodeBlock fencedCodeBlock) {
-        if (context.stripNewlines()) {
-            textContent.writeStripped(fencedCodeBlock.getLiteral());
-            writeEndOfLineIfNeeded(fencedCodeBlock, null);
+        var literal = stripTrailingNewline(fencedCodeBlock.getLiteral());
+        if (stripNewlines()) {
+            textContent.writeStripped(literal);
         } else {
-            textContent.write(fencedCodeBlock.getLiteral());
+            textContent.write(literal);
         }
+        textContent.block();
     }
 
     @Override
     public void visit(HardLineBreak hardLineBreak) {
-        writeEndOfLineIfNeeded(hardLineBreak, null);
+        if (stripNewlines()) {
+            textContent.whitespace();
+        } else {
+            textContent.line();
+        }
     }
 
     @Override
     public void visit(Heading heading) {
         visitChildren(heading);
-        writeEndOfLineIfNeeded(heading, ':');
+        if (stripNewlines()) {
+            textContent.write(": ");
+        } else {
+            textContent.block();
+        }
     }
 
     @Override
     public void visit(ThematicBreak thematicBreak) {
-        if (!context.stripNewlines()) {
+        if (!stripNewlines()) {
             textContent.write("***");
         }
-        writeEndOfLineIfNeeded(thematicBreak, null);
+        textContent.block();
     }
 
     @Override
@@ -139,12 +143,13 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
-        if (context.stripNewlines()) {
-            textContent.writeStripped(indentedCodeBlock.getLiteral());
-            writeEndOfLineIfNeeded(indentedCodeBlock, null);
+        var literal = stripTrailingNewline(indentedCodeBlock.getLiteral());
+        if (stripNewlines()) {
+            textContent.writeStripped(literal);
         } else {
-            textContent.write(indentedCodeBlock.getLiteral());
+            textContent.write(literal);
         }
+        textContent.block();
     }
 
     @Override
@@ -156,48 +161,43 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
     public void visit(ListItem listItem) {
         if (listHolder != null && listHolder instanceof OrderedListHolder) {
             OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
-            String indent = context.stripNewlines() ? "" : orderedListHolder.getIndent();
+            String indent = stripNewlines() ? "" : orderedListHolder.getIndent();
             textContent.write(indent + orderedListHolder.getCounter() + orderedListHolder.getDelimiter() + " ");
             visitChildren(listItem);
-            writeEndOfLineIfNeeded(listItem, null);
+            textContent.block();
             orderedListHolder.increaseCounter();
         } else if (listHolder != null && listHolder instanceof BulletListHolder) {
             BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
-            if (!context.stripNewlines()) {
+            if (!stripNewlines()) {
                 textContent.write(bulletListHolder.getIndent() + bulletListHolder.getMarker() + " ");
             }
             visitChildren(listItem);
-            writeEndOfLineIfNeeded(listItem, null);
+            textContent.block();
         }
     }
 
     @Override
     public void visit(OrderedList orderedList) {
-        if (listHolder != null) {
-            writeEndOfLine();
-        }
+        // TODO: isTight()
         listHolder = new OrderedListHolder(listHolder, orderedList);
         visitChildren(orderedList);
-        writeEndOfLineIfNeeded(orderedList, null);
-        if (listHolder.getParent() != null) {
-            listHolder = listHolder.getParent();
-        } else {
-            listHolder = null;
-        }
+        textContent.block();
+        listHolder = listHolder.getParent();
     }
 
     @Override
     public void visit(Paragraph paragraph) {
         visitChildren(paragraph);
-        // Add "end of line" only if its "root paragraph.
-        if (paragraph.getParent() == null || paragraph.getParent() instanceof Document) {
-            writeEndOfLineIfNeeded(paragraph, null);
-        }
+        textContent.block();
     }
 
     @Override
     public void visit(SoftLineBreak softLineBreak) {
-        writeEndOfLineIfNeeded(softLineBreak, null);
+        if (stripNewlines()) {
+            textContent.whitespace();
+        } else {
+            textContent.line();
+        }
     }
 
     @Override
@@ -216,7 +216,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
     }
 
     private void writeText(String text) {
-        if (context.stripNewlines()) {
+        if (stripNewlines()) {
             textContent.writeStripped(text);
         } else {
             textContent.write(text);
@@ -255,26 +255,15 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
         }
     }
 
-    private void writeEndOfLineIfNeeded(Node node, Character c) {
-        if (context.stripNewlines()) {
-            if (c != null) {
-                textContent.write(c);
-            }
-            if (node.getNext() != null) {
-                textContent.whitespace();
-            }
-        } else {
-            if (node.getNext() != null) {
-                textContent.line();
-            }
-        }
+    private boolean stripNewlines() {
+        return context.lineBreakRendering() == LineBreakRendering.STRIP;
     }
 
-    private void writeEndOfLine() {
-        if (context.stripNewlines()) {
-            textContent.whitespace();
+    private static String stripTrailingNewline(String s) {
+        if (s.endsWith("\n")) {
+            return s.substring(0, s.length() - 1);
         } else {
-            textContent.line();
+            return s;
         }
     }
 }

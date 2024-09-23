@@ -5,9 +5,18 @@ import org.commonmark.node.Node;
 public interface TextContentNodeRendererContext {
 
     /**
+     * TODO
+     *
+     * @return
+     */
+    LineBreakRendering lineBreakRendering();
+
+    /**
      * @return true for stripping new lines and render text as "single line",
      * false for keeping all line breaks.
+     * @deprecated Use {@link #lineBreakRendering()} instead
      */
+    @Deprecated
     boolean stripNewlines();
 
     /**

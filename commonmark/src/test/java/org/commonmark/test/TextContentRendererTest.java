@@ -3,6 +3,7 @@ package org.commonmark.test;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
+import org.commonmark.testutil.Asserts;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -248,8 +249,6 @@ public class TextContentRendererTest {
         rendered = strippedRenderer(source);
         assertEquals("foo bar", rendered);
     }
-
-
 
     @Test
     public void textContentHtml() {
