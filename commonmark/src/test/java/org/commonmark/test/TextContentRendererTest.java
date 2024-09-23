@@ -1,5 +1,6 @@
 package org.commonmark.test;
 
+import org.commonmark.renderer.text.LineBreakRendering;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
@@ -20,6 +21,7 @@ public class TextContentRendererTest {
 
         s = "foo foo\n\nbar\nbar";
         assertCompact(s, "foo foo\nbar\nbar");
+        assertSeparate(s, "foo foo\n\nbar\nbar");
         assertStripped(s, "foo foo bar bar");
     }
 
@@ -38,6 +40,7 @@ public class TextContentRendererTest {
 
         s = "foo\n***foo***\nbar\n\n***bar***";
         assertCompact(s, "foo\nfoo\nbar\nbar");
+        assertSeparate(s, "foo\nfoo\nbar\n\nbar");
         assertStripped(s, "foo foo bar bar");
     }
 
@@ -47,6 +50,7 @@ public class TextContentRendererTest {
 
         s = "foo\n>foo\nbar\n\nbar";
         assertCompact(s, "foo\n«foo\nbar»\nbar");
+        assertSeparate(s, "foo\n\n«foo\nbar»\n\nbar");
         assertStripped(s, "foo «foo bar» bar");
     }
 
@@ -72,35 +76,52 @@ public class TextContentRendererTest {
 
         s = "foo\n* foo\n* bar\n\nbar";
         assertCompact(s, "foo\n* foo\n* bar\nbar");
+        assertSeparate(s, "foo\n\n* foo\n* bar\n\nbar");
         assertStripped(s, "foo foo bar bar");
 
         s = "foo\n- foo\n- bar\n\nbar";
         assertCompact(s, "foo\n- foo\n- bar\nbar");
+        assertSeparate(s, "foo\n\n- foo\n- bar\n\nbar");
         assertStripped(s, "foo foo bar bar");
 
         s = "foo\n1. foo\n2. bar\n\nbar";
         assertCompact(s, "foo\n1. foo\n2. bar\nbar");
+        assertSeparate(s, "foo\n\n1. foo\n2. bar\n\nbar");
         assertStripped(s, "foo 1. foo 2. bar bar");
 
         s = "foo\n0) foo\n1) bar\n\nbar";
         assertCompact(s, "foo\n0) foo\n1) bar\nbar");
+        assertSeparate(s, "foo\n0) foo\n\n1) bar\n\nbar");
         assertStripped(s, "foo 0) foo 1) bar bar");
 
         s = "bar\n1. foo\n   1. bar\n2. foo";
         assertCompact(s, "bar\n1. foo\n   1. bar\n2. foo");
+        assertSeparate(s, "bar\n\n1. foo\n   1. bar\n2. foo");
         assertStripped(s, "bar 1. foo 1. bar 2. foo");
 
         s = "bar\n* foo\n   - bar\n* foo";
         assertCompact(s, "bar\n* foo\n   - bar\n* foo");
+        assertSeparate(s, "bar\n\n* foo\n   - bar\n* foo");
         assertStripped(s, "bar foo bar foo");
 
         s = "bar\n* foo\n   1. bar\n   2. bar\n* foo";
         assertCompact(s, "bar\n* foo\n   1. bar\n   2. bar\n* foo");
+        assertSeparate(s, "bar\n\n* foo\n   1. bar\n   2. bar\n* foo");
         assertStripped(s, "bar foo 1. bar 2. bar foo");
 
         s = "bar\n1. foo\n   * bar\n   * bar\n2. foo";
         assertCompact(s, "bar\n1. foo\n   * bar\n   * bar\n2. foo");
+        assertSeparate(s, "bar\n\n1. foo\n   * bar\n   * bar\n2. foo");
         assertStripped(s, "bar 1. foo bar bar 2. foo");
+
+        // For a loose list (not tight)
+        s = "foo\n\n* bar\n\n* baz";
+        // Compact ignores loose
+        assertCompact(s, "foo\n* bar\n* baz");
+        // Separate preserves it
+        assertSeparate(s, "foo\n\n* bar\n\n* baz");
+        assertStripped(s, "foo bar baz");
+
     }
 
     @Test
@@ -113,10 +134,12 @@ public class TextContentRendererTest {
         String s;
         s = "foo\n```\nfoo\nbar\n```\nbar";
         assertCompact(s, "foo\nfoo\nbar\nbar");
+        assertSeparate(s, "foo\n\nfoo\nbar\n\nbar");
         assertStripped(s, "foo foo bar bar");
 
         s = "foo\n\n    foo\n     bar\nbar";
         assertCompact(s, "foo\nfoo\n bar\nbar");
+        assertSeparate(s, "foo\n\nfoo\n bar\n\nbar");
         assertStripped(s, "foo foo bar bar");
     }
 
@@ -126,14 +149,17 @@ public class TextContentRendererTest {
 
         s = "foo\nbar";
         assertCompact(s, "foo\nbar");
+        assertSeparate(s, "foo\nbar");
         assertStripped(s, "foo bar");
 
         s = "foo  \nbar";
         assertCompact(s, "foo\nbar");
+        assertSeparate(s, "foo\nbar");
         assertStripped(s, "foo bar");
 
         s = "foo\n___\nbar";
         assertCompact(s, "foo\n***\nbar");
+        assertSeparate(s, "foo\n\n***\n\nbar");
         assertStripped(s, "foo bar");
     }
 
@@ -147,13 +173,18 @@ public class TextContentRendererTest {
                 "  </tr>\n" +
                 "</table>";
         assertCompact(html, html);
+        assertSeparate(html, html);
 
         html = "foo <foo>foobar</foo> bar";
-        assertCompact(html, html);
+        assertAll(html, html);
     }
 
-    private TextContentRenderer defaultRenderer() {
+    private TextContentRenderer compactRenderer() {
         return TextContentRenderer.builder().build();
+    }
+
+    private TextContentRenderer separateBlocksRenderer() {
+        return TextContentRenderer.builder().lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
     }
 
     private TextContentRenderer strippedRenderer() {
@@ -163,10 +194,16 @@ public class TextContentRendererTest {
     private Node parse(String source) {
         return Parser.builder().build().parse(source);
     }
-    
+
     private void assertCompact(String source, String expected) {
         var doc = parse(source);
-        var actualRendering = defaultRenderer().render(doc);
+        var actualRendering = compactRenderer().render(doc);
+        Asserts.assertRendering(source, expected, actualRendering);
+    }
+
+    private void assertSeparate(String source, String expected) {
+        var doc = parse(source);
+        var actualRendering = separateBlocksRenderer().render(doc);
         Asserts.assertRendering(source, expected, actualRendering);
     }
 
@@ -178,7 +215,7 @@ public class TextContentRendererTest {
 
     private void assertAll(String source, String expected) {
         assertCompact(source, expected);
+        assertSeparate(source, expected);
         assertStripped(source, expected);
-        // TODO
     }
 }

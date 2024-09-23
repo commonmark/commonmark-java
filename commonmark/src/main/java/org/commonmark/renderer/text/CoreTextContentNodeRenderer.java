@@ -74,9 +74,10 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(BulletList bulletList) {
-        // TODO: isTight()
+        textContent.pushTight(bulletList.isTight());
         listHolder = new BulletListHolder(listHolder, bulletList);
         visitChildren(bulletList);
+        textContent.popTight();
         textContent.block();
         listHolder = listHolder.getParent();
     }
@@ -178,9 +179,10 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(OrderedList orderedList) {
-        // TODO: isTight()
+        textContent.pushTight(orderedList.isTight());
         listHolder = new OrderedListHolder(listHolder, orderedList);
         visitChildren(orderedList);
+        textContent.popTight();
         textContent.block();
         listHolder = listHolder.getParent();
     }
