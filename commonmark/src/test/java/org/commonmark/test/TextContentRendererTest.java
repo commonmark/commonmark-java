@@ -31,6 +31,13 @@ public class TextContentRendererTest {
     }
 
     @Test
+    public void textContentHeading() {
+        assertCompact("# Heading\n\nFoo", "Heading\nFoo");
+        assertSeparate("# Heading\n\nFoo", "Heading\n\nFoo");
+        assertStripped("# Heading\n\nFoo", "Heading: Foo");
+    }
+
+    @Test
     public void textContentEmphasis() {
         String s;
         String rendered;
