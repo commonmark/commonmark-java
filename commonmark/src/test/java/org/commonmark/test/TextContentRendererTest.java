@@ -1,260 +1,182 @@
 package org.commonmark.test;
 
+import org.commonmark.renderer.text.LineBreakRendering;
 import org.commonmark.renderer.text.TextContentRenderer;
-import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
+import org.commonmark.testutil.Asserts;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class TextContentRendererTest {
 
+    private static final Parser PARSER = Parser.builder().build();
+    private static final TextContentRenderer COMPACT_RENDERER = TextContentRenderer.builder().build();
+    private static final TextContentRenderer SEPARATE_RENDERER = TextContentRenderer.builder()
+            .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
+    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder().stripNewlines(true).build();
+
     @Test
     public void textContentText() {
-        String source;
-        String rendered;
+        String s;
 
-        source = "foo bar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo bar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo bar", rendered);
+        s = "foo bar";
+        assertCompact(s, "foo bar");
+        assertStripped(s, "foo bar");
 
-        source = "foo foo\n\nbar\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo foo\nbar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
+        s = "foo foo\n\nbar\nbar";
+        assertCompact(s, "foo foo\nbar\nbar");
+        assertSeparate(s, "foo foo\n\nbar\nbar");
+        assertStripped(s, "foo foo bar bar");
+    }
+
+    @Test
+    public void textContentHeading() {
+        assertCompact("# Heading\n\nFoo", "Heading\nFoo");
+        assertSeparate("# Heading\n\nFoo", "Heading\n\nFoo");
+        assertStripped("# Heading\n\nFoo", "Heading: Foo");
     }
 
     @Test
     public void textContentEmphasis() {
-        String source;
+        String s;
         String rendered;
 
-        source = "***foo***";
-        rendered = defaultRenderer(source, defaultRenderer());
-        assertEquals("foo", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo", rendered);
+        s = "***foo***";
+        assertCompact(s, "foo");
+        assertStripped(s, "foo");
 
-        source = "foo ***foo*** bar ***bar***";
-        rendered = defaultRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
+        s = "foo ***foo*** bar ***bar***";
+        assertCompact(s, "foo foo bar bar");
+        assertStripped(s, "foo foo bar bar");
 
-        source = "foo\n***foo***\nbar\n\n***bar***";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\nfoo\nbar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
-    }
-
-    private String defaultRenderer(String source, TextContentRenderer textContentRenderer) {
-        String rendered;
-        rendered = textContentRenderer.render(parse(source));
-        return rendered;
+        s = "foo\n***foo***\nbar\n\n***bar***";
+        assertCompact(s, "foo\nfoo\nbar\nbar");
+        assertSeparate(s, "foo\nfoo\nbar\n\nbar");
+        assertStripped(s, "foo foo bar bar");
     }
 
     @Test
     public void textContentQuotes() {
-        String source;
-        String rendered;
+        String s;
 
-        source = "foo\n>foo\nbar\n\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\n«foo\nbar»\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo «foo bar» bar", rendered);
+        s = "foo\n>foo\nbar\n\nbar";
+        assertCompact(s, "foo\n«foo\nbar»\nbar");
+        assertSeparate(s, "foo\n\n«foo\nbar»\n\nbar");
+        assertStripped(s, "foo «foo bar» bar");
     }
 
     @Test
     public void textContentLinks() {
-        String source;
-        String expected;
-        String rendered;
-
-        source = "foo [text](http://link \"title\") bar";
-        expected = "foo \"text\" (title: http://link) bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
-
-        source = "foo [text](http://link \"http://link\") bar";
-        expected = "foo \"text\" (http://link) bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
-
-        source = "foo [text](http://link) bar";
-        expected = "foo \"text\" (http://link) bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
-
-        source = "foo [text]() bar";
-        expected = "foo \"text\" bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
-
-        source = "foo http://link bar";
-        expected = "foo http://link bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
+        assertAll("foo [text](http://link \"title\") bar", "foo \"text\" (title: http://link) bar");
+        assertAll("foo [text](http://link \"http://link\") bar", "foo \"text\" (http://link) bar");
+        assertAll("foo [text](http://link) bar", "foo \"text\" (http://link) bar");
+        assertAll("foo [text]() bar", "foo \"text\" bar");
+        assertAll("foo http://link bar", "foo http://link bar");
     }
 
     @Test
     public void textContentImages() {
-        String source;
-        String expected;
-        String rendered;
-
-        source = "foo ![text](http://link \"title\") bar";
-        expected = "foo \"text\" (title: http://link) bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
-
-        source = "foo ![text](http://link) bar";
-        expected = "foo \"text\" (http://link) bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
-
-        source = "foo ![text]() bar";
-        expected = "foo \"text\" bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
+        assertAll("foo ![text](http://link \"title\") bar", "foo \"text\" (title: http://link) bar");
+        assertAll("foo ![text](http://link) bar", "foo \"text\" (http://link) bar");
+        assertAll("foo ![text]() bar", "foo \"text\" bar");
     }
 
     @Test
     public void textContentLists() {
-        String source;
-        String rendered;
+        String s;
 
-        source = "foo\n* foo\n* bar\n\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\n* foo\n* bar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
+        s = "foo\n* foo\n* bar\n\nbar";
+        assertCompact(s, "foo\n* foo\n* bar\nbar");
+        assertSeparate(s, "foo\n\n* foo\n* bar\n\nbar");
+        assertStripped(s, "foo foo bar bar");
 
-        source = "foo\n- foo\n- bar\n\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\n- foo\n- bar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
+        s = "foo\n- foo\n- bar\n\nbar";
+        assertCompact(s, "foo\n- foo\n- bar\nbar");
+        assertSeparate(s, "foo\n\n- foo\n- bar\n\nbar");
+        assertStripped(s, "foo foo bar bar");
 
-        source = "foo\n1. foo\n2. bar\n\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\n1. foo\n2. bar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo 1. foo 2. bar bar", rendered);
+        s = "foo\n1. foo\n2. bar\n\nbar";
+        assertCompact(s, "foo\n1. foo\n2. bar\nbar");
+        assertSeparate(s, "foo\n\n1. foo\n2. bar\n\nbar");
+        assertStripped(s, "foo 1. foo 2. bar bar");
 
-        source = "foo\n0) foo\n1) bar\n\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\n0) foo\n1) bar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo 0) foo 1) bar bar", rendered);
+        s = "foo\n0) foo\n1) bar\n\nbar";
+        assertCompact(s, "foo\n0) foo\n1) bar\nbar");
+        assertSeparate(s, "foo\n0) foo\n\n1) bar\n\nbar");
+        assertStripped(s, "foo 0) foo 1) bar bar");
 
-        source = "bar\n1. foo\n   1. bar\n2. foo";
-        rendered = defaultRenderer(source);
-        assertEquals("bar\n1. foo\n   1. bar\n2. foo", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("bar 1. foo 1. bar 2. foo", rendered);
+        s = "bar\n1. foo\n   1. bar\n2. foo";
+        assertCompact(s, "bar\n1. foo\n   1. bar\n2. foo");
+        assertSeparate(s, "bar\n\n1. foo\n   1. bar\n2. foo");
+        assertStripped(s, "bar 1. foo 1. bar 2. foo");
 
-        source = "bar\n* foo\n   - bar\n* foo";
-        rendered = defaultRenderer(source);
-        assertEquals("bar\n* foo\n   - bar\n* foo", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("bar foo bar foo", rendered);
+        s = "bar\n* foo\n   - bar\n* foo";
+        assertCompact(s, "bar\n* foo\n   - bar\n* foo");
+        assertSeparate(s, "bar\n\n* foo\n   - bar\n* foo");
+        assertStripped(s, "bar foo bar foo");
 
-        source = "bar\n* foo\n   1. bar\n   2. bar\n* foo";
-        rendered = defaultRenderer(source);
-        assertEquals("bar\n* foo\n   1. bar\n   2. bar\n* foo", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("bar foo 1. bar 2. bar foo", rendered);
+        s = "bar\n* foo\n   1. bar\n   2. bar\n* foo";
+        assertCompact(s, "bar\n* foo\n   1. bar\n   2. bar\n* foo");
+        assertSeparate(s, "bar\n\n* foo\n   1. bar\n   2. bar\n* foo");
+        assertStripped(s, "bar foo 1. bar 2. bar foo");
 
-        source = "bar\n1. foo\n   * bar\n   * bar\n2. foo";
-        rendered = defaultRenderer(source);
-        assertEquals("bar\n1. foo\n   * bar\n   * bar\n2. foo", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("bar 1. foo bar bar 2. foo", rendered);
+        s = "bar\n1. foo\n   * bar\n   * bar\n2. foo";
+        assertCompact(s, "bar\n1. foo\n   * bar\n   * bar\n2. foo");
+        assertSeparate(s, "bar\n\n1. foo\n   * bar\n   * bar\n2. foo");
+        assertStripped(s, "bar 1. foo bar bar 2. foo");
+
+        // For a loose list (not tight)
+        s = "foo\n\n* bar\n\n* baz";
+        // Compact ignores loose
+        assertCompact(s, "foo\n* bar\n* baz");
+        // Separate preserves it
+        assertSeparate(s, "foo\n\n* bar\n\n* baz");
+        assertStripped(s, "foo bar baz");
+
     }
 
     @Test
     public void textContentCode() {
-        String source;
-        String expected;
-        String rendered;
-
-        source = "foo `code` bar";
-        expected = "foo \"code\" bar";
-        rendered = defaultRenderer(source);
-        assertEquals(expected, rendered);
-        rendered = strippedRenderer(source);
-        assertEquals(expected, rendered);
+        assertAll("foo `code` bar", "foo \"code\" bar");
     }
 
     @Test
     public void textContentCodeBlock() {
-        String source;
-        String rendered;
+        String s;
+        s = "foo\n```\nfoo\nbar\n```\nbar";
+        assertCompact(s, "foo\nfoo\nbar\nbar");
+        assertSeparate(s, "foo\n\nfoo\nbar\n\nbar");
+        assertStripped(s, "foo foo bar bar");
 
-        source = "foo\n```\nfoo\nbar\n```\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\nfoo\nbar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
-
-        source = "foo\n\n    foo\n     bar\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\nfoo\n bar\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo foo bar bar", rendered);
+        s = "foo\n\n    foo\n     bar\nbar";
+        assertCompact(s, "foo\nfoo\n bar\nbar");
+        assertSeparate(s, "foo\n\nfoo\n bar\n\nbar");
+        assertStripped(s, "foo foo bar bar");
     }
 
     @Test
-    public void textContentBrakes() {
-        String source;
-        String rendered;
+    public void textContentBreaks() {
+        String s;
 
-        source = "foo\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo bar", rendered);
+        s = "foo\nbar";
+        assertCompact(s, "foo\nbar");
+        assertSeparate(s, "foo\nbar");
+        assertStripped(s, "foo bar");
 
-        source = "foo  \nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo bar", rendered);
+        s = "foo  \nbar";
+        assertCompact(s, "foo\nbar");
+        assertSeparate(s, "foo\nbar");
+        assertStripped(s, "foo bar");
 
-        source = "foo\n___\nbar";
-        rendered = defaultRenderer(source);
-        assertEquals("foo\n***\nbar", rendered);
-        rendered = strippedRenderer(source);
-        assertEquals("foo bar", rendered);
+        s = "foo\n___\nbar";
+        assertCompact(s, "foo\n***\nbar");
+        assertSeparate(s, "foo\n\n***\n\nbar");
+        assertStripped(s, "foo bar");
     }
-
-
 
     @Test
     public void textContentHtml() {
-        String rendered;
-
         String html = "<table>\n" +
                 "  <tr>\n" +
                 "    <td>\n" +
@@ -262,31 +184,34 @@ public class TextContentRendererTest {
                 "    </td>\n" +
                 "  </tr>\n" +
                 "</table>";
-        rendered = defaultRenderer(html);
-        assertEquals(html, rendered);
+        assertCompact(html, html);
+        assertSeparate(html, html);
 
         html = "foo <foo>foobar</foo> bar";
-        rendered = defaultRenderer(html);
-        assertEquals(html, rendered);
+        assertAll(html, html);
     }
 
-    private TextContentRenderer defaultRenderer() {
-        return TextContentRenderer.builder().build();
+    private void assertCompact(String source, String expected) {
+        var doc = PARSER.parse(source);
+        var actualRendering = COMPACT_RENDERER.render(doc);
+        Asserts.assertRendering(source, expected, actualRendering);
     }
 
-    private TextContentRenderer strippedRenderer() {
-        return TextContentRenderer.builder().stripNewlines(true).build();
+    private void assertSeparate(String source, String expected) {
+        var doc = PARSER.parse(source);
+        var actualRendering = SEPARATE_RENDERER.render(doc);
+        Asserts.assertRendering(source, expected, actualRendering);
     }
 
-    private Node parse(String source) {
-        return Parser.builder().build().parse(source);
+    private void assertStripped(String source, String expected) {
+        var doc = PARSER.parse(source);
+        var actualRendering = STRIPPED_RENDERER.render(doc);
+        Asserts.assertRendering(source, expected, actualRendering);
     }
 
-    private String strippedRenderer(String source) {
-        return strippedRenderer().render(parse(source));
-    }
-
-    private String defaultRenderer(String source) {
-        return defaultRenderer().render(parse(source));
+    private void assertAll(String source, String expected) {
+        assertCompact(source, expected);
+        assertSeparate(source, expected);
+        assertStripped(source, expected);
     }
 }
