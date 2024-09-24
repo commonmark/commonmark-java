@@ -70,10 +70,11 @@ public class TextContentRenderer implements Renderer {
         }
 
         /**
-         * TODO
+         * Configure how line breaks (newlines) are rendered, see {@link LineBreakRendering}.
+         * The default is {@link LineBreakRendering#COMPACT}.
          *
-         * @param lineBreakRendering
-         * @return
+         * @param lineBreakRendering the mode to use
+         * @return {@code this}
          */
         public Builder lineBreakRendering(LineBreakRendering lineBreakRendering) {
             this.lineBreakRendering = lineBreakRendering;

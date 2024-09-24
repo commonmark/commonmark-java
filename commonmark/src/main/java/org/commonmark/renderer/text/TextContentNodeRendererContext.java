@@ -5,9 +5,7 @@ import org.commonmark.node.Node;
 public interface TextContentNodeRendererContext {
 
     /**
-     * TODO
-     *
-     * @return
+     * Controls how line breaks should be rendered, see {@link LineBreakRendering}.
      */
     LineBreakRendering lineBreakRendering();
 
