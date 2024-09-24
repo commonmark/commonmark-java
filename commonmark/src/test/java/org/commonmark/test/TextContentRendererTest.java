@@ -2,7 +2,6 @@ package org.commonmark.test;
 
 import org.commonmark.renderer.text.LineBreakRendering;
 import org.commonmark.renderer.text.TextContentRenderer;
-import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.testutil.Asserts;
 import org.junit.Test;
@@ -10,6 +9,12 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class TextContentRendererTest {
+
+    private static final Parser PARSER = Parser.builder().build();
+    private static final TextContentRenderer COMPACT_RENDERER = TextContentRenderer.builder().build();
+    private static final TextContentRenderer SEPARATE_RENDERER = TextContentRenderer.builder()
+            .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
+    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder().stripNewlines(true).build();
 
     @Test
     public void textContentText() {
@@ -179,37 +184,21 @@ public class TextContentRendererTest {
         assertAll(html, html);
     }
 
-    private TextContentRenderer compactRenderer() {
-        return TextContentRenderer.builder().build();
-    }
-
-    private TextContentRenderer separateBlocksRenderer() {
-        return TextContentRenderer.builder().lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
-    }
-
-    private TextContentRenderer strippedRenderer() {
-        return TextContentRenderer.builder().stripNewlines(true).build();
-    }
-
-    private Node parse(String source) {
-        return Parser.builder().build().parse(source);
-    }
-
     private void assertCompact(String source, String expected) {
-        var doc = parse(source);
-        var actualRendering = compactRenderer().render(doc);
+        var doc = PARSER.parse(source);
+        var actualRendering = COMPACT_RENDERER.render(doc);
         Asserts.assertRendering(source, expected, actualRendering);
     }
 
     private void assertSeparate(String source, String expected) {
-        var doc = parse(source);
-        var actualRendering = separateBlocksRenderer().render(doc);
+        var doc = PARSER.parse(source);
+        var actualRendering = SEPARATE_RENDERER.render(doc);
         Asserts.assertRendering(source, expected, actualRendering);
     }
 
     private void assertStripped(String source, String expected) {
-        var doc = parse(source);
-        var actualRendering = strippedRenderer().render(doc);
+        var doc = PARSER.parse(source);
+        var actualRendering = STRIPPED_RENDERER.render(doc);
         Asserts.assertRendering(source, expected, actualRendering);
     }
 

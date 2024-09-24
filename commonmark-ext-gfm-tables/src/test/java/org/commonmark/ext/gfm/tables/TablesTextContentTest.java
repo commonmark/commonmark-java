@@ -2,137 +2,165 @@ package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.text.LineBreakRendering;
 import org.commonmark.renderer.text.TextContentRenderer;
-import org.commonmark.testutil.RenderingTestCase;
+import org.commonmark.testutil.Asserts;
 import org.junit.Test;
 
 import java.util.Set;
 
-public class TablesTextContentTest extends RenderingTestCase {
+public class TablesTextContentTest {
 
     private static final Set<Extension> EXTENSIONS = Set.of(TablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final TextContentRenderer RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS).build();
 
+    private static final TextContentRenderer COMPACT_RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer SEPARATE_RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS)
+            .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
+    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS)
+            .lineBreakRendering(LineBreakRendering.STRIP).build();
+
     @Test
     public void oneHeadNoBody() {
-        assertRendering("Abc|Def\n---|---", "Abc| Def\n");
+        assertCompact("Abc|Def\n---|---", "Abc| Def");
     }
 
     @Test
     public void oneColumnOneHeadNoBody() {
-        String expected = "Abc\n";
-        assertRendering("|Abc\n|---\n", expected);
-        assertRendering("|Abc|\n|---|\n", expected);
-        assertRendering("Abc|\n---|\n", expected);
+        String expected = "Abc";
+        assertCompact("|Abc\n|---\n", expected);
+        assertCompact("|Abc|\n|---|\n", expected);
+        assertCompact("Abc|\n---|\n", expected);
 
         // Pipe required on separator
-        assertRendering("|Abc\n---\n", "|Abc");
+        assertCompact("|Abc\n---\n", "|Abc");
         // Pipe required on head
-        assertRendering("Abc\n|---\n", "Abc\n|---");
+        assertCompact("Abc\n|---\n", "Abc\n|---");
     }
 
     @Test
     public void oneColumnOneHeadOneBody() {
-        String expected = "Abc\n1\n";
-        assertRendering("|Abc\n|---\n|1", expected);
-        assertRendering("|Abc|\n|---|\n|1|", expected);
-        assertRendering("Abc|\n---|\n1|", expected);
+        String expected = "Abc\n1";
+        assertCompact("|Abc\n|---\n|1", expected);
+        assertCompact("|Abc|\n|---|\n|1|", expected);
+        assertCompact("Abc|\n---|\n1|", expected);
 
         // Pipe required on separator
-        assertRendering("|Abc\n---\n|1", "|Abc\n|1");
+        assertCompact("|Abc\n---\n|1", "|Abc\n|1");
     }
 
     @Test
     public void oneHeadOneBody() {
-        assertRendering("Abc|Def\n---|---\n1|2", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n---|---\n1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void separatorMustNotHaveLessPartsThanHead() {
-        assertRendering("Abc|Def|Ghi\n---|---\n1|2|3", "Abc|Def|Ghi\n---|---\n1|2|3");
+        assertCompact("Abc|Def|Ghi\n---|---\n1|2|3", "Abc|Def|Ghi\n---|---\n1|2|3");
     }
 
     @Test
     public void padding() {
-        assertRendering(" Abc  | Def \n --- | --- \n 1 | 2 ", "Abc| Def\n1| 2\n");
+        assertCompact(" Abc  | Def \n --- | --- \n 1 | 2 ", "Abc| Def\n1| 2");
     }
 
     @Test
     public void paddingWithCodeBlockIndentation() {
-        assertRendering("Abc|Def\n---|---\n    1|2", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n---|---\n    1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void pipesOnOutside() {
-        assertRendering("|Abc|Def|\n|---|---|\n|1|2|", "Abc| Def\n1| 2\n");
+        assertCompact("|Abc|Def|\n|---|---|\n|1|2|", "Abc| Def\n1| 2");
     }
 
     @Test
     public void inlineElements() {
-        assertRendering("*Abc*|Def\n---|---\n1|2", "Abc| Def\n1| 2\n");
+        assertCompact("*Abc*|Def\n---|---\n1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void escapedPipe() {
-        assertRendering("Abc|Def\n---|---\n1\\|2|20", "Abc| Def\n1|2| 20\n");
+        assertCompact("Abc|Def\n---|---\n1\\|2|20", "Abc| Def\n1|2| 20");
     }
 
     @Test
     public void alignLeft() {
-        assertRendering("Abc|Def\n:---|---\n1|2", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n:---|---\n1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void alignRight() {
-        assertRendering("Abc|Def\n---:|---\n1|2", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n---:|---\n1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void alignCenter() {
-        assertRendering("Abc|Def\n:---:|---\n1|2", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n:---:|---\n1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void alignCenterSecond() {
-        assertRendering("Abc|Def\n---|:---:\n1|2", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n---|:---:\n1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void alignLeftWithSpaces() {
-        assertRendering("Abc|Def\n :--- |---\n1|2", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n :--- |---\n1|2", "Abc| Def\n1| 2");
     }
 
     @Test
     public void alignmentMarkerMustBeNextToDashes() {
-        assertRendering("Abc|Def\n: ---|---", "Abc|Def\n: ---|---");
-        assertRendering("Abc|Def\n--- :|---", "Abc|Def\n--- :|---");
-        assertRendering("Abc|Def\n---|: ---", "Abc|Def\n---|: ---");
-        assertRendering("Abc|Def\n---|--- :", "Abc|Def\n---|--- :");
+        assertCompact("Abc|Def\n: ---|---", "Abc|Def\n: ---|---");
+        assertCompact("Abc|Def\n--- :|---", "Abc|Def\n--- :|---");
+        assertCompact("Abc|Def\n---|: ---", "Abc|Def\n---|: ---");
+        assertCompact("Abc|Def\n---|--- :", "Abc|Def\n---|--- :");
     }
 
     @Test
     public void bodyCanNotHaveMoreColumnsThanHead() {
-        assertRendering("Abc|Def\n---|---\n1|2|3", "Abc| Def\n1| 2\n");
+        assertCompact("Abc|Def\n---|---\n1|2|3", "Abc| Def\n1| 2");
     }
 
     @Test
     public void bodyWithFewerColumnsThanHeadResultsInEmptyCells() {
-        assertRendering("Abc|Def|Ghi\n---|---|---\n1|2", "Abc| Def| Ghi\n1| 2| \n");
+        assertCompact("Abc|Def|Ghi\n---|---|---\n1|2", "Abc| Def| Ghi\n1| 2| ");
     }
 
     @Test
     public void insideBlockQuote() {
-        assertRendering("> Abc|Def\n> ---|---\n> 1|2", "«\nAbc| Def\n1| 2\n»");
+        assertCompact("> Abc|Def\n> ---|---\n> 1|2", "«Abc| Def\n1| 2»");
     }
 
     @Test
     public void tableWithLazyContinuationLine() {
-        assertRendering("Abc|Def\n---|---\n1|2\nlazy", "Abc| Def\n1| 2\nlazy| \n");
+        assertCompact("Abc|Def\n---|---\n1|2\nlazy", "Abc| Def\n1| 2\nlazy| ");
     }
 
-    @Override
-    protected String render(String source) {
-        return RENDERER.render(PARSER.parse(source));
+    @Test
+    public void tableBetweenOtherBlocks() {
+        var s = "Foo\n\nAbc|Def\n---|---\n1|2\n\nBar";
+        assertCompact(s, "Foo\nAbc| Def\n1| 2\nBar");
+        assertSeparate(s, "Foo\n\nAbc| Def\n1| 2\n\nBar");
+        assertStripped(s, "Foo Abc| Def 1| 2 Bar");
+    }
+
+    private void assertCompact(String source, String expected) {
+        var doc = PARSER.parse(source);
+        var actualRendering = COMPACT_RENDERER.render(doc);
+        Asserts.assertRendering(source, expected, actualRendering);
+    }
+
+    private void assertSeparate(String source, String expected) {
+        var doc = PARSER.parse(source);
+        var actualRendering = SEPARATE_RENDERER.render(doc);
+        Asserts.assertRendering(source, expected, actualRendering);
+    }
+
+    private void assertStripped(String source, String expected) {
+        var doc = PARSER.parse(source);
+        var actualRendering = STRIPPED_RENDERER.render(doc);
+        Asserts.assertRendering(source, expected, actualRendering);
     }
 }
