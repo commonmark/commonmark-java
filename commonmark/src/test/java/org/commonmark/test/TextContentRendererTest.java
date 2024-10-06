@@ -1,10 +1,17 @@
 package org.commonmark.test;
 
+import org.commonmark.node.Link;
+import org.commonmark.node.Node;
+import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.text.LineBreakRendering;
+import org.commonmark.renderer.text.TextContentNodeRendererContext;
+import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.testutil.Asserts;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -189,6 +196,41 @@ public class TextContentRendererTest {
 
         html = "foo <foo>foobar</foo> bar";
         assertAll(html, html);
+    }
+
+    @Test
+    public void testOverrideNodeRendering() {
+        var nodeRendererFactory = new TextContentNodeRendererFactory() {
+            @Override
+            public NodeRenderer create(TextContentNodeRendererContext context) {
+                return new NodeRenderer() {
+
+                    @Override
+                    public Set<Class<? extends Node>> getNodeTypes() {
+                        return Set.of(Link.class);
+                    }
+
+                    @Override
+                    public void render(Node node) {
+                        context.getWriter().write('"');
+                        renderChildren(node);
+                        context.getWriter().write('"');
+                    }
+
+                    private void renderChildren(Node parent) {
+                        Node node = parent.getFirstChild();
+                        while (node != null) {
+                            Node next = node.getNext();
+                            context.render(node);
+                            node = next;
+                        }
+                    }
+                };
+            }
+        };
+        var renderer = TextContentRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
+        var source = "Hi [Example](https://example.com)";
+        Asserts.assertRendering(source, "Hi \"Example\"", renderer.render(PARSER.parse(source)));
     }
 
     private void assertCompact(String source, String expected) {

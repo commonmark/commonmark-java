@@ -140,11 +140,9 @@ public class TextContentRenderer implements Renderer {
         private RendererContext(TextContentWriter textContentWriter) {
             this.textContentWriter = textContentWriter;
 
-            // The first node renderer for a node type "wins".
-            for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
-                TextContentNodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
-                NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
-                nodeRendererMap.add(nodeRenderer);
+            for (var factory : nodeRendererFactories) {
+                var renderer = factory.create(this);
+                nodeRendererMap.add(renderer);
             }
         }
 
