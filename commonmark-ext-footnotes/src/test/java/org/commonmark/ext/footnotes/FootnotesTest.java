@@ -287,10 +287,10 @@ public class FootnotesTest {
 
         var doc = parser.parse("Test [^foo]\n\n[^foo]: /url\n");
         var ref = find(doc, FootnoteReference.class);
-        assertEquals(ref.getSourceSpans(), List.of(SourceSpan.of(0, 5, 6)));
+        assertEquals(ref.getSourceSpans(), List.of(SourceSpan.of(0, 5, 5, 6)));
 
         var def = find(doc, FootnoteDefinition.class);
-        assertEquals(def.getSourceSpans(), List.of(SourceSpan.of(2, 0, 12)));
+        assertEquals(def.getSourceSpans(), List.of(SourceSpan.of(2, 0, 13, 12)));
     }
 
     private static <T> T find(Node parent, Class<T> nodeClass) {

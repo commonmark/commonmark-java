@@ -61,8 +61,7 @@ public class AutolinkPostProcessor implements PostProcessor {
         String text = literal.substring(beginIndex, endIndex);
         Text textNode = new Text(text);
         if (sourceSpan != null) {
-            int length = endIndex - beginIndex;
-            textNode.addSourceSpan(SourceSpan.of(sourceSpan.getLineIndex(), beginIndex, length));
+            textNode.addSourceSpan(sourceSpan.subSpan(beginIndex, endIndex));
         }
         return textNode;
     }

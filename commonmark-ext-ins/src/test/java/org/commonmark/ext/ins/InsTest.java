@@ -102,7 +102,7 @@ public class InsTest extends RenderingTestCase {
         Node document = parser.parse("hey ++there++\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node ins = block.getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 4, 9)),
+        assertEquals(List.of(SourceSpan.of(0, 4, 4, 9)),
                 ins.getSourceSpans());
     }
 

@@ -71,43 +71,43 @@ public class AutolinkTest extends RenderingTestCase {
 
         Paragraph paragraph = (Paragraph) document.getFirstChild();
         Text abc = (Text) paragraph.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 3)),
+        assertEquals(List.of(SourceSpan.of(0, 0, 0, 3)),
                 abc.getSourceSpans());
 
         assertTrue(abc.getNext() instanceof SoftLineBreak);
 
         Link one = (Link) abc.getNext().getNext();
         assertEquals("http://example.com/one", one.getDestination());
-        assertEquals(List.of(SourceSpan.of(1, 0, 22)),
+        assertEquals(List.of(SourceSpan.of(1, 0, 4, 22)),
                 one.getSourceSpans());
 
         assertTrue(one.getNext() instanceof SoftLineBreak);
 
         Text def = (Text) one.getNext().getNext();
         assertEquals("def ", def.getLiteral());
-        assertEquals(List.of(SourceSpan.of(2, 0, 4)),
+        assertEquals(List.of(SourceSpan.of(2, 0, 27, 4)),
                 def.getSourceSpans());
 
         Link two = (Link) def.getNext();
         assertEquals("http://example.com/two", two.getDestination());
-        assertEquals(List.of(SourceSpan.of(2, 4, 22)),
+        assertEquals(List.of(SourceSpan.of(2, 4, 31, 22)),
                 two.getSourceSpans());
 
         assertTrue(two.getNext() instanceof SoftLineBreak);
 
         Text ghi = (Text) two.getNext().getNext();
         assertEquals("ghi ", ghi.getLiteral());
-        assertEquals(List.of(SourceSpan.of(3, 0, 4)),
+        assertEquals(List.of(SourceSpan.of(3, 0, 54, 4)),
                 ghi.getSourceSpans());
 
         Link three = (Link) ghi.getNext();
         assertEquals("http://example.com/three", three.getDestination());
-        assertEquals(List.of(SourceSpan.of(3, 4, 24)),
+        assertEquals(List.of(SourceSpan.of(3, 4, 58, 24)),
                 three.getSourceSpans());
 
         Text jkl = (Text) three.getNext();
         assertEquals(" jkl", jkl.getLiteral());
-        assertEquals(List.of(SourceSpan.of(3, 28, 4)),
+        assertEquals(List.of(SourceSpan.of(3, 28, 82, 4)),
                 jkl.getSourceSpans());
     }
 

@@ -4,17 +4,17 @@ import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.node.SourceSpan;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SourceSpanRenderer {
 
-    public static String render(Node document, String source) {
+    /**
+     * Render source spans in the document using source position's line and column index.
+     */
+    public static String renderWithLineColumn(Node document, String source) {
         SourceSpanMarkersVisitor visitor = new SourceSpanMarkersVisitor();
         document.accept(visitor);
-        Map<Integer, Map<Integer, List<String>>> markers = visitor.getMarkers();
+        var lineColumnMarkers = visitor.getLineColumnMarkers();
 
         StringBuilder sb = new StringBuilder();
 
@@ -22,7 +22,7 @@ public class SourceSpanRenderer {
 
         for (int lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             String line = lines[lineIndex];
-            Map<Integer, List<String>> lineMarkers = markers.get(lineIndex);
+            Map<Integer, List<String>> lineMarkers = lineColumnMarkers.get(lineIndex);
             for (int i = 0; i < line.length(); i++) {
                 appendMarkers(lineMarkers, i, sb);
                 sb.append(line.charAt(i));
@@ -31,6 +31,22 @@ public class SourceSpanRenderer {
             sb.append("\n");
         }
 
+        return sb.toString();
+    }
+
+    /**
+     * Render source spans in the document using source position's input index.
+     */
+    public static String renderWithInputIndex(Node document, String source) {
+        SourceSpanMarkersVisitor visitor = new SourceSpanMarkersVisitor();
+        document.accept(visitor);
+        var markers = visitor.getInputIndexMarkers();
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < source.length(); i++) {
+            markers.getOrDefault(i, List.of()).forEach(marker -> sb.append(marker));
+            sb.append(source.charAt(i));
+        }
         return sb.toString();
     }
 
@@ -50,24 +66,35 @@ public class SourceSpanRenderer {
         private static final String OPENING = "({[<⸢⸤";
         private static final String CLOSING = ")}]>⸣⸥";
 
-        private final Map<Integer, Map<Integer, List<String>>> markers = new HashMap<>();
+        private final Map<Integer, Map<Integer, List<String>>> lineColumnMarkers = new HashMap<>();
+        private final Map<Integer, List<String>> inputIndexMarkers = new HashMap<>();
 
         private int markerIndex;
 
-        public Map<Integer, Map<Integer, List<String>>> getMarkers() {
-            return markers;
+        public Map<Integer, Map<Integer, List<String>>> getLineColumnMarkers() {
+            return lineColumnMarkers;
+        }
+
+        public Map<Integer, List<String>> getInputIndexMarkers() {
+            return inputIndexMarkers;
         }
 
         @Override
         protected void visitChildren(Node parent) {
             if (!parent.getSourceSpans().isEmpty()) {
-                for (SourceSpan sourceSpan : parent.getSourceSpans()) {
+                for (var span : parent.getSourceSpans()) {
                     String opener = String.valueOf(OPENING.charAt(markerIndex % OPENING.length()));
                     String closer = String.valueOf(CLOSING.charAt(markerIndex % CLOSING.length()));
 
-                    int col = sourceSpan.getColumnIndex();
-                    getMarkers(sourceSpan.getLineIndex(), col).add(opener);
-                    getMarkers(sourceSpan.getLineIndex(), col + sourceSpan.getLength()).add(0, closer);
+                    int line = span.getLineIndex();
+                    int col = span.getColumnIndex();
+                    var input = span.getInputIndex();
+                    int length = span.getLength();
+                    getMarkers(line, col).add(opener);
+                    getMarkers(line, col + length).add(0, closer);
+
+                    inputIndexMarkers.computeIfAbsent(input, k -> new LinkedList<>()).add(opener);
+                    inputIndexMarkers.computeIfAbsent(input + length, k -> new LinkedList<>()).add(0, closer);
                 }
                 markerIndex++;
             }
@@ -75,19 +102,8 @@ public class SourceSpanRenderer {
         }
 
         private List<String> getMarkers(int lineIndex, int columnIndex) {
-            Map<Integer, List<String>> columnMap = markers.get(lineIndex);
-            if (columnMap == null) {
-                columnMap = new HashMap<>();
-                markers.put(lineIndex, columnMap);
-            }
-
-            List<String> markers = columnMap.get(columnIndex);
-            if (markers == null) {
-                markers = new LinkedList<>();
-                columnMap.put(columnIndex, markers);
-            }
-
-            return markers;
+            var columnMap = lineColumnMarkers.computeIfAbsent(lineIndex, k -> new HashMap<>());
+            return columnMap.computeIfAbsent(columnIndex, k -> new LinkedList<>());
         }
     }
 }

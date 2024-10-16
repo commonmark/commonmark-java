@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import org.commonmark.internal.util.LineReader;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
@@ -127,7 +128,7 @@ public class DocumentParser implements ParserState {
         int lineBreak;
         while ((lineBreak = Characters.findLineBreak(input, lineStart)) != -1) {
             String line = input.substring(lineStart, lineBreak);
-            parseLine(line);
+            parseLine(line, lineStart);
             if (lineBreak + 1 < input.length() && input.charAt(lineBreak) == '\r' && input.charAt(lineBreak + 1) == '\n') {
                 lineStart = lineBreak + 2;
             } else {
@@ -136,23 +137,23 @@ public class DocumentParser implements ParserState {
         }
         if (!input.isEmpty() && (lineStart == 0 || lineStart < input.length())) {
             String line = input.substring(lineStart);
-            parseLine(line);
+            parseLine(line, lineStart);
         }
 
         return finalizeAndProcess();
     }
 
     public Document parse(Reader input) throws IOException {
-        BufferedReader bufferedReader;
-        if (input instanceof BufferedReader) {
-            bufferedReader = (BufferedReader) input;
-        } else {
-            bufferedReader = new BufferedReader(input);
-        }
-
+        var lineReader = new LineReader(input);
+        int inputIndex = 0;
         String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            parseLine(line);
+        while ((line = lineReader.readLine()) != null) {
+            parseLine(line, inputIndex);
+            inputIndex += line.length();
+            var eol = lineReader.getLineTerminator();
+            if (eol != null) {
+                inputIndex += eol.length();
+            }
         }
 
         return finalizeAndProcess();
@@ -197,8 +198,8 @@ public class DocumentParser implements ParserState {
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
      */
-    private void parseLine(String ln) {
-        setLine(ln);
+    private void parseLine(String ln, int inputIndex) {
+        setLine(ln, inputIndex);
 
         // For each containing block, try to parse the associated line start.
         // The document will always match, so we can skip the first block parser and start at 1 matches
@@ -322,7 +323,7 @@ public class DocumentParser implements ParserState {
         }
     }
 
-    private void setLine(String ln) {
+    private void setLine(String ln, int inputIndex) {
         lineIndex++;
         index = 0;
         column = 0;
@@ -331,7 +332,7 @@ public class DocumentParser implements ParserState {
         String lineContent = prepareLine(ln);
         SourceSpan sourceSpan = null;
         if (includeSourceSpans != IncludeSourceSpans.NONE) {
-            sourceSpan = SourceSpan.of(lineIndex, 0, lineContent.length());
+            sourceSpan = SourceSpan.of(lineIndex, 0, inputIndex, lineContent.length());
         }
         this.line = SourceLine.of(lineContent, sourceSpan);
     }
@@ -430,10 +431,9 @@ public class DocumentParser implements ParserState {
             content = line.getContent().subSequence(index, line.getContent().length());
         }
         SourceSpan sourceSpan = null;
-        if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES) {
-            // Note that if we're in a partially-consumed tab, the length here corresponds to the content but not to the
-            // actual source length. That sounds like a problem, but I haven't found a test case where it matters (yet).
-            sourceSpan = SourceSpan.of(lineIndex, index, content.length());
+        if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES && index < line.getSourceSpan().getLength()) {
+            // Note that if we're in a partially-consumed tab the length of the source span and the content don't match.
+            sourceSpan = line.getSourceSpan().subSpan(index);
         }
         getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan));
         addSourceSpans();
@@ -449,7 +449,7 @@ public class DocumentParser implements ParserState {
                 int blockIndex = Math.min(openBlockParser.sourceIndex, index);
                 int length = line.getContent().length() - blockIndex;
                 if (length != 0) {
-                    openBlockParser.blockParser.addSourceSpan(SourceSpan.of(lineIndex, blockIndex, length));
+                    openBlockParser.blockParser.addSourceSpan(line.getSourceSpan().subSpan(blockIndex));
                 }
             }
         }
