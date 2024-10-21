@@ -85,8 +85,8 @@ public class ScannerTest {
     @Test
     public void testTextBetween() {
         Scanner scanner = new Scanner(List.of(
-                SourceLine.of("ab", SourceSpan.of(10, 3, 2)),
-                SourceLine.of("cde", SourceSpan.of(11, 4, 3))),
+                SourceLine.of("ab", SourceSpan.of(10, 3, 13, 2)),
+                SourceLine.of("cde", SourceSpan.of(11, 4, 20, 3))),
                 0, 0);
 
         Position start = scanner.position();
@@ -94,48 +94,48 @@ public class ScannerTest {
         scanner.next();
         assertSourceLines(scanner.getSource(start, scanner.position()),
                 "a",
-                SourceSpan.of(10, 3, 1));
+                SourceSpan.of(10, 3, 13, 1));
 
         Position afterA = scanner.position();
 
         scanner.next();
         assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab",
-                SourceSpan.of(10, 3, 2));
+                SourceSpan.of(10, 3, 13, 2));
 
         Position afterB = scanner.position();
 
         scanner.next();
         assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\n",
-                SourceSpan.of(10, 3, 2));
+                SourceSpan.of(10, 3, 13, 2));
 
         scanner.next();
         assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\nc",
-                SourceSpan.of(10, 3, 2),
-                SourceSpan.of(11, 4, 1));
+                SourceSpan.of(10, 3, 13, 2),
+                SourceSpan.of(11, 4, 20, 1));
 
         scanner.next();
         assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\ncd",
-                SourceSpan.of(10, 3, 2),
-                SourceSpan.of(11, 4, 2));
+                SourceSpan.of(10, 3, 13, 2),
+                SourceSpan.of(11, 4, 20, 2));
 
         scanner.next();
         assertSourceLines(scanner.getSource(start, scanner.position()),
                 "ab\ncde",
-                SourceSpan.of(10, 3, 2),
-                SourceSpan.of(11, 4, 3));
+                SourceSpan.of(10, 3, 13, 2),
+                SourceSpan.of(11, 4, 20, 3));
 
         assertSourceLines(scanner.getSource(afterA, scanner.position()),
                 "b\ncde",
-                SourceSpan.of(10, 4, 1),
-                SourceSpan.of(11, 4, 3));
+                SourceSpan.of(10, 4, 14, 1),
+                SourceSpan.of(11, 4, 20, 3));
 
         assertSourceLines(scanner.getSource(afterB, scanner.position()),
                 "\ncde",
-                SourceSpan.of(11, 4, 3));
+                SourceSpan.of(11, 4, 20, 3));
     }
 
     private void assertSourceLines(SourceLines sourceLines, String expectedContent, SourceSpan... expectedSourceSpans) {

@@ -117,7 +117,7 @@ public class StrikethroughTest extends RenderingTestCase {
         Node document = parser.parse("hey ~~there~~\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node strikethrough = block.getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 4, 9)),
+        assertEquals(List.of(SourceSpan.of(0, 4, 4, 9)),
                 strikethrough.getSourceSpans());
     }
 

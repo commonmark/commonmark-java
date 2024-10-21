@@ -35,10 +35,11 @@ public class SourceLine {
         CharSequence newContent = content.subSequence(beginIndex, endIndex);
         SourceSpan newSourceSpan = null;
         if (sourceSpan != null) {
-            int columnIndex = sourceSpan.getColumnIndex() + beginIndex;
             int length = endIndex - beginIndex;
             if (length != 0) {
-                newSourceSpan = SourceSpan.of(sourceSpan.getLineIndex(), columnIndex, length);
+                int columnIndex = sourceSpan.getColumnIndex() + beginIndex;
+                int inputIndex = sourceSpan.getInputIndex() + beginIndex;
+                newSourceSpan = SourceSpan.of(sourceSpan.getLineIndex(), columnIndex, inputIndex, length);
             }
         }
         return SourceLine.of(newContent, newSourceSpan);

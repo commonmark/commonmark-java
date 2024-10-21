@@ -131,7 +131,7 @@ public class ImageAttributesTest extends RenderingTestCase {
         Node document = parser.parse("x{height=3 width=4}\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node text = block.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 19)),
+        assertEquals(List.of(SourceSpan.of(0, 0, 0, 19)),
                 text.getSourceSpans());
     }
 
