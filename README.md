@@ -130,6 +130,31 @@ class WordCountVisitor extends AbstractVisitor {
 }
 ```
 
+#### Source positions
+
+If you want to know where a parsed `Node` appeared in the input source text,
+you can request the parser to return source positions like this:
+
+```java
+var parser = Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
+```
+
+Then parse nodes and inspect source positions:
+
+```java
+var source = "foo\n\nbar *baz*";
+var doc = parser.parse(source);
+var emphasis = doc.getLastChild().getLastChild();
+var s = emphasis.getSourceSpans().get(0);
+s.getLineIndex();    // 2 (third line)
+s.getColumnIndex();  // 4 (fifth column)
+s.getInputIndex();   // 9 (string index 9)
+s.getLength();       // 5
+source.substring(s.getInputIndex(), s.getInputIndex() + s.getLength());  // "*baz*"
+```
+
+If you're only interested in blocks and not inlines, use `IncludeSourceSpans.BLOCKS`.
+
 #### Add or change attributes of HTML elements
 
 Sometimes you might want to customize how HTML is rendered. If all you

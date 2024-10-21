@@ -1,6 +1,7 @@
 package org.commonmark.test;
 
 import org.commonmark.node.*;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
@@ -56,6 +57,21 @@ public class UsageExampleTest {
         WordCountVisitor visitor = new WordCountVisitor();
         node.accept(visitor);
         assertEquals(4, visitor.wordCount);
+    }
+
+    @Test
+    public void sourcePositions() {
+        var parser = Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
+
+        var source = "foo\n\nbar *baz*";
+        var doc = parser.parse(source);
+        var emphasis = doc.getLastChild().getLastChild();
+        var s = emphasis.getSourceSpans().get(0);
+        assertEquals(2, s.getLineIndex());
+        assertEquals(4, s.getColumnIndex());
+        assertEquals(9, s.getInputIndex());
+        assertEquals(5, s.getLength());
+        assertEquals("*baz*", source.substring(s.getInputIndex(), s.getInputIndex() + s.getLength()));
     }
 
     @Test
