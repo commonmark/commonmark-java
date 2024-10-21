@@ -263,7 +263,7 @@
 
     <licenses>
         <license>
-            <name>BSD 2-Clause License</name>
+            <name>BSD-2-Clause</name>
             <url>https://opensource.org/licenses/BSD-2-Clause</url>
             <distribution>repo</distribution>
         </license>
