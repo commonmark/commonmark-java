@@ -445,10 +445,11 @@ Used by
 -------
 
 Some users of this library (feel free to raise a PR if you want to be added):
-* Atlassian (where the library was initially developed)
-* Java (OpenJDK), see [here](https://github.com/openjdk/jdk/blob/3895b8fc0b2c6d187080dba6fe08297adad4a480/src/jdk.internal.md/share/classes/module-info.java)
-* Gitiles/Gerrit, see [here](https://gerrit-review.googlesource.com/c/gitiles/+/353794)
-* Znai, see [here](https://github.com/testingisdocumenting/znai)
+* [Atlassian](https://www.atlassian.com/) (where the library was initially developed)
+* Java (OpenJDK) ([link](https://github.com/openjdk/jdk/blob/3895b8fc0b2c6d187080dba6fe08297adad4a480/src/jdk.internal.md/share/classes/module-info.java))
+* [Gerrit](https://www.gerritcodereview.com/) code review/Gitiles ([link](https://gerrit-review.googlesource.com/c/gitiles/+/353794))
+* [Clerk](https://clerk.vision/) moldable live programming for Clojure
+* [Znai](https://github.com/testingisdocumenting/znai)
 
 See also
 --------
