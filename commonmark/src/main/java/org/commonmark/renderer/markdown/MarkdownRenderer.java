@@ -130,7 +130,7 @@ public class MarkdownRenderer implements Renderer {
         private RendererContext(MarkdownWriter writer) {
             // Set fields that are used by interface
             this.writer = writer;
-            Set<Character> escapes = new HashSet<Character>();
+            Set<Character> escapes = new HashSet<>();
             for (MarkdownNodeRendererFactory factory : nodeRendererFactories) {
                 escapes.addAll(factory.getSpecialCharacters());
             }
