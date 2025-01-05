@@ -31,6 +31,7 @@ public class ExtensionsIntegrationTest extends RenderingTestCase {
 
     }
 
+    @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));
     }

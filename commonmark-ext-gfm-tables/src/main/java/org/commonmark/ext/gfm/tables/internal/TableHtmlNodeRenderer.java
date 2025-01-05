@@ -17,6 +17,7 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
         this.context = context;
     }
 
+    @Override
     protected void renderBlock(TableBlock tableBlock) {
         htmlWriter.line();
         htmlWriter.tag("table", getAttributes(tableBlock, "table"));
@@ -25,6 +26,7 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
         htmlWriter.line();
     }
 
+    @Override
     protected void renderHead(TableHead tableHead) {
         htmlWriter.line();
         htmlWriter.tag("thead", getAttributes(tableHead, "thead"));
@@ -33,6 +35,7 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
         htmlWriter.line();
     }
 
+    @Override
     protected void renderBody(TableBody tableBody) {
         htmlWriter.line();
         htmlWriter.tag("tbody", getAttributes(tableBody, "tbody"));
@@ -41,6 +44,7 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
         htmlWriter.line();
     }
 
+    @Override
     protected void renderRow(TableRow tableRow) {
         htmlWriter.line();
         htmlWriter.tag("tr", getAttributes(tableRow, "tr"));
@@ -49,6 +53,7 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
         htmlWriter.line();
     }
 
+    @Override
     protected void renderCell(TableCell tableCell) {
         String tagName = tableCell.isHeader() ? "th" : "td";
         htmlWriter.line();
