@@ -13,8 +13,6 @@ import org.junit.Test;
 
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-
 public class TextContentRendererTest {
 
     private static final Parser PARSER = Parser.builder().build();

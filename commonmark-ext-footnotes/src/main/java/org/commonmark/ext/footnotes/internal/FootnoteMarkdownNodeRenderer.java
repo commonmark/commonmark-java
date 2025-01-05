@@ -5,14 +5,9 @@ import org.commonmark.ext.footnotes.FootnoteReference;
 import org.commonmark.ext.footnotes.InlineFootnote;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlWriter;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownWriter;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Set;
 
 public class FootnoteMarkdownNodeRenderer implements NodeRenderer {

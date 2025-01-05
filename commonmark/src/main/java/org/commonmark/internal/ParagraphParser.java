@@ -9,7 +9,6 @@ import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
 
 import java.util.List;
-import java.util.Map;
 
 public class ParagraphParser extends AbstractBlockParser {
 

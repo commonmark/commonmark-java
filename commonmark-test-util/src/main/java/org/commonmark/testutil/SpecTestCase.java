@@ -2,15 +2,12 @@ package org.commonmark.testutil;
 
 import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.commonmark.testutil.Asserts.assertRendering;
 
 @RunWith(Parameterized.class)
 public abstract class SpecTestCase {

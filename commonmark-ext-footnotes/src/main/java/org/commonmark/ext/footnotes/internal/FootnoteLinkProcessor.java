@@ -4,7 +4,6 @@ import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.ext.footnotes.FootnoteReference;
 import org.commonmark.ext.footnotes.InlineFootnote;
 import org.commonmark.node.LinkReferenceDefinition;
-import org.commonmark.node.Text;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.beta.LinkInfo;
 import org.commonmark.parser.beta.LinkProcessor;

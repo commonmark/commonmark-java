@@ -4,8 +4,6 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
-import org.commonmark.testutil.Asserts;
-import org.commonmark.testutil.RenderingTestCase;
 import org.commonmark.testutil.TestResources;
 import org.junit.Test;
 

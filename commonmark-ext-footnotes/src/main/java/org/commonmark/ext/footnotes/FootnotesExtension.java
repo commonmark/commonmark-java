@@ -3,7 +3,6 @@ package org.commonmark.ext.footnotes;
 import org.commonmark.Extension;
 import org.commonmark.ext.footnotes.internal.*;
 import org.commonmark.parser.Parser;
-import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
