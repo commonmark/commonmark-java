@@ -45,7 +45,6 @@ public class TextContentRendererTest {
     @Test
     public void textContentEmphasis() {
         String s;
-        String rendered;
 
         s = "***foo***";
         assertCompact(s, "foo");
