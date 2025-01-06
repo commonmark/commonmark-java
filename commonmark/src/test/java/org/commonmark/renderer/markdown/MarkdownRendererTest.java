@@ -2,7 +2,6 @@ package org.commonmark.renderer.markdown;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
-import org.commonmark.testutil.Asserts;
 import org.junit.Test;
 
 import static org.commonmark.testutil.Asserts.assertRendering;

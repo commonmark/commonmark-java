@@ -79,6 +79,7 @@ public class UsageExampleTest {
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder()
                 .attributeProviderFactory(new AttributeProviderFactory() {
+                    @Override
                     public AttributeProvider create(AttributeProviderContext context) {
                         return new ImageAttributeProvider();
                     }
@@ -95,6 +96,7 @@ public class UsageExampleTest {
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder()
                 .nodeRendererFactory(new HtmlNodeRendererFactory() {
+                    @Override
                     public NodeRenderer create(HtmlNodeRendererContext context) {
                         return new IndentedCodeBlockNodeRenderer(context);
                     }

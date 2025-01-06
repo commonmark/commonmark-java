@@ -13,15 +13,14 @@ import org.junit.Test;
 
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-
 public class TextContentRendererTest {
 
     private static final Parser PARSER = Parser.builder().build();
     private static final TextContentRenderer COMPACT_RENDERER = TextContentRenderer.builder().build();
     private static final TextContentRenderer SEPARATE_RENDERER = TextContentRenderer.builder()
             .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
-    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder().stripNewlines(true).build();
+    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder()
+            .lineBreakRendering(LineBreakRendering.STRIP).build();
 
     @Test
     public void textContentText() {
@@ -47,7 +46,6 @@ public class TextContentRendererTest {
     @Test
     public void textContentEmphasis() {
         String s;
-        String rendered;
 
         s = "***foo***";
         assertCompact(s, "foo");

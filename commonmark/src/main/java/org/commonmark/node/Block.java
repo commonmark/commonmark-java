@@ -5,6 +5,7 @@ package org.commonmark.node;
  */
 public abstract class Block extends Node {
 
+    @Override
     public Block getParent() {
         return (Block) super.getParent();
     }

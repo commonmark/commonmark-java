@@ -13,7 +13,6 @@ import org.commonmark.parser.block.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.text.Characters;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;

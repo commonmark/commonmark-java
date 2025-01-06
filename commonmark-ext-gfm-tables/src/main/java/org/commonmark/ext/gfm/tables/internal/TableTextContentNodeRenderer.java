@@ -22,6 +22,7 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
         this.context = context;
     }
 
+    @Override
     protected void renderBlock(TableBlock tableBlock) {
         // Render rows tight
         textContentWriter.pushTight(true);
@@ -30,19 +31,23 @@ public class TableTextContentNodeRenderer extends TableNodeRenderer {
         textContentWriter.block();
     }
 
+    @Override
     protected void renderHead(TableHead tableHead) {
         renderChildren(tableHead);
     }
 
+    @Override
     protected void renderBody(TableBody tableBody) {
         renderChildren(tableBody);
     }
 
+    @Override
     protected void renderRow(TableRow tableRow) {
         renderChildren(tableRow);
         textContentWriter.block();
     }
 
+    @Override
     protected void renderCell(TableCell tableCell) {
         renderChildren(tableCell);
         // For the last cell in row, don't render the delimiter

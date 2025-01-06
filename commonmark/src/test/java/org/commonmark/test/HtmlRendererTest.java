@@ -4,8 +4,6 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
-import org.commonmark.testutil.Asserts;
-import org.commonmark.testutil.RenderingTestCase;
 import org.commonmark.testutil.TestResources;
 import org.junit.Test;
 
@@ -19,8 +17,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 public class HtmlRendererTest {
 
