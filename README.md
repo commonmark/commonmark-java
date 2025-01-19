@@ -452,6 +452,7 @@ Some users of this library (feel free to raise a PR if you want to be added):
 * [Znai](https://github.com/testingisdocumenting/znai)
 * [Open Note](https://github.com/YangDai2003/OpenNote-Compose) a markdown editor and note-taking app for Android
 * [Quarkus Roq](https://github.com/quarkiverse/quarkus-roq/) The Roq Static Site Generator allows to easily create a static website or blog using Quarkus super-powers.
+* [Lucee](https://github.com/lucee/lucee)
 
 See also
 --------
