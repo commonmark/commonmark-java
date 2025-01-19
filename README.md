@@ -450,6 +450,7 @@ Some users of this library (feel free to raise a PR if you want to be added):
 * [Gerrit](https://www.gerritcodereview.com/) code review/Gitiles ([link](https://gerrit-review.googlesource.com/c/gitiles/+/353794))
 * [Clerk](https://clerk.vision/) moldable live programming for Clojure
 * [Znai](https://github.com/testingisdocumenting/znai)
+* [Lucee](https://github.com/lucee/lucee)
 
 See also
 --------

@@ -54,6 +54,15 @@
         </profile>
     </profiles>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <licenses>
         <license>
             <name>BSD-2-Clause</name>
