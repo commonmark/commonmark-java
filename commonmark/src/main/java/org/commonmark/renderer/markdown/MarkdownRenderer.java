@@ -136,9 +136,9 @@ public class MarkdownRenderer implements Renderer {
             }
             additionalTextEscapes = Collections.unmodifiableSet(escapes);
 
-            // The first node renderer for a node type "wins".
-            for (int i = nodeRendererFactories.size() - 1; i >= 0; i--) {
-                MarkdownNodeRendererFactory nodeRendererFactory = nodeRendererFactories.get(i);
+            // The first node renderer for a node type "wins". The NodeRendererMap
+            // disallows overwriting.
+            for (MarkdownNodeRendererFactory nodeRendererFactory : nodeRendererFactories) {
                 // Pass in this as context here, which uses the fields set above
                 NodeRenderer nodeRenderer = nodeRendererFactory.create(this);
                 nodeRendererMap.add(nodeRenderer);
