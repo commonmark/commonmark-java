@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Renders nodes to plain text content with minimal markup-like additions.
  */
-public class TextContentRenderer implements Renderer {
+public class TextContentRenderer implements Renderer<String> {
 
     private final LineBreakRendering lineBreakRendering;
 

@@ -22,7 +22,7 @@ import java.util.*;
  * However, it should produce Markdown that is semantically equivalent to the input, i.e. if the Markdown was parsed
  * again and compared against the original AST, it should be the same (minus bugs).
  */
-public class MarkdownRenderer implements Renderer {
+public class MarkdownRenderer implements Renderer<String> {
 
     private final List<MarkdownNodeRendererFactory> nodeRendererFactories;
 
