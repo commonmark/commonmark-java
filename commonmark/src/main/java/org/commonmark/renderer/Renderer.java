@@ -2,7 +2,7 @@ package org.commonmark.renderer;
 
 import org.commonmark.node.Node;
 
-public interface Renderer {
+public interface Renderer<T> {
 
     /**
      * Render the tree of nodes to output.
@@ -16,7 +16,7 @@ public interface Renderer {
      * Render the tree of nodes to string.
      *
      * @param node the root node
-     * @return the rendered string
+     * @return the rendered result
      */
-    String render(Node node);
+    T render(Node node);
 }

@@ -18,7 +18,7 @@ import java.util.*;
  * renderer.render(node);
  * </code></pre>
  */
-public class HtmlRenderer implements Renderer {
+public class HtmlRenderer implements Renderer<String> {
 
     private final String softbreak;
     private final boolean escapeHtml;
