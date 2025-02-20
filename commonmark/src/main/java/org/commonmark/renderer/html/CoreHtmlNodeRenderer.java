@@ -252,9 +252,8 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     protected void visitChildren(Node parent) {
         Node node = parent.getFirstChild();
         while (node != null) {
-            Node next = node.getNext();
             context.render(node);
-            node = next;
+            node = node.getNext();
         }
     }
 
