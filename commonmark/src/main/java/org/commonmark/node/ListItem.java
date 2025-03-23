@@ -1,5 +1,10 @@
 package org.commonmark.node;
 
+/**
+ * A child of a {@link ListBlock}, containing other blocks (e.g. {@link Paragraph}, other lists, etc).
+ *
+ * @see <a href="https://spec.commonmark.org/0.31.2/#list-items">CommonMark Spec: List items</a>
+ */
 public class ListItem extends Block {
 
     private Integer markerIndent;

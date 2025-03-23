@@ -1,5 +1,17 @@
 package org.commonmark.node;
 
+/**
+ * A fenced code block, e.g.:
+ * <pre>
+ * ```
+ * foo
+ * bar
+ * ```
+ * </pre>
+ * <p>
+ *
+ * @see <a href="https://spec.commonmark.org/0.31.2/#fenced-code-blocks">CommonMark Spec</a>
+ */
 public class FencedCodeBlock extends Block {
 
     private String fenceCharacter;

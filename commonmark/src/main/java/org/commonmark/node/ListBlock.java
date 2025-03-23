@@ -1,5 +1,8 @@
 package org.commonmark.node;
 
+/**
+ * A list block like {@link BulletList} or {@link OrderedList}.
+ */
 public abstract class ListBlock extends Block {
 
     private boolean tight;
