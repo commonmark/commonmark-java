@@ -12,6 +12,8 @@ with the exception that 0.x versions can break between minor versions.
 ### Fixed
 - `MarkdownRenderer`: Fix precedence for `nodeRendererFactory`: Factories passed
   to the builder can now override rendering for core node types.
+- Fix warning in Eclipse about "missing 'requires transitive'"
+- Fix Android incompatibility with `requireNonNullElseGet`
 
 ## [0.24.0] - 2024-10-21
 ### Added
