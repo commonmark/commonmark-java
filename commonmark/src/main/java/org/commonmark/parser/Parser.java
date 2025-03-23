@@ -311,7 +311,11 @@ public class Parser {
         }
 
         private InlineParserFactory getInlineParserFactory() {
-            return Objects.requireNonNullElseGet(inlineParserFactory, () -> InlineParserImpl::new);
+            if (inlineParserFactory != null) {
+                return inlineParserFactory;
+            } else {
+                return InlineParserImpl::new;
+            }
         }
     }
 
