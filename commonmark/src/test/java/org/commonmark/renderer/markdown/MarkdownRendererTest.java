@@ -2,7 +2,13 @@ package org.commonmark.renderer.markdown;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static org.commonmark.testutil.Asserts.assertRendering;
 import static org.junit.Assert.assertEquals;
@@ -298,6 +304,35 @@ public class MarkdownRendererTest {
     @Test
     public void testSoftLineBreaks() {
         assertRoundTrip("foo\nbar\n");
+    }
+
+    @Test
+    public void overrideNodeRender() {
+        var nodeRendererFactory = new MarkdownNodeRendererFactory() {
+            @Override
+            public NodeRenderer create(MarkdownNodeRendererContext context) {
+                return new NodeRenderer() {
+                    @Override
+                    public Set<Class<? extends Node>> getNodeTypes() {
+                        return Set.of(Heading.class);
+                    }
+
+                    @Override
+                    public void render(Node node) {
+                        context.getWriter().raw("# Custom heading");
+                    }
+                };
+            }
+
+            @Override
+            public Set<Character> getSpecialCharacters() {
+                return Set.of();
+            }
+        };
+
+        MarkdownRenderer renderer = MarkdownRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
+        String rendered = renderer.render(parse("# Hello"));
+        assertEquals("# Custom heading\n", rendered);
     }
 
     private void assertRoundTrip(String input) {
