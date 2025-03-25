@@ -8,6 +8,7 @@ with the exception that 0.x versions can break between minor versions.
 
 ## [Unreleased]
 ### Added
+- More documentation with examples for `Node` classes
 ### Changed
 ### Fixed
 - `MarkdownRenderer`: Fix precedence for `nodeRendererFactory`: Factories passed
