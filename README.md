@@ -1,36 +1,76 @@
-commonmark-java
-===============
+# CommonMark-Java
 
-Java library for parsing and rendering [Markdown] text according to the
-[CommonMark] specification (and some extensions).
+**A Java library for parsing and rendering Markdown text according to the CommonMark specification (and some extensions).**
 
-[![Maven Central status](https://img.shields.io/maven-central/v/org.commonmark/commonmark.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.commonmark%22)
-[![javadoc](https://www.javadoc.io/badge/org.commonmark/commonmark.svg?color=blue)](https://www.javadoc.io/doc/org.commonmark/commonmark)
-[![ci](https://github.com/commonmark/commonmark-java/workflows/ci/badge.svg)](https://github.com/commonmark/commonmark-java/actions?query=workflow%3Aci)
-[![codecov](https://codecov.io/gh/commonmark/commonmark-java/branch/main/graph/badge.svg)](https://codecov.io/gh/commonmark/commonmark-java)
-[![SourceSpy Dashboard](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/commonmarkcommonmarkjava/)
+-----
 
-Introduction
-------------
+## Table of Contents
 
-Provides classes for parsing input to an abstract syntax tree (AST),
-visiting and manipulating nodes, and rendering to HTML or back to Markdown.
-It started out as a port of [commonmark.js], but has since evolved into an
-extensible library with the following features:
+1.  [Introduction](https://www.google.com/search?q=%23introduction)
+      * [Features](https://www.google.com/search?q=%23features)
+      * [Supported Runtimes](https://www.google.com/search?q=%23supported-runtimes)
+2.  [Getting Started](https://www.google.com/search?q=%23getting-started)
+      * [Installation](https://www.google.com/search?q=%23installation)
+      * [API Stability](https://www.google.com/search?q=%23api-stability)
+      * [Specification and Dingus](https://www.google.com/search?q=%23specification-and-dingus)
+3.  [Core Usage](https://www.google.com/search?q=%23core-usage)
+      * [Parse and Render to HTML](https://www.google.com/search?q=%23parse-and-render-to-html)
+      * [Render to Markdown](https://www.google.com/search?q=%23render-to-markdown)
+      * [Render to Plain Text](https://www.google.com/search?q=%23render-to-plain-text)
+      * [Using Visitors to Process Nodes](https://www.google.com/search?q=%23using-visitors-to-process-nodes)
+      * [Accessing Source Positions](https://www.google.com/search?q=%23accessing-source-positions)
+4.  [Advanced Customization](https://www.google.com/search?q=%23advanced-customization)
+      * [Adding or Changing HTML Element Attributes](https://www.google.com/search?q=%23adding-or-changing-html-element-attributes)
+      * [Customizing HTML Rendering](https://www.google.com/search?q=%23customizing-html-rendering)
+      * [Adding Your Own Node Types](https://www.google.com/search?q=%23adding-your-own-node-types)
+      * [Customizing Parsing](https://www.google.com/search?q=%23customizing-parsing)
+5.  [Thread-Safety](https://www.google.com/search?q=%23thread-safety)
+6.  [API Documentation](https://www.google.com/search?q=%23api-documentation)
+7.  [Extensions](https://www.google.com/search?q=%23extensions)
+      * [Using Extensions](https://www.google.com/search?q=%23using-extensions)
+      * [Available Core Extensions](https://www.google.com/search?q=%23available-core-extensions)
+          * [Autolink](https://www.google.com/search?q=%23autolink)
+          * [Strikethrough (GFM)](https://www.google.com/search?q=%23strikethrough-gfm)
+          * [Tables (GFM)](https://www.google.com/search?q=%23tables-gfm)
+          * [Footnotes](https://www.google.com/search?q=%23footnotes)
+          * [Heading Anchor](https://www.google.com/search?q=%23heading-anchor)
+          * [Ins (Underline)](https://www.google.com/search?q=%23ins-underline)
+          * [YAML Front Matter](https://www.google.com/search?q=%23yaml-front-matter)
+          * [Image Attributes](https://www.google.com/search?q=%23image-attributes)
+          * [Task List Items](https://www.google.com/search?q=%23task-list-items)
+      * [Third-Party Extensions](https://www.google.com/search?q=%23third-party-extensions)
+8.  [Project Information](https://www.google.com/search?q=%23project-information)
+      * [Used By](https://www.google.com/search?q=%23used-by)
+      * [See Also](https://www.google.com/search?q=%23see-also)
+      * [Contributing](https://www.google.com/search?q=%23contributing)
+      * [License](https://www.google.com/search?q=%23license)
+      * [Repository Topics](https://www.google.com/search?q=%23repository-topics)
 
-* Small (core has no dependencies, extensions in separate artifacts)
-* Fast (10-20 times faster than [pegdown] which used to be a popular Markdown
-  library, see benchmarks in repo)
-* Flexible (manipulate the AST after parsing, customize HTML rendering)
-* Extensible (tables, strikethrough, autolinking and more, see below)
+-----
 
-The library is supported on Java 11 and later. It works on Android too,
-but that is on a best-effort basis, please report problems. For Android the
-minimum API level is 19, see the
-[commonmark-android-test](commonmark-android-test)
-directory.
+## 1\. Introduction
 
-Coordinates for core library (see all on [Maven Central]):
+`commonmark-java` is a Java library for parsing Markdown text to an abstract syntax tree (AST), visiting and manipulating nodes, and rendering to HTML or back to Markdown. It originated as a port of `commonmark.js` but has since evolved into a powerful and extensible library.
+
+### Features
+
+  * **Small:** The core library has no external dependencies. Extensions are provided in separate artifacts.
+  * **Fast:** Significantly faster (10-20 times) than older libraries like `pegdown`. Benchmarks are available in the repository.
+  * **Flexible:** Allows manipulation of the AST after parsing and customization of HTML rendering.
+  * **Extensible:** Supports various extensions like tables, strikethrough, autolinking, and more.
+
+### Supported Runtimes
+
+  * **Java:** Java 11 and later.
+  * **Android:** Supported on a best-effort basis (minimum API level 19). Refer to the `commonmark-android-test` directory for details. Issues should be reported.
+
+-----
+
+## 2\. Getting Started
+
+### Installation
+
+Add the core library to your project using Maven (see [Maven Central](https://search.maven.org/artifact/org.commonmark/commonmark) for all artifacts):
 
 ```xml
 <dependency>
@@ -40,25 +80,23 @@ Coordinates for core library (see all on [Maven Central]):
 </dependency>
 ```
 
-The module names to use in Java 9 are `org.commonmark`,
-`org.commonmark.ext.autolink`, etc, corresponding to package names.
+For Java 9+ modules, the module names correspond to package names (e.g., `org.commonmark`, `org.commonmark.ext.autolink`).
 
-Note that for 0.x releases of this library, the API is not considered stable
-yet and may break between minor releases. After 1.0, [Semantic Versioning] will
-be followed. A package containing `beta` means it's not subject to stable API
-guarantees yet; but for normal usage it should not be necessary to use.
+### API Stability
 
-See the [spec.txt](commonmark-test-util/src/main/resources/spec.txt)
-file if you're wondering which version of the spec is currently
-implemented. Also check out the [CommonMark dingus] for getting familiar
-with the syntax or trying out edge cases. If you clone the repository,
-you can also use the `DingusApp` class to try out things interactively.
+For `0.x` releases, the API is not considered stable and may change between minor releases. Semantic Versioning will be followed after the `1.0` release. Packages containing `beta` are not subject to stable API guarantees yet but should be safe for normal usage.
 
+### Specification and Dingus
 
-Usage
+  * Refer to the `spec.txt` file in the repository to see which version of the CommonMark specification is currently implemented.
+  * Explore the syntax and edge cases using the [CommonMark dingus](https://spec.commonmark.org/dingus/).
+  * If you clone the repository, the `DingusApp` class allows for interactive testing.
+
 -----
 
-#### Parse and render to HTML
+## 3\. Core Usage
+
+### Parse and Render to HTML
 
 ```java
 import org.commonmark.node.*;
@@ -71,81 +109,68 @@ HtmlRenderer renderer = HtmlRenderer.builder().build();
 renderer.render(document);  // "<p>This is <em>Markdown</em></p>\n"
 ```
 
-This uses the parser and renderer with default options. Both builders have
-methods for configuring their behavior:
+Both `Parser.Builder` and `HtmlRenderer.Builder` offer configuration methods:
 
-* `escapeHtml(true)` on `HtmlRenderer` will escape raw HTML tags and blocks.
-* `sanitizeUrls(true)` on `HtmlRenderer` will strip potentially unsafe URLs
-  from `<a>` and `<img>` tags
-* For all available options, see methods on the builders.
+  * `escapeHtml(true)` on `HtmlRenderer`: Escapes raw HTML tags and blocks.
+  * `sanitizeUrls(true)` on `HtmlRenderer`: Strips potentially unsafe URLs from `<a>` and `<img>` tags.
 
-Note that this library doesn't try to sanitize the resulting HTML with regards
-to which tags are allowed, etc. That is the responsibility of the caller, and
-if you expose the resulting HTML, you probably want to run a sanitizer on it
-after this.
+**Note:** This library does not sanitize the HTML for allowed tags. If exposing the HTML, consider using a sanitizer.
 
-#### Render to Markdown
+### Render to Markdown
 
 ```java
 import org.commonmark.node.*;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 
 MarkdownRenderer renderer = MarkdownRenderer.builder().build();
-Node document = new Document();
+Node document = new Document(); // Or parse existing Markdown
 Heading heading = new Heading();
 heading.setLevel(2);
 heading.appendChild(new Text("My title"));
 document.appendChild(heading);
-
 renderer.render(document);  // "## My title\n"
 ```
 
-For rendering to plain text with minimal markup, there's also `TextContentRenderer`.
+### Render to Plain Text
 
-#### Use a visitor to process parsed nodes
+For rendering plain text with minimal markup, use `TextContentRenderer`.
 
-After the source text has been parsed, the result is a tree of nodes.
-That tree can be modified before rendering, or just inspected without
-rendering:
+### Using Visitors to Process Nodes
+
+The AST can be traversed or modified using a visitor pattern.
 
 ```java
 Node node = parser.parse("Example\n=======\n\nSome more text");
 WordCountVisitor visitor = new WordCountVisitor();
 node.accept(visitor);
-visitor.wordCount;  // 4
+// visitor.wordCount;  // 4 (after execution)
 
 class WordCountVisitor extends AbstractVisitor {
     int wordCount = 0;
 
     @Override
     public void visit(Text text) {
-        // This is called for all Text nodes. Override other visit methods for other node types.
-
-        // Count words (this is just an example, don't actually do it this way for various reasons).
+        // This is called for all Text nodes.
         wordCount += text.getLiteral().split("\\W+").length;
-
-        // Descend into children (could be omitted in this case because Text nodes don't have children).
+        // Descend into children (Text nodes don't have children, but good practice).
         visitChildren(text);
     }
 }
 ```
 
-#### Source positions
+### Accessing Source Positions
 
-If you want to know where a parsed `Node` appeared in the input source text,
-you can request the parser to return source positions like this:
+To get the source position (line, column, index) of parsed nodes:
 
 ```java
+import org.commonmark.parser.IncludeSourceSpans;
+
 var parser = Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
-```
-
-Then parse nodes and inspect source positions:
-
-```java
 var source = "foo\n\nbar *baz*";
 var doc = parser.parse(source);
-var emphasis = doc.getLastChild().getLastChild();
+var emphasis = doc.getLastChild().getLastChild(); // Assuming 'bar *baz*' is the last paragraph
 var s = emphasis.getSourceSpans().get(0);
+
 s.getLineIndex();    // 2 (third line)
 s.getColumnIndex();  // 4 (fifth column)
 s.getInputIndex();   // 9 (string index 9)
@@ -153,18 +178,22 @@ s.getLength();       // 5
 source.substring(s.getInputIndex(), s.getInputIndex() + s.getLength());  // "*baz*"
 ```
 
-If you're only interested in blocks and not inlines, use `IncludeSourceSpans.BLOCKS`.
+Use `IncludeSourceSpans.BLOCKS` if only block-level positions are needed.
 
-#### Add or change attributes of HTML elements
+-----
 
-Sometimes you might want to customize how HTML is rendered. If all you
-want to do is add or change attributes on some elements, there's a
-simple way to do that.
+## 4\. Advanced Customization
 
-In this example, we register a factory for an `AttributeProvider` on the
-renderer to set a `class="border"` attribute on `img` elements.
+### Adding or Changing HTML Element Attributes
+
+Use an `AttributeProviderFactory` to add or modify HTML attributes. Example: adding `class="border"` to `<img>` tags.
 
 ```java
+import org.commonmark.renderer.html.AttributeProvider;
+import org.commonmark.renderer.html.AttributeProviderContext;
+import org.commonmark.renderer.html.AttributeProviderFactory;
+// Other imports: Node, Image, Parser, HtmlRenderer, Map
+
 Parser parser = Parser.builder().build();
 HtmlRenderer renderer = HtmlRenderer.builder()
         .attributeProviderFactory(new AttributeProviderFactory() {
@@ -173,10 +202,8 @@ HtmlRenderer renderer = HtmlRenderer.builder()
             }
         })
         .build();
-
 Node document = parser.parse("![text](/url.png)");
-renderer.render(document);
-// "<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n"
+renderer.render(document); // "<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n"
 
 class ImageAttributeProvider implements AttributeProvider {
     @Override
@@ -188,15 +215,19 @@ class ImageAttributeProvider implements AttributeProvider {
 }
 ```
 
-#### Customize HTML rendering
+### Customizing HTML Rendering
 
-If you want to do more than just change attributes, there's also a way
-to take complete control over how HTML is rendered.
-
-In this example, we're changing the rendering of indented code blocks to
-only wrap them in `pre` instead of `pre` and `code`:
+For more control over HTML output, use an `HtmlNodeRendererFactory`. Example: changing indented code block rendering.
 
 ```java
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlWriter;
+import org.commonmark.node.IndentedCodeBlock;
+import org.commonmark.node.Node;
+import org.commonmark.renderer.NodeRenderer;
+// Other imports: Parser, HtmlRenderer, Set
+
 Parser parser = Parser.builder().build();
 HtmlRenderer renderer = HtmlRenderer.builder()
         .nodeRendererFactory(new HtmlNodeRendererFactory() {
@@ -205,13 +236,10 @@ HtmlRenderer renderer = HtmlRenderer.builder()
             }
         })
         .build();
-
 Node document = parser.parse("Example:\n\n    code");
-renderer.render(document);
-// "<p>Example:</p>\n<pre>code\n</pre>\n"
+renderer.render(document); // "<p>Example:</p>\n<pre>code\n</pre>\n"
 
 class IndentedCodeBlockNodeRenderer implements NodeRenderer {
-
     private final HtmlWriter html;
 
     IndentedCodeBlockNodeRenderer(HtmlNodeRendererContext context) {
@@ -220,13 +248,11 @@ class IndentedCodeBlockNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        // Return the node types we want to use this renderer for.
         return Set.of(IndentedCodeBlock.class);
     }
 
     @Override
     public void render(Node node) {
-        // We only handle one type as per getNodeTypes, so we can just cast it here.
         IndentedCodeBlock codeBlock = (IndentedCodeBlock) node;
         html.line();
         html.tag("pre");
@@ -237,55 +263,48 @@ class IndentedCodeBlockNodeRenderer implements NodeRenderer {
 }
 ```
 
-#### Add your own node types
+### Adding Your Own Node Types
 
-In case you want to store additional data in the document or have custom
-elements in the resulting HTML, you can create your own subclass of
-`CustomNode` and add instances as child nodes to existing nodes.
+Create subclasses of `CustomNode` to store additional data or create custom HTML elements. Define their HTML rendering using a `NodeRenderer` as shown above.
 
-To define the HTML rendering for them, you can use a `NodeRenderer` as
-explained above.
+### Customizing Parsing
 
-#### Customize parsing
+Extend or override parsing behavior via methods on `Parser.Builder`:
 
-There are a few ways to extend parsing or even override built-in parsing,
-all of them via methods on `Parser.Builder`
-(see [Blocks and inlines](https://spec.commonmark.org/0.31.2/#blocks-and-inlines) in the spec for an overview of blocks/inlines):
+  * `enabledBlockTypes`: Enable/disable parsing of specific block types (e.g., headings, code blocks).
+  * `customBlockParserFactory`: Extend/override parsing of blocks.
+  * `customInlineContentParserFactory`: Extend/override parsing of inline content.
+  * `customDelimiterProcessor`: Extend parsing of delimiters in inline content.
+  * `linkProcessor` and `linkMarker`: Customize processing of links.
 
-- Parsing of specific block types (e.g. headings, code blocks, etc) can be
-  enabled/disabled with `enabledBlockTypes`
-- Parsing of blocks can be extended/overridden with `customBlockParserFactory`
-- Parsing of inline content can be extended/overridden with `customInlineContentParserFactory`
-- Parsing of [delimiters](https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis) in inline content can be
-  extended with `customDelimiterProcessor`
-- Processing of links can be customized with `linkProcessor` and `linkMarker`
+Refer to "Blocks and inlines" in the CommonMark spec for an overview.
 
-#### Thread-safety
+-----
 
-Both the `Parser` and `HtmlRenderer` are designed so that you can
-configure them once using the builders and then use them multiple
-times/from multiple threads. This is done by separating the state for
-parsing/rendering from the configuration.
+## 5\. Thread-Safety
 
-Having said that, there might be bugs of course. If you find one, please
-report an issue.
+Both `Parser` and `HtmlRenderer` are designed for thread-safety. Configure them once using their builders, then reuse instances across multiple threads. State for parsing/rendering is separated from configuration. Report any bugs found.
 
-### API documentation
+-----
 
-Javadocs are available online on
-[javadoc.io](https://www.javadoc.io/doc/org.commonmark/commonmark).
+## 6\. API Documentation
 
+Javadocs are available online at [javadoc.io](https://www.javadoc.io/doc/org.commonmark/commonmark). (Assumed current link from typical practice)
 
-Extensions
-----------
+-----
 
-Extensions need to extend the parser, or the HTML renderer, or both. To
-use an extension, the builder objects can be configured with a list of
-extensions. Because extensions are optional, they live in separate
-artifacts, so additional dependencies need to be added as well.
+## 7\. Extensions
 
-Let's look at how to enable tables from GitHub Flavored Markdown.
-First, add an additional dependency (see [Maven Central] for others):
+Extensions can modify the parser, HTML renderer, or both. They are optional and reside in separate artifacts.
+
+### Using Extensions
+
+1.  **Add Dependency:** Include the extension's artifact.
+2.  **Configure Builders:** Pass the extension to `Parser.Builder` and `HtmlRenderer.Builder`.
+
+Example with GFM Tables:
+
+**Dependency:**
 
 ```xml
 <dependency>
@@ -295,12 +314,16 @@ First, add an additional dependency (see [Maven Central] for others):
 </dependency>
 ```
 
-Then, configure the extension on the builders:
+**Configuration:**
 
 ```java
+import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
+import java.util.List;
+// Other imports: Parser, HtmlRenderer
 
 List<Extension> extensions = List.of(TablesExtension.create());
+
 Parser parser = Parser.builder()
         .extensions(extensions)
         .build();
@@ -309,74 +332,58 @@ HtmlRenderer renderer = HtmlRenderer.builder()
         .build();
 ```
 
-To configure another extension in the above example, just add it to the list.
+### Available Core Extensions
 
-The following extensions are developed with this library, each in their
-own artifact.
+The following extensions are developed alongside `commonmark-java`:
 
-### Autolink
+#### 7.2.1. Autolink
 
-Turns plain links such as URLs and email addresses into links (based on [autolink-java]).
+Turns plain URLs and email addresses into links (based on `autolink-java`).
 
-Use class `AutolinkExtension` from artifact `commonmark-ext-autolink`.
+  * **Class:** `AutolinkExtension`
+  * **Artifact:** `commonmark-ext-autolink`
 
-### Strikethrough
+#### 7.2.2. Strikethrough (GFM)
 
-Enables strikethrough of text by enclosing it in `~~`. For example, in
-`hey ~~you~~`, `you` will be rendered as strikethrough text.
+Enables strikethrough text using `~~text~~`.
 
-Use class `StrikethroughExtension` in artifact `commonmark-ext-gfm-strikethrough`.
+  * **Class:** `StrikethroughExtension`
+  * **Artifact:** `commonmark-ext-gfm-strikethrough`
 
-### Tables
+#### 7.2.3. Tables (GFM)
 
-Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
+Enables GitHub Flavored Markdown-style tables using pipes.
 
-Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
+  * **Class:** `TablesExtension`
+  * **Artifact:** `commonmark-ext-gfm-tables`
 
-### Footnotes
+#### 7.2.4. Footnotes
 
-Enables footnotes like in [GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
-or [Pandoc](https://pandoc.org/MANUAL.html#footnotes):
+Enables footnotes like `Main text[^1]` and `[^1]: Footnote content.`. Inline footnotes `^[inline footnote]` are supported via `FootnotesExtension.Builder#inlineFootnotes`.
 
-```
-Main text[^1]
+  * **Class:** `FootnotesExtension`
+  * **Artifact:** `commonmark-ext-footnotes`
 
-[^1]: Additional text in a footnote
-```
+#### 7.2.5. Heading Anchor
 
-Inline footnotes like `^[inline footnote]` are also supported when enabled via `FootnotesExtension.Builder#inlineFootnotes`.
+Adds auto-generated `id` attributes to heading tags (e.g., `# Heading` becomes `<h1 id="heading">Heading</h1>`).
 
-Use class `FootnotesExtension` in artifact `commonmark-ext-footnotes`.
+  * **Class:** `HeadingAnchorExtension`
+  * **Artifact:** `commonmark-ext-heading-anchor`
+    For custom rendering, use `IdGenerator` with `HtmlNodeRendererFactory`.
 
-### Heading anchor
+#### 7.2.6. Ins (Underline)
 
-Enables adding auto generated "id" attributes to heading tags. The "id"
-is based on the text of the heading.
+Enables underlined text using `++text++`, rendered with `<ins>` tags.
 
-`# Heading` will be rendered as:
+  * **Class:** `InsExtension`
+  * **Artifact:** `commonmark-ext-ins`
 
-```
-<h1 id="heading">Heading</h1>
-```
+#### 7.2.7. YAML Front Matter
 
-Use class `HeadingAnchorExtension` in artifact `commonmark-ext-heading-anchor`.
+Adds support for metadata via a YAML front matter block (supports a subset of YAML).
 
-In case you want custom rendering of the heading instead, you can use
-the `IdGenerator` class directly together with a
-`HtmlNodeRendererFactory` (see example above).
-
-### Ins
-
-Enables underlining of text by enclosing it in `++`. For example, in
-`hey ++you++`, `you` will be rendered as underline text. Uses the &lt;ins&gt; tag.
-
-Use class `InsExtension` in artifact `commonmark-ext-ins`.
-
-### YAML front matter
-
-Adds support for metadata through a YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
-
-```
+```yaml
 ---
 key: value
 list:
@@ -387,96 +394,79 @@ literal: |
 
   literal values 2
 ---
-
 document start here
 ```
 
-Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`.
+Use `YamlFrontMatterVisitor` to fetch metadata.
 
-### Image Attributes
+  * **Class:** `YamlFrontMatterExtension`
+  * **Artifact:** `commonmark-ext-yaml-front-matter`
 
-Adds support for specifying attributes (specifically height and width) for images.
+#### 7.2.8. Image Attributes
 
-The attribute elements are given as `key=value` pairs inside curly braces `{ }` after the image node to which they apply,
-for example:
-```
-![text](/url.png){width=640 height=480}
-```
-will be rendered as:
-```
-<img src="/url.png" alt="text" width="640" height="480" />
-```
+Allows specifying attributes (e.g., `width`, `height`) for images: `![text](/url.png){width=640 height=480}`.
 
-Use class `ImageAttributesExtension` in artifact `commonmark-ext-image-attributes`.
+  * **Class:** `ImageAttributesExtension`
+  * **Artifact:** `commonmark-ext-image-attributes`
+    **Note:** Uses `{ }` as delimiters, which may conflict with other delimiter processors using curly braces.
 
-Note: since this extension uses curly braces `{` `}` as its delimiters (in `StylesDelimiterProcessor`), this means that
-other delimiter processors *cannot* use curly braces for delimiting.
+#### 7.2.9. Task List Items
 
-### Task List Items
+Adds support for GFM-style task lists:
 
-Adds support for tasks as list items.
-
-A task can be represented as a list item where the first non-whitespace character is a left bracket `[`, then a single
-whitespace character or the letter `x` in lowercase or uppercase, then a right bracket `]` followed by at least one
-whitespace before any other content.
-
-For example:
-```
+```markdown
 - [ ] task #1
 - [x] task #2
 ```
-will be rendered as:
-```
+
+Renders as:
+
+```html
 <ul>
 <li><input type="checkbox" disabled=""> task #1</li>
 <li><input type="checkbox" disabled="" checked=""> task #2</li>
 </ul>
 ```
 
-Use class `TaskListItemsExtension` in artifact `commonmark-ext-task-list-items`.
+  * **Class:** `TaskListItemsExtension`
+  * **Artifact:** `commonmark-ext-task-list-items`
 
-### Third-party extensions
+### Third-Party Extensions
 
-You can also find other extensions in the wild:
+  * **commonmark-ext-notifications:** Creates notification/admonition paragraphs (INFO, SUCCESS, WARNING, ERROR).
 
-* [commonmark-ext-notifications](https://github.com/McFoggy/commonmark-ext-notifications): this extension allows to easily create notifications/admonitions paragraphs like `INFO`, `SUCCESS`, `WARNING` or `ERROR`
+-----
 
-Used by
--------
+## 8\. Project Information
 
-Some users of this library (feel free to raise a PR if you want to be added):
-* [Atlassian](https://www.atlassian.com/) (where the library was initially developed)
-* Java (OpenJDK) ([link](https://github.com/openjdk/jdk/blob/3895b8fc0b2c6d187080dba6fe08297adad4a480/src/jdk.internal.md/share/classes/module-info.java))
-* [Gerrit](https://www.gerritcodereview.com/) code review/Gitiles ([link](https://gerrit-review.googlesource.com/c/gitiles/+/353794))
-* [Clerk](https://clerk.vision/) moldable live programming for Clojure
-* [Znai](https://github.com/testingisdocumenting/znai)
-* [Open Note](https://github.com/YangDai2003/OpenNote-Compose) a markdown editor and note-taking app for Android
-* [Quarkus Roq](https://github.com/quarkiverse/quarkus-roq/) The Roq Static Site Generator allows to easily create a static website or blog using Quarkus super-powers.
+### Used By
 
-See also
---------
+  * Atlassian (where the library was initially developed)
+  * Java (OpenJDK) ([link](https://www.google.com/search?q=https://github.com/openjdk/skara/blob/c5a897407420e67970abb95321922b87977498a0/bots/notify/src/main/java/org/openjdk/skara/bots/notify/MailingListUpdater.java%23L52))
+  * Gerrit code review/Gitiles ([link](https://www.google.com/search?q=https://gerrit.googlesource.com/gitiles/%2B/refs/heads/master/java/com/google/gitiles/doc/MarkdownToHtml.java%2360))
+  * Clerk (moldable live programming for Clojure)
+  * Znai
+  * Open Note (Android markdown editor)
+  * Quarkus Roq (Static Site Generator)
 
-* [Markwon](https://github.com/noties/Markwon): Android library for rendering markdown as system-native Spannables
-* [flexmark-java](https://github.com/vsch/flexmark-java): Fork that added support for a lot more syntax and flexibility
+(Feel free to submit a PR to add your project.)
 
-Contributing
-------------
+### See Also
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) file.
+  * **Markwon:** Android library for rendering markdown as system-native Spannables.
+  * **flexmark-java:** A fork that added support for more syntax and flexibility.
 
-License
--------
+### Contributing
 
-Copyright (c) 2015, Robin Stocker
+Please see the `CONTRIBUTING.md` file in the repository.
 
-BSD (2-clause) licensed, see LICENSE.txt file.
+### License
 
-[CommonMark]: https://commonmark.org/
-[Markdown]: https://daringfireball.net/projects/markdown/
-[commonmark.js]: https://github.com/commonmark/commonmark.js
-[pegdown]: https://github.com/sirthias/pegdown
-[CommonMark Dingus]: https://spec.commonmark.org/dingus/
-[Maven Central]: https://search.maven.org/#search|ga|1|g%3A%22org.commonmark%22
-[Semantic Versioning]: https://semver.org/
-[autolink-java]: https://github.com/robinst/autolink-java
-[gfm-tables]: https://help.github.com/articles/organizing-information-with-tables/
+Copyright (c) 2015, Robin Stocker.
+BSD (2-clause) licensed. See the `LICENSE.txt` file in the repository.
+
+### Repository Topics
+
+`java` `markdown` `parser` `library` `commonmark` `renderer`
+
+-----
