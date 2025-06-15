@@ -1,53 +1,51 @@
 package org.commonmark.parser;
 
-import org.commonmark.node.CustomNode;
-import org.commonmark.node.Heading;
-import org.commonmark.node.Image;
-import org.commonmark.node.Text;
+import org.commonmark.node.*;
 import org.commonmark.parser.beta.InlineContentParser;
 import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.beta.InlineParserState;
 import org.commonmark.parser.beta.ParsedInline;
 import org.commonmark.test.Nodes;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class InlineContentParserTest {
+class InlineContentParserTest {
 
     @Test
-    public void customInlineContentParser() {
+    void customInlineContentParser() {
         var parser = Parser.builder().customInlineContentParserFactory(new DollarInlineParser.Factory()).build();
         var doc = parser.parse("Test: $hey *there*$ $you$\n\n# Heading $heading$\n");
         var inline1 = Nodes.find(doc, DollarInline.class);
-        assertEquals("hey *there*", inline1.getLiteral());
+        assertThat(inline1.getLiteral()).isEqualTo("hey *there*");
 
         var inline2 = (DollarInline) doc.getFirstChild().getLastChild();
-        assertEquals("you", inline2.getLiteral());
+        assertThat(inline2.getLiteral()).isEqualTo("you");
 
         var heading = Nodes.find(doc, Heading.class);
         var inline3 = (DollarInline) heading.getLastChild();
-        assertEquals("heading", inline3.getLiteral());
+        assertThat(inline3.getLiteral()).isEqualTo("heading");
 
         // Parser is created for each inline snippet, which is why the index resets for the second snippet.
-        assertEquals(0, inline1.getIndex());
-        assertEquals(1, inline2.getIndex());
-        assertEquals(0, inline3.getIndex());
+        assertThat(inline1.getIndex()).isEqualTo(0);
+        assertThat(inline2.getIndex()).isEqualTo(1);
+        assertThat(inline3.getIndex()).isEqualTo(0);
     }
 
     @Test
-    public void bangInlineContentParser() {
+    void bangInlineContentParser() {
         // See if using ! for a custom inline content parser works.
         // ![] is used for images, but if it's not followed by a [, it should be possible to parse it differently.
         var parser = Parser.builder().customInlineContentParserFactory(new BangInlineParser.Factory()).build();
         var doc = parser.parse("![image](url) !notimage");
         var image = Nodes.find(doc, Image.class);
-        assertEquals("url", image.getDestination());
-        assertEquals(" ", ((Text) image.getNext()).getLiteral());
-        assertEquals(BangInline.class, image.getNext().getNext().getClass());
-        assertEquals("notimage", ((Text) image.getNext().getNext().getNext()).getLiteral());
+        assertThat(image.getDestination()).isEqualTo("url");
+        assertThat(((Text) image.getNext()).getLiteral()).isEqualTo(" ");
+        // Class
+        assertThat(image.getNext().getNext()).isInstanceOf(BangInline.class);
+        assertThat(((Text) image.getNext().getNext().getNext()).getLiteral()).isEqualTo("notimage");
     }
 
     private static class DollarInline extends CustomNode {

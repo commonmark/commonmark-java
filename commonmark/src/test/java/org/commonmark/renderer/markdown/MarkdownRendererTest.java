@@ -3,15 +3,12 @@ package org.commonmark.renderer.markdown;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.commonmark.testutil.Asserts.assertRendering;
-import static org.junit.Assert.assertEquals;
 
 public class MarkdownRendererTest {
 
@@ -31,7 +28,7 @@ public class MarkdownRendererTest {
 
         // Apply fallback for null literal
         ThematicBreak node = new ThematicBreak();
-        assertEquals("___", render(node));
+        assertThat(render(node)).isEqualTo("___");
     }
 
     @Test
@@ -255,7 +252,7 @@ public class MarkdownRendererTest {
         Emphasis e2 = new Emphasis();
         e1.appendChild(e2);
         e2.appendChild(new Text("hi"));
-        assertEquals("*_hi_*\n", render(doc));
+        assertThat(render(doc)).isEqualTo("*_hi_*\n");
     }
 
     @Test
@@ -332,12 +329,12 @@ public class MarkdownRendererTest {
 
         MarkdownRenderer renderer = MarkdownRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
         String rendered = renderer.render(parse("# Hello"));
-        assertEquals("# Custom heading\n", rendered);
+        assertThat(rendered).isEqualTo("# Custom heading\n");
     }
 
     private void assertRoundTrip(String input) {
         String rendered = parseAndRender(input);
-        assertEquals(input, rendered);
+        assertThat(rendered).isEqualTo(input);
     }
 
     private String parseAndRender(String source) {

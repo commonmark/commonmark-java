@@ -10,13 +10,13 @@ import org.commonmark.renderer.html.AttributeProviderContext;
 import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TablesTest extends RenderingTestCase {
 
@@ -730,7 +730,7 @@ public class TablesTest extends RenderingTestCase {
                 .extensions(EXTENSIONS)
                 .build();
         String rendered = renderer.render(PARSER.parse("Abc|Def\n---|---\n1|2"));
-        assertThat(rendered, is("<table test=\"block\">\n" +
+        assertThat(rendered).isEqualTo("<table test=\"block\">\n" +
                 "<thead test=\"head\">\n" +
                 "<tr test=\"row\">\n" +
                 "<th test=\"cell\">Abc</th>\n" +
@@ -743,7 +743,7 @@ public class TablesTest extends RenderingTestCase {
                 "<td test=\"cell\">2</td>\n" +
                 "</tr>\n" +
                 "</tbody>\n" +
-                "</table>\n"));
+                "</table>\n");
     }
 
     @Test
@@ -766,7 +766,7 @@ public class TablesTest extends RenderingTestCase {
                 .extensions(EXTENSIONS)
                 .build();
         String rendered = renderer.render(PARSER.parse("Abc|Def\n-----|---\n1|2"));
-        assertThat(rendered, is("<table>\n" +
+        assertThat(rendered).isEqualTo("<table>\n" +
                 "<thead>\n" +
                 "<tr>\n" +
                 "<th width=\"5em\">Abc</th>\n" +
@@ -779,7 +779,7 @@ public class TablesTest extends RenderingTestCase {
                 "<td>2</td>\n" +
                 "</tr>\n" +
                 "</tbody>\n" +
-                "</table>\n"));
+                "</table>\n");
     }
 
     @Test
@@ -791,49 +791,48 @@ public class TablesTest extends RenderingTestCase {
         Node document = parser.parse("Abc|Def\n---|---\n|1|2\n 3|four|\n|||\n");
 
         TableBlock block = (TableBlock) document.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 7), SourceSpan.of(1, 0, 8, 7),
-                        SourceSpan.of(2, 0, 16, 4), SourceSpan.of(3, 0, 21, 8), SourceSpan.of(4, 0, 30, 3)),
-                block.getSourceSpans());
+        assertThat(block.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 7), SourceSpan.of(1, 0, 8, 7),
+                SourceSpan.of(2, 0, 16, 4), SourceSpan.of(3, 0, 21, 8), SourceSpan.of(4, 0, 30, 3)));
 
         TableHead head = (TableHead) block.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 7)), head.getSourceSpans());
+        assertThat(head.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 7)));
 
         TableRow headRow = (TableRow) head.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 7)), headRow.getSourceSpans());
+        assertThat(headRow.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 7)));
         TableCell headRowCell1 = (TableCell) headRow.getFirstChild();
         TableCell headRowCell2 = (TableCell) headRow.getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 3)), headRowCell1.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 3)), headRowCell1.getFirstChild().getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(0, 4, 4, 3)), headRowCell2.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(0, 4, 4, 3)), headRowCell2.getFirstChild().getSourceSpans());
+        assertThat(headRowCell1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 3)));
+        assertThat(headRowCell1.getFirstChild().getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 3)));
+        assertThat(headRowCell2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 4, 4, 3)));
+        assertThat(headRowCell2.getFirstChild().getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 4, 4, 3)));
 
         TableBody body = (TableBody) block.getLastChild();
-        assertEquals(List.of(SourceSpan.of(2, 0, 16, 4), SourceSpan.of(3, 0, 21, 8), SourceSpan.of(4, 0, 30, 3)), body.getSourceSpans());
+        assertThat(body.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 0, 16, 4), SourceSpan.of(3, 0, 21, 8), SourceSpan.of(4, 0, 30, 3)));
 
         TableRow bodyRow1 = (TableRow) body.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(2, 0, 16, 4)), bodyRow1.getSourceSpans());
+        assertThat(bodyRow1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 0, 16, 4)));
         TableCell bodyRow1Cell1 = (TableCell) bodyRow1.getFirstChild();
         TableCell bodyRow1Cell2 = (TableCell) bodyRow1.getLastChild();
-        assertEquals(List.of(SourceSpan.of(2, 1, 17, 1)), bodyRow1Cell1.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(2, 1, 17, 1)), bodyRow1Cell1.getFirstChild().getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(2, 3, 19, 1)), bodyRow1Cell2.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(2, 3, 19, 1)), bodyRow1Cell2.getFirstChild().getSourceSpans());
+        assertThat(bodyRow1Cell1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 1, 17, 1)));
+        assertThat(bodyRow1Cell1.getFirstChild().getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 1, 17, 1)));
+        assertThat(bodyRow1Cell2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 3, 19, 1)));
+        assertThat(bodyRow1Cell2.getFirstChild().getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 3, 19, 1)));
 
         TableRow bodyRow2 = (TableRow) body.getFirstChild().getNext();
-        assertEquals(List.of(SourceSpan.of(3, 0, 21, 8)), bodyRow2.getSourceSpans());
+        assertThat(bodyRow2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 0, 21, 8)));
         TableCell bodyRow2Cell1 = (TableCell) bodyRow2.getFirstChild();
         TableCell bodyRow2Cell2 = (TableCell) bodyRow2.getLastChild();
-        assertEquals(List.of(SourceSpan.of(3, 1, 22, 1)), bodyRow2Cell1.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(3, 1, 22, 1)), bodyRow2Cell1.getFirstChild().getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(3, 3, 24, 4)), bodyRow2Cell2.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(3, 3, 24, 4)), bodyRow2Cell2.getFirstChild().getSourceSpans());
+        assertThat(bodyRow2Cell1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 1, 22, 1)));
+        assertThat(bodyRow2Cell1.getFirstChild().getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 1, 22, 1)));
+        assertThat(bodyRow2Cell2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 3, 24, 4)));
+        assertThat(bodyRow2Cell2.getFirstChild().getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 3, 24, 4)));
 
         TableRow bodyRow3 = (TableRow) body.getLastChild();
-        assertEquals(List.of(SourceSpan.of(4, 0, 30, 3)), bodyRow3.getSourceSpans());
+        assertThat(bodyRow3.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(4, 0, 30, 3)));
         TableCell bodyRow3Cell1 = (TableCell) bodyRow3.getFirstChild();
         TableCell bodyRow3Cell2 = (TableCell) bodyRow3.getLastChild();
-        assertEquals(List.of(), bodyRow3Cell1.getSourceSpans());
-        assertEquals(List.of(), bodyRow3Cell2.getSourceSpans());
+        assertThat(bodyRow3Cell1.getSourceSpans()).isEqualTo(List.of());
+        assertThat(bodyRow3Cell2.getSourceSpans()).isEqualTo(List.of());
     }
 
     @Override

@@ -12,12 +12,12 @@ import org.commonmark.parser.delimiter.DelimiterRun;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StrikethroughTest extends RenderingTestCase {
 
@@ -84,14 +84,14 @@ public class StrikethroughTest extends RenderingTestCase {
     public void delimited() {
         Node document = PARSER.parse("~~foo~~");
         Strikethrough strikethrough = (Strikethrough) document.getFirstChild().getFirstChild();
-        assertEquals("~~", strikethrough.getOpeningDelimiter());
-        assertEquals("~~", strikethrough.getClosingDelimiter());
+        assertThat(strikethrough.getOpeningDelimiter()).isEqualTo("~~");
+        assertThat(strikethrough.getClosingDelimiter()).isEqualTo("~~");
     }
 
     @Test
     public void textContentRenderer() {
         Node document = PARSER.parse("~~foo~~");
-        assertEquals("/foo/", CONTENT_RENDERER.render(document));
+        assertThat(CONTENT_RENDERER.render(document)).isEqualTo("/foo/");
     }
 
     @Test
@@ -104,7 +104,7 @@ public class StrikethroughTest extends RenderingTestCase {
                 .build();
 
         Node document = parser.parse("~foo~ ~~bar~~");
-        assertEquals("(sub)foo(/sub) /bar/", CONTENT_RENDERER.render(document));
+        assertThat(CONTENT_RENDERER.render(document)).isEqualTo("(sub)foo(/sub) /bar/");
     }
 
     @Test
@@ -117,8 +117,7 @@ public class StrikethroughTest extends RenderingTestCase {
         Node document = parser.parse("hey ~~there~~\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node strikethrough = block.getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 4, 4, 9)),
-                strikethrough.getSourceSpans());
+        assertThat(strikethrough.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 4, 4, 9)));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.commonmark.test;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SpecialInputTest extends CoreRenderingTestCase {
 

@@ -1,9 +1,8 @@
 package org.commonmark.text;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CharactersTest {
 
@@ -18,17 +17,17 @@ public class CharactersTest {
         };
 
         for (char c : chars) {
-            assertTrue("Expected to be punctuation: " + c, Characters.isPunctuationCodePoint(c));
+            assertThat(Characters.isPunctuationCodePoint(c)).as("Expected to be punctuation: " + c).isTrue();
         }
     }
 
     @Test
     public void isBlank() {
-        assertTrue(Characters.isBlank(""));
-        assertTrue(Characters.isBlank(" "));
-        assertTrue(Characters.isBlank("\t"));
-        assertTrue(Characters.isBlank(" \t"));
-        assertFalse(Characters.isBlank("a"));
-        assertFalse(Characters.isBlank("\f"));
+        assertThat(Characters.isBlank("")).isTrue();
+        assertThat(Characters.isBlank(" ")).isTrue();
+        assertThat(Characters.isBlank("\t")).isTrue();
+        assertThat(Characters.isBlank(" \t")).isTrue();
+        assertThat(Characters.isBlank("a")).isFalse();
+        assertThat(Characters.isBlank("\f")).isFalse();
     }
 }

@@ -4,7 +4,7 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.SpecTestCase;
 import org.commonmark.testutil.example.Example;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.commonmark.testutil.Asserts.assertRendering;
 
@@ -16,10 +16,6 @@ public class SpecCrLfCoreTest extends SpecTestCase {
     private static final Parser PARSER = Parser.builder().build();
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().percentEncodeUrls(true).build();
-
-    public SpecCrLfCoreTest(Example example) {
-        super(example);
-    }
 
     @Test
     public void testHtmlRendering() {

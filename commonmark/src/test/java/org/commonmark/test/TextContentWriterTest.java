@@ -1,9 +1,9 @@
 package org.commonmark.test;
 
 import org.commonmark.renderer.text.TextContentWriter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TextContentWriterTest {
 
@@ -14,7 +14,7 @@ public class TextContentWriterTest {
         writer.write("foo");
         writer.whitespace();
         writer.write("bar");
-        assertEquals("foo bar", stringBuilder.toString());
+        assertThat(stringBuilder.toString()).isEqualTo("foo bar");
     }
 
     @Test
@@ -24,7 +24,7 @@ public class TextContentWriterTest {
         writer.write("foo");
         writer.colon();
         writer.write("bar");
-        assertEquals("foo:bar", stringBuilder.toString());
+        assertThat(stringBuilder.toString()).isEqualTo("foo:bar");
     }
 
     @Test
@@ -34,7 +34,7 @@ public class TextContentWriterTest {
         writer.write("foo");
         writer.line();
         writer.write("bar");
-        assertEquals("foo\nbar", stringBuilder.toString());
+        assertThat(stringBuilder.toString()).isEqualTo("foo\nbar");
     }
 
     @Test
@@ -42,7 +42,7 @@ public class TextContentWriterTest {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
         writer.writeStripped("foo\n bar");
-        assertEquals("foo bar", stringBuilder.toString());
+        assertThat(stringBuilder.toString()).isEqualTo("foo bar");
     }
 
     @Test
@@ -50,6 +50,6 @@ public class TextContentWriterTest {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
         writer.writeStripped("foo bar");
-        assertEquals("foo bar", stringBuilder.toString());
+        assertThat(stringBuilder.toString()).isEqualTo("foo bar");
     }
 }

@@ -2,12 +2,12 @@ package org.commonmark.test;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DelimitedTest {
 
@@ -35,20 +35,20 @@ public class DelimitedTest {
         };
         document.accept(visitor);
 
-        assertEquals(4, list.size());
+        assertThat(list).hasSize(4);
 
         Delimited emphasis = list.get(0);
         Delimited strong = list.get(1);
         Delimited important = list.get(2);
         Delimited critical = list.get(3);
 
-        assertEquals("*", emphasis.getOpeningDelimiter());
-        assertEquals("*", emphasis.getClosingDelimiter());
-        assertEquals("**", strong.getOpeningDelimiter());
-        assertEquals("**", strong.getClosingDelimiter());
-        assertEquals("_", important.getOpeningDelimiter());
-        assertEquals("_", important.getClosingDelimiter());
-        assertEquals("__", critical.getOpeningDelimiter());
-        assertEquals("__", critical.getClosingDelimiter());
+        assertThat(emphasis.getOpeningDelimiter()).isEqualTo("*");
+        assertThat(emphasis.getClosingDelimiter()).isEqualTo("*");
+        assertThat(strong.getOpeningDelimiter()).isEqualTo("**");
+        assertThat(strong.getClosingDelimiter()).isEqualTo("**");
+        assertThat(important.getOpeningDelimiter()).isEqualTo("_");
+        assertThat(important.getClosingDelimiter()).isEqualTo("_");
+        assertThat(critical.getOpeningDelimiter()).isEqualTo("__");
+        assertThat(critical.getClosingDelimiter()).isEqualTo("__");
     }
 }

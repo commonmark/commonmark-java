@@ -2,5 +2,6 @@ module org.commonmark.testutil {
     exports org.commonmark.testutil;
     exports org.commonmark.testutil.example;
 
-    requires junit;
+    requires org.assertj.core;
+    requires org.junit.jupiter.params;
 }

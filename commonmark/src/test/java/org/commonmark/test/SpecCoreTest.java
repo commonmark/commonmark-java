@@ -7,20 +7,16 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.SpecTestCase;
 import org.commonmark.testutil.example.Example;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.fail;
 import static org.commonmark.testutil.Asserts.assertRendering;
-import static org.junit.Assert.fail;
 
 public class SpecCoreTest extends SpecTestCase {
 
     private static final Parser PARSER = Parser.builder().build();
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().percentEncodeUrls(true).build();
-
-    public SpecCoreTest(Example example) {
-        super(example);
-    }
 
     @Test
     public void testTextNodesContiguous() {

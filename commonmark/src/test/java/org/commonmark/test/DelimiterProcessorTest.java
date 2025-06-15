@@ -11,12 +11,13 @@ import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DelimiterProcessorTest extends RenderingTestCase {
 
@@ -29,8 +30,8 @@ public class DelimiterProcessorTest extends RenderingTestCase {
                 .customDelimiterProcessor(new CustomDelimiterProcessor(':', 0))
                 .customDelimiterProcessor(new CustomDelimiterProcessor(';', -1))
                 .build();
-        assertEquals("<p>:test:</p>\n", RENDERER.render(parser.parse(":test:")));
-        assertEquals("<p>;test;</p>\n", RENDERER.render(parser.parse(";test;")));
+        assertThat(RENDERER.render(parser.parse(":test:"))).isEqualTo("<p>:test:</p>\n");
+        assertThat(RENDERER.render(parser.parse(";test;"))).isEqualTo("<p>;test;</p>\n");
     }
 
     @Test
@@ -54,16 +55,17 @@ public class DelimiterProcessorTest extends RenderingTestCase {
                 .customDelimiterProcessor(new OneDelimiterProcessor())
                 .customDelimiterProcessor(new TwoDelimiterProcessor())
                 .build();
-        assertEquals("<p>(1)one(/1) (2)two(/2)</p>\n", RENDERER.render(parser.parse("+one+ ++two++")));
-        assertEquals("<p>(1)(2)both(/2)(/1)</p>\n", RENDERER.render(parser.parse("+++both+++")));
+        assertThat(RENDERER.render(parser.parse("+one+ ++two++"))).isEqualTo("<p>(1)one(/1) (2)two(/2)</p>\n");
+        assertThat(RENDERER.render(parser.parse("+++both+++"))).isEqualTo("<p>(1)(2)both(/2)(/1)</p>\n");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void multipleDelimitersWithSameLengthConflict() {
-        Parser.builder()
-                .customDelimiterProcessor(new OneDelimiterProcessor())
-                .customDelimiterProcessor(new OneDelimiterProcessor())
-                .build();
+        assertThatThrownBy(() ->
+                Parser.builder()
+                        .customDelimiterProcessor(new OneDelimiterProcessor())
+                        .customDelimiterProcessor(new OneDelimiterProcessor())
+                        .build()).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Override

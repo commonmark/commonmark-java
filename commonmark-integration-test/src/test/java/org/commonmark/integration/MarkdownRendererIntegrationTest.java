@@ -10,11 +10,11 @@ import org.commonmark.ext.ins.InsExtension;
 import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MarkdownRendererIntegrationTest {
 
@@ -40,6 +40,6 @@ public class MarkdownRendererIntegrationTest {
 
     private void assertRoundTrip(String input) {
         String rendered = render(input);
-        assertEquals(input, rendered);
+        assertThat(rendered).isEqualTo(input);
     }
 }

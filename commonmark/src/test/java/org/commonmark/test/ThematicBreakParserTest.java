@@ -2,9 +2,9 @@ package org.commonmark.test;
 
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.Parser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ThematicBreakParserTest {
 
@@ -20,6 +20,6 @@ public class ThematicBreakParserTest {
 
     private static void assertLiteral(String expected, String input) {
         var tb = Nodes.find(PARSER.parse(input), ThematicBreak.class);
-        assertEquals(expected, tb.getLiteral());
+        assertThat(tb.getLiteral()).isEqualTo(expected);
     }
 }

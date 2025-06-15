@@ -2,17 +2,15 @@ package org.commonmark.internal;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.block.BlockParserFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class DocumentParserTest {
+class DocumentParserTest {
     private static final List<BlockParserFactory> CORE_FACTORIES = List.of(
             new BlockQuoteParser.Factory(),
             new HeadingParser.Factory(),
@@ -23,28 +21,28 @@ public class DocumentParserTest {
             new IndentedCodeBlockParser.Factory());
 
     @Test
-    public void calculateBlockParserFactories_givenAFullListOfAllowedNodes_includesAllCoreFactories() {
+    void calculateBlockParserFactories_givenAFullListOfAllowedNodes_includesAllCoreFactories() {
         List<BlockParserFactory> customParserFactories = List.of();
         var enabledBlockTypes = Set.of(BlockQuote.class, Heading.class, FencedCodeBlock.class, HtmlBlock.class, ThematicBreak.class, ListBlock.class, IndentedCodeBlock.class);
 
         List<BlockParserFactory> blockParserFactories = DocumentParser.calculateBlockParserFactories(customParserFactories, enabledBlockTypes);
-        assertThat(blockParserFactories.size(), is(CORE_FACTORIES.size()));
+        assertThat(blockParserFactories).hasSameSizeAs(CORE_FACTORIES);
 
         for (BlockParserFactory factory : CORE_FACTORIES) {
-            assertTrue(hasInstance(blockParserFactories, factory.getClass()));
+            assertThat(hasInstance(blockParserFactories, factory.getClass())).isTrue();
         }
     }
 
     @Test
-    public void calculateBlockParserFactories_givenAListOfAllowedNodes_includesAssociatedFactories() {
+    void calculateBlockParserFactories_givenAListOfAllowedNodes_includesAssociatedFactories() {
         List<BlockParserFactory> customParserFactories = List.of();
         Set<Class<? extends Block>> nodes = new HashSet<>();
         nodes.add(IndentedCodeBlock.class);
 
         List<BlockParserFactory> blockParserFactories = DocumentParser.calculateBlockParserFactories(customParserFactories, nodes);
 
-        assertThat(blockParserFactories.size(), is(1));
-        assertTrue(hasInstance(blockParserFactories, IndentedCodeBlockParser.Factory.class));
+        assertThat(blockParserFactories).hasSize(1);
+        assertThat(hasInstance(blockParserFactories, IndentedCodeBlockParser.Factory.class)).isTrue();
     }
 
     private boolean hasInstance(List<BlockParserFactory> blockParserFactories, Class<? extends BlockParserFactory> factoryClass) {

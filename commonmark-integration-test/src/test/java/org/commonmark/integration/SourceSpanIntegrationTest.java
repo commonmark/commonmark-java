@@ -14,10 +14,6 @@ public class SourceSpanIntegrationTest extends SpecIntegrationTest {
             .includeSourceSpans(IncludeSourceSpans.BLOCKS)
             .build();
 
-    public SourceSpanIntegrationTest(Example example) {
-        super(example);
-    }
-
     @Override
     protected String render(String source) {
         return RENDERER.render(PARSER.parse(source));

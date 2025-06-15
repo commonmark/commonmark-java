@@ -3,87 +3,87 @@ package org.commonmark.parser.beta;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class ScannerTest {
+class ScannerTest {
 
     @Test
-    public void testNext() {
+    void testNext() {
         Scanner scanner = new Scanner(List.of(
                 SourceLine.of("foo bar", null)),
                 0, 4);
-        assertEquals('b', scanner.peek());
+        assertThat(scanner.peek()).isEqualTo('b');
         scanner.next();
-        assertEquals('a', scanner.peek());
+        assertThat(scanner.peek()).isEqualTo('a');
         scanner.next();
-        assertEquals('r', scanner.peek());
+        assertThat(scanner.peek()).isEqualTo('r');
         scanner.next();
-        assertEquals('\0', scanner.peek());
+        assertThat(scanner.peek()).isEqualTo('\0');
     }
 
     @Test
-    public void testMultipleLines() {
+    void testMultipleLines() {
         Scanner scanner = new Scanner(List.of(
                 SourceLine.of("ab", null),
                 SourceLine.of("cde", null)),
                 0, 0);
-        assertTrue(scanner.hasNext());
-        assertEquals('\0', scanner.peekPreviousCodePoint());
-        assertEquals('a', scanner.peek());
+        assertThat(scanner.hasNext()).isTrue();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('\0');
+        assertThat(scanner.peek()).isEqualTo('a');
         scanner.next();
 
-        assertTrue(scanner.hasNext());
-        assertEquals('a', scanner.peekPreviousCodePoint());
-        assertEquals('b', scanner.peek());
+        assertThat(scanner.hasNext()).isTrue();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('a');
+        assertThat(scanner.peek()).isEqualTo('b');
         scanner.next();
 
-        assertTrue(scanner.hasNext());
-        assertEquals('b', scanner.peekPreviousCodePoint());
-        assertEquals('\n', scanner.peek());
+        assertThat(scanner.hasNext()).isTrue();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('b');
+        assertThat(scanner.peek()).isEqualTo('\n');
         scanner.next();
 
-        assertTrue(scanner.hasNext());
-        assertEquals('\n', scanner.peekPreviousCodePoint());
-        assertEquals('c', scanner.peek());
+        assertThat(scanner.hasNext()).isTrue();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('\n');
+        assertThat(scanner.peek()).isEqualTo('c');
         scanner.next();
 
-        assertTrue(scanner.hasNext());
-        assertEquals('c', scanner.peekPreviousCodePoint());
-        assertEquals('d', scanner.peek());
+        assertThat(scanner.hasNext()).isTrue();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('c');
+        assertThat(scanner.peek()).isEqualTo('d');
         scanner.next();
 
-        assertTrue(scanner.hasNext());
-        assertEquals('d', scanner.peekPreviousCodePoint());
-        assertEquals('e', scanner.peek());
+        assertThat(scanner.hasNext()).isTrue();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('d');
+        assertThat(scanner.peek()).isEqualTo('e');
         scanner.next();
 
-        assertFalse(scanner.hasNext());
-        assertEquals('e', scanner.peekPreviousCodePoint());
-        assertEquals('\0', scanner.peek());
+        assertThat(scanner.hasNext()).isFalse();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('e');
+        assertThat(scanner.peek()).isEqualTo('\0');
     }
 
     @Test
-    public void testCodePoints() {
+    void testCodePoints() {
         Scanner scanner = new Scanner(List.of(SourceLine.of("\uD83D\uDE0A", null)), 0, 0);
 
-        assertTrue(scanner.hasNext());
-        assertEquals('\0', scanner.peekPreviousCodePoint());
-        assertEquals(128522, scanner.peekCodePoint());
+        assertThat(scanner.hasNext()).isTrue();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo('\0');
+        assertThat(scanner.peekCodePoint()).isEqualTo(128522);
         scanner.next();
         // This jumps chars, not code points. So jump two here
         scanner.next();
 
-        assertFalse(scanner.hasNext());
-        assertEquals(128522, scanner.peekPreviousCodePoint());
-        assertEquals('\0', scanner.peekCodePoint());
+        assertThat(scanner.hasNext()).isFalse();
+        assertThat(scanner.peekPreviousCodePoint()).isEqualTo(128522);
+        assertThat(scanner.peekCodePoint()).isEqualTo('\0');
     }
 
     @Test
-    public void testTextBetween() {
+    void testTextBetween() {
         Scanner scanner = new Scanner(List.of(
                 SourceLine.of("ab", SourceSpan.of(10, 3, 13, 2)),
                 SourceLine.of("cde", SourceSpan.of(11, 4, 20, 3))),
@@ -139,20 +139,20 @@ public class ScannerTest {
     }
 
     private void assertSourceLines(SourceLines sourceLines, String expectedContent, SourceSpan... expectedSourceSpans) {
-        assertEquals(expectedContent, sourceLines.getContent());
-        assertEquals(List.of(expectedSourceSpans), sourceLines.getSourceSpans());
+        assertThat(sourceLines.getContent()).isEqualTo(expectedContent);
+        assertThat(sourceLines.getSourceSpans()).isEqualTo(List.of(expectedSourceSpans));
     }
 
     @Test
-    public void nextString() {
+    void nextString() {
         Scanner scanner = Scanner.of(SourceLines.of(List.of(
                 SourceLine.of("hey ya", null),
                 SourceLine.of("hi", null))));
-        assertFalse(scanner.next("hoy"));
-        assertTrue(scanner.next("hey"));
-        assertTrue(scanner.next(' '));
-        assertFalse(scanner.next("yo"));
-        assertTrue(scanner.next("ya"));
-        assertFalse(scanner.next(" "));
+        assertThat(scanner.next("hoy")).isFalse();
+        assertThat(scanner.next("hey")).isTrue();
+        assertThat(scanner.next(' ')).isTrue();
+        assertThat(scanner.next("yo")).isFalse();
+        assertThat(scanner.next("ya")).isTrue();
+        assertThat(scanner.next(" ")).isFalse();
     }
 }

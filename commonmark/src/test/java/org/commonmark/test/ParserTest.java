@@ -5,7 +5,7 @@ import org.commonmark.parser.*;
 import org.commonmark.parser.block.*;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,9 +20,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ParserTest {
 
@@ -40,7 +39,7 @@ public class ParserTest {
         Node document2 = parser.parse(spec);
 
         HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
-        assertEquals(renderer.render(document2), renderer.render(document1));
+        assertThat(renderer.render(document1)).isEqualTo(renderer.render(document2));
     }
 
     @Test
@@ -50,9 +49,9 @@ public class ParserTest {
         // The dashes would normally be a ThematicBreak
         Node document = parser.parse("hey\n\n---\n");
 
-        assertThat(document.getFirstChild(), instanceOf(Paragraph.class));
-        assertEquals("hey", ((Text) document.getFirstChild().getFirstChild()).getLiteral());
-        assertThat(document.getLastChild(), instanceOf(DashBlock.class));
+        assertThat(document.getFirstChild()).isInstanceOf(Paragraph.class);
+        assertThat(((Text) document.getFirstChild().getFirstChild()).getLiteral()).isEqualTo("hey");
+        assertThat(document.getLastChild()).isInstanceOf(DashBlock.class);
     }
 
     @Test
@@ -61,24 +60,25 @@ public class ParserTest {
 
         Parser parser = Parser.builder().build(); // all core parsers by default
         Node document = parser.parse(given);
-        assertThat(document.getFirstChild(), instanceOf(Heading.class));
+        assertThat(document.getFirstChild()).isInstanceOf(Heading.class);
 
         Set<Class<? extends Block>> headersOnly = new HashSet<>();
         headersOnly.add(Heading.class);
         parser = Parser.builder().enabledBlockTypes(headersOnly).build();
         document = parser.parse(given);
-        assertThat(document.getFirstChild(), instanceOf(Heading.class));
+        assertThat(document.getFirstChild()).isInstanceOf(Heading.class);
 
         Set<Class<? extends Block>> noCoreTypes = new HashSet<>();
         parser = Parser.builder().enabledBlockTypes(noCoreTypes).build();
         document = parser.parse(given);
-        assertThat(document.getFirstChild(), not(instanceOf(Heading.class)));
+        assertThat(document.getFirstChild()).isNotInstanceOf(Heading.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void enabledBlockTypesThrowsWhenGivenUnknownClass() {
         // BulletList can't be enabled separately at the moment, only all ListBlock types
-        Parser.builder().enabledBlockTypes(Set.of(Heading.class, BulletList.class)).build();
+        assertThatThrownBy(() ->
+                Parser.builder().enabledBlockTypes(Set.of(Heading.class, BulletList.class)).build()).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -87,19 +87,19 @@ public class ParserTest {
         Parser parser = Parser.builder().build();
         Node document = parser.parse(given);
 
-        assertThat(document.getFirstChild(), instanceOf(BulletList.class));
+        assertThat(document.getFirstChild()).isInstanceOf(BulletList.class);
 
         Node list = document.getFirstChild(); // first level list
-        assertEquals("expect one child", list.getFirstChild(), list.getLastChild());
-        assertEquals("1 space", firstText(list.getFirstChild()));
+        assertThat(list.getLastChild()).as("expect one child").isEqualTo(list.getFirstChild());
+        assertThat(firstText(list.getFirstChild())).isEqualTo("1 space");
 
         list = list.getFirstChild().getLastChild(); // second level list
-        assertEquals("expect one child", list.getFirstChild(), list.getLastChild());
-        assertEquals("3 spaces", firstText(list.getFirstChild()));
+        assertThat(list.getLastChild()).as("expect one child").isEqualTo(list.getFirstChild());
+        assertThat(firstText(list.getFirstChild())).isEqualTo("3 spaces");
 
         list = list.getFirstChild().getLastChild(); // third level list
-        assertEquals("5 spaces", firstText(list.getFirstChild()));
-        assertEquals("tab + space", firstText(list.getFirstChild().getNext()));
+        assertThat(firstText(list.getFirstChild())).isEqualTo("5 spaces");
+        assertThat(firstText(list.getFirstChild().getNext())).isEqualTo("tab + space");
     }
 
     @Test
@@ -122,39 +122,34 @@ public class ParserTest {
         Parser parser = Parser.builder().inlineParserFactory(fakeInlineParserFactory).build();
         String input = "**bold** **bold** ~~strikethrough~~";
 
-        assertThat(parser.parse(input).getFirstChild().getFirstChild(), instanceOf(ThematicBreak.class));
+        assertThat(parser.parse(input).getFirstChild().getFirstChild()).isInstanceOf(ThematicBreak.class);
     }
 
     @Test
     public void threading() throws Exception {
-        final Parser parser = Parser.builder().build();
-        final String spec = TestResources.readAsString(TestResources.getSpec());
+        var parser = Parser.builder().build();
+        var spec = TestResources.readAsString(TestResources.getSpec());
 
-        HtmlRenderer renderer = HtmlRenderer.builder().build();
-        String expectedRendering = renderer.render(parser.parse(spec));
+        var renderer = HtmlRenderer.builder().build();
+        var expectedRendering = renderer.render(parser.parse(spec));
 
         // Parse in parallel using the same Parser instance.
-        List<Future<Node>> futures = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        var futures = new ArrayList<Future<Node>>();
+        var executorService = Executors.newFixedThreadPool(4);
         for (int i = 0; i < 40; i++) {
-            Future<Node> future = executorService.submit(new Callable<Node>() {
-                @Override
-                public Node call() throws Exception {
-                    return parser.parse(spec);
-                }
-            });
+            var future = executorService.submit(() -> parser.parse(spec));
             futures.add(future);
         }
 
-        for (Future<Node> future : futures) {
-            Node node = future.get();
-            assertThat(renderer.render(node), is(expectedRendering));
+        for (var future : futures) {
+            var node = future.get();
+            assertThat(renderer.render(node)).isEqualTo(expectedRendering);
         }
     }
 
     private String firstText(Node n) {
         while (!(n instanceof Text)) {
-            assertThat(n, notNullValue());
+            assertThat(n).isNotNull();
             n = n.getFirstChild();
         }
         return ((Text) n).getLiteral();

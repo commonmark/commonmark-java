@@ -4,7 +4,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.SpecTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
@@ -19,10 +19,6 @@ public class SpecIntegrationTest extends SpecTestCase {
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.
     protected static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(Extensions.ALL_EXTENSIONS).percentEncodeUrls(true).build();
     protected static final Map<String, String> OVERRIDDEN_EXAMPLES = getOverriddenExamples();
-
-    public SpecIntegrationTest(Example example) {
-        super(example);
-    }
 
     @Test
     public void testHtmlRendering() {

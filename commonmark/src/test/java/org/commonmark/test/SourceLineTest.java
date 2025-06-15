@@ -2,9 +2,10 @@ package org.commonmark.test;
 
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SourceLineTest {
 
@@ -25,18 +26,20 @@ public class SourceLineTest {
         assertSourceLine(line.substring(4, 4), "", null);
     }
 
-    @Test(expected = StringIndexOutOfBoundsException.class)
+    @Test
     public void testSubstringBeginOutOfBounds() {
-        SourceLine.of("abcd", SourceSpan.of(3, 10, 13, 4)).substring(3, 2);
+        var sourceLine = SourceLine.of("abcd", SourceSpan.of(3, 10, 13, 4));
+        assertThatThrownBy(() -> sourceLine.substring(3, 2)).isInstanceOf(StringIndexOutOfBoundsException.class);
     }
 
-    @Test(expected = StringIndexOutOfBoundsException.class)
+    @Test
     public void testSubstringEndOutOfBounds() {
-        SourceLine.of("abcd", SourceSpan.of(3, 10, 13, 4)).substring(0, 5);
+        var sourceLine = SourceLine.of("abcd", SourceSpan.of(3, 10, 13, 4));
+        assertThatThrownBy(() -> sourceLine.substring(0, 5)).isInstanceOf(StringIndexOutOfBoundsException.class);
     }
 
     private static void assertSourceLine(SourceLine sourceLine, String expectedContent, SourceSpan expectedSourceSpan) {
-        assertEquals(expectedContent, sourceLine.getContent());
-        assertEquals(expectedSourceSpan, sourceLine.getSourceSpan());
+        assertThat(sourceLine.getContent()).isEqualTo(expectedContent);
+        assertThat(sourceLine.getSourceSpan()).isEqualTo(expectedSourceSpan);
     }
 }

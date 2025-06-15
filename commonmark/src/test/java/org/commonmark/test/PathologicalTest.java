@@ -1,33 +1,20 @@
 package org.commonmark.test;
 
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Stopwatch;
-import org.junit.rules.Timeout;
-import org.junit.runner.Description;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * Pathological input cases (from commonmark.js).
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Timeout(value = 3, unit = TimeUnit.SECONDS)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class PathologicalTest extends CoreRenderingTestCase {
 
     private int x = 100_000;
-
-    @Rule
-    public Timeout timeout = new Timeout(3, TimeUnit.SECONDS);
-
-    @Rule
-    public Stopwatch stopwatch = new Stopwatch() {
-        @Override
-        protected void finished(long nanos, Description description) {
-            System.err.println(description.getDisplayName() + " took " + (nanos / 1000000) + " ms");
-        }
-    };
 
     @Test
     public void nestedStrongEmphasis() {

@@ -5,59 +5,54 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
 import org.commonmark.testutil.TestResources;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HtmlRendererTest {
 
     @Test
     public void htmlAllowingShouldNotEscapeInlineHtml() {
         String rendered = htmlAllowingRenderer().render(parse("paragraph with <span id='foo' class=\"bar\">inline &amp; html</span>"));
-        assertEquals("<p>paragraph with <span id='foo' class=\"bar\">inline &amp; html</span></p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p>paragraph with <span id='foo' class=\"bar\">inline &amp; html</span></p>\n");
     }
 
     @Test
     public void htmlAllowingShouldNotEscapeBlockHtml() {
         String rendered = htmlAllowingRenderer().render(parse("<div id='foo' class=\"bar\">block &amp;</div>"));
-        assertEquals("<div id='foo' class=\"bar\">block &amp;</div>\n", rendered);
+        assertThat(rendered).isEqualTo("<div id='foo' class=\"bar\">block &amp;</div>\n");
     }
 
     @Test
     public void htmlEscapingShouldEscapeInlineHtml() {
         String rendered = htmlEscapingRenderer().render(parse("paragraph with <span id='foo' class=\"bar\">inline &amp; html</span>"));
         // Note that &amp; is not escaped, as it's a normal text node, not part of the inline HTML.
-        assertEquals("<p>paragraph with &lt;span id='foo' class=&quot;bar&quot;&gt;inline &amp; html&lt;/span&gt;</p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p>paragraph with &lt;span id='foo' class=&quot;bar&quot;&gt;inline &amp; html&lt;/span&gt;</p>\n");
     }
 
     @Test
     public void htmlEscapingShouldEscapeHtmlBlocks() {
         String rendered = htmlEscapingRenderer().render(parse("<div id='foo' class=\"bar\">block &amp;</div>"));
-        assertEquals("<p>&lt;div id='foo' class=&quot;bar&quot;&gt;block &amp;amp;&lt;/div&gt;</p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p>&lt;div id='foo' class=&quot;bar&quot;&gt;block &amp;amp;&lt;/div&gt;</p>\n");
     }
 
     @Test
     public void textEscaping() {
         String rendered = defaultRenderer().render(parse("escaping: & < > \" '"));
-        assertEquals("<p>escaping: &amp; &lt; &gt; &quot; '</p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p>escaping: &amp; &lt; &gt; &quot; '</p>\n");
     }
 
     @Test
     public void characterReferencesWithoutSemicolonsShouldNotBeParsedShouldBeEscaped() {
         String input = "[example](&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29)";
         String rendered = defaultRenderer().render(parse(input));
-        assertEquals("<p><a href=\"&amp;#x6A&amp;#x61&amp;#x76&amp;#x61&amp;#x73&amp;#x63&amp;#x72&amp;#x69&amp;#x70&amp;#x74&amp;#x3A&amp;#x61&amp;#x6C&amp;#x65&amp;#x72&amp;#x74&amp;#x28&amp;#x27&amp;#x58&amp;#x53&amp;#x53&amp;#x27&amp;#x29\">example</a></p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p><a href=\"&amp;#x6A&amp;#x61&amp;#x76&amp;#x61&amp;#x73&amp;#x63&amp;#x72&amp;#x69&amp;#x70&amp;#x74&amp;#x3A&amp;#x61&amp;#x6C&amp;#x65&amp;#x72&amp;#x74&amp;#x28&amp;#x27&amp;#x58&amp;#x53&amp;#x53&amp;#x27&amp;#x29\">example</a></p>\n");
     }
 
     @Test
@@ -66,7 +61,7 @@ public class HtmlRendererTest {
         Link link = new Link();
         link.setDestination("&colon;");
         paragraph.appendChild(link);
-        assertEquals("<p><a href=\"&amp;colon;\"></a></p>\n", defaultRenderer().render(paragraph));
+        assertThat(defaultRenderer().render(paragraph)).isEqualTo("<p><a href=\"&amp;colon;\"></a></p>\n");
     }
 
     @Test
@@ -75,7 +70,7 @@ public class HtmlRendererTest {
         Link link = new Link();
         link.setDestination("javascript:alert(5);");
         paragraph.appendChild(link);
-        assertEquals("<p><a href=\"javascript:alert(5);\"></a></p>\n", rawUrlsRenderer().render(paragraph));
+        assertThat(rawUrlsRenderer().render(paragraph)).isEqualTo("<p><a href=\"javascript:alert(5);\"></a></p>\n");
     }
 
     @Test
@@ -84,13 +79,13 @@ public class HtmlRendererTest {
         Link link = new Link();
         link.setDestination("/exampleUrl");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"/exampleUrl\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"/exampleUrl\"></a></p>\n");
 
         paragraph = new Paragraph();
         link = new Link();
         link.setDestination("https://google.com");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n");
     }
 
     @Test
@@ -99,26 +94,26 @@ public class HtmlRendererTest {
         Link link = new Link();
         link.setDestination("http://google.com");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"http://google.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"http://google.com\"></a></p>\n");
 
         paragraph = new Paragraph();
         link = new Link();
         link.setDestination("https://google.com");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n");
 
         paragraph = new Paragraph();
         link = new Link();
         link.setDestination("mailto:foo@bar.example.com");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"mailto:foo@bar.example.com\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"mailto:foo@bar.example.com\"></a></p>\n");
 
         String image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAQSURBVBhXY/iPBVBf8P9/AG8TY51nJdgkAAAAAElFTkSuQmCC";
         paragraph = new Paragraph();
         link = new Link();
         link.setDestination(image);
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"" + image + "\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"" + image + "\"></a></p>\n");
     }
 
     @Test
@@ -127,45 +122,42 @@ public class HtmlRendererTest {
         Link link = new Link();
         link.setDestination("javascript:alert(5);");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"\"></a></p>\n");
 
         paragraph = new Paragraph();
         link = new Link();
         link.setDestination("ftp://google.com");
         paragraph.appendChild(link);
-        assertEquals("<p><a rel=\"nofollow\" href=\"\"></a></p>\n", sanitizeUrlsRenderer().render(paragraph));
+        assertThat(sanitizeUrlsRenderer().render(paragraph)).isEqualTo("<p><a rel=\"nofollow\" href=\"\"></a></p>\n");
     }
 
     @Test
     public void percentEncodeUrlDisabled() {
-        assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo&amp;bar)")));
-        assertEquals("<p><a href=\"ä\">a</a></p>\n", defaultRenderer().render(parse("[a](ä)")));
-        assertEquals("<p><a href=\"foo%20bar\">a</a></p>\n", defaultRenderer().render(parse("[a](foo%20bar)")));
+        assertThat(defaultRenderer().render(parse("[a](foo&amp;bar)"))).isEqualTo("<p><a href=\"foo&amp;bar\">a</a></p>\n");
+        assertThat(defaultRenderer().render(parse("[a](ä)"))).isEqualTo("<p><a href=\"ä\">a</a></p>\n");
+        assertThat(defaultRenderer().render(parse("[a](foo%20bar)"))).isEqualTo("<p><a href=\"foo%20bar\">a</a></p>\n");
     }
 
     @Test
     public void percentEncodeUrl() {
         // Entities are escaped anyway
-        assertEquals("<p><a href=\"foo&amp;bar\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo&amp;bar)")));
+        assertThat(percentEncodingRenderer().render(parse("[a](foo&amp;bar)"))).isEqualTo("<p><a href=\"foo&amp;bar\">a</a></p>\n");
         // Existing encoding is preserved
-        assertEquals("<p><a href=\"foo%20bar\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%20bar)")));
-        assertEquals("<p><a href=\"foo%61\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%61)")));
+        assertThat(percentEncodingRenderer().render(parse("[a](foo%20bar)"))).isEqualTo("<p><a href=\"foo%20bar\">a</a></p>\n");
+        assertThat(percentEncodingRenderer().render(parse("[a](foo%61)"))).isEqualTo("<p><a href=\"foo%61\">a</a></p>\n");
         // Invalid encoding is escaped
-        assertEquals("<p><a href=\"foo%25\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%)")));
-        assertEquals("<p><a href=\"foo%25a\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%a)")));
-        assertEquals("<p><a href=\"foo%25a_\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%a_)")));
-        assertEquals("<p><a href=\"foo%25xx\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](foo%xx)")));
+        assertThat(percentEncodingRenderer().render(parse("[a](foo%)"))).isEqualTo("<p><a href=\"foo%25\">a</a></p>\n");
+        assertThat(percentEncodingRenderer().render(parse("[a](foo%a)"))).isEqualTo("<p><a href=\"foo%25a\">a</a></p>\n");
+        assertThat(percentEncodingRenderer().render(parse("[a](foo%a_)"))).isEqualTo("<p><a href=\"foo%25a_\">a</a></p>\n");
+        assertThat(percentEncodingRenderer().render(parse("[a](foo%xx)"))).isEqualTo("<p><a href=\"foo%25xx\">a</a></p>\n");
         // Reserved characters are preserved, except for '[' and ']'
-        assertEquals("<p><a href=\"!*'();:@&amp;=+$,/?#%5B%5D\">a</a></p>\n", percentEncodingRenderer().render(parse("[a](!*'();:@&=+$,/?#[])")));
+        assertThat(percentEncodingRenderer().render(parse("[a](!*'();:@&=+$,/?#[])"))).isEqualTo("<p><a href=\"!*'();:@&amp;=+$,/?#%5B%5D\">a</a></p>\n");
         // Unreserved characters are preserved
-        assertEquals("<p><a href=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~\">a</a></p>\n",
-                percentEncodingRenderer().render(parse("[a](ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~)")));
+        assertThat(percentEncodingRenderer().render(parse("[a](ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~)"))).isEqualTo("<p><a href=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~\">a</a></p>\n");
         // Other characters are percent-encoded (LATIN SMALL LETTER A WITH DIAERESIS)
-        assertEquals("<p><a href=\"%C3%A4\">a</a></p>\n",
-                percentEncodingRenderer().render(parse("[a](ä)")));
+        assertThat(percentEncodingRenderer().render(parse("[a](ä)"))).isEqualTo("<p><a href=\"%C3%A4\">a</a></p>\n");
         // Other characters are percent-encoded (MUSICAL SYMBOL G CLEF, surrogate pair in UTF-16)
-        assertEquals("<p><a href=\"%F0%9D%84%9E\">a</a></p>\n",
-                percentEncodingRenderer().render(parse("[a](\uD834\uDD1E)")));
+        assertThat(percentEncodingRenderer().render(parse("[a](\uD834\uDD1E)"))).isEqualTo("<p><a href=\"%F0%9D%84%9E\">a</a></p>\n");
     }
 
     @Test
@@ -192,10 +184,10 @@ public class HtmlRendererTest {
 
         HtmlRenderer renderer = HtmlRenderer.builder().attributeProviderFactory(custom).build();
         String rendered = renderer.render(parse("```info\ncontent\n```"));
-        assertEquals("<pre data-code-block=\"fenced\"><code data-custom=\"info\">content\n</code></pre>\n", rendered);
+        assertThat(rendered).isEqualTo("<pre data-code-block=\"fenced\"><code data-custom=\"info\">content\n</code></pre>\n");
 
         String rendered2 = renderer.render(parse("```evil\"\ncontent\n```"));
-        assertEquals("<pre data-code-block=\"fenced\"><code data-custom=\"evil&quot;\">content\n</code></pre>\n", rendered2);
+        assertThat(rendered2).isEqualTo("<pre data-code-block=\"fenced\"><code data-custom=\"evil&quot;\">content\n</code></pre>\n");
     }
 
     @Test
@@ -217,7 +209,7 @@ public class HtmlRendererTest {
 
         HtmlRenderer renderer = HtmlRenderer.builder().attributeProviderFactory(custom).build();
         String rendered = renderer.render(parse("![foo](/url)\n"));
-        assertEquals("<p><img src=\"/url\" test=\"hey\" /></p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p><img src=\"/url\" test=\"hey\" /></p>\n");
     }
 
     @Test
@@ -240,7 +232,7 @@ public class HtmlRendererTest {
         HtmlRenderer renderer = HtmlRenderer.builder().attributeProviderFactory(factory).build();
         String rendered = renderer.render(parse("text node"));
         String secondPass = renderer.render(parse("text node"));
-        assertEquals(rendered, secondPass);
+        assertThat(secondPass).isEqualTo(rendered);
     }
 
     @Test
@@ -264,30 +256,27 @@ public class HtmlRendererTest {
 
         HtmlRenderer renderer = HtmlRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
         String rendered = renderer.render(parse("foo [bar](/url)"));
-        assertEquals("<p>foo test</p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p>foo test</p>\n");
     }
 
     @Test
     public void orderedListStartZero() {
-        assertEquals("<ol start=\"0\">\n<li>Test</li>\n</ol>\n", defaultRenderer().render(parse("0. Test\n")));
+        assertThat(defaultRenderer().render(parse("0. Test\n"))).isEqualTo("<ol start=\"0\">\n<li>Test</li>\n</ol>\n");
     }
 
     @Test
     public void imageAltTextWithSoftLineBreak() {
-        assertEquals("<p><img src=\"/url\" alt=\"foo\nbar\" /></p>\n",
-                defaultRenderer().render(parse("![foo\nbar](/url)\n")));
+        assertThat(defaultRenderer().render(parse("![foo\nbar](/url)\n"))).isEqualTo("<p><img src=\"/url\" alt=\"foo\nbar\" /></p>\n");
     }
 
     @Test
     public void imageAltTextWithHardLineBreak() {
-        assertEquals("<p><img src=\"/url\" alt=\"foo\nbar\" /></p>\n",
-                defaultRenderer().render(parse("![foo  \nbar](/url)\n")));
+        assertThat(defaultRenderer().render(parse("![foo  \nbar](/url)\n"))).isEqualTo("<p><img src=\"/url\" alt=\"foo\nbar\" /></p>\n");
     }
 
     @Test
     public void imageAltTextWithEntities() {
-        assertEquals("<p><img src=\"/url\" alt=\"foo \u00E4\" /></p>\n",
-                defaultRenderer().render(parse("![foo &auml;](/url)\n")));
+        assertThat(defaultRenderer().render(parse("![foo &auml;](/url)\n"))).isEqualTo("<p><img src=\"/url\" alt=\"foo \u00E4\" /></p>\n");
     }
 
     @Test
@@ -304,41 +293,35 @@ public class HtmlRendererTest {
             document.appendChild(current);
         }
 
-        assertEquals("Here I have a test <a href=\"http://www.google.com\">link</a>",
-                defaultRenderer().render(document));
+        assertThat(defaultRenderer().render(document)).isEqualTo("Here I have a test <a href=\"http://www.google.com\">link</a>");
     }
 
     @Test
     public void omitSingleParagraphP() {
         var renderer = HtmlRenderer.builder().omitSingleParagraphP(true).build();
-        assertEquals("hi <em>there</em>", renderer.render(parse("hi *there*")));
+        assertThat(renderer.render(parse("hi *there*"))).isEqualTo("hi <em>there</em>");
     }
 
     @Test
     public void threading() throws Exception {
-        Parser parser = Parser.builder().build();
-        String spec = TestResources.readAsString(TestResources.getSpec());
-        final Node document = parser.parse(spec);
+        var parser = Parser.builder().build();
+        var spec = TestResources.readAsString(TestResources.getSpec());
+        var document = parser.parse(spec);
 
-        final HtmlRenderer htmlRenderer = HtmlRenderer.builder().build();
-        String expectedRendering = htmlRenderer.render(document);
+        var htmlRenderer = HtmlRenderer.builder().build();
+        var expectedRendering = htmlRenderer.render(document);
 
         // Render in parallel using the same HtmlRenderer instance.
-        List<Future<String>> futures = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        var futures = new ArrayList<Future<String>>();
+        var executorService = Executors.newFixedThreadPool(4);
         for (int i = 0; i < 40; i++) {
-            Future<String> future = executorService.submit(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return htmlRenderer.render(document);
-                }
-            });
+            var future = executorService.submit(() -> htmlRenderer.render(document));
             futures.add(future);
         }
 
-        for (Future<String> future : futures) {
-            String rendering = future.get();
-            assertThat(rendering, is(expectedRendering));
+        for (var future : futures) {
+            var rendering = future.get();
+            assertThat(rendering).isEqualTo(expectedRendering);
         }
     }
 

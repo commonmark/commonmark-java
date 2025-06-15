@@ -10,13 +10,13 @@ import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InlineParserContextTest {
 
@@ -30,10 +30,10 @@ public class InlineParserContextTest {
         String rendered = HtmlRenderer.builder().build().render(parser.parse(input));
 
         // Lookup should pass original label to context
-        assertEquals(List.of("FooBarBaz"), inlineParserFactory.lookups);
+        assertThat(inlineParserFactory.lookups).isEqualTo(List.of("FooBarBaz"));
 
         // Context should normalize label for finding reference
-        assertEquals("<p><a href=\"/url\">link with special label</a></p>\n", rendered);
+        assertThat(rendered).isEqualTo("<p><a href=\"/url\">link with special label</a></p>\n");
     }
 
     static class CapturingInlineParserFactory implements InlineParserFactory {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Reader for files containing examples of CommonMark source and the expected HTML rendering (e.g. spec.txt).
@@ -42,15 +43,13 @@ public class ExampleReader {
         }
     }
 
+    public static List<Example> readExamples(URL url, String info) {
+        var examples = readExamples(url);
+        return examples.stream().filter(e -> e.getInfo().contains(info)).collect(Collectors.toList());
+    }
+
     public static List<Object[]> readExampleObjects(URL url, String info) {
-        List<Example> examples = readExamples(url);
-        List<Object[]> data = new ArrayList<>();
-        for (Example example : examples) {
-            if (example.getInfo().contains(info)) {
-                data.add(new Object[]{example});
-            }
-        }
-        return data;
+        return readExamples(url, info).stream().map(e -> new Object[]{e}).collect(Collectors.toList());
     }
 
     public static List<String> readExampleSources(URL url) {

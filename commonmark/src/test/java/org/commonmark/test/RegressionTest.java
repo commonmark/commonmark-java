@@ -6,18 +6,18 @@ import org.commonmark.testutil.RenderingTestCase;
 import org.commonmark.testutil.TestResources;
 import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 public class RegressionTest extends RenderingTestCase {
 
     private static final Parser PARSER = Parser.builder().build();
@@ -26,20 +26,13 @@ public class RegressionTest extends RenderingTestCase {
 
     private static final Map<String, String> OVERRIDDEN_EXAMPLES = getOverriddenExamples();
 
-    private final Example example;
+    @Parameter
+    Example example;
 
-    public RegressionTest(Example example) {
-        this.example = example;
-    }
-
-    @Parameters(name = "{0}")
-    public static List<Object[]> data() {
-        List<Object[]> data = new ArrayList<>();
-        for (URL regressionResource : TestResources.getRegressions()) {
-            List<Example> examples = ExampleReader.readExamples(regressionResource);
-            for (Example example : examples) {
-                data.add(new Object[]{example});
-            }
+    static List<Example> data() {
+        var data = new ArrayList<Example>();
+        for (var regressionResource : TestResources.getRegressions()) {
+            data.addAll(ExampleReader.readExamples(regressionResource));
         }
         return data;
     }
