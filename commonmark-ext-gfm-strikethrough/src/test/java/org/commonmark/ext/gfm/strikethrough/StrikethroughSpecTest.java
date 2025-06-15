@@ -7,30 +7,27 @@ import org.commonmark.testutil.RenderingTestCase;
 import org.commonmark.testutil.TestResources;
 import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
 import java.util.Set;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 public class StrikethroughSpecTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Set.of(StrikethroughExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
-    private final Example example;
+    @Parameter
+    Example example;
 
-    public StrikethroughSpecTest(Example example) {
-        this.example = example;
-    }
-
-    @Parameters(name = "{0}")
-    public static List<Object[]> data() {
-        return ExampleReader.readExampleObjects(TestResources.getGfmSpec(), "strikethrough");
+    static List<Example> data() {
+        return ExampleReader.readExamples(TestResources.getGfmSpec(), "strikethrough");
     }
 
     @Test

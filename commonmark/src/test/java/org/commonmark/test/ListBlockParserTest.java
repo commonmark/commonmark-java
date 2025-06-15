@@ -3,9 +3,9 @@ package org.commonmark.test;
 import org.commonmark.node.ListItem;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ListBlockParserTest {
 
@@ -59,7 +59,7 @@ public class ListBlockParserTest {
     private void assertListItemIndents(String input, int expectedMarkerIndent, int expectedContentIndent) {
         Node doc = PARSER.parse(input);
         ListItem listItem = Nodes.find(doc, ListItem.class);
-        assertEquals(expectedMarkerIndent, (int) listItem.getMarkerIndent());
-        assertEquals(expectedContentIndent, (int) listItem.getContentIndent());
+        assertThat((int) listItem.getMarkerIndent()).isEqualTo(expectedMarkerIndent);
+        assertThat((int) listItem.getContentIndent()).isEqualTo(expectedContentIndent);
     }
 }

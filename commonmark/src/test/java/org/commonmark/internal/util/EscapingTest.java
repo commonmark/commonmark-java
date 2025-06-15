@@ -1,21 +1,21 @@
 package org.commonmark.internal.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class EscapingTest {
+class EscapingTest {
 
     @Test
-    public void testEscapeHtml() {
-        assertEquals("nothing to escape", Escaping.escapeHtml("nothing to escape"));
-        assertEquals("&amp;", Escaping.escapeHtml("&"));
-        assertEquals("&lt;", Escaping.escapeHtml("<"));
-        assertEquals("&gt;", Escaping.escapeHtml(">"));
-        assertEquals("&quot;", Escaping.escapeHtml("\""));
-        assertEquals("&lt; start", Escaping.escapeHtml("< start"));
-        assertEquals("end &gt;", Escaping.escapeHtml("end >"));
-        assertEquals("&lt; both &gt;", Escaping.escapeHtml("< both >"));
-        assertEquals("&lt; middle &amp; too &gt;", Escaping.escapeHtml("< middle & too >"));
+    void testEscapeHtml() {
+        assertThat(Escaping.escapeHtml("nothing to escape")).isEqualTo("nothing to escape");
+        assertThat(Escaping.escapeHtml("&")).isEqualTo("&amp;");
+        assertThat(Escaping.escapeHtml("<")).isEqualTo("&lt;");
+        assertThat(Escaping.escapeHtml(">")).isEqualTo("&gt;");
+        assertThat(Escaping.escapeHtml("\"")).isEqualTo("&quot;");
+        assertThat(Escaping.escapeHtml("< start")).isEqualTo("&lt; start");
+        assertThat(Escaping.escapeHtml("end >")).isEqualTo("end &gt;");
+        assertThat(Escaping.escapeHtml("< both >")).isEqualTo("&lt; both &gt;");
+        assertThat(Escaping.escapeHtml("< middle & too >")).isEqualTo("&lt; middle &amp; too &gt;");
     }
 }

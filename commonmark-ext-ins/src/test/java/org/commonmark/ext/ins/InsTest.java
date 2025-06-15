@@ -9,12 +9,12 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InsTest extends RenderingTestCase {
 
@@ -82,14 +82,14 @@ public class InsTest extends RenderingTestCase {
     public void delimited() {
         Node document = PARSER.parse("++foo++");
         Ins ins = (Ins) document.getFirstChild().getFirstChild();
-        assertEquals("++", ins.getOpeningDelimiter());
-        assertEquals("++", ins.getClosingDelimiter());
+        assertThat(ins.getOpeningDelimiter()).isEqualTo("++");
+        assertThat(ins.getClosingDelimiter()).isEqualTo("++");
     }
 
     @Test
     public void textContentRenderer() {
         Node document = PARSER.parse("++foo++");
-        assertEquals("foo", CONTENT_RENDERER.render(document));
+        assertThat(CONTENT_RENDERER.render(document)).isEqualTo("foo");
     }
 
     @Test
@@ -102,8 +102,7 @@ public class InsTest extends RenderingTestCase {
         Node document = parser.parse("hey ++there++\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node ins = block.getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 4, 4, 9)),
-                ins.getSourceSpans());
+        assertThat(ins.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 4, 4, 9)));
     }
 
     @Override

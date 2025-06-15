@@ -3,82 +3,82 @@ package org.commonmark.internal;
 import org.commonmark.internal.LinkReferenceDefinitionParser.State;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.SourceLine;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class LinkReferenceDefinitionParserTest {
+class LinkReferenceDefinitionParserTest {
 
     private final LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
 
     @Test
-    public void testStartLabel() {
+    void testStartLabel() {
         assertState("[", State.LABEL, "[");
     }
 
     @Test
-    public void testStartNoLabel() {
+    void testStartNoLabel() {
         // Not a label
         assertParagraph("a");
         // Can not go back to parsing link reference definitions
         parse("a");
         parse("[");
-        assertEquals(State.PARAGRAPH, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.PARAGRAPH);
         assertParagraphLines("a\n[", parser);
     }
 
     @Test
-    public void testEmptyLabel() {
+    void testEmptyLabel() {
         assertParagraph("[]: /");
         assertParagraph("[ ]: /");
         assertParagraph("[ \t\n\u000B\f\r ]: /");
     }
 
     @Test
-    public void testLabelColon() {
+    void testLabelColon() {
         assertParagraph("[foo] : /");
     }
 
     @Test
-    public void testLabel() {
+    void testLabel() {
         assertState("[foo]:", State.DESTINATION, "[foo]:");
         assertState("[ foo ]:", State.DESTINATION, "[ foo ]:");
     }
 
     @Test
-    public void testLabelInvalid() {
+    void testLabelInvalid() {
         assertParagraph("[foo[]:");
     }
 
     @Test
-    public void testLabelMultiline() {
+    void testLabelMultiline() {
         parse("[two");
-        assertEquals(State.LABEL, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.LABEL);
         parse("lines]:");
-        assertEquals(State.DESTINATION, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.DESTINATION);
         parse("/url");
-        assertEquals(State.START_TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_TITLE);
         assertDef(parser.getDefinitions().get(0), "two\nlines", "/url", null);
     }
 
     @Test
-    public void testLabelStartsWithNewline() {
+    void testLabelStartsWithNewline() {
         parse("[");
-        assertEquals(State.LABEL, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.LABEL);
         parse("weird]:");
-        assertEquals(State.DESTINATION, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.DESTINATION);
         parse("/url");
-        assertEquals(State.START_TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_TITLE);
         assertDef(parser.getDefinitions().get(0), "\nweird", "/url", null);
     }
 
     @Test
-    public void testDestination() {
+    void testDestination() {
         parse("[foo]: /url");
-        assertEquals(State.START_TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_TITLE);
         assertParagraphLines("", parser);
 
-        assertEquals(1, parser.getDefinitions().size());
+        assertThat(parser.getDefinitions()).hasSize(1);
         assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
 
         parse("[bar]: </url2>");
@@ -86,91 +86,91 @@ public class LinkReferenceDefinitionParserTest {
     }
 
     @Test
-    public void testDestinationInvalid() {
+    void testDestinationInvalid() {
         assertParagraph("[foo]: <bar<>");
     }
 
     @Test
-    public void testTitle() {
+    void testTitle() {
         parse("[foo]: /url 'title'");
-        assertEquals(State.START_DEFINITION, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_DEFINITION);
         assertParagraphLines("", parser);
 
-        assertEquals(1, parser.getDefinitions().size());
+        assertThat(parser.getDefinitions()).hasSize(1);
         assertDef(parser.getDefinitions().get(0), "foo", "/url", "title");
     }
 
     @Test
-    public void testTitleStartWhitespace() {
+    void testTitleStartWhitespace() {
         parse("[foo]: /url");
-        assertEquals(State.START_TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_TITLE);
         assertParagraphLines("", parser);
 
         parse("   ");
 
-        assertEquals(State.START_DEFINITION, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_DEFINITION);
         assertParagraphLines("   ", parser);
 
-        assertEquals(1, parser.getDefinitions().size());
+        assertThat(parser.getDefinitions()).hasSize(1);
         assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
     }
 
     @Test
-    public void testTitleMultiline() {
+    void testTitleMultiline() {
         parse("[foo]: /url 'two");
-        assertEquals(State.TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.TITLE);
         assertParagraphLines("[foo]: /url 'two", parser);
-        assertEquals(0, parser.getDefinitions().size());
+        assertThat(parser.getDefinitions()).isEmpty();
 
         parse("lines");
-        assertEquals(State.TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.TITLE);
         assertParagraphLines("[foo]: /url 'two\nlines", parser);
-        assertEquals(0, parser.getDefinitions().size());
+        assertThat(parser.getDefinitions()).isEmpty();
 
         parse("'");
-        assertEquals(State.START_DEFINITION, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_DEFINITION);
         assertParagraphLines("", parser);
 
-        assertEquals(1, parser.getDefinitions().size());
+        assertThat(parser.getDefinitions()).hasSize(1);
         assertDef(parser.getDefinitions().get(0), "foo", "/url", "two\nlines\n");
     }
 
     @Test
-    public void testTitleMultiline2() {
+    void testTitleMultiline2() {
         parse("[foo]: /url '");
-        assertEquals(State.TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.TITLE);
         parse("title'");
-        assertEquals(State.START_DEFINITION, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_DEFINITION);
 
         assertDef(parser.getDefinitions().get(0), "foo", "/url", "\ntitle");
     }
 
     @Test
-    public void testTitleMultiline3() {
+    void testTitleMultiline3() {
         parse("[foo]: /url");
-        assertEquals(State.START_TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_TITLE);
         // Note that this looks like a valid title until we parse "bad", at which point we need to treat the whole line
         // as a paragraph line and discard any already parsed title.
         parse("\"title\" bad");
-        assertEquals(State.PARAGRAPH, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.PARAGRAPH);
 
         assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
     }
 
     @Test
-    public void testTitleMultiline4() {
+    void testTitleMultiline4() {
         parse("[foo]: /url");
-        assertEquals(State.START_TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.START_TITLE);
         parse("(title");
-        assertEquals(State.TITLE, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.TITLE);
         parse("foo(");
-        assertEquals(State.PARAGRAPH, parser.getState());
+        assertThat(parser.getState()).isEqualTo(State.PARAGRAPH);
 
         assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
     }
 
     @Test
-    public void testTitleInvalid() {
+    void testTitleInvalid() {
         assertParagraph("[foo]: /url (invalid(");
         assertParagraph("[foo]: </url>'title'");
         assertParagraph("[foo]: /url 'title' INVALID");
@@ -188,18 +188,18 @@ public class LinkReferenceDefinitionParserTest {
         LinkReferenceDefinitionParser parser = new LinkReferenceDefinitionParser();
         // TODO: Should we check things with source spans here?
         parser.parse(SourceLine.of(input, null));
-        assertEquals(state, parser.getState());
+        assertThat(parser.getState()).isEqualTo(state);
         assertParagraphLines(paragraphContent, parser);
     }
 
     private static void assertDef(LinkReferenceDefinition def, String label, String destination, String title) {
-        assertEquals(label, def.getLabel());
-        assertEquals(destination, def.getDestination());
-        assertEquals(title, def.getTitle());
+        assertThat(def.getLabel()).isEqualTo(label);
+        assertThat(def.getDestination()).isEqualTo(destination);
+        assertThat(def.getTitle()).isEqualTo(title);
     }
 
     private static void assertParagraphLines(String expectedContent, LinkReferenceDefinitionParser parser) {
         String actual = parser.getParagraphLines().getContent();
-        assertEquals(expectedContent, actual);
+        assertThat(actual).isEqualTo(expectedContent);
     }
 }

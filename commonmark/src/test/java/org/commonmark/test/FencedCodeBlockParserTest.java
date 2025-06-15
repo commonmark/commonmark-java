@@ -5,9 +5,9 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FencedCodeBlockParserTest extends RenderingTestCase {
 
@@ -18,8 +18,8 @@ public class FencedCodeBlockParserTest extends RenderingTestCase {
     public void backtickInfo() {
         Node document = PARSER.parse("```info ~ test\ncode\n```");
         FencedCodeBlock codeBlock = (FencedCodeBlock) document.getFirstChild();
-        assertEquals("info ~ test", codeBlock.getInfo());
-        assertEquals("code\n", codeBlock.getLiteral());
+        assertThat(codeBlock.getInfo()).isEqualTo("info ~ test");
+        assertThat(codeBlock.getLiteral()).isEqualTo("code\n");
     }
 
     @Test

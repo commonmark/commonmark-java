@@ -3,11 +3,11 @@ package org.commonmark.ext.gfm.tables;
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableMarkdownRendererTest {
 
@@ -70,6 +70,6 @@ public class TableMarkdownRendererTest {
 
     private void assertRoundTrip(String input) {
         String rendered = render(input);
-        assertEquals(input, rendered);
+        assertThat(rendered).isEqualTo(input);
     }
 }

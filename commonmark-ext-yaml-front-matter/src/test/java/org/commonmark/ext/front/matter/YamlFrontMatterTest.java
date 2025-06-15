@@ -6,14 +6,13 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class YamlFrontMatterTest extends RenderingTestCase {
     private static final Set<Extension> EXTENSIONS = Set.of(YamlFrontMatterExtension.create());
@@ -31,10 +30,10 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(1, data.size());
-        assertEquals("hello", data.keySet().iterator().next());
-        assertEquals(1, data.get("hello").size());
-        assertEquals("world", data.get("hello").get(0));
+        assertThat(data).hasSize(1);
+        assertThat(data.keySet().iterator().next()).isEqualTo("hello");
+        assertThat(data.get("hello")).hasSize(1);
+        assertThat(data.get("hello").get(0)).isEqualTo("world");
 
         assertRendering(input, rendered);
     }
@@ -50,9 +49,9 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(1, data.size());
-        assertEquals("key", data.keySet().iterator().next());
-        assertEquals(0, data.get("key").size());
+        assertThat(data).hasSize(1);
+        assertThat(data.keySet().iterator().next()).isEqualTo("key");
+        assertThat(data.get("key")).hasSize(0);
 
         assertRendering(input, rendered);
     }
@@ -70,11 +69,11 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(1, data.size());
-        assertTrue(data.containsKey("list"));
-        assertEquals(2, data.get("list").size());
-        assertEquals("value1", data.get("list").get(0));
-        assertEquals("value2", data.get("list").get(1));
+        assertThat(data).hasSize(1);
+        assertThat(data).containsKey("list");
+        assertThat(data.get("list")).hasSize(2);
+        assertThat(data.get("list").get(0)).isEqualTo("value1");
+        assertThat(data.get("list").get(1)).isEqualTo("value2");
 
         assertRendering(input, rendered);
     }
@@ -92,10 +91,10 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(1, data.size());
-        assertTrue(data.containsKey("literal"));
-        assertEquals(1, data.get("literal").size());
-        assertEquals("hello markdown!\nliteral thing...", data.get("literal").get(0));
+        assertThat(data).hasSize(1);
+        assertThat(data).containsKey("literal");
+        assertThat(data.get("literal")).hasSize(1);
+        assertThat(data.get("literal").get(0)).isEqualTo("hello markdown!\nliteral thing...");
 
         assertRendering(input, rendered);
     }
@@ -112,10 +111,10 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(1, data.size());
-        assertTrue(data.containsKey("literal"));
-        assertEquals(1, data.get("literal").size());
-        assertEquals("- hello markdown!", data.get("literal").get(0));
+        assertThat(data).hasSize(1);
+        assertThat(data).containsKey("literal");
+        assertThat(data.get("literal")).hasSize(1);
+        assertThat(data.get("literal").get(0)).isEqualTo("- hello markdown!");
 
         assertRendering(input, rendered);
     }
@@ -137,20 +136,20 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(3, data.size());
+        assertThat(data).hasSize(3);
 
-        assertTrue(data.containsKey("simple"));
-        assertEquals(1, data.get("simple").size());
-        assertEquals("value", data.get("simple").get(0));
+        assertThat(data).containsKey("simple");
+        assertThat(data.get("simple")).hasSize(1);
+        assertThat(data.get("simple").get(0)).isEqualTo("value");
 
-        assertTrue(data.containsKey("literal"));
-        assertEquals(1, data.get("literal").size());
-        assertEquals("hello markdown!\n\nliteral literal", data.get("literal").get(0));
+        assertThat(data).containsKey("literal");
+        assertThat(data.get("literal")).hasSize(1);
+        assertThat(data.get("literal").get(0)).isEqualTo("hello markdown!\n\nliteral literal");
 
-        assertTrue(data.containsKey("list"));
-        assertEquals(2, data.get("list").size());
-        assertEquals("value1", data.get("list").get(0));
-        assertEquals("value2", data.get("list").get(1));
+        assertThat(data).containsKey("list");
+        assertThat(data.get("list")).hasSize(2);
+        assertThat(data.get("list").get(0)).isEqualTo("value1");
+        assertThat(data.get("list").get(1)).isEqualTo("value2");
 
         assertRendering(input, rendered);
     }
@@ -164,7 +163,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertTrue(data.isEmpty());
+        assertThat(data).isEmpty();
 
         assertRendering(input, rendered);
     }
@@ -180,7 +179,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertTrue(data.isEmpty());
+        assertThat(data).isEmpty();
 
         assertRendering(input, rendered);
     }
@@ -195,7 +194,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertTrue(data.isEmpty());
+        assertThat(data).isEmpty();
 
         assertRendering(input, rendered);
     }
@@ -208,7 +207,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertTrue(data.isEmpty());
+        assertThat(data).isEmpty();
 
         assertRendering(input, rendered);
     }
@@ -222,7 +221,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertTrue(data.isEmpty());
+        assertThat(data).isEmpty();
 
         assertRendering(input, rendered);
     }
@@ -240,9 +239,9 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         document.accept(visitor);
 
         Map<String, List<String>> data = visitor.getData();
-        assertEquals(1, data.size());
-        assertTrue(data.containsKey("hello"));
-        assertEquals(List.of("world"), data.get("hello"));
+        assertThat(data).hasSize(1);
+        assertThat(data).containsKey("hello");
+        assertThat(data.get("hello")).isEqualTo(List.of("world"));
     }
 
     @Test
@@ -261,9 +260,9 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         document.accept(visitor);
 
         Map<String, List<String>> data = visitor.getData();
-        assertEquals(1, data.size());
-        assertTrue(data.containsKey("see"));
-        assertEquals(List.of("you"), data.get("see"));
+        assertThat(data).hasSize(1);
+        assertThat(data).containsKey("see");
+        assertThat(data.get("see")).isEqualTo(List.of("you"));
     }
 
     @Test
@@ -275,10 +274,10 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(1, data.size());
-        assertEquals("ms.author", data.keySet().iterator().next());
-        assertEquals(1, data.get("ms.author").size());
-        assertEquals("author", data.get("ms.author").get(0));
+        assertThat(data).hasSize(1);
+        assertThat(data.keySet().iterator().next()).isEqualTo("ms.author");
+        assertThat(data.get("ms.author")).hasSize(1);
+        assertThat(data.get("ms.author").get(0)).isEqualTo("author");
     }
 
     @Test
@@ -292,9 +291,9 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(2, data.size());
-        assertEquals("It's me", data.get("string").get(0));
-        assertEquals("I'm here", data.get("list").get(0));
+        assertThat(data).hasSize(2);
+        assertThat(data.get("string").get(0)).isEqualTo("It's me");
+        assertThat(data.get("list").get(0)).isEqualTo("I'm here");
     }
 
     @Test
@@ -308,9 +307,9 @@ public class YamlFrontMatterTest extends RenderingTestCase {
 
         Map<String, List<String>> data = getFrontMatter(input);
 
-        assertEquals(2, data.size());
-        assertEquals("backslash: \\ quote: \"", data.get("string").get(0));
-        assertEquals("hey", data.get("list").get(0));
+        assertThat(data).hasSize(2);
+        assertThat(data.get("string").get(0)).isEqualTo("backslash: \\ quote: \"");
+        assertThat(data.get("list").get(0)).isEqualTo("hey");
     }
 
     @Override

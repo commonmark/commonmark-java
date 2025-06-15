@@ -8,12 +8,12 @@ import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ImageAttributesTest extends RenderingTestCase {
 
@@ -131,8 +131,7 @@ public class ImageAttributesTest extends RenderingTestCase {
         Node document = parser.parse("x{height=3 width=4}\n");
         Paragraph block = (Paragraph) document.getFirstChild();
         Node text = block.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 19)),
-                text.getSourceSpans());
+        assertThat(text.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 19)));
     }
 
     @Override

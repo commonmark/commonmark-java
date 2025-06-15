@@ -1,6 +1,6 @@
 package org.commonmark.internal.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -9,13 +9,14 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.joining;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.commonmark.internal.util.LineReader.CHAR_BUFFER_SIZE;
-import static org.junit.Assert.*;
 
-public class LineReaderTest {
+class LineReaderTest {
 
     @Test
-    public void testReadLine() throws IOException {
+    void testReadLine() throws IOException {
         assertLines();
 
         assertLines("", "\n");
@@ -48,21 +49,16 @@ public class LineReaderTest {
     }
 
     @Test
-    public void testClose() throws IOException {
+    void testClose() throws IOException {
         var reader = new InputStreamReader(new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
         var lineReader = new LineReader(reader);
         lineReader.close();
         lineReader.close();
-        try {
-            reader.read();
-            fail("Expected read to throw after closing reader");
-        } catch (IOException e) {
-            // Expected
-        }
+        assertThatThrownBy(reader::read).isInstanceOf(IOException.class);
     }
 
     private void assertLines(String... s) throws IOException {
-        assertTrue("Expected parts needs to be even (pairs of content and terminator)", s.length % 2 == 0);
+        assertThat(s.length).as("Expected parts needs to be even (pairs of content and terminator)").isEven();
         var input = Arrays.stream(s).filter(Objects::nonNull).collect(joining(""));
 
         assertLines(new StringReader(input), s);
@@ -77,8 +73,8 @@ public class LineReaderTest {
                 lines.add(line);
                 lines.add(lineReader.getLineTerminator());
             }
-            assertNull(lineReader.getLineTerminator());
-            assertEquals(Arrays.asList(expectedParts), lines);
+            assertThat(lineReader.getLineTerminator()).isNull();
+            assertThat(lines).containsExactly(expectedParts);
         }
     }
 

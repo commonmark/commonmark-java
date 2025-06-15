@@ -6,8 +6,8 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.*;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UsageExampleTest {
 
@@ -25,7 +25,7 @@ public class UsageExampleTest {
         Parser parser = Parser.builder().build();
         Node document = parser.parse("This is *Markdown*");
         HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
-        assertEquals("<p>This is <em>Markdown</em></p>\n", renderer.render(document));
+        assertThat(renderer.render(document)).isEqualTo("<p>This is <em>Markdown</em></p>\n");
     }
 
     @Test
@@ -37,11 +37,11 @@ public class UsageExampleTest {
         heading.appendChild(new Text("My title"));
         document.appendChild(heading);
 
-        assertEquals("## My title\n", renderer.render(document));
+        assertThat(renderer.render(document)).isEqualTo("## My title\n");
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void parseReaderRender() throws IOException {
         Parser parser = Parser.builder().build();
         try (InputStreamReader reader = new InputStreamReader(new FileInputStream("file.md"), StandardCharsets.UTF_8)) {
@@ -56,7 +56,7 @@ public class UsageExampleTest {
         Node node = parser.parse("Example\n=======\n\nSome more text");
         WordCountVisitor visitor = new WordCountVisitor();
         node.accept(visitor);
-        assertEquals(4, visitor.wordCount);
+        assertThat(visitor.wordCount).isEqualTo(4);
     }
 
     @Test
@@ -67,11 +67,11 @@ public class UsageExampleTest {
         var doc = parser.parse(source);
         var emphasis = doc.getLastChild().getLastChild();
         var s = emphasis.getSourceSpans().get(0);
-        assertEquals(2, s.getLineIndex());
-        assertEquals(4, s.getColumnIndex());
-        assertEquals(9, s.getInputIndex());
-        assertEquals(5, s.getLength());
-        assertEquals("*baz*", source.substring(s.getInputIndex(), s.getInputIndex() + s.getLength()));
+        assertThat(s.getLineIndex()).isEqualTo(2);
+        assertThat(s.getColumnIndex()).isEqualTo(4);
+        assertThat(s.getInputIndex()).isEqualTo(9);
+        assertThat(s.getLength()).isEqualTo(5);
+        assertThat(source.substring(s.getInputIndex(), s.getInputIndex() + s.getLength())).isEqualTo("*baz*");
     }
 
     @Test
@@ -87,8 +87,7 @@ public class UsageExampleTest {
                 .build();
 
         Node document = parser.parse("![text](/url.png)");
-        assertEquals("<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n",
-                renderer.render(document));
+        assertThat(renderer.render(document)).isEqualTo("<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n");
     }
 
     @Test
@@ -104,7 +103,7 @@ public class UsageExampleTest {
                 .build();
 
         Node document = parser.parse("Example:\n\n    code");
-        assertEquals("<p>Example:</p>\n<pre>code\n</pre>\n", renderer.render(document));
+        assertThat(renderer.render(document)).isEqualTo("<p>Example:</p>\n<pre>code\n</pre>\n");
     }
 
     class WordCountVisitor extends AbstractVisitor {

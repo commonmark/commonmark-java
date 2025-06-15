@@ -6,15 +6,14 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
 import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests Markdown rendering using the examples in the spec like this:
@@ -63,9 +62,8 @@ public class SpecMarkdownRendererTest {
             System.out.println();
         }
 
-        int expectedPassed = 652;
-        assertTrue("Expected at least " + expectedPassed + " examples to pass but was " + passes.size(), passes.size() >= expectedPassed);
-        assertEquals(0, fails.size());
+        assertThat(passes).hasSizeGreaterThanOrEqualTo(652);
+        assertThat(fails).isEmpty();
     }
 
     private static void printCountsBySection(List<Example> examples) {

@@ -3,39 +3,30 @@ package org.commonmark.integration;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.testutil.TestResources;
-import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests various substrings of the spec examples to check for out of bounds exceptions.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 public class BoundsIntegrationTest {
 
     private static final Parser PARSER = Parser.builder().build();
 
-    protected final String input;
+    @Parameter
+    String input;
 
-    public BoundsIntegrationTest(String input) {
-        this.input = input;
-    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static List<Object[]> data() {
-        List<Example> examples = ExampleReader.readExamples(TestResources.getSpec());
-        List<Object[]> data = new ArrayList<>();
-        for (Example example : examples) {
-            data.add(new Object[]{example.getSource()});
-        }
-        return data;
+    static List<String> data() {
+        return ExampleReader.readExampleSources(TestResources.getSpec());
     }
 
     @Test
@@ -54,7 +45,7 @@ public class BoundsIntegrationTest {
         try {
             Node parsed = PARSER.parse(input);
             // Parsing should always return a node
-            assertNotNull(parsed);
+            assertThat(parsed).isNotNull();
         } catch (Exception e) {
             throw new AssertionError("Parsing failed, input: " + input, e);
         }

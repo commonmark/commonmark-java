@@ -3,7 +3,7 @@ package org.commonmark.test;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -11,7 +11,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SourceSpansTest {
 
@@ -90,7 +90,7 @@ public class SourceSpansTest {
 
         Node document = PARSER.parse("```\nfoo\n```\nbar\n");
         Paragraph paragraph = (Paragraph) document.getLastChild();
-        assertEquals(List.of(SourceSpan.of(3, 0, 12, 3)), paragraph.getSourceSpans());
+        assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 0, 12, 3)));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class SourceSpansTest {
 
         Node document = PARSER.parse("* foo\n  * bar\n");
         ListBlock listBlock = (ListBlock) document.getFirstChild().getFirstChild().getLastChild();
-        assertEquals(List.of(SourceSpan.of(1, 2, 8, 5)), listBlock.getSourceSpans());
+        assertThat(listBlock.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 2, 8, 5)));
     }
 
     @Test
@@ -158,10 +158,10 @@ public class SourceSpansTest {
         Node document = PARSER.parse("[foo]: /url\ntext\n");
 
         LinkReferenceDefinition linkReferenceDefinition = (LinkReferenceDefinition) document.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 11)), linkReferenceDefinition.getSourceSpans());
+        assertThat(linkReferenceDefinition.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 11)));
 
         Paragraph paragraph = (Paragraph) document.getLastChild();
-        assertEquals(List.of(SourceSpan.of(1, 0, 12, 4)), paragraph.getSourceSpans());
+        assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 12, 4)));
     }
 
     @Test
@@ -169,8 +169,8 @@ public class SourceSpansTest {
         var doc = PARSER.parse("[foo]: /foo\n[bar]: /bar\n");
         var def1 = (LinkReferenceDefinition) doc.getFirstChild();
         var def2 = (LinkReferenceDefinition) doc.getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 11)), def1.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(1, 0, 12, 11)), def2.getSourceSpans());
+        assertThat(def1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 11)));
+        assertThat(def2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 12, 11)));
     }
 
     @Test
@@ -178,8 +178,8 @@ public class SourceSpansTest {
         var doc = PARSER.parse("[1]: #not-code \"Text\"\n[foo]: /foo\n");
         var def1 = (LinkReferenceDefinition) doc.getFirstChild();
         var def2 = (LinkReferenceDefinition) doc.getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 21)), def1.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(1, 0, 22, 11)), def2.getSourceSpans());
+        assertThat(def1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 21)));
+        assertThat(def2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 22, 11)));
     }
 
     @Test
@@ -187,8 +187,8 @@ public class SourceSpansTest {
         var doc = PARSER.parse("[foo]: /url\n\"title\" ok\n");
         var def = Nodes.find(doc, LinkReferenceDefinition.class);
         var paragraph = Nodes.find(doc, Paragraph.class);
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 11)), def.getSourceSpans());
-        assertEquals(List.of(SourceSpan.of(1, 0, 12, 10)), paragraph.getSourceSpans());
+        assertThat(def.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 11)));
+        assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 12, 10)));
     }
 
     @Test
@@ -198,10 +198,10 @@ public class SourceSpansTest {
         Node document = PARSER.parse("[foo]: /url\nHeading\n===\n");
 
         LinkReferenceDefinition linkReferenceDefinition = (LinkReferenceDefinition) document.getFirstChild();
-        assertEquals(List.of(SourceSpan.of(0, 0, 0, 11)), linkReferenceDefinition.getSourceSpans());
+        assertThat(linkReferenceDefinition.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 11)));
 
         Heading heading = (Heading) document.getLastChild();
-        assertEquals(List.of(SourceSpan.of(1, 0, 12, 7), SourceSpan.of(2, 0, 20, 3)), heading.getSourceSpans());
+        assertThat(heading.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 12, 7), SourceSpan.of(2, 0, 20, 3)));
     }
 
     @Test
@@ -212,13 +212,13 @@ public class SourceSpansTest {
             var doc = PARSER.parse("> > > foo\nbar\n");
 
             var bq1 = (BlockQuote) doc.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 0, 0, 9), SourceSpan.of(1, 0, 10, 3)), bq1.getSourceSpans());
+            assertThat(bq1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 9), SourceSpan.of(1, 0, 10, 3)));
             var bq2 = (BlockQuote) bq1.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 2, 2, 7), SourceSpan.of(1, 0, 10, 3)), bq2.getSourceSpans());
+            assertThat(bq2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 2, 2, 7), SourceSpan.of(1, 0, 10, 3)));
             var bq3 = (BlockQuote) bq2.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 4, 4, 5), SourceSpan.of(1, 0, 10, 3)), bq3.getSourceSpans());
+            assertThat(bq3.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 4, 4, 5), SourceSpan.of(1, 0, 10, 3)));
             var paragraph = (Paragraph) bq3.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 6, 6, 3), SourceSpan.of(1, 0, 10, 3)), paragraph.getSourceSpans());
+            assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 6, 6, 3), SourceSpan.of(1, 0, 10, 3)));
         }
 
         {
@@ -226,13 +226,13 @@ public class SourceSpansTest {
             var doc = PARSER.parse("> > > foo\nbars\n");
 
             var bq1 = (BlockQuote) doc.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 0, 0, 9), SourceSpan.of(1, 0, 10, 4)), bq1.getSourceSpans());
+            assertThat(bq1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 9), SourceSpan.of(1, 0, 10, 4)));
             var bq2 = (BlockQuote) bq1.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 2, 2, 7), SourceSpan.of(1, 0, 10, 4)), bq2.getSourceSpans());
+            assertThat(bq2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 2, 2, 7), SourceSpan.of(1, 0, 10, 4)));
             var bq3 = (BlockQuote) bq2.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 4, 4, 5), SourceSpan.of(1, 0, 10, 4)), bq3.getSourceSpans());
+            assertThat(bq3.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 4, 4, 5), SourceSpan.of(1, 0, 10, 4)));
             var paragraph = (Paragraph) bq3.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 6, 6, 3), SourceSpan.of(1, 0, 10, 4)), paragraph.getSourceSpans());
+            assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 6, 6, 3), SourceSpan.of(1, 0, 10, 4)));
         }
 
         {
@@ -240,15 +240,15 @@ public class SourceSpansTest {
             var doc = PARSER.parse("> 1. > Blockquote\ncontinued here.");
 
             var bq1 = (BlockQuote) doc.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 0, 0, 17), SourceSpan.of(1, 0, 18, 15)), bq1.getSourceSpans());
+            assertThat(bq1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 17), SourceSpan.of(1, 0, 18, 15)));
             var orderedList = (OrderedList) bq1.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 2, 2, 15), SourceSpan.of(1, 0, 18, 15)), orderedList.getSourceSpans());
+            assertThat(orderedList.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 2, 2, 15), SourceSpan.of(1, 0, 18, 15)));
             var listItem = (ListItem) orderedList.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 2, 2, 15), SourceSpan.of(1, 0, 18, 15)), listItem.getSourceSpans());
+            assertThat(listItem.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 2, 2, 15), SourceSpan.of(1, 0, 18, 15)));
             var bq2 = (BlockQuote) listItem.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 5, 5, 12), SourceSpan.of(1, 0, 18, 15)), bq2.getSourceSpans());
+            assertThat(bq2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 5, 5, 12), SourceSpan.of(1, 0, 18, 15)));
             var paragraph = (Paragraph) bq2.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 7, 7, 10), SourceSpan.of(1, 0, 18, 15)), paragraph.getSourceSpans());
+            assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 7, 7, 10), SourceSpan.of(1, 0, 18, 15)));
         }
 
         {
@@ -256,11 +256,11 @@ public class SourceSpansTest {
             var doc = PARSER.parse("> > foo\n> bar\n");
 
             var bq1 = (BlockQuote) doc.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 0, 0, 7), SourceSpan.of(1, 0, 8, 5)), bq1.getSourceSpans());
+            assertThat(bq1.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 7), SourceSpan.of(1, 0, 8, 5)));
             var bq2 = (BlockQuote) bq1.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 2, 2, 5), SourceSpan.of(1, 2, 10, 3)), bq2.getSourceSpans());
+            assertThat(bq2.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 2, 2, 5), SourceSpan.of(1, 2, 10, 3)));
             var paragraph = (Paragraph) bq2.getLastChild();
-            assertEquals(List.of(SourceSpan.of(0, 4, 4, 3), SourceSpan.of(1, 2, 10, 3)), paragraph.getSourceSpans());
+            assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 4, 4, 3), SourceSpan.of(1, 2, 10, 3)));
         }
     }
 
@@ -354,7 +354,7 @@ public class SourceSpansTest {
 
         Node document = INLINES_PARSER.parse("*hey**");
         Node lastText = document.getFirstChild().getLastChild();
-        assertEquals(List.of(SourceSpan.of(0, 5, 5, 1)), lastText.getSourceSpans());
+        assertThat(lastText.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 5, 5, 1)));
     }
 
     @Test
@@ -381,8 +381,8 @@ public class SourceSpansTest {
 
     private void assertVisualize(String source, String expected) {
         var doc = PARSER.parse(source);
-        assertEquals(expected, SourceSpanRenderer.renderWithLineColumn(doc, source));
-        assertEquals(expected, SourceSpanRenderer.renderWithInputIndex(doc, source));
+        assertThat(SourceSpanRenderer.renderWithLineColumn(doc, source)).isEqualTo(expected);
+        assertThat(SourceSpanRenderer.renderWithInputIndex(doc, source)).isEqualTo(expected);
     }
 
     private static void assertSpans(String input, Class<? extends Node> nodeClass, SourceSpan... expectedSourceSpans) {
@@ -405,7 +405,7 @@ public class SourceSpansTest {
 
     private static void assertSpans(Node rootNode, Class<? extends Node> nodeClass, SourceSpan... expectedSourceSpans) {
         Node node = findNode(rootNode, nodeClass);
-        assertEquals(List.of(expectedSourceSpans), node.getSourceSpans());
+        assertThat(node.getSourceSpans()).isEqualTo(List.of(expectedSourceSpans));
     }
 
     private static Node findNode(Node rootNode, Class<? extends Node> nodeClass) {

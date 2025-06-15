@@ -2,13 +2,11 @@ package org.commonmark.test;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class LinkReferenceDefinitionNodeTest {
 
@@ -17,12 +15,12 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[foo]: /url 'title'");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(2));
-        assertThat(nodes.get(0), instanceOf(Paragraph.class));
+        assertThat(nodes).hasSize(2);
+        assertThat(nodes.get(0)).isInstanceOf(Paragraph.class);
         LinkReferenceDefinition definition = assertDef(nodes.get(1), "foo");
 
-        assertThat(definition.getDestination(), is("/url"));
-        assertThat(definition.getTitle(), is("title"));
+        assertThat(definition.getDestination()).isEqualTo("/url");
+        assertThat(definition.getTitle()).isEqualTo("title");
     }
 
     @Test
@@ -30,10 +28,10 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("[foo]: /url\nThis is a paragraph with a [foo] link.");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(2));
+        assertThat(nodes).hasSize(2);
         // Note that definition is not part of the paragraph, it's a sibling
-        assertThat(nodes.get(0), instanceOf(LinkReferenceDefinition.class));
-        assertThat(nodes.get(1), instanceOf(Paragraph.class));
+        assertThat(nodes.get(0)).isInstanceOf(LinkReferenceDefinition.class);
+        assertThat(nodes.get(1)).isInstanceOf(Paragraph.class);
     }
 
     @Test
@@ -41,8 +39,8 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[foo]: /url\n[bar]: /url");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(3));
-        assertThat(nodes.get(0), instanceOf(Paragraph.class));
+        assertThat(nodes).hasSize(3);
+        assertThat(nodes.get(0)).isInstanceOf(Paragraph.class);
         assertDef(nodes.get(1), "foo");
         assertDef(nodes.get(2), "bar");
     }
@@ -52,14 +50,14 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[foo]: /url1\n[foo]: /url2");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(3));
-        assertThat(nodes.get(0), instanceOf(Paragraph.class));
+        assertThat(nodes).hasSize(3);
+        assertThat(nodes.get(0)).isInstanceOf(Paragraph.class);
         LinkReferenceDefinition def1 = assertDef(nodes.get(1), "foo");
-        assertThat(def1.getDestination(), is("/url1"));
+        assertThat(def1.getDestination()).isEqualTo("/url1");
         // When there's multiple definitions with the same label, the first one "wins", as in reference links will use
         // that. But we still want to preserve the original definitions in the document.
         LinkReferenceDefinition def2 = assertDef(nodes.get(2), "foo");
-        assertThat(def2.getDestination(), is("/url2"));
+        assertThat(def2.getDestination()).isEqualTo("/url2");
     }
 
     @Test
@@ -67,42 +65,42 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("[foo]: /url\nHeading\n=======");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(2));
+        assertThat(nodes).hasSize(2);
         assertDef(nodes.get(0), "foo");
-        assertThat(nodes.get(1), instanceOf(Heading.class));
+        assertThat(nodes.get(1)).isInstanceOf(Heading.class);
     }
 
     @Test
     public void testDefinitionInListItem() {
         Node document = parse("* [foo]: /url\n  [foo]\n");
-        assertThat(document.getFirstChild(), instanceOf(BulletList.class));
+        assertThat(document.getFirstChild()).isInstanceOf(BulletList.class);
         Node item = document.getFirstChild().getFirstChild();
-        assertThat(item, instanceOf(ListItem.class));
+        assertThat(item).isInstanceOf(ListItem.class);
 
         List<Node> nodes = Nodes.getChildren(item);
-        assertThat(nodes.size(), is(2));
+        assertThat(nodes).hasSize(2);
         assertDef(nodes.get(0), "foo");
-        assertThat(nodes.get(1), instanceOf(Paragraph.class));
+        assertThat(nodes.get(1)).isInstanceOf(Paragraph.class);
     }
 
     @Test
     public void testDefinitionInListItem2() {
         Node document = parse("* [foo]: /url\n* [foo]\n");
-        assertThat(document.getFirstChild(), instanceOf(BulletList.class));
+        assertThat(document.getFirstChild()).isInstanceOf(BulletList.class);
 
         List<Node> items = Nodes.getChildren(document.getFirstChild());
-        assertThat(items.size(), is(2));
+        assertThat(items).hasSize(2);
         Node item1 = items.get(0);
         Node item2 = items.get(1);
 
-        assertThat(item1, instanceOf(ListItem.class));
-        assertThat(item2, instanceOf(ListItem.class));
+        assertThat(item1).isInstanceOf(ListItem.class);
+        assertThat(item2).isInstanceOf(ListItem.class);
 
-        assertThat(Nodes.getChildren(item1).size(), is(1));
+        assertThat(Nodes.getChildren(item1)).hasSize(1);
         assertDef(item1.getFirstChild(), "foo");
 
-        assertThat(Nodes.getChildren(item2).size(), is(1));
-        assertThat(item2.getFirstChild(), instanceOf(Paragraph.class));
+        assertThat(Nodes.getChildren(item2)).hasSize(1);
+        assertThat(item2.getFirstChild()).isInstanceOf(Paragraph.class);
     }
 
     @Test
@@ -110,8 +108,8 @@ public class LinkReferenceDefinitionNodeTest {
         Node document = parse("This is a paragraph with a [foo] link.\n\n[fOo]: /url 'title'");
         List<Node> nodes = Nodes.getChildren(document);
 
-        assertThat(nodes.size(), is(2));
-        assertThat(nodes.get(0), instanceOf(Paragraph.class));
+        assertThat(nodes).hasSize(2);
+        assertThat(nodes.get(0)).isInstanceOf(Paragraph.class);
         assertDef(nodes.get(1), "fOo");
     }
 
@@ -121,9 +119,9 @@ public class LinkReferenceDefinitionNodeTest {
     }
 
     private static LinkReferenceDefinition assertDef(Node node, String label) {
-        assertThat(node, instanceOf(LinkReferenceDefinition.class));
+        assertThat(node).isInstanceOf(LinkReferenceDefinition.class);
         LinkReferenceDefinition def = (LinkReferenceDefinition) node;
-        assertThat(def.getLabel(), is(label));
+        assertThat(def.getLabel()).isEqualTo(label);
         return def;
     }
 }

@@ -4,11 +4,11 @@ import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FootnoteMarkdownRendererTest {
     private static final Set<Extension> EXTENSIONS = Set.of(FootnotesExtension.builder().inlineFootnotes(true).build());
@@ -43,7 +43,7 @@ public class FootnoteMarkdownRendererTest {
 
     private void assertRoundTrip(String input) {
         String rendered = parseAndRender(input);
-        assertEquals(input, rendered);
+        assertThat(rendered).isEqualTo(input);
     }
 
     private String parseAndRender(String source) {

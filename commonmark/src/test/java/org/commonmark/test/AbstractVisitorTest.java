@@ -1,10 +1,9 @@
 package org.commonmark.test;
 
 import org.commonmark.node.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AbstractVisitorTest {
 
@@ -26,13 +25,13 @@ public class AbstractVisitorTest {
 
         assertCode("foo", paragraph.getFirstChild());
         assertCode("bar", paragraph.getFirstChild().getNext());
-        assertNull(paragraph.getFirstChild().getNext().getNext());
+        assertThat(paragraph.getFirstChild().getNext().getNext()).isNull();
         assertCode("bar", paragraph.getLastChild());
     }
 
     private static void assertCode(String expectedLiteral, Node node) {
-        assertEquals("Expected node to be a Code node: " + node, Code.class, node.getClass());
+        assertThat(node).isInstanceOf(Code.class);
         Code code = (Code) node;
-        assertEquals(expectedLiteral, code.getLiteral());
+        assertThat(code.getLiteral()).isEqualTo(expectedLiteral);
     }
 }
