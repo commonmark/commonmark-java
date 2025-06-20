@@ -10,6 +10,8 @@ with the exception that 0.x versions can break between minor versions.
 ### Added
 - More documentation with examples for `Node` classes
 ### Changed
+- GitHub tables: Tables are now parsed even if there's no blank line before the
+  table heading, matching GitHub's behavior.
 ### Fixed
 - `MarkdownRenderer`: Fix precedence for `nodeRendererFactory`: Factories passed
   to the builder can now override rendering for core node types.

@@ -60,7 +60,7 @@ public class HeadingParser extends AbstractBlockParser {
                 if (!paragraph.isEmpty()) {
                     return BlockStart.of(new HeadingParser(setextHeadingLevel, paragraph))
                             .atIndex(line.getContent().length())
-                            .replaceActiveBlockParser();
+                            .replaceParagraphLines(paragraph.getLines().size());
                 }
             }
 
