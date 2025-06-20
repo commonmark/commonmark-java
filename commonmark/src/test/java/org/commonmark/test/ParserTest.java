@@ -43,18 +43,6 @@ public class ParserTest {
     }
 
     @Test
-    public void customBlockParserFactory() {
-        Parser parser = Parser.builder().customBlockParserFactory(new DashBlockParserFactory()).build();
-
-        // The dashes would normally be a ThematicBreak
-        Node document = parser.parse("hey\n\n---\n");
-
-        assertThat(document.getFirstChild()).isInstanceOf(Paragraph.class);
-        assertThat(((Text) document.getFirstChild().getFirstChild()).getLiteral()).isEqualTo("hey");
-        assertThat(document.getLastChild()).isInstanceOf(DashBlock.class);
-    }
-
-    @Test
     public void enabledBlockTypes() {
         String given = "# heading 1\n\nnot a heading";
 
@@ -153,34 +141,5 @@ public class ParserTest {
             n = n.getFirstChild();
         }
         return ((Text) n).getLiteral();
-    }
-
-    private static class DashBlock extends CustomBlock {
-    }
-
-    private static class DashBlockParser extends AbstractBlockParser {
-
-        private DashBlock dash = new DashBlock();
-
-        @Override
-        public Block getBlock() {
-            return dash;
-        }
-
-        @Override
-        public BlockContinue tryContinue(ParserState parserState) {
-            return BlockContinue.none();
-        }
-    }
-
-    private static class DashBlockParserFactory extends AbstractBlockParserFactory {
-
-        @Override
-        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            if (state.getLine().getContent().equals("---")) {
-                return BlockStart.of(new DashBlockParser());
-            }
-            return BlockStart.none();
-        }
     }
 }

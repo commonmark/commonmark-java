@@ -270,9 +270,15 @@ public class DocumentParser implements ParserState {
             }
 
             List<SourceSpan> replacedSourceSpans = null;
-            if (blockStart.isReplaceActiveBlockParser()) {
-                Block replacedBlock = prepareActiveBlockParserForReplacement();
-                replacedSourceSpans = replacedBlock.getSourceSpans();
+            if (blockStart.getReplaceParagraphLines() >= 1 || blockStart.isReplaceActiveBlockParser()) {
+                var activeBlockParser = getActiveBlockParser();
+                if (activeBlockParser instanceof ParagraphParser) {
+                    var paragraphParser = (ParagraphParser) activeBlockParser;
+                    var lines = blockStart.isReplaceActiveBlockParser() ? Integer.MAX_VALUE : blockStart.getReplaceParagraphLines();
+                    replacedSourceSpans = replaceParagraphLines(lines, paragraphParser);
+                } else if (blockStart.isReplaceActiveBlockParser()) {
+                    replacedSourceSpans = prepareActiveBlockParserForReplacement(activeBlockParser);
+                }
             }
 
             for (BlockParser newBlockParser : blockStart.getBlockParsers()) {
@@ -498,24 +504,23 @@ public class DocumentParser implements ParserState {
         return openBlockParsers.remove(openBlockParsers.size() - 1);
     }
 
-    private Block prepareActiveBlockParserForReplacement() {
-        // Note that we don't want to parse inlines, as it's getting replaced.
-        BlockParser old = deactivateBlockParser().blockParser;
+    private List<SourceSpan> replaceParagraphLines(int lines, ParagraphParser paragraphParser) {
+        // Remove lines from paragraph as the new block is using them.
+        // If all lines are used, this also unlinks the Paragraph block.
+        var sourceSpans = paragraphParser.removeLines(lines);
+        // Close the paragraph block parser, which will finalize it.
+        closeBlockParsers(1);
+        return sourceSpans;
+    }
 
-        if (old instanceof ParagraphParser) {
-            ParagraphParser paragraphParser = (ParagraphParser) old;
-            // Collect any link reference definitions. Note that replacing the active block parser is done after a
-            // block parser got the current paragraph content using MatchedBlockParser#getContentString. In case the
-            // paragraph started with link reference definitions, we parse and strip them before the block parser gets
-            // the content. We want to keep them.
-            // If no replacement happens, we collect the definitions as part of finalizing blocks.
-            addDefinitionsFrom(paragraphParser);
-        }
+    private List<SourceSpan> prepareActiveBlockParserForReplacement(BlockParser blockParser) {
+        // Note that we don't want to parse inlines here, as it's getting replaced.
+        deactivateBlockParser();
 
         // Do this so that source positions are calculated, which we will carry over to the replacing block.
-        old.closeBlock();
-        old.getBlock().unlink();
-        return old.getBlock();
+        blockParser.closeBlock();
+        blockParser.getBlock().unlink();
+        return blockParser.getBlock().getSourceSpans();
     }
 
     private Document finalizeAndProcess() {

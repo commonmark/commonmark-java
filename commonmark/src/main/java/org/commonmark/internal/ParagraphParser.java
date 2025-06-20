@@ -79,4 +79,8 @@ public class ParagraphParser extends AbstractBlockParser {
     public SourceLines getParagraphLines() {
         return linkReferenceDefinitionParser.getParagraphLines();
     }
+
+    public List<SourceSpan> removeLines(int lines) {
+        return linkReferenceDefinitionParser.removeLines(lines);
+    }
 }

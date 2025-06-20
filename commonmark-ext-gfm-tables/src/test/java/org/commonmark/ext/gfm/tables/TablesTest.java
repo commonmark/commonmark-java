@@ -1,8 +1,7 @@
 package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.Extension;
-import org.commonmark.node.Node;
-import org.commonmark.node.SourceSpan;
+import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.AttributeProvider;
@@ -77,11 +76,6 @@ public class TablesTest extends RenderingTestCase {
     @Test
     public void separatorNeedsPipes() {
         assertRendering("Abc|Def\n|--- ---", "<p>Abc|Def\n|--- ---</p>\n");
-    }
-
-    @Test
-    public void headerMustBeOneLine() {
-        assertRendering("No\nAbc|Def\n---|---", "<p>No\nAbc|Def\n---|---</p>\n");
     }
 
     @Test
@@ -703,6 +697,26 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void interruptsParagraph() {
+        assertRendering("text\n" +
+                "|a  |\n" +
+                "|---|\n" +
+                "|b  |", "<p>text</p>\n" +
+                "<table>\n" +
+                "<thead>\n" +
+                "<tr>\n" +
+                "<th>a</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody>\n" +
+                "<tr>\n" +
+                "<td>b</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n");
+    }
+
+    @Test
     public void attributeProviderIsApplied() {
         AttributeProviderFactory factory = new AttributeProviderFactory() {
             @Override
@@ -833,6 +847,36 @@ public class TablesTest extends RenderingTestCase {
         TableCell bodyRow3Cell2 = (TableCell) bodyRow3.getLastChild();
         assertThat(bodyRow3Cell1.getSourceSpans()).isEqualTo(List.of());
         assertThat(bodyRow3Cell2.getSourceSpans()).isEqualTo(List.of());
+    }
+
+    @Test
+    public void sourceSpansWhenInterrupting() {
+        var parser = Parser.builder()
+                .extensions(EXTENSIONS)
+                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                .build();
+        var document = parser.parse("a\n" +
+                "bc\n" +
+                "|de|\n" +
+                "|---|\n" +
+                "|fg|");
+
+        var paragraph = (Paragraph) document.getFirstChild();
+        var text = (Text) paragraph.getFirstChild();
+        assertThat(text.getLiteral()).isEqualTo("a");
+        assertThat(text.getNext()).isInstanceOf(SoftLineBreak.class);
+        var text2 = (Text) text.getNext().getNext();
+        assertThat(text2.getLiteral()).isEqualTo("bc");
+
+        assertThat(paragraph.getSourceSpans()).isEqualTo(List.of(
+                SourceSpan.of(0, 0, 0, 1),
+                SourceSpan.of(1, 0, 2, 2)));
+
+        var table = (TableBlock) document.getLastChild();
+        assertThat(table.getSourceSpans()).isEqualTo(List.of(
+                SourceSpan.of(2, 0, 5, 4),
+                SourceSpan.of(3, 0, 10, 5),
+                SourceSpan.of(4, 0, 16, 4)));
     }
 
     @Override

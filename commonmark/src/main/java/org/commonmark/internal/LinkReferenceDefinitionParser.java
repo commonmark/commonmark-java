@@ -10,6 +10,7 @@ import org.commonmark.parser.beta.Position;
 import org.commonmark.parser.beta.Scanner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -100,6 +101,14 @@ public class LinkReferenceDefinitionParser {
 
     State getState() {
         return state;
+    }
+
+    List<SourceSpan> removeLines(int lines) {
+        var removedSpans = Collections.unmodifiableList(new ArrayList<>(
+                sourceSpans.subList(Math.max(sourceSpans.size() - lines, 0), sourceSpans.size())));
+        removeLast(lines, paragraphLines);
+        removeLast(lines, sourceSpans);
+        return removedSpans;
     }
 
     private boolean startDefinition(Scanner scanner) {
@@ -267,6 +276,16 @@ public class LinkReferenceDefinitionParser {
         referenceValid = false;
         destination = null;
         title = null;
+    }
+
+    private static <T> void removeLast(int n, List<T> list) {
+        if (n >= list.size()) {
+            list.clear();
+        } else {
+            for (int i = 0; i < n; i++) {
+                list.remove(list.size() - 1);
+            }
+        }
     }
 
     enum State {

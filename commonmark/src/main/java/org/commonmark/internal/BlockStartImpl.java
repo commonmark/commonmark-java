@@ -9,6 +9,7 @@ public class BlockStartImpl extends BlockStart {
     private int newIndex = -1;
     private int newColumn = -1;
     private boolean replaceActiveBlockParser = false;
+    private int replaceParagraphLines = 0;
 
     public BlockStartImpl(BlockParser... blockParsers) {
         this.blockParsers = blockParsers;
@@ -30,6 +31,10 @@ public class BlockStartImpl extends BlockStart {
         return replaceActiveBlockParser;
     }
 
+    int getReplaceParagraphLines() {
+        return replaceParagraphLines;
+    }
+
     @Override
     public BlockStart atIndex(int newIndex) {
         this.newIndex = newIndex;
@@ -48,4 +53,12 @@ public class BlockStartImpl extends BlockStart {
         return this;
     }
 
+    @Override
+    public BlockStart replaceParagraphLines(int lines) {
+        if (!(lines >= 1)) {
+            throw new IllegalArgumentException("Lines must be >= 1");
+        }
+        this.replaceParagraphLines = lines;
+        return this;
+    }
 }
