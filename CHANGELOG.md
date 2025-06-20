@@ -8,18 +8,18 @@ with the exception that 0.x versions can break between minor versions.
 
 ## [0.25.0] - 2025-06-20
 ### Added
-- Include OSGi metadata in jars (`META-INF/MANIFEST.MF` files)
-- More documentation with examples for `Node` classes
+- Include OSGi metadata in jars (`META-INF/MANIFEST.MF` files) (#378)
+- More documentation with examples for `Node` classes (#370)
 ### Changed
 - GitHub tables: Tables are now parsed even if there's no blank line before the
-  table heading, matching GitHub's behavior.
+  table heading, matching GitHub's behavior. (#381)
 ### Fixed
 - `MarkdownRenderer`: Fix precedence for `nodeRendererFactory`: Factories passed
-  to the builder can now override rendering for core node types.
+  to the builder can now override rendering for core node types. (#368)
 - `MarkdownRenderer`: Fix exception with ordered lists with a long first number
   followed by a shorter one (#382)
-- Fix warning in Eclipse about "missing 'requires transitive'"
-- Fix Android incompatibility with `requireNonNullElseGet`
+- Fix warning in Eclipse about "missing 'requires transitive'" (#358)
+- Fix Android incompatibility with `requireNonNullElseGet` (#369)
 
 ## [0.24.0] - 2024-10-21
 ### Added
