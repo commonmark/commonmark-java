@@ -19,11 +19,12 @@ jobs:
       - name: Set up Maven Central repository
         uses: actions/setup-java@v4
         with:
-          java-version: 11
+          java-version: 24
           distribution: 'zulu'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME # env variable to use for username in release
-          server-password: MAVEN_PASSWORD # env variable to use for password in release
+          # See https://central.sonatype.org/publish/publish-portal-maven/
+          server-id: central
+          server-username: CENTRAL_USERNAME # env variable to use for username in release
+          server-password: CENTRAL_PASSWORD # env variable to use for password in release
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable to use for passphrase in release
 
@@ -37,6 +38,6 @@ jobs:
           mvn -B -Dusername=${{ secrets.GH_USERNAME }} -Dpassword=${{ secrets.GH_ACCESS_TOKEN }} release:prepare
           mvn -B release:perform
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
