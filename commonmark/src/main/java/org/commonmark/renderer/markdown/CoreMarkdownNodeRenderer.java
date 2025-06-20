@@ -257,7 +257,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             throw new IllegalStateException("Unknown list holder type: " + listHolder);
         }
         Integer contentIndent = listItem.getContentIndent();
-        String spaces = contentIndent != null ? repeat(" ", contentIndent - marker.length()) : " ";
+        String spaces = contentIndent != null ? repeat(" ", Math.max(contentIndent - marker.length(), 1)) : " ";
         writer.writePrefix(marker);
         writer.writePrefix(spaces);
         writer.pushPrefix(repeat(" ", marker.length() + spaces.length()));

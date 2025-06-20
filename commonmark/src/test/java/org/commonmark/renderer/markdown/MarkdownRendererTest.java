@@ -176,6 +176,13 @@ public class MarkdownRendererTest {
         assertRendering("", "2) Test\n", render(doc));
     }
 
+    @Test
+    public void testOrderedListItemsWithStartNumberLongerThanLaterNumber() {
+        var source = "10001.\n20.\n";
+        var doc = parse(source);
+        assertRendering(source, "10001. \n10002. \n", render(doc));
+    }
+
     // Inlines
 
     @Test

@@ -15,6 +15,8 @@ with the exception that 0.x versions can break between minor versions.
 ### Fixed
 - `MarkdownRenderer`: Fix precedence for `nodeRendererFactory`: Factories passed
   to the builder can now override rendering for core node types.
+- `MarkdownRenderer`: Fix exception with ordered lists with a long first number
+  followed by a shorter one (#382)
 - Fix warning in Eclipse about "missing 'requires transitive'"
 - Fix Android incompatibility with `requireNonNullElseGet`
 
