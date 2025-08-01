@@ -2,6 +2,7 @@ package org.commonmark.integration;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
+import org.commonmark.ext.footnotes.FootnotesExtension;
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -15,6 +16,7 @@ public class Extensions {
 
     static final List<Extension> ALL_EXTENSIONS = List.of(
             AutolinkExtension.create(),
+            FootnotesExtension.create(),
             ImageAttributesExtension.create(),
             InsExtension.create(),
             StrikethroughExtension.create(),

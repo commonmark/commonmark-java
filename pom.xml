@@ -141,6 +141,11 @@
             </dependency>
             <dependency>
                 <groupId>org.commonmark</groupId>
+                <artifactId>commonmark-ext-footnotes</artifactId>
+                <version>0.25.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-image-attributes</artifactId>
                 <version>0.25.1-SNAPSHOT</version>
             </dependency>

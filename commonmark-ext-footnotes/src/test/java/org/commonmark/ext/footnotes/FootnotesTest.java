@@ -103,6 +103,26 @@ public class FootnotesTest {
     }
 
     @Test
+    public void testDefContainsMultipleParagraphs() {
+        var doc = PARSER.parse("[^1]: footnote p1\n\n    footnote p2\n");
+        var def = find(doc, FootnoteDefinition.class);
+        assertThat(def.getLabel()).isEqualTo("1");
+        var p1 = (Paragraph) def.getFirstChild();
+        assertText("footnote p1", p1.getFirstChild());
+        var p2 = (Paragraph) p1.getNext();
+        assertText("footnote p2", p2.getFirstChild());
+    }
+
+    @Test
+    public void testDefFollowedByParagraph() {
+        var doc = PARSER.parse("[^1]: footnote\n\nnormal paragraph\n");
+        var def = find(doc, FootnoteDefinition.class);
+        assertThat(def.getLabel()).isEqualTo("1");
+        assertText("footnote", def.getFirstChild().getFirstChild());
+        assertText("normal paragraph", def.getNext().getFirstChild());
+    }
+
+    @Test
     public void testDefContainsList() {
         var doc = PARSER.parse("[^1]: - foo\n    - bar\n");
         var def = find(doc, FootnoteDefinition.class);

@@ -23,7 +23,7 @@ public class FootnoteMarkdownRendererTest {
     @Test
     public void testUnreferenced() {
         // Whether a reference has a corresponding definition or vice versa shouldn't matter for Markdown rendering.
-        assertRoundTrip("Test [^foo]\n\n[^foo]: one\n[^bar]: two\n");
+        assertRoundTrip("Test [^foo]\n\n[^foo]: one\n\n[^bar]: two\n");
     }
 
     @Test
@@ -34,6 +34,18 @@ public class FootnoteMarkdownRendererTest {
     @Test
     public void testBackslashInLabel() {
         assertRoundTrip("[^\\foo]\n\n[^\\foo]: note\n");
+    }
+
+    @Test
+    public void testMultipleLines() {
+        assertRoundTrip("Test [^1]\n\n[^1]: footnote l1\n    footnote l2\n");
+    }
+
+    @Test
+    public void testMultipleParagraphs() {
+        // Note that the line between p1 and p2 could be blank too (instead of 4 spaces), but we currently don't
+        // preserve that information.
+        assertRoundTrip("Test [^1]\n\n[^1]: footnote p1\n    \n    footnote p2\n");
     }
 
     @Test

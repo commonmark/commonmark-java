@@ -18,16 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MarkdownRendererIntegrationTest {
 
-    private static final List<Extension> EXTENSIONS = List.of(
-            AutolinkExtension.create(),
-            ImageAttributesExtension.create(),
-            InsExtension.create(),
-            StrikethroughExtension.create(),
-            TablesExtension.create(),
-            TaskListItemsExtension.create(),
-            YamlFrontMatterExtension.create());
-    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
+    private static final Parser PARSER = Parser.builder().extensions(Extensions.ALL_EXTENSIONS).build();
+    private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(Extensions.ALL_EXTENSIONS).build();
 
     @Test
     public void testStrikethroughInTable() {

@@ -22,6 +22,10 @@
         </dependency>
         <dependency>
             <groupId>org.commonmark</groupId>
+            <artifactId>commonmark-ext-footnotes</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonmark</groupId>
             <artifactId>commonmark-ext-ins</artifactId>
         </dependency>
         <dependency>

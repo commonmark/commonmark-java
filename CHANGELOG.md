@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Fixed
+- footnotes: Fix parsing of footnote definitions containing multiple paragraphs
+  separated by blank lines. Before it only worked if paragraphs were separated
+  by lines of 4 spaces. (#388)
+
 ## [0.25.0] - 2025-06-20
 ### Added
 - Include OSGi metadata in jars (`META-INF/MANIFEST.MF` files) (#378)

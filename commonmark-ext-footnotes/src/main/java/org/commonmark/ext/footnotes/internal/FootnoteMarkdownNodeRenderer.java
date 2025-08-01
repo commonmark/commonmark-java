@@ -55,9 +55,7 @@ public class FootnoteMarkdownNodeRenderer implements NodeRenderer {
         writer.raw("]: ");
 
         writer.pushPrefix("    ");
-        writer.pushTight(true);
         renderChildren(def);
-        writer.popTight();
         writer.popPrefix();
     }
 
