@@ -312,6 +312,11 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         }
 
         @Override
+        public void visit(Code code) {
+            sb.append(code.getLiteral());
+        }
+
+        @Override
         public void visit(SoftLineBreak softLineBreak) {
             sb.append('\n');
         }
