@@ -280,6 +280,16 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void imageAltTextWithInlines() {
+        assertThat(defaultRenderer().render(parse("![_foo_ **bar** [link](/url)](/url)\n"))).isEqualTo("<p><img src=\"/url\" alt=\"foo bar link\" /></p>\n");
+    }
+
+    @Test
+    public void imageAltTextWithCode() {
+        assertThat(defaultRenderer().render(parse("![`foo` bar](/url)\n"))).isEqualTo("<p><img src=\"/url\" alt=\"foo bar\" /></p>\n");
+    }
+
+    @Test
     public void canRenderContentsOfSingleParagraph() {
         Node paragraphs = parse("Here I have a test [link](http://www.google.com)");
         Node paragraph = paragraphs.getFirstChild();
