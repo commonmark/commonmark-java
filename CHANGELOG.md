@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Fixed
+
+- Fix rendering of image alt text to include contents of code spans (`` `code` ``). (#398)
+
 ## [0.25.1] - 2025-08-01
 ### Fixed
 - footnotes: Fix parsing of footnote definitions containing multiple paragraphs
