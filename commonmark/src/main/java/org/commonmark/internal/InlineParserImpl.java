@@ -440,16 +440,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         opener.bracketNode.unlink();
         removeLastBracket();
 
-        // Links within links are not allowed. We found this link, so there can be no other link around it.
+        // Links within links are not allowed. We found this link, so there can be no other links around it.
         if (opener.markerNode == null) {
-            Bracket bracket = lastBracket;
-            while (bracket != null) {
-                if (bracket.markerNode == null) {
-                    // Disallow link opener. It will still get matched, but will not result in a link.
-                    bracket.allowed = false;
-                }
-                bracket = bracket.previous;
-            }
+            disallowPreviousLinks();
         }
 
         return wrapperNode;
@@ -475,6 +468,15 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             n.unlink();
             n = next;
         }
+
+        // Links within links are not allowed. We found this link, so there can be no other links around it.
+        // Note that this makes any syntax like `[foo]` behave the same as built-in links, which is probably a good
+        // default (it works for footnotes). It might be useful for a `LinkProcessor` to be able to specify the
+        // behavior; something we could add to `LinkResult` in the future if requested.
+        if (opener.markerNode == null || !includeMarker) {
+            disallowPreviousLinks();
+        }
+
         return node;
     }
 
@@ -487,6 +489,17 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
     private void removeLastBracket() {
         lastBracket = lastBracket.previous;
+    }
+
+    private void disallowPreviousLinks() {
+        Bracket bracket = lastBracket;
+        while (bracket != null) {
+            if (bracket.markerNode == null) {
+                // Disallow link opener. It will still get matched, but will not result in a link.
+                bracket.allowed = false;
+            }
+            bracket = bracket.previous;
+        }
     }
 
     /**
