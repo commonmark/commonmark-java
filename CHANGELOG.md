@@ -7,9 +7,16 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 with the exception that 0.x versions can break between minor versions.
 
 ## Unreleased
+### Changed
+- A `LinkProcessor` using `replaceWith` now also stops outer links from being
+  parsed as links, same as with `wrapTextIn`. This prevents nested links, see
+  footnotes change below.
 ### Fixed
-
 - Fix rendering of image alt text to include contents of code spans (`` `code` ``). (#398)
+- footnotes: Fix footnotes nested within links. Before, both the link and the
+  footnote reference would be parsed and lead to nested `<a>` elements, which
+  is disallowed. Now, only the footnote is parsed and the outer link becomes
+  plain text; this matches the behavior of links. (#400)
 
 ## [0.25.1] - 2025-08-01
 ### Fixed

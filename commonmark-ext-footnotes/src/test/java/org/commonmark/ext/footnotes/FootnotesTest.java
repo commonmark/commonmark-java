@@ -255,6 +255,29 @@ public class FootnotesTest {
     }
 
     @Test
+    public void testFootnoteInLink() {
+        // Expected to behave the same way as a link within a link, see https://spec.commonmark.org/0.31.2/#example-518
+        // i.e. the first (inner) link is parsed, which means the outer one becomes plain text, as nesting links is not
+        // allowed.
+        var doc = PARSER.parse("[link with footnote ref [^1]](https://example.com)\n\n[^1]: footnote\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertThat(ref.getLabel()).isEqualTo("1");
+        var paragraph = doc.getFirstChild();
+        assertText("[link with footnote ref ", paragraph.getFirstChild());
+        assertText("](https://example.com)", paragraph.getLastChild());
+    }
+
+    @Test
+    public void testFootnoteWithMarkerInLink() {
+        var doc = PARSER.parse("[link with footnote ref ![^1]](https://example.com)\n\n[^1]: footnote\n");
+        var ref = find(doc, FootnoteReference.class);
+        assertThat(ref.getLabel()).isEqualTo("1");
+        var paragraph = doc.getFirstChild();
+        assertText("[link with footnote ref !", paragraph.getFirstChild());
+        assertText("](https://example.com)", paragraph.getLastChild());
+    }
+
+    @Test
     public void testInlineFootnote() {
         var extension = FootnotesExtension.builder().inlineFootnotes(true).build();
         var parser = Parser.builder().extensions(Set.of(extension)).build();
