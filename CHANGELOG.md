@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## Unreleased
+## [0.26.0] - 2025-09-13
 ### Changed
 - A `LinkProcessor` using `replaceWith` now also stops outer links from being
   parsed as links, same as with `wrapTextIn`. This prevents nested links, see
@@ -492,6 +492,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
+[0.26.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.25.1...commonmark-parent-0.26.0
 [0.25.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.25.0...commonmark-parent-0.25.1
 [0.25.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.24.0...commonmark-parent-0.25.0
 [0.24.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.23.0...commonmark-parent-0.24.0
