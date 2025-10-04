@@ -19,6 +19,12 @@ public class AutolinkTest extends RenderingTestCase {
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
+    private static final Set<Extension> WWW_EXTENSIONS = Set.of(AutolinkExtension.builder()
+        .linkTypes(AutolinkType.URL, AutolinkType.EMAIL, AutolinkType.WWW)
+        .build());
+    private static final Parser WWW_PARSER = Parser.builder().extensions(WWW_EXTENSIONS).build();
+    private static final HtmlRenderer WWW_RENDERER = HtmlRenderer.builder().extensions(WWW_EXTENSIONS).build();
+
     @Test
     public void oneTextNode() {
         assertRendering("foo http://one.org/ bar http://two.org/",
@@ -55,6 +61,18 @@ public class AutolinkTest extends RenderingTestCase {
     public void dontLinkTextWithinLinks() {
         assertRendering("<http://example.com>",
                 "<p><a href=\"http://example.com\">http://example.com</a></p>\n");
+    }
+
+    @Test
+    public void wwwLinksDontWorkByDefault() {
+        assertRendering("www.example.com",
+                "<p>www.example.com</p>\n");
+    }
+
+    @Test
+    public void wwwLinks() {
+        String html = WWW_RENDERER.render(WWW_PARSER.parse("www.example.com"));
+        assertThat(html).isEqualTo("<p><a href=\"http://www.example.com\">www.example.com</a></p>\n");
     }
 
     @Test
