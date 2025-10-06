@@ -60,10 +60,6 @@ public class AutolinkExtension implements Parser.ParserExtension {
                 throw new NullPointerException("linkTypes must not be null");
             }
 
-            if (linkTypes.length == 0) {
-                throw new IllegalArgumentException("linkTypes must not be empty");
-            }
-
             return this.linkTypes(Set.of(linkTypes));
         }
 

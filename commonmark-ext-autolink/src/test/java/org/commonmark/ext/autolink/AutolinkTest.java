@@ -72,7 +72,7 @@ public class AutolinkTest extends RenderingTestCase {
     @Test
     public void wwwLinks() {
         String html = WWW_RENDERER.render(WWW_PARSER.parse("www.example.com"));
-        assertThat(html).isEqualTo("<p><a href=\"http://www.example.com\">www.example.com</a></p>\n");
+        assertThat(html).isEqualTo("<p><a href=\"https://www.example.com\">www.example.com</a></p>\n");
     }
 
     @Test

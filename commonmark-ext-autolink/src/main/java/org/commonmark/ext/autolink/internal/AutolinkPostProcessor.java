@@ -14,10 +14,6 @@ public class AutolinkPostProcessor implements PostProcessor {
 
     private final LinkExtractor linkExtractor;
 
-    public AutolinkPostProcessor() {
-        this(EnumSet.of(AutolinkType.URL, AutolinkType.EMAIL));
-    }
-
     public AutolinkPostProcessor(Set<AutolinkType> linkTypes) {
         if (linkTypes == null) {
             throw new NullPointerException("linkTypes must not be null");
@@ -27,7 +23,7 @@ public class AutolinkPostProcessor implements PostProcessor {
             throw new IllegalArgumentException("linkTypes must not be empty");
         }
 
-        EnumSet<LinkType> types = EnumSet.noneOf(LinkType.class);
+        var types = EnumSet.noneOf(LinkType.class);
         for (AutolinkType linkType : linkTypes) {
             switch (linkType) {
                 case URL:
@@ -99,12 +95,12 @@ public class AutolinkPostProcessor implements PostProcessor {
     }
 
     private static String getDestination(LinkSpan linkSpan, String linkText) {
-        LinkType type = linkSpan.getType();
+        var type = linkSpan.getType();
 
         if (type == LinkType.EMAIL) {
             return "mailto:" + linkText;
         } else if (type == LinkType.WWW) {
-            return "http://" + linkText;
+            return "https://" + linkText;
         } else {
             return linkText;
         }
