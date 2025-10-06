@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## Unreleased
+### Added
+- Autolink extension: Now supports configuration of different link types that
+  should be recognized and converted to links. See `AutolinkExtension#builder`
+  | Type    | Default? | Description                                               |
+  | `URL`   | Yes      | URL with a protocol such as `https://example.com`         |
+  | `EMAIL` | Yes      | Email address such as `foo@example.com`                   |
+  | `WWW`   | No       | An address beginning with `www` such as `www.example.com` |
+
 ## [0.26.0] - 2025-09-13
 ### Changed
 - A `LinkProcessor` using `replaceWith` now also stops outer links from being
