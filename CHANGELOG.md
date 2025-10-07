@@ -16,15 +16,13 @@ with the exception that 0.x versions can break between minor versions.
   | `URL`   | Yes      | URL with a protocol such as `https://example.com`      |
   | `EMAIL` | Yes      | Email address such as `foo@example.com`                |
   | `WWW`   | Yes      | Address beginning with `www` such as `www.example.com` |
+  
+  Note that This changes the behavior of `AutolinkExtension.create()` to now also
+  include `WWW` links by default. To re-enable the previous behavior, use:
 
-  > [!NOTE]
-  >
-  > This changes the behavior of `AutolinkExtension.create()` to now also include
-  > `WWW` links by default. To re-enable the previous behavior, use:
-  >
-  > ```java
-  > AutolinkExtension.builder().linkTypes(AutolinkType.URL, AutolinkType.EMAIL).build();
-  > ```
+  ```java
+  AutolinkExtension.builder().linkTypes(AutolinkType.URL, AutolinkType.EMAIL).build();
+  ```
 
 ## [0.26.0] - 2025-09-13
 ### Changed

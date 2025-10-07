@@ -66,7 +66,7 @@ public class AutolinkTest extends RenderingTestCase {
     @Test
     public void wwwLinks() {
         assertRendering("www.example.com",
-                "<p><a href=\"https://www.example.com\">www.example.com</a></p>\n");
+                "<p><a href=\"http://www.example.com\">www.example.com</a></p>\n");
     }
 
     @Test
