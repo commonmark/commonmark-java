@@ -10,11 +10,21 @@ with the exception that 0.x versions can break between minor versions.
 ### Added
 - Autolink extension: Now supports configuration of different link types that
   should be recognized and converted to links. See `AutolinkExtension#builder`
-  | Type    | Default? | Description                                               |
-  |---------|----------|-----------------------------------------------------------|
-  | `URL`   | Yes      | URL with a protocol such as `https://example.com`         |
-  | `EMAIL` | Yes      | Email address such as `foo@example.com`                   |
-  | `WWW`   | No       | An address beginning with `www` such as `www.example.com` |
+
+  | Type    | Default? | Description                                            |
+  |---------|----------|--------------------------------------------------------|
+  | `URL`   | Yes      | URL with a protocol such as `https://example.com`      |
+  | `EMAIL` | Yes      | Email address such as `foo@example.com`                |
+  | `WWW`   | Yes      | Address beginning with `www` such as `www.example.com` |
+
+  > [!NOTE]
+  >
+  > This changes the behavior of `AutolinkExtension.create()` to now also include
+  > `WWW` links by default. To re-enable the previous behavior, use:
+  >
+  > ```java
+  > AutolinkExtension.builder().linkTypes(AutolinkType.URL, AutolinkType.EMAIL).build();
+  > ```
 
 ## [0.26.0] - 2025-09-13
 ### Changed

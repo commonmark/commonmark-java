@@ -100,7 +100,8 @@ public class AutolinkPostProcessor implements PostProcessor {
         if (type == LinkType.EMAIL) {
             return "mailto:" + linkText;
         } else if (type == LinkType.WWW) {
-            return "https://" + linkText;
+            // Use http instead of https (see https://github.github.com/gfm/#extended-www-autolink)
+            return "http://" + linkText;
         } else {
             return linkText;
         }

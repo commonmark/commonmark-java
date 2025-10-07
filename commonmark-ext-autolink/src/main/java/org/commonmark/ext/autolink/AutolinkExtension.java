@@ -48,11 +48,11 @@ public class AutolinkExtension implements Parser.ParserExtension {
 
     public static class Builder {
 
-        private Set<AutolinkType> linkTypes = EnumSet.of(AutolinkType.URL, AutolinkType.EMAIL);
+        private Set<AutolinkType> linkTypes = EnumSet.allOf(AutolinkType.class);
 
         /**
-         * @param linkTypes the link types that should be converted. By default, {@link AutolinkType#URL}
-         *                  and {@link AutolinkType#EMAIL} are converted.
+         * @param linkTypes the link types that should be converted. By default,
+         *                  all {@link AutolinkType}s are converted.
          * @return {@code this}
          */
         public Builder linkTypes(AutolinkType... linkTypes) {
@@ -64,8 +64,8 @@ public class AutolinkExtension implements Parser.ParserExtension {
         }
 
         /**
-         * @param linkTypes the link types that should be converted. By default, {@link AutolinkType#URL}
-         *                  and {@link AutolinkType#EMAIL} are converted.
+         * @param linkTypes the link types that should be converted. By default,
+         *                  all {@link AutolinkType}s are converted.
          * @return {@code this}
          */
         public Builder linkTypes(Set<AutolinkType> linkTypes) {

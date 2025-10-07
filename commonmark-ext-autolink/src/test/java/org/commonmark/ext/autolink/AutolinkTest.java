@@ -19,11 +19,11 @@ public class AutolinkTest extends RenderingTestCase {
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
-    private static final Set<Extension> WWW_EXTENSIONS = Set.of(AutolinkExtension.builder()
-        .linkTypes(AutolinkType.URL, AutolinkType.EMAIL, AutolinkType.WWW)
+    private static final Set<Extension> NO_WWW_EXTENSIONS = Set.of(AutolinkExtension.builder()
+        .linkTypes(AutolinkType.URL, AutolinkType.EMAIL)
         .build());
-    private static final Parser WWW_PARSER = Parser.builder().extensions(WWW_EXTENSIONS).build();
-    private static final HtmlRenderer WWW_RENDERER = HtmlRenderer.builder().extensions(WWW_EXTENSIONS).build();
+    private static final Parser NO_WWW_PARSER = Parser.builder().extensions(NO_WWW_EXTENSIONS).build();
+    private static final HtmlRenderer NO_WWW_RENDERER = HtmlRenderer.builder().extensions(NO_WWW_EXTENSIONS).build();
 
     @Test
     public void oneTextNode() {
@@ -64,15 +64,15 @@ public class AutolinkTest extends RenderingTestCase {
     }
 
     @Test
-    public void wwwLinksDontWorkByDefault() {
+    public void wwwLinks() {
         assertRendering("www.example.com",
-                "<p>www.example.com</p>\n");
+                "<p><a href=\"https://www.example.com\">www.example.com</a></p>\n");
     }
 
     @Test
-    public void wwwLinks() {
-        String html = WWW_RENDERER.render(WWW_PARSER.parse("www.example.com"));
-        assertThat(html).isEqualTo("<p><a href=\"https://www.example.com\">www.example.com</a></p>\n");
+    public void noWwwLinks() {
+        String html = NO_WWW_RENDERER.render(NO_WWW_PARSER.parse("www.example.com"));
+        assertThat(html).isEqualTo("<p>www.example.com</p>\n");
     }
 
     @Test
