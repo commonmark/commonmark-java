@@ -1,5 +1,6 @@
 package org.commonmark.ext.autolink.internal;
 
+import org.commonmark.ext.autolink.AutolinkType;
 import org.commonmark.node.*;
 import org.commonmark.parser.PostProcessor;
 import org.nibor.autolink.LinkExtractor;
@@ -11,9 +12,36 @@ import java.util.*;
 
 public class AutolinkPostProcessor implements PostProcessor {
 
-    private LinkExtractor linkExtractor = LinkExtractor.builder()
-            .linkTypes(EnumSet.of(LinkType.URL, LinkType.EMAIL))
-            .build();
+    private final LinkExtractor linkExtractor;
+
+    public AutolinkPostProcessor(Set<AutolinkType> linkTypes) {
+        if (linkTypes == null) {
+            throw new NullPointerException("linkTypes must not be null");
+        }
+
+        if (linkTypes.isEmpty()) {
+            throw new IllegalArgumentException("linkTypes must not be empty");
+        }
+
+        var types = EnumSet.noneOf(LinkType.class);
+        for (AutolinkType linkType : linkTypes) {
+            switch (linkType) {
+                case URL:
+                    types.add(LinkType.URL);
+                    break;
+                case EMAIL:
+                    types.add(LinkType.EMAIL);
+                    break;
+                case WWW:
+                    types.add(LinkType.WWW);
+                    break;
+            }
+        }
+
+        this.linkExtractor = LinkExtractor.builder()
+                .linkTypes(types)
+                .build();
+    }
 
     @Override
     public Node process(Node node) {
@@ -67,8 +95,13 @@ public class AutolinkPostProcessor implements PostProcessor {
     }
 
     private static String getDestination(LinkSpan linkSpan, String linkText) {
-        if (linkSpan.getType() == LinkType.EMAIL) {
+        var type = linkSpan.getType();
+
+        if (type == LinkType.EMAIL) {
             return "mailto:" + linkText;
+        } else if (type == LinkType.WWW) {
+            // Use http instead of https (see https://github.github.com/gfm/#extended-www-autolink)
+            return "http://" + linkText;
         } else {
             return linkText;
         }
