@@ -453,7 +453,8 @@ Some users of this library (feel free to raise a PR if you want to be added):
 * [Open Note](https://github.com/YangDai2003/OpenNote-Compose) a markdown editor and note-taking app for Android
 * [Quarkus Roq](https://github.com/quarkiverse/quarkus-roq/) The Roq Static Site Generator allows to easily create a static website or blog using Quarkus super-powers.
 * [Lucee](https://github.com/lucee/lucee)
-* [Previewer](https://github.com/sebthom/previewer-eclipse-plugin) an extensible Eclipse plugin that previews Markdown and other text based formats. 
+* [Previewer](https://github.com/sebthom/previewer-eclipse-plugin) an extensible Eclipse plugin that previews Markdown and other text based formats.
+* [Xeres](https://xeres.io) a Peer-to-Peer application where all user generated content is done with markdown
 
 See also
 --------
