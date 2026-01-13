@@ -210,4 +210,19 @@ public class SpecialInputTest extends CoreRenderingTestCase {
                 "</ul>\n" +
                 "</script>\n");
     }
+
+    @Test
+    public void emphasisAfterHardLineBreak() {
+        assertRendering("Hello  \n" +
+                "**Bar**\n" +
+                "Foo\n", "<p>Hello<br />\n" +
+                "<strong>Bar</strong>\n" +
+                "Foo</p>\n");
+
+        assertRendering("Hello  \n" +
+                "**Bar**  \n" +
+                "Foo\n", "<p>Hello<br />\n" +
+                "<strong>Bar</strong><br />\n" +
+                "Foo</p>\n");
+    }
 }
