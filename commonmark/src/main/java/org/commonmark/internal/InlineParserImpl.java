@@ -598,7 +598,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private Node parseLineBreak() {
         scanner.next();
 
-        if (trailingSpaces >= 2) {
+        var hard = trailingSpaces >= 2;
+        trailingSpaces = 0;
+        if (hard) {
             return new HardLineBreak();
         } else {
             return new SoftLineBreak();

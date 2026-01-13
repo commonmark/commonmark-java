@@ -11,6 +11,7 @@ public class CoreRenderingTestCase extends RenderingTestCase {
 
     @Override
     protected String render(String source) {
-        return RENDERER.render(PARSER.parse(source));
+        var node = PARSER.parse(source);
+        return RENDERER.render(node);
     }
 }
