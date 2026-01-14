@@ -383,14 +383,13 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         //   - Collapsed: `[foo][]`    (foo is both the text and label)
         //   - Shortcut:  `[foo]`      (foo is both the text and label)
 
-        String text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
-
         // Starting position is after the closing `]`
-        Position afterClose = scanner.position();
+        var afterClose = scanner.position();
 
         // Maybe an inline link/image
         var destinationTitle = parseInlineDestinationTitle(scanner);
         if (destinationTitle != null) {
+            var text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
             return new LinkInfoImpl(opener.markerNode, opener.bracketNode, text, null, destinationTitle.destination, destinationTitle.title, afterClose);
         }
         // Not an inline link/image, rewind back to after `]`.
@@ -401,7 +400,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // failed to be parsed as an inline link/image before.
 
         // See if there's a link label like `[bar]` or `[]`
-        String label = parseLinkLabel(scanner);
+        var label = parseLinkLabel(scanner);
         if (label == null) {
             // No label, rewind back
             scanner.setPosition(afterClose);
@@ -413,6 +412,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             return null;
         }
 
+        var text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
         return new LinkInfoImpl(opener.markerNode, opener.bracketNode, text, label, null, null, afterClose);
     }
 
