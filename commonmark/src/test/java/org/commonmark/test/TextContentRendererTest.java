@@ -116,14 +116,14 @@ public class TextContentRendererTest {
         assertSeparate(s, "bar\n\n1. foo\n   1. bar\n2. foo");
         assertStripped(s, "bar 1. foo 1. bar 2. foo");
 
-        s = "bar\n* foo\n   - bar\n* foo";
-        assertCompact(s, "bar\n* foo\n   - bar\n* foo");
-        assertSeparate(s, "bar\n\n* foo\n   - bar\n* foo");
+        s = "bar\n* foo\n  - bar\n* foo";
+        assertCompact(s, "bar\n* foo\n  - bar\n* foo");
+        assertSeparate(s, "bar\n\n* foo\n  - bar\n* foo");
         assertStripped(s, "bar foo bar foo");
 
-        s = "bar\n* foo\n   1. bar\n   2. bar\n* foo";
-        assertCompact(s, "bar\n* foo\n   1. bar\n   2. bar\n* foo");
-        assertSeparate(s, "bar\n\n* foo\n   1. bar\n   2. bar\n* foo");
+        s = "bar\n* foo\n  1. bar\n  2. bar\n* foo";
+        assertCompact(s, "bar\n* foo\n  1. bar\n  2. bar\n* foo");
+        assertSeparate(s, "bar\n\n* foo\n  1. bar\n  2. bar\n* foo");
         assertStripped(s, "bar foo 1. bar 2. bar foo");
 
         s = "bar\n1. foo\n   * bar\n   * bar\n2. foo";
@@ -194,6 +194,17 @@ public class TextContentRendererTest {
 
         html = "foo <foo>foobar</foo> bar";
         assertAll(html, html);
+    }
+
+    @Test
+    public void testContentNestedLists() {
+        var s = "List:\n" +
+                "1. 2) 3. \n" +
+                "end";
+        assertCompact(s, s);
+
+        var s2 = "1. A\n   1) B\n      1. Test";
+        assertCompact(s2, s2);
     }
 
     @Test

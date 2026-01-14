@@ -161,19 +161,30 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
     @Override
     public void visit(ListItem listItem) {
         if (listHolder != null && listHolder instanceof OrderedListHolder) {
-            OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
-            String indent = stripNewlines() ? "" : orderedListHolder.getIndent();
-            textContent.write(indent + orderedListHolder.getCounter() + orderedListHolder.getDelimiter() + " ");
+            var orderedListHolder = (OrderedListHolder) listHolder;
+            var marker = orderedListHolder.getCounter() + orderedListHolder.getDelimiter();
+            var spaces = " ";
+            textContent.write(marker);
+            textContent.write(spaces);
+            textContent.pushPrefix(repeat(" ", marker.length() + spaces.length()));
             visitChildren(listItem);
             textContent.block();
+            textContent.popPrefix();
             orderedListHolder.increaseCounter();
         } else if (listHolder != null && listHolder instanceof BulletListHolder) {
             BulletListHolder bulletListHolder = (BulletListHolder) listHolder;
             if (!stripNewlines()) {
-                textContent.write(bulletListHolder.getIndent() + bulletListHolder.getMarker() + " ");
+                var marker = bulletListHolder.getMarker();
+                var spaces = " ";
+                textContent.write(marker);
+                textContent.write(spaces);
+                textContent.pushPrefix(repeat(" ", marker.length() + spaces.length()));
             }
             visitChildren(listItem);
             textContent.block();
+            if (!stripNewlines()) {
+                textContent.popPrefix();
+            }
         }
     }
 
@@ -267,5 +278,14 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
         } else {
             return s;
         }
+    }
+
+    // Keep for Android compat (String.repeat only available on Android 12 and later)
+    private static String repeat(String s, int count) {
+        var sb = new StringBuilder(s.length() * count);
+        for (int i = 0; i < count; i++) {
+            sb.append(s);
+        }
+        return sb.toString();
     }
 }

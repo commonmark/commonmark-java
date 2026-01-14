@@ -10,6 +10,7 @@ with the exception that 0.x versions can break between minor versions.
 ### Fixed
 - Line(s) after a hard line break would sometimes also get an unwanted hard
   line break, e.g. if they ended in emphasis or other non-text inlines (#415)
+- `TextContentRenderer` (for plain text): Fix nested lists on the same line (#413)
 
 ## [0.27.0] - 2025-10-12
 ### Added
