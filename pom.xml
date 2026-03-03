@@ -17,6 +17,7 @@
         <module>commonmark</module>
         <module>commonmark-ext-autolink</module>
         <module>commonmark-ext-footnotes</module>
+        <module>commonmark-ext-gfm-alerts</module>
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
         <module>commonmark-ext-heading-anchor</module>
