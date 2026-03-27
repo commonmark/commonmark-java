@@ -21,7 +21,8 @@ public class AlertsSpecTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Set.of(AlertsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
+    // Use softbreak("<br>") to match GitHub's rendering for easier comparison with GitHub API output.
+    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).softbreak("<br>\n").build();
 
     @Parameter
     Example example;

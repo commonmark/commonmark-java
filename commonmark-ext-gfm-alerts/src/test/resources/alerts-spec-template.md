@@ -1,58 +1,30 @@
 # Alerts
 
-Expectations verified against GitHub Markdown API (gh api markdown -f mode=gfm).
-Our HTML omits GitHub's SVG icons and uses a `data-alert-type` attribute instead.
-
 ## Standard types
 
 ```````````````````````````````` example alert
 > [!NOTE]
 > This is a note
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>This is a note</p>
-</div>
 ````````````````````````````````
 
 ```````````````````````````````` example alert
 > [!TIP]
 > This is a tip
-.
-<div class="markdown-alert markdown-alert-tip" data-alert-type="tip">
-<p class="markdown-alert-title">Tip</p>
-<p>This is a tip</p>
-</div>
 ````````````````````````````````
 
 ```````````````````````````````` example alert
 > [!IMPORTANT]
 > This is important
-.
-<div class="markdown-alert markdown-alert-important" data-alert-type="important">
-<p class="markdown-alert-title">Important</p>
-<p>This is important</p>
-</div>
 ````````````````````````````````
 
 ```````````````````````````````` example alert
 > [!WARNING]
 > This is a warning
-.
-<div class="markdown-alert markdown-alert-warning" data-alert-type="warning">
-<p class="markdown-alert-title">Warning</p>
-<p>This is a warning</p>
-</div>
 ````````````````````````````````
 
 ```````````````````````````````` example alert
 > [!CAUTION]
 > This is a caution
-.
-<div class="markdown-alert markdown-alert-caution" data-alert-type="caution">
-<p class="markdown-alert-title">Caution</p>
-<p>This is a caution</p>
-</div>
 ````````````````````````````````
 
 ## Case insensitivity
@@ -62,21 +34,11 @@ Alert type matching is case-insensitive.
 ```````````````````````````````` example alert
 > [!note]
 > Content
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>Content</p>
-</div>
 ````````````````````````````````
 
 ```````````````````````````````` example alert
 > [!Note]
 > Content
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>Content</p>
-</div>
 ````````````````````````````````
 
 ## Alert content
@@ -87,11 +49,6 @@ Marker alone in first paragraph, blank line, then content:
 > [!NOTE]
 >
 > Content
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>Content</p>
-</div>
 ````````````````````````````````
 
 Multiple paragraphs:
@@ -101,12 +58,6 @@ Multiple paragraphs:
 > First paragraph
 >
 > Second paragraph
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>First paragraph</p>
-<p>Second paragraph</p>
-</div>
 ````````````````````````````````
 
 Inline formatting:
@@ -114,11 +65,6 @@ Inline formatting:
 ```````````````````````````````` example alert
 > [!TIP]
 > This is **bold** and *italic*
-.
-<div class="markdown-alert markdown-alert-tip" data-alert-type="tip">
-<p class="markdown-alert-title">Tip</p>
-<p>This is <strong>bold</strong> and <em>italic</em></p>
-</div>
 ````````````````````````````````
 
 Code block inside alert:
@@ -130,14 +76,6 @@ Code block inside alert:
 >     function() { }
 >
 > End
-.
-<div class="markdown-alert markdown-alert-tip" data-alert-type="tip">
-<p class="markdown-alert-title">Tip</p>
-<p>Code:</p>
-<pre><code>function() { }
-</code></pre>
-<p>End</p>
-</div>
 ````````````````````````````````
 
 List inside alert:
@@ -147,15 +85,6 @@ List inside alert:
 > Items:
 > - First item
 > - Second item
-.
-<div class="markdown-alert markdown-alert-important" data-alert-type="important">
-<p class="markdown-alert-title">Important</p>
-<p>Items:</p>
-<ul>
-<li>First item</li>
-<li>Second item</li>
-</ul>
-</div>
 ````````````````````````````````
 
 Links inside alert:
@@ -163,11 +92,6 @@ Links inside alert:
 ```````````````````````````````` example alert
 > [!NOTE]
 > Check out [this link](https://example.com) for more info
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>Check out <a href="https://example.com">this link</a> for more info</p>
-</div>
 ````````````````````````````````
 
 Heading inside alert:
@@ -176,12 +100,6 @@ Heading inside alert:
 > [!IMPORTANT]
 > ## Heading
 > Content below heading
-.
-<div class="markdown-alert markdown-alert-important" data-alert-type="important">
-<p class="markdown-alert-title">Important</p>
-<h2>Heading</h2>
-<p>Content below heading</p>
-</div>
 ````````````````````````````````
 
 Empty lines in middle of alert:
@@ -192,12 +110,6 @@ Empty lines in middle of alert:
 >
 >
 > After empty lines
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>First</p>
-<p>After empty lines</p>
-</div>
 ````````````````````````````````
 
 ## Not an alert
@@ -206,10 +118,6 @@ Text after marker on the same line:
 
 ```````````````````````````````` example alert
 > [!NOTE] Some text
-.
-<blockquote>
-<p>[!NOTE] Some text</p>
-</blockquote>
 ````````````````````````````````
 
 Unknown type:
@@ -217,11 +125,6 @@ Unknown type:
 ```````````````````````````````` example alert
 > [!INVALID]
 > Some text
-.
-<blockquote>
-<p>[!INVALID]<br>
-Some text</p>
-</blockquote>
 ````````````````````````````````
 
 Unconfigured custom type is not an alert:
@@ -229,21 +132,12 @@ Unconfigured custom type is not an alert:
 ```````````````````````````````` example alert
 > [!INFO]
 > Should be blockquote
-.
-<blockquote>
-<p>[!INFO]<br>
-Should be blockquote</p>
-</blockquote>
 ````````````````````````````````
 
 Marker with no content:
 
 ```````````````````````````````` example alert
 > [!NOTE]
-.
-<blockquote>
-<p>[!NOTE]</p>
-</blockquote>
 ````````````````````````````````
 
 Whitespace-only content after marker:
@@ -252,10 +146,6 @@ Whitespace-only content after marker:
 > [!TIP]
 >   
 >  
-.
-<blockquote>
-<p>[!TIP]</p>
-</blockquote>
 ````````````````````````````````
 
 Extra space inside marker:
@@ -263,11 +153,6 @@ Extra space inside marker:
 ```````````````````````````````` example alert
 > [! NOTE]
 > Should be blockquote
-.
-<blockquote>
-<p>[! NOTE]<br>
-Should be blockquote</p>
-</blockquote>
 ````````````````````````````````
 
 Missing brackets:
@@ -275,11 +160,6 @@ Missing brackets:
 ```````````````````````````````` example alert
 > !NOTE
 > Should be blockquote
-.
-<blockquote>
-<p>!NOTE<br>
-Should be blockquote</p>
-</blockquote>
 ````````````````````````````````
 
 Missing exclamation mark:
@@ -287,21 +167,12 @@ Missing exclamation mark:
 ```````````````````````````````` example alert
 > [NOTE]
 > Should be blockquote
-.
-<blockquote>
-<p>[NOTE]<br>
-Should be blockquote</p>
-</blockquote>
 ````````````````````````````````
 
 Regular blockquote is not affected:
 
 ```````````````````````````````` example alert
 > This is a regular blockquote
-.
-<blockquote>
-<p>This is a regular blockquote</p>
-</blockquote>
 ````````````````````````````````
 
 ## Boundaries
@@ -311,11 +182,6 @@ Trailing spaces after marker:
 ```````````````````````````````` example alert
 > [!NOTE]  
 > This is a note
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>This is a note</p>
-</div>
 ````````````````````````````````
 
 Trailing tabs after marker:
@@ -323,11 +189,6 @@ Trailing tabs after marker:
 ```````````````````````````````` example alert
 > [!WARNING]→→
 > Be careful
-.
-<div class="markdown-alert markdown-alert-warning" data-alert-type="warning">
-<p class="markdown-alert-title">Warning</p>
-<p>Be careful</p>
-</div>
 ````````````````````````````````
 
 Leading spaces before blockquote marker:
@@ -335,11 +196,6 @@ Leading spaces before blockquote marker:
 ```````````````````````````````` example alert
    > [!IMPORTANT]
    > Content
-.
-<div class="markdown-alert markdown-alert-important" data-alert-type="important">
-<p class="markdown-alert-title">Important</p>
-<p>Content</p>
-</div>
 ````````````````````````````````
 
 Blank line after marker ends the blockquote (not an alert):
@@ -348,11 +204,6 @@ Blank line after marker ends the blockquote (not an alert):
 > [!NOTE]
 
 Some text
-.
-<blockquote>
-<p>[!NOTE]</p>
-</blockquote>
-<p>Some text</p>
 ````````````````````````````````
 
 Alert followed by blockquote:
@@ -362,14 +213,6 @@ Alert followed by blockquote:
 > This is an alert
 
 > This is a blockquote
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>This is an alert</p>
-</div>
-<blockquote>
-<p>This is a blockquote</p>
-</blockquote>
 ````````````````````````````````
 
 Adjacent alerts:
@@ -380,15 +223,6 @@ Adjacent alerts:
 
 > [!WARNING]
 > Second alert
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>First alert</p>
-</div>
-<div class="markdown-alert markdown-alert-warning" data-alert-type="warning">
-<p class="markdown-alert-title">Warning</p>
-<p>Second alert</p>
-</div>
 ````````````````````````````````
 
 ## Nesting and containers
@@ -400,15 +234,6 @@ Nested alert inside alert renders as blockquote:
 > This is a note
 >> [!WARNING]
 >> Nested content
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>This is a note</p>
-<blockquote>
-<p>[!WARNING]<br>
-Nested content</p>
-</blockquote>
-</div>
 ````````````````````````````````
 
 Nested blockquote inside alert:
@@ -417,14 +242,6 @@ Nested blockquote inside alert:
 > [!NOTE]
 > This is a note
 >> Nested blockquote
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>This is a note</p>
-<blockquote>
-<p>Nested blockquote</p>
-</blockquote>
-</div>
 ````````````````````````````````
 
 Alert inside list item stays as blockquote:
@@ -432,15 +249,6 @@ Alert inside list item stays as blockquote:
 ```````````````````````````````` example alert
 - > [!NOTE]
   > Test
-.
-<ul>
-<li>
-<blockquote>
-<p>[!NOTE]<br>
-Test</p>
-</blockquote>
-</li>
-</ul>
 ````````````````````````````````
 
 Alert marker in content is treated as text:
@@ -450,13 +258,6 @@ Alert marker in content is treated as text:
 > This is a note
 > [!WARNING]
 > This is still part of the note
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>This is a note<br>
-[!WARNING]<br>
-This is still part of the note</p>
-</div>
 ````````````````````````````````
 
 ## Continuation and interruption
@@ -468,13 +269,6 @@ Lazy continuation:
 > First line
 Lazy continuation
 > Continues alert
-.
-<div class="markdown-alert markdown-alert-note" data-alert-type="note">
-<p class="markdown-alert-title">Note</p>
-<p>First line<br>
-Lazy continuation<br>
-Continues alert</p>
-</div>
 ````````````````````````````````
 
 Alert type after regular blockquote content is not an alert:
@@ -483,10 +277,4 @@ Alert type after regular blockquote content is not an alert:
 > Regular blockquote
 > [!NOTE]
 > More text
-.
-<blockquote>
-<p>Regular blockquote<br>
-[!NOTE]<br>
-More text</p>
-</blockquote>
 ````````````````````````````````
