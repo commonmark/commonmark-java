@@ -464,7 +464,7 @@ public class DocumentParser implements ParserState {
     }
 
     private BlockStartImpl findBlockStart(BlockParser blockParser) {
-        if (openBlockParsers.size() - 1 >= maxOpenBlockParsers) {
+        if (openBlockParsers.size() > maxOpenBlockParsers) {
             return null;
         }
         MatchedBlockParser matchedBlockParser = new MatchedBlockParserImpl(blockParser);
