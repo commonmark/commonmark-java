@@ -22,11 +22,11 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
 
     @Override
     protected void renderAlert(Alert alert) {
-        String type = alert.getType();
-        String cssClass = type.toLowerCase();
+        var type = alert.getType();
+        var cssClass = type.toLowerCase();
 
         htmlWriter.line();
-        Map<String, String> attributes = new LinkedHashMap<>();
+        var attributes = new LinkedHashMap<String, String>();
         attributes.put("class", "markdown-alert markdown-alert-" + cssClass);
         attributes.put("data-alert-type", cssClass);
 
@@ -47,8 +47,9 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
     }
 
     private String getAlertTitle(String type) {
-        if (customTypeTitles.containsKey(type)) {
-            return customTypeTitles.get(type);
+        var customTypeTitle = customTypeTitles.get(type);
+        if (customTypeTitle != null) {
+            return customTypeTitle;
         }
         switch (type) {
             case "NOTE":
@@ -67,9 +68,9 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
     }
 
     private void renderChildren(Node parent) {
-        Node node = parent.getFirstChild();
+        var node = parent.getFirstChild();
         while (node != null) {
-            Node next = node.getNext();
+            var next = node.getNext();
             context.render(node);
             node = next;
         }

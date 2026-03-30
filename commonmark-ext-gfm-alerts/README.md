@@ -19,9 +19,9 @@ Enables highlighting important information using blockquote syntax with five sta
 #### Standard GFM Types
 
 ```java
-Extension extension = AlertsExtension.create();
-Parser parser = Parser.builder().extensions(List.of(extension)).build();
-HtmlRenderer renderer = HtmlRenderer.builder().extensions(List.of(extension)).build();
+var extension = AlertsExtension.create();
+var parser = Parser.builder().extensions(List.of(extension)).build();
+var renderer = HtmlRenderer.builder().extensions(List.of(extension)).build();
 ```
 
 #### Custom Alert Types
@@ -29,12 +29,12 @@ HtmlRenderer renderer = HtmlRenderer.builder().extensions(List.of(extension)).bu
 Add custom types beyond the five standard GFM types:
 
 ```java
-Extension extension = AlertsExtension.builder()
-        .addCustomType("INFO", "Information")
+var extension = AlertsExtension.builder()
+        .addCustomType("BUG", "Known Bug")
         .build();
 ```
 
-Custom types must be UPPERCASE and cannot override standard types.
+Custom types must be UPPERCASE. Standard type titles can also be overridden for localization.
 
 #### Styling
 
@@ -63,7 +63,11 @@ Basic CSS example:
 .markdown-alert-caution { border-color: #cf222e; background-color: #ffebe9; }
 ```
 
-Icons can be added using CSS `::before` pseudo-elements with GitHub's [Octicons](https://primer.style/octicons/) (info, light-bulb, report, alert, stop icons).
+![Alerts](screenshots/alerts.png)
+
+Icons can be added using GitHub's [Octicons](https://primer.style/octicons/):
+
+![Alerts with icons](screenshots/alerts-with-icons.png)
 
 ## License
 

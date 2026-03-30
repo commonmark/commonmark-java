@@ -13,8 +13,9 @@ import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
     private final Map<String, String> customTypes;
 
     private AlertsExtension(Builder builder) {
-        this.customTypes = new LinkedHashMap<>(builder.customTypes);
+        this.customTypes = new HashMap<>(builder.customTypes);
     }
 
     public static Extension create() {
@@ -47,7 +48,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        Set<String> allowedTypes = new HashSet<>(STANDARD_TYPES);
+        var allowedTypes = new HashSet<>(STANDARD_TYPES);
         allowedTypes.addAll(customTypes.keySet());
         parserBuilder.postProcessor(new AlertPostProcessor(allowedTypes));
     }
@@ -81,7 +82,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
      * Builder for configuring the alerts extension.
      */
     public static class Builder {
-        private final Map<String, String> customTypes = new LinkedHashMap<>();
+        private final Map<String, String> customTypes = new HashMap<>();
 
         /**
          * Adds a custom alert type with a display title.
@@ -100,7 +101,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
             if (title == null || title.isEmpty()) {
                 throw new IllegalArgumentException("Title must not be null or empty");
             }
-            if (!type.equals(type.toUpperCase())) {
+            if (!type.equals(type.toUpperCase(Locale.ROOT))) {
                 throw new IllegalArgumentException("Type must be uppercase: " + type);
             }
             customTypes.put(type, title);

@@ -28,9 +28,9 @@ public class AlertMarkdownNodeRenderer extends AlertNodeRenderer {
     }
 
     private void renderChildren(Node parent) {
-        Node node = parent.getFirstChild();
+        var node = parent.getFirstChild();
         while (node != null) {
-            Node next = node.getNext();
+            var next = node.getNext();
             context.render(node);
             node = next;
         }

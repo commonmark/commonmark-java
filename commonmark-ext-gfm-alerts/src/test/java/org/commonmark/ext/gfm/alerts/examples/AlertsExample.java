@@ -1,6 +1,5 @@
 package org.commonmark.ext.gfm.alerts.examples;
 
-import org.commonmark.Extension;
 import org.commonmark.ext.gfm.alerts.AlertsExtension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -22,19 +21,17 @@ public class AlertsExample {
         System.out.println("STANDARD GFM ALERT TYPES");
         System.out.println("=".repeat(60));
 
-        // Create the alerts extension with default settings
-        Extension extension = AlertsExtension.create();
+        var extension = AlertsExtension.create();
 
-        Parser parser = Parser.builder()
+        var parser = Parser.builder()
                 .extensions(List.of(extension))
                 .build();
 
-        HtmlRenderer renderer = HtmlRenderer.builder()
+        var renderer = HtmlRenderer.builder()
                 .extensions(List.of(extension))
                 .build();
 
-        // Example markdown with all standard alert types
-        String markdown = "# GFM Alerts Demo\n\n" +
+        var markdown = "# GFM Alerts Demo\n\n" +
                 "> [!NOTE]\n" +
                 "> Highlights information that users should take into account.\n\n" +
                 "> [!TIP]\n" +
@@ -46,7 +43,7 @@ public class AlertsExample {
                 "> [!CAUTION]\n" +
                 "> Advises about risks or negative outcomes.\n";
 
-        String html = renderer.render(parser.parse(markdown));
+        var html = renderer.render(parser.parse(markdown));
 
         System.out.println("Markdown Input:");
         System.out.println(markdown);
@@ -58,33 +55,27 @@ public class AlertsExample {
         System.out.println("CUSTOM ALERT TYPES");
         System.out.println("=".repeat(60));
 
-        // Create extension with custom types
-        Extension extension = AlertsExtension.builder()
-                .addCustomType("INFO", "Information")
-                .addCustomType("SUCCESS", "Success")
-                .addCustomType("DANGER", "Danger")
+        var extension = AlertsExtension.builder()
+                .addCustomType("BUG", "Known Bug")
                 .build();
 
-        Parser parser = Parser.builder()
+        var parser = Parser.builder()
                 .extensions(List.of(extension))
                 .build();
 
-        HtmlRenderer renderer = HtmlRenderer.builder()
+        var renderer = HtmlRenderer.builder()
                 .extensions(List.of(extension))
                 .build();
 
-        // Example markdown with custom alert types
-        String markdown = "# Custom Alert Types\n\n" +
-                "> [!INFO]\n" +
-                "> This is a custom information alert.\n\n" +
-                "> [!SUCCESS]\n" +
-                "> Operation completed successfully!\n\n" +
-                "> [!DANGER]\n" +
-                "> This action is dangerous and irreversible.\n\n" +
+        var markdown = "# Custom Alert Types\n\n" +
                 "> [!NOTE]\n" +
-                "> Standard types still work alongside custom types.\n";
+                "> Useful information that users should know.\n\n" +
+                "> [!TIP]\n" +
+                "> Helpful advice for doing things better.\n\n" +
+                "> [!BUG]\n" +
+                "> This feature has a known issue with large files (see #42).\n";
 
-        String html = renderer.render(parser.parse(markdown));
+        var html = renderer.render(parser.parse(markdown));
 
         System.out.println("Markdown Input:");
         System.out.println(markdown);
