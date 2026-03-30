@@ -210,7 +210,7 @@ public class Parser {
          * creating deeper nested block structure.
          * <p>
          * The document root parser is not counted. The default is unlimited, so callers that keep
-         * using {@code Parser.builder().build()} preserve current behavior.
+         * using {@code Parser.builder().build()} preserve behavior.
          *
          * @param maxOpenBlockParsers maximum number of open non-document block parsers, must be
          *     zero or greater
