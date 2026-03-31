@@ -204,7 +204,7 @@ public class Parser {
         }
 
         /**
-         * Limit how many non-document block parsers may be open at once while parsing.
+         * Limit how many block parsers may be open at once while parsing.
          * <p>
          * Once the limit is reached, additional block starts are treated as plain text instead of
          * creating deeper nested block structure.
