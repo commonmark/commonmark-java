@@ -4,6 +4,7 @@ import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
 import org.commonmark.ext.footnotes.FootnotesExtension;
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
+import org.commonmark.ext.gfm.alerts.AlertsExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.ext.image.attributes.ImageAttributesExtension;
@@ -19,6 +20,7 @@ public class Extensions {
             FootnotesExtension.create(),
             ImageAttributesExtension.create(),
             InsExtension.create(),
+            AlertsExtension.create(),
             StrikethroughExtension.create(),
             TablesExtension.create(),
             TaskListItemsExtension.create(),

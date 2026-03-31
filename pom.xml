@@ -157,6 +157,11 @@
             </dependency>
             <dependency>
                 <groupId>org.commonmark</groupId>
+                <artifactId>commonmark-ext-gfm-alerts</artifactId>
+                <version>0.27.2-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
                 <version>0.27.2-SNAPSHOT</version>
             </dependency>

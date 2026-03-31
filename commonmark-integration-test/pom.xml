@@ -30,6 +30,10 @@
         </dependency>
         <dependency>
             <groupId>org.commonmark</groupId>
+            <artifactId>commonmark-ext-gfm-alerts</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonmark</groupId>
             <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
         </dependency>
         <dependency>
