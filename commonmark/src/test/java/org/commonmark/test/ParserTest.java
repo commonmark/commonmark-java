@@ -206,6 +206,55 @@ public class ParserTest {
         assertThat(deepestParagraph.getNext()).isNull();
     }
 
+    @Test
+    public void maxOpenBlockParsersAlignsWithVisitorDepthAtDocumentRoot() {
+        var parser = Parser.builder().maxOpenBlockParsers(5).build();
+
+        var document = parser.parse(String.join("\n",
+                "- level1",
+                "  > level2",
+                "  > > level3",
+                "  > > > level4"));
+        var listBlock = document.getFirstChild();
+        var listItem = listBlock.getFirstChild();
+        var blockQuote1 = listItem.getLastChild();
+        var blockQuote2 = blockQuote1.getLastChild();
+        var deepestParagraph = blockQuote2.getLastChild();
+        var depthFiveVisitor = new RecordingVisitor(5);
+        var unlimitedVisitor = new RecordingVisitor();
+
+        assertThat(depth(deepestParagraph.getFirstChild())).isEqualTo(6);
+        assertThat(depth(deepestParagraph.getLastChild())).isEqualTo(6);
+
+        document.accept(depthFiveVisitor);
+        document.accept(unlimitedVisitor);
+
+        assertThat(depthFiveVisitor.visited).containsExactly(
+                "document",
+                "bulletList",
+                "listItem",
+                "paragraph",
+                "text:level1",
+                "blockQuote",
+                "paragraph",
+                "text:level2",
+                "blockQuote",
+                "paragraph");
+        assertThat(unlimitedVisitor.visited).containsExactly(
+                "document",
+                "bulletList",
+                "listItem",
+                "paragraph",
+                "text:level1",
+                "blockQuote",
+                "paragraph",
+                "text:level2",
+                "blockQuote",
+                "paragraph",
+                "text:level3",
+                "text:> level4");
+    }
+
     private String firstText(Node n) {
         while (!(n instanceof Text)) {
             assertThat(n).isNotNull();
@@ -243,5 +292,61 @@ public class ParserTest {
             indent += marker.length();
         }
         return String.join("\n", lines);
+    }
+
+    private int depth(Node node) {
+        int depth = 0;
+        while (node.getParent() != null) {
+            node = node.getParent();
+            depth++;
+        }
+        return depth;
+    }
+
+    private static final class RecordingVisitor extends AbstractVisitor {
+        private final List<String> visited = new ArrayList<>();
+
+        private RecordingVisitor() {
+        }
+
+        private RecordingVisitor(int maxDepth) {
+            super(maxDepth);
+        }
+
+        @Override
+        public void visit(Document document) {
+            visited.add("document");
+            super.visit(document);
+        }
+
+        @Override
+        public void visit(BulletList bulletList) {
+            visited.add("bulletList");
+            super.visit(bulletList);
+        }
+
+        @Override
+        public void visit(ListItem listItem) {
+            visited.add("listItem");
+            super.visit(listItem);
+        }
+
+        @Override
+        public void visit(BlockQuote blockQuote) {
+            visited.add("blockQuote");
+            super.visit(blockQuote);
+        }
+
+        @Override
+        public void visit(Paragraph paragraph) {
+            visited.add("paragraph");
+            super.visit(paragraph);
+        }
+
+        @Override
+        public void visit(Text text) {
+            visited.add("text:" + text.getLiteral());
+            super.visit(text);
+        }
     }
 }

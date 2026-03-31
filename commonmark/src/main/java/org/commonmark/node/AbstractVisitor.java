@@ -7,19 +7,6 @@ package org.commonmark.node;
  * call {@link #visitChildren}.
  */
 public abstract class AbstractVisitor implements Visitor {
-    private final int maxDepth;
-    private int currentDepth;
-
-    public AbstractVisitor() {
-        this(Integer.MAX_VALUE);
-    }
-
-    protected AbstractVisitor(int maxDepth) {
-        if (maxDepth < 0) {
-            throw new IllegalArgumentException("maxDepth must be >= 0");
-        }
-        this.maxDepth = maxDepth;
-    }
 
     @Override
     public void visit(BlockQuote blockQuote) {
@@ -142,20 +129,12 @@ public abstract class AbstractVisitor implements Visitor {
      * @param parent the parent node whose children should be visited
      */
     protected void visitChildren(Node parent) {
-        if (currentDepth >= maxDepth) {
-            return;
-        }
         Node node = parent.getFirstChild();
         while (node != null) {
             // A subclass of this visitor might modify the node, resulting in getNext returning a different node or no
             // node after visiting it. So get the next node before visiting.
             Node next = node.getNext();
-            currentDepth++;
-            try {
-                node.accept(this);
-            } finally {
-                currentDepth--;
-            }
+            node.accept(this);
             node = next;
         }
     }
