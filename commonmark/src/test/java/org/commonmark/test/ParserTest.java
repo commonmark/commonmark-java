@@ -2,9 +2,8 @@ package org.commonmark.test;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.*;
-import org.commonmark.parser.block.*;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.text.TextContentRenderer;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.testutil.TestResources;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -279,7 +276,7 @@ public class ParserTest {
     }
 
     private String renderText(Node node) {
-        return TextContentRenderer.builder().build().render(node).trim();
+        return MarkdownRenderer.builder().build().render(node).trim();
     }
 
     private String alternatingNestedList(int levels) {
