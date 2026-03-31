@@ -173,7 +173,7 @@ public class ParserTest {
         var document = parser.parse(alternatingNestedList(9));
         var deepestParagraph = deepestStructuredParagraph(document, 8);
 
-        assertThat(renderText(deepestParagraph)).isEqualTo("level8\n- level9");
+        assertThat(renderText(deepestParagraph)).isEqualTo("level8\n\\- level9");
         assertThat(deepestParagraph.getNext()).isNull();
     }
 
@@ -199,7 +199,7 @@ public class ParserTest {
 
         var deepestParagraph = blockQuote2.getLastChild();
         assertThat(deepestParagraph).isInstanceOf(Paragraph.class);
-        assertThat(renderText(deepestParagraph)).isEqualTo("level3\n> level4");
+        assertThat(renderText(deepestParagraph)).isEqualTo("level3\n\\> level4");
         assertThat(deepestParagraph.getNext()).isNull();
     }
 
@@ -249,52 +249,5 @@ public class ParserTest {
             depth++;
         }
         return depth;
-    }
-
-    private static final class RecordingVisitor extends AbstractVisitor {
-        private final List<String> visited = new ArrayList<>();
-
-        private RecordingVisitor() {
-        }
-
-        private RecordingVisitor(int maxDepth) {
-            super(maxDepth);
-        }
-
-        @Override
-        public void visit(Document document) {
-            visited.add("document");
-            super.visit(document);
-        }
-
-        @Override
-        public void visit(BulletList bulletList) {
-            visited.add("bulletList");
-            super.visit(bulletList);
-        }
-
-        @Override
-        public void visit(ListItem listItem) {
-            visited.add("listItem");
-            super.visit(listItem);
-        }
-
-        @Override
-        public void visit(BlockQuote blockQuote) {
-            visited.add("blockQuote");
-            super.visit(blockQuote);
-        }
-
-        @Override
-        public void visit(Paragraph paragraph) {
-            visited.add("paragraph");
-            super.visit(paragraph);
-        }
-
-        @Override
-        public void visit(Text text) {
-            visited.add("text:" + text.getLiteral());
-            super.visit(text);
-        }
     }
 }
