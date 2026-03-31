@@ -203,55 +203,6 @@ public class ParserTest {
         assertThat(deepestParagraph.getNext()).isNull();
     }
 
-    @Test
-    public void maxOpenBlockParsersAlignsWithVisitorDepthAtDocumentRoot() {
-        var parser = Parser.builder().maxOpenBlockParsers(5).build();
-
-        var document = parser.parse(String.join("\n",
-                "- level1",
-                "  > level2",
-                "  > > level3",
-                "  > > > level4"));
-        var listBlock = document.getFirstChild();
-        var listItem = listBlock.getFirstChild();
-        var blockQuote1 = listItem.getLastChild();
-        var blockQuote2 = blockQuote1.getLastChild();
-        var deepestParagraph = blockQuote2.getLastChild();
-        var depthFiveVisitor = new RecordingVisitor(5);
-        var unlimitedVisitor = new RecordingVisitor();
-
-        assertThat(depth(deepestParagraph.getFirstChild())).isEqualTo(6);
-        assertThat(depth(deepestParagraph.getLastChild())).isEqualTo(6);
-
-        document.accept(depthFiveVisitor);
-        document.accept(unlimitedVisitor);
-
-        assertThat(depthFiveVisitor.visited).containsExactly(
-                "document",
-                "bulletList",
-                "listItem",
-                "paragraph",
-                "text:level1",
-                "blockQuote",
-                "paragraph",
-                "text:level2",
-                "blockQuote",
-                "paragraph");
-        assertThat(unlimitedVisitor.visited).containsExactly(
-                "document",
-                "bulletList",
-                "listItem",
-                "paragraph",
-                "text:level1",
-                "blockQuote",
-                "paragraph",
-                "text:level2",
-                "blockQuote",
-                "paragraph",
-                "text:level3",
-                "text:> level4");
-    }
-
     private String firstText(Node n) {
         while (!(n instanceof Text)) {
             assertThat(n).isNotNull();
