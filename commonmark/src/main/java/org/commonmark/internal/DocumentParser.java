@@ -76,6 +76,7 @@ public class DocumentParser implements ParserState {
     private final List<LinkProcessor> linkProcessors;
     private final Set<Character> linkMarkers;
     private final IncludeSourceSpans includeSourceSpans;
+    private final int maxOpenBlockParsers;
     private final DocumentBlockParser documentBlockParser;
     private final Definitions definitions = new Definitions();
 
@@ -84,7 +85,8 @@ public class DocumentParser implements ParserState {
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
                           List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers, IncludeSourceSpans includeSourceSpans) {
+                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers,
+                          IncludeSourceSpans includeSourceSpans, int maxOpenBlockParsers) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.inlineContentParserFactories = inlineContentParserFactories;
@@ -92,6 +94,7 @@ public class DocumentParser implements ParserState {
         this.linkProcessors = linkProcessors;
         this.linkMarkers = linkMarkers;
         this.includeSourceSpans = includeSourceSpans;
+        this.maxOpenBlockParsers = maxOpenBlockParsers;
 
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(new OpenBlockParser(documentBlockParser, 0));
@@ -461,6 +464,9 @@ public class DocumentParser implements ParserState {
     }
 
     private BlockStartImpl findBlockStart(BlockParser blockParser) {
+        if (openBlockParsers.size() > maxOpenBlockParsers) {
+            return null;
+        }
         MatchedBlockParser matchedBlockParser = new MatchedBlockParserImpl(blockParser);
         for (BlockParserFactory blockParserFactory : blockParserFactories) {
             BlockStart result = blockParserFactory.tryStart(this, matchedBlockParser);

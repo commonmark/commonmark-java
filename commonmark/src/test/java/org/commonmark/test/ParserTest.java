@@ -2,8 +2,8 @@ package org.commonmark.test;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.*;
-import org.commonmark.parser.block.*;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.testutil.TestResources;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -135,11 +133,121 @@ public class ParserTest {
         }
     }
 
+    @Test
+    public void maxOpenBlockParsersMustBeZeroOrGreater() {
+        assertThatThrownBy(() ->
+                Parser.builder().maxOpenBlockParsers(-1)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void maxOpenBlockParsersIsOptIn() {
+        var parser = Parser.builder().build();
+
+        var document = parser.parse(alternatingNestedList(9));
+
+        assertThat(renderText(deepestStructuredParagraph(document, 9))).isEqualTo("level9");
+    }
+
+    @Test
+    public void maxOpenBlockParsersPreservesSevenLogicalListLevelsAtSeventeenBlocks() {
+        var parser = Parser.builder().maxOpenBlockParsers(17).build();
+
+        var document = parser.parse(alternatingNestedList(7));
+
+        assertThat(renderText(deepestStructuredParagraph(document, 7))).isEqualTo("level7");
+    }
+
+    @Test
+    public void maxOpenBlockParsersPreservesEightLogicalListLevelsAtSeventeenBlocks() {
+        var parser = Parser.builder().maxOpenBlockParsers(17).build();
+
+        var document = parser.parse(alternatingNestedList(8));
+
+        assertThat(renderText(deepestStructuredParagraph(document, 8))).isEqualTo("level8");
+    }
+
+    @Test
+    public void maxOpenBlockParsersDegradesTheNinthLogicalListLevelToPlainText() {
+        var parser = Parser.builder().maxOpenBlockParsers(17).build();
+
+        var document = parser.parse(alternatingNestedList(9));
+        var deepestParagraph = deepestStructuredParagraph(document, 8);
+
+        assertThat(renderText(deepestParagraph)).isEqualTo("level8\n\\- level9");
+        assertThat(deepestParagraph.getNext()).isNull();
+    }
+
+    @Test
+    public void maxOpenBlockParsersAlsoLimitsMixedListAndBlockQuoteNesting() {
+        var parser = Parser.builder().maxOpenBlockParsers(5).build();
+
+        var document = parser.parse(String.join("\n",
+                "- level1",
+                "  > level2",
+                "  > > level3",
+                "  > > > level4"));
+
+        var listBlock = document.getFirstChild();
+        assertThat(listBlock).isInstanceOf(BulletList.class);
+
+        var listItem = listBlock.getFirstChild();
+        var blockQuote1 = listItem.getLastChild();
+        assertThat(blockQuote1).isInstanceOf(BlockQuote.class);
+
+        var blockQuote2 = blockQuote1.getLastChild();
+        assertThat(blockQuote2).isInstanceOf(BlockQuote.class);
+
+        var deepestParagraph = blockQuote2.getLastChild();
+        assertThat(deepestParagraph).isInstanceOf(Paragraph.class);
+        assertThat(renderText(deepestParagraph)).isEqualTo("level3\n\\> level4");
+        assertThat(deepestParagraph.getNext()).isNull();
+    }
+
     private String firstText(Node n) {
         while (!(n instanceof Text)) {
             assertThat(n).isNotNull();
             n = n.getFirstChild();
         }
         return ((Text) n).getLiteral();
+    }
+
+    private Paragraph deepestStructuredParagraph(Node document, int levels) {
+        Node node = document.getFirstChild();
+        for (int level = 1; level <= levels; level++) {
+            assertThat(node).isInstanceOf(ListBlock.class);
+            var listItem = node.getFirstChild();
+            assertThat(listItem).isNotNull();
+            if (level == levels) {
+                assertThat(listItem.getFirstChild()).isInstanceOf(Paragraph.class);
+                return (Paragraph) listItem.getFirstChild();
+            }
+            node = listItem.getLastChild();
+        }
+        throw new AssertionError("unreachable");
+    }
+
+    private String renderText(Node node) {
+        return MarkdownRenderer.builder().build().render(node).trim();
+    }
+
+    private String alternatingNestedList(int levels) {
+        int indent = 0;
+        var lines = new ArrayList<String>();
+        for (int level = 1; level <= levels; level++) {
+            var ordered = level % 2 == 0;
+            var marker = ordered ? "1. " : "- ";
+            lines.add(" ".repeat(indent) + marker + "level" + level);
+            indent += marker.length();
+        }
+        return String.join("\n", lines);
+    }
+
+    private int depth(Node node) {
+        int depth = 0;
+        while (node.getParent() != null) {
+            node = node.getParent();
+            depth++;
+        }
+        return depth;
     }
 }
