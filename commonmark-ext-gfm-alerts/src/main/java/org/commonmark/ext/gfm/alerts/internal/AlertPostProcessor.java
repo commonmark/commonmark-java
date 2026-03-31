@@ -87,6 +87,7 @@ public class AlertPostProcessor implements PostProcessor {
 
         // Valid alert. Create Alert node and transfer children.
         var alert = new Alert(type);
+        alert.setSourceSpans(blockQuote.getSourceSpans());
         blockQuote.insertAfter(alert);
 
         // Remove the marker text from the first paragraph
