@@ -333,6 +333,19 @@ Enables tables using pipes as in [GitHub Flavored Markdown][gfm-tables].
 
 Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
+### Alerts
+
+Adds support for GitHub-style alerts (also known as callouts or admonitions) as described [here](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts), e.g.:
+
+```
+> [!NOTE]
+> The text of the note.
+```
+
+As types you can use NOTE, TIP, IMPORTANT, WARNING, CAUTION; or configure the extension to add additional ones.
+
+Use class `AlertsExtension` in artifact `commonmark-ext-gfm-alerts`.
+
 ### Footnotes
 
 Enables footnotes like in [GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
