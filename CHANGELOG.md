@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.28.0] - 2026-03-31
+### Added
+- New extension for alerts (aka callouts/admonitions)
+  - Syntax:
+    ```
+    > [!NOTE]
+    > The text of the note.
+    ```
+  - As types you can use NOTE, TIP, IMPORTANT, WARNING, CAUTION; or configure the
+    extension to add additional ones.
+  - Use class `AlertsExtension` in artifact `commonmark-ext-gfm-alerts` (#420)
+- New option `maxOpenBlockParsers` for `Parser.Builder` to set an overall limit
+  for the depth of block parsing. If set, any nesting beyond the limit will be
+  parsed as paragraph text instead. The default remains unlimited.
+
 ## [0.27.1] - 2026-01-14
 ### Fixed
 - Line(s) after a hard line break would sometimes also get an unwanted hard
@@ -518,6 +533,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
+[0.28.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.27.1...commonmark-parent-0.28.0
 [0.27.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.27.0...commonmark-parent-0.27.1
 [0.27.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.26.0...commonmark-parent-0.27.0
 [0.26.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.25.1...commonmark-parent-0.26.0
