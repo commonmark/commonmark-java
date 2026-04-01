@@ -55,12 +55,7 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.attributeProviderFactory(new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return HeadingIdAttributeProvider.create(defaultId, idPrefix, idSuffix);
-            }
-        });
+        rendererBuilder.attributeProviderFactory(context -> HeadingIdAttributeProvider.create(defaultId, idPrefix, idSuffix));
     }
 
     public static class Builder {

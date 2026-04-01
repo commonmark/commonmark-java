@@ -55,12 +55,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new AlertHtmlNodeRenderer(context, customTypes);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(context -> new AlertHtmlNodeRenderer(context, customTypes));
     }
 
     @Override

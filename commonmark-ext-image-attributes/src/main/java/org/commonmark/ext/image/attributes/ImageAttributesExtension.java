@@ -35,11 +35,6 @@ public class ImageAttributesExtension implements Parser.ParserExtension, HtmlRen
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.attributeProviderFactory(new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return ImageAttributesAttributeProvider.create();
-            }
-        });
+        rendererBuilder.attributeProviderFactory(context -> ImageAttributesAttributeProvider.create());
     }
 }

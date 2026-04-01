@@ -79,12 +79,7 @@ public class DingusApp {
         tabbedPane.addTab("HTML source", htmlSourceRendererOutput);
         tabbedPane.addTab("Plain text", textRendererOutput);
 
-        tabbedPane.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                updateOutput(input.getText());
-            }
-        });
+        tabbedPane.addChangeListener(e -> updateOutput(input.getText()));
 
         input.setText("# Example\n" +
                 "Enter text *here* and see how it renders on the right.\n\n" +

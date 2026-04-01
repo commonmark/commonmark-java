@@ -90,20 +90,9 @@ public class ParserTest {
 
     @Test
     public void inlineParser() {
-        final InlineParser fakeInlineParser = new InlineParser() {
-            @Override
-            public void parse(SourceLines lines, Node node) {
-                node.appendChild(new ThematicBreak());
-            }
-        };
+        final InlineParser fakeInlineParser = (lines, node) -> node.appendChild(new ThematicBreak());
 
-        InlineParserFactory fakeInlineParserFactory = new InlineParserFactory() {
-
-            @Override
-            public InlineParser create(InlineParserContext inlineParserContext) {
-                return fakeInlineParser;
-            }
-        };
+        InlineParserFactory fakeInlineParserFactory = inlineParserContext -> fakeInlineParser;
 
         Parser parser = Parser.builder().inlineParserFactory(fakeInlineParserFactory).build();
         String input = "**bold** **bold** ~~strikethrough~~";

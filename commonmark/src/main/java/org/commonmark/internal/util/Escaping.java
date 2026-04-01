@@ -25,36 +25,30 @@ public class Escaping {
 
     private static final Pattern WHITESPACE = Pattern.compile("[ \t\r\n]+");
 
-    private static final Replacer UNESCAPE_REPLACER = new Replacer() {
-        @Override
-        public void replace(String input, StringBuilder sb) {
-            if (input.charAt(0) == '\\') {
-                sb.append(input, 1, input.length());
-            } else {
-                sb.append(Html5Entities.entityToString(input));
-            }
+    private static final Replacer UNESCAPE_REPLACER = (input, sb) -> {
+        if (input.charAt(0) == '\\') {
+            sb.append(input, 1, input.length());
+        } else {
+            sb.append(Html5Entities.entityToString(input));
         }
     };
 
-    private static final Replacer URI_REPLACER = new Replacer() {
-        @Override
-        public void replace(String input, StringBuilder sb) {
-            if (input.startsWith("%")) {
-                if (input.length() == 3) {
-                    // Already percent-encoded, preserve
-                    sb.append(input);
-                } else {
-                    // %25 is the percent-encoding for %
-                    sb.append("%25");
-                    sb.append(input, 1, input.length());
-                }
+    private static final Replacer URI_REPLACER = (input, sb) -> {
+        if (input.startsWith("%")) {
+            if (input.length() == 3) {
+                // Already percent-encoded, preserve
+                sb.append(input);
             } else {
-                byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
-                for (byte b : bytes) {
-                    sb.append('%');
-                    sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
-                    sb.append(HEX_DIGITS[b & 0xF]);
-                }
+                // %25 is the percent-encoding for %
+                sb.append("%25");
+                sb.append(input, 1, input.length());
+            }
+        } else {
+            byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+            for (byte b : bytes) {
+                sb.append('%');
+                sb.append(HEX_DIGITS[(b >> 4) & 0xF]);
+                sb.append(HEX_DIGITS[b & 0xF]);
             }
         }
     };

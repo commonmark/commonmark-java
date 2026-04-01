@@ -78,12 +78,7 @@ public class UsageExampleTest {
     public void addAttributes() {
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder()
-                .attributeProviderFactory(new AttributeProviderFactory() {
-                    @Override
-                    public AttributeProvider create(AttributeProviderContext context) {
-                        return new ImageAttributeProvider();
-                    }
-                })
+                .attributeProviderFactory(context -> new ImageAttributeProvider())
                 .build();
 
         Node document = parser.parse("![text](/url.png)");
