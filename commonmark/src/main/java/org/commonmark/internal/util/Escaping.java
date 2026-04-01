@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class Escaping {
 
-    public static final String ESCAPABLE = "[!\"#$%&\'()*+,./:;<=>?@\\[\\\\\\]^_`{|}~-]";
+    public static final String ESCAPABLE = "[!\"#$%&'()*+,./:;<=>?@\\[\\\\\\]^_`{|}~-]";
 
     public static final String ENTITY = "&(?:#x[a-f0-9]{1,6}|#[0-9]{1,7}|[a-z][a-z0-9]{1,31});";
 
@@ -57,7 +57,6 @@ public class Escaping {
         // Avoid building a new string in the majority of cases (nothing to escape)
         StringBuilder sb = null;
 
-        loop:
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
             String replacement;
@@ -78,7 +77,7 @@ public class Escaping {
                     if (sb != null) {
                         sb.append(c);
                     }
-                    continue loop;
+                    continue;
             }
             if (sb == null) {
                 sb = new StringBuilder();
