@@ -49,22 +49,12 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new TableHtmlNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(TableHtmlNodeRenderer::new);
     }
 
     @Override
     public void extend(TextContentRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new TextContentNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new TableTextContentNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(TableTextContentNodeRenderer::new);
     }
 
     @Override

@@ -46,22 +46,12 @@ public class InsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRe
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new InsHtmlNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(InsHtmlNodeRenderer::new);
     }
 
     @Override
     public void extend(TextContentRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new TextContentNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new InsTextContentNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(InsTextContentNodeRenderer::new);
     }
 
     @Override

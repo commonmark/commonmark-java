@@ -35,11 +35,6 @@ public class TaskListItemsExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new TaskListItemHtmlNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(TaskListItemHtmlNodeRenderer::new);
     }
 }

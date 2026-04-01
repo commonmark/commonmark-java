@@ -77,22 +77,12 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new StrikethroughHtmlNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(StrikethroughHtmlNodeRenderer::new);
     }
 
     @Override
     public void extend(TextContentRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new TextContentNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new StrikethroughTextContentNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(StrikethroughTextContentNodeRenderer::new);
     }
 
     @Override

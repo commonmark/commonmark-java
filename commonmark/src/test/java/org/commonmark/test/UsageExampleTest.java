@@ -94,12 +94,7 @@ public class UsageExampleTest {
     public void customizeRendering() {
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder()
-                .nodeRendererFactory(new HtmlNodeRendererFactory() {
-                    @Override
-                    public NodeRenderer create(HtmlNodeRendererContext context) {
-                        return new IndentedCodeBlockNodeRenderer(context);
-                    }
-                })
+                .nodeRendererFactory(IndentedCodeBlockNodeRenderer::new)
                 .build();
 
         Node document = parser.parse("Example:\n\n    code");
