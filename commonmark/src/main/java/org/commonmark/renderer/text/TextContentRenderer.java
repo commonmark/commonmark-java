@@ -3,7 +3,6 @@ package org.commonmark.renderer.text;
 import org.commonmark.Extension;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.node.Node;
-import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.Renderer;
 
 import java.util.ArrayList;

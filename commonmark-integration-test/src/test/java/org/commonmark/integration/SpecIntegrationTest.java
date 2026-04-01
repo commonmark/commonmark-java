@@ -2,7 +2,6 @@ package org.commonmark.integration;
 
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.parser.Parser;
-import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.SpecTestCase;
 import org.junit.jupiter.api.Test;
 

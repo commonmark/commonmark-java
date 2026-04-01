@@ -2,7 +2,6 @@ package org.commonmark.integration;
 
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
-import org.commonmark.testutil.example.Example;
 
 /**
  * Spec and all extensions, with source spans enabled.

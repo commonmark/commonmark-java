@@ -2,9 +2,6 @@ package org.commonmark.ext.heading.anchor;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.heading.anchor.internal.HeadingIdAttributeProvider;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
-import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 /**

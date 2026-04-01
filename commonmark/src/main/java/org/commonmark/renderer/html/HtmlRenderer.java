@@ -4,7 +4,6 @@ import org.commonmark.Extension;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.*;
-import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.Renderer;
 
 import java.util.*;

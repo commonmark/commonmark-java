@@ -1,18 +1,8 @@
 package org.commonmark.integration;
 
-import org.commonmark.Extension;
-import org.commonmark.ext.autolink.AutolinkExtension;
-import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
-import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
-import org.commonmark.ext.gfm.tables.TablesExtension;
-import org.commonmark.ext.image.attributes.ImageAttributesExtension;
-import org.commonmark.ext.ins.InsExtension;
-import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

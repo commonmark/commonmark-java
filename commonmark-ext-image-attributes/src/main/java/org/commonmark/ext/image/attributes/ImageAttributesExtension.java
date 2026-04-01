@@ -4,9 +4,6 @@ import org.commonmark.Extension;
 import org.commonmark.ext.image.attributes.internal.ImageAttributesAttributeProvider;
 import org.commonmark.ext.image.attributes.internal.ImageAttributesDelimiterProcessor;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
-import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 /**

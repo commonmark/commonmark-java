@@ -3,7 +3,6 @@ package org.commonmark.test;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.SpecTestCase;
-import org.commonmark.testutil.example.Example;
 import org.junit.jupiter.api.Test;
 
 import static org.commonmark.testutil.Asserts.assertRendering;

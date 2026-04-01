@@ -6,8 +6,6 @@ import org.commonmark.ext.gfm.alerts.internal.AlertHtmlNodeRenderer;
 import org.commonmark.ext.gfm.alerts.internal.AlertMarkdownNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;

@@ -7,14 +7,10 @@ import org.commonmark.ext.gfm.tables.internal.TableMarkdownNodeRenderer;
 import org.commonmark.ext.gfm.tables.internal.TableTextContentNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.commonmark.renderer.text.TextContentNodeRendererContext;
-import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
 import java.util.Set;

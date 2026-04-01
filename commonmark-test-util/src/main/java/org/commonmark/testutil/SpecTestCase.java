@@ -4,10 +4,8 @@ import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
 import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @ParameterizedClass

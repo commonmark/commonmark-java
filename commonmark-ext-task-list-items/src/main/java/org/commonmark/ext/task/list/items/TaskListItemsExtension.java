@@ -4,9 +4,6 @@ import org.commonmark.Extension;
 import org.commonmark.ext.task.list.items.internal.TaskListItemHtmlNodeRenderer;
 import org.commonmark.ext.task.list.items.internal.TaskListItemPostProcessor;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 /**

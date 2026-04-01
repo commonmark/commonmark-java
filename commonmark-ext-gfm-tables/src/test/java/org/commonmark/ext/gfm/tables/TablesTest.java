@@ -4,15 +4,12 @@ import org.commonmark.Extension;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
 import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
