@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TextContentWriterTest {
 
     @Test
-    public void whitespace() throws Exception {
+    public void whitespace() {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
         writer.write("foo");
@@ -18,7 +18,7 @@ public class TextContentWriterTest {
     }
 
     @Test
-    public void colon() throws Exception {
+    public void colon() {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
         writer.write("foo");
@@ -28,7 +28,7 @@ public class TextContentWriterTest {
     }
 
     @Test
-    public void line() throws Exception {
+    public void line() {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
         writer.write("foo");
@@ -38,7 +38,7 @@ public class TextContentWriterTest {
     }
 
     @Test
-    public void writeStripped() throws Exception {
+    public void writeStripped() {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
         writer.writeStripped("foo\n bar");
@@ -46,7 +46,7 @@ public class TextContentWriterTest {
     }
 
     @Test
-    public void write() throws Exception {
+    public void write() {
         StringBuilder stringBuilder = new StringBuilder();
         TextContentWriter writer = new TextContentWriter(stringBuilder);
         writer.writeStripped("foo bar");
