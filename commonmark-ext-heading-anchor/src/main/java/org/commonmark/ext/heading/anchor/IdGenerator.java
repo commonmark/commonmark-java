@@ -66,7 +66,7 @@ public class IdGenerator {
     public String generateId(String text) {
         String normalizedIdentity = text != null ? normalizeText(text) : defaultIdentifier;
 
-        if (normalizedIdentity.length() == 0) {
+        if (normalizedIdentity.isEmpty()) {
             normalizedIdentity = defaultIdentifier;
         }
 
