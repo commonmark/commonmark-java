@@ -34,7 +34,7 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
         htmlWriter.line();
 
         // Render alert title
-        htmlWriter.tag("p", Map.of("class", "markdown-alert-title"));
+        htmlWriter.tag("p", context.extendAttributes(alert, "p", Map.of("class", "markdown-alert-title")));
         htmlWriter.text(getAlertTitle(type));
         htmlWriter.tag("/p");
         htmlWriter.line();
