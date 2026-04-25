@@ -6,7 +6,6 @@ import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.SpecTestCase;
-import org.commonmark.testutil.example.Example;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.fail;

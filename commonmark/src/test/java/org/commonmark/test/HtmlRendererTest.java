@@ -162,23 +162,15 @@ public class HtmlRendererTest {
 
     @Test
     public void attributeProviderForCodeBlock() {
-        AttributeProviderFactory custom = new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return new AttributeProvider() {
-                    @Override
-                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
-                        if (node instanceof FencedCodeBlock && tagName.equals("code")) {
-                            FencedCodeBlock fencedCodeBlock = (FencedCodeBlock) node;
-                            // Remove the default attribute for info
-                            attributes.remove("class");
-                            // Put info in custom attribute instead
-                            attributes.put("data-custom", fencedCodeBlock.getInfo());
-                        } else if (node instanceof FencedCodeBlock && tagName.equals("pre")) {
-                            attributes.put("data-code-block", "fenced");
-                        }
-                    }
-                };
+        AttributeProviderFactory custom = context -> (node, tagName, attributes) -> {
+            if (node instanceof FencedCodeBlock && tagName.equals("code")) {
+                FencedCodeBlock fencedCodeBlock = (FencedCodeBlock) node;
+                // Remove the default attribute for info
+                attributes.remove("class");
+                // Put info in custom attribute instead
+                attributes.put("data-custom", fencedCodeBlock.getInfo());
+            } else if (node instanceof FencedCodeBlock && tagName.equals("pre")) {
+                attributes.put("data-code-block", "fenced");
             }
         };
 
@@ -192,18 +184,10 @@ public class HtmlRendererTest {
 
     @Test
     public void attributeProviderForImage() {
-        AttributeProviderFactory custom = new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return new AttributeProvider() {
-                    @Override
-                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
-                        if (node instanceof Image) {
-                            attributes.remove("alt");
-                            attributes.put("test", "hey");
-                        }
-                    }
-                };
+        AttributeProviderFactory custom = context -> (node, tagName, attributes) -> {
+            if (node instanceof Image) {
+                attributes.remove("alt");
+                attributes.put("test", "hey");
             }
         };
 
@@ -214,18 +198,13 @@ public class HtmlRendererTest {
 
     @Test
     public void attributeProviderFactoryNewInstanceForEachRender() {
-        AttributeProviderFactory factory = new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return new AttributeProvider() {
-                    int i = 0;
+        AttributeProviderFactory factory = context -> new AttributeProvider() {
+            int i = 0;
 
-                    @Override
-                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
-                        attributes.put("key", "" + i);
-                        i++;
-                    }
-                };
+            @Override
+            public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
+                attributes.put("key", "" + i);
+                i++;
             }
         };
 
@@ -237,20 +216,15 @@ public class HtmlRendererTest {
 
     @Test
     public void overrideNodeRender() {
-        HtmlNodeRendererFactory nodeRendererFactory = new HtmlNodeRendererFactory() {
+        HtmlNodeRendererFactory nodeRendererFactory = context -> new NodeRenderer() {
             @Override
-            public NodeRenderer create(final HtmlNodeRendererContext context) {
-                return new NodeRenderer() {
-                    @Override
-                    public Set<Class<? extends Node>> getNodeTypes() {
-                        return Set.of(Link.class);
-                    }
+            public Set<Class<? extends Node>> getNodeTypes() {
+                return Set.of(Link.class);
+            }
 
-                    @Override
-                    public void render(Node node) {
-                        context.getWriter().text("test");
-                    }
-                };
+            @Override
+            public void render(Node node) {
+                context.getWriter().text("test");
             }
         };
 

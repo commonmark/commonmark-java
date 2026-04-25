@@ -3,7 +3,6 @@ package org.commonmark.renderer.text;
 import org.commonmark.Extension;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.node.Node;
-import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.Renderer;
 
 import java.util.ArrayList;
@@ -24,12 +23,7 @@ public class TextContentRenderer implements Renderer {
         this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
         this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
         // Add as last. This means clients can override the rendering of core nodes if they want.
-        this.nodeRendererFactories.add(new TextContentNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new CoreTextContentNodeRenderer(context);
-            }
-        });
+        this.nodeRendererFactories.add(CoreTextContentNodeRenderer::new);
     }
 
     /**

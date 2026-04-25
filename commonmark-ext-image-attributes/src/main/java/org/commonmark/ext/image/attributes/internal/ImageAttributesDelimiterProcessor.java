@@ -75,7 +75,7 @@ public class ImageAttributesDelimiterProcessor implements DelimiterProcessor {
             node.unlink();
         }
 
-        if (attributesMap.size() > 0) {
+        if (!attributesMap.isEmpty()) {
             ImageAttributes imageAttributes = new ImageAttributes(attributesMap);
 
             // The new node is added as a child of the image node to which the attributes apply.

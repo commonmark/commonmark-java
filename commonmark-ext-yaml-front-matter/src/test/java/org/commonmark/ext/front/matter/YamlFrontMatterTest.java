@@ -322,8 +322,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         Node document = PARSER.parse(input);
         document.accept(visitor);
 
-        Map<String, List<String>> data = visitor.getData();
-        return data;
+        return visitor.getData();
     }
 
     // Custom node for tests

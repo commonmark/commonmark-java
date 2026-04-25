@@ -7,14 +7,10 @@ import org.commonmark.ext.gfm.tables.internal.TableMarkdownNodeRenderer;
 import org.commonmark.ext.gfm.tables.internal.TableTextContentNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.commonmark.renderer.text.TextContentNodeRendererContext;
-import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
 import java.util.Set;
@@ -49,22 +45,12 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new TableHtmlNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(TableHtmlNodeRenderer::new);
     }
 
     @Override
     public void extend(TextContentRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new TextContentNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new TableTextContentNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(TableTextContentNodeRenderer::new);
     }
 
     @Override

@@ -100,7 +100,7 @@ class LineReaderTest {
         }
 
         @Override
-        public int read(char[] cbuf, int off, int len) throws IOException {
+        public int read(char[] cbuf, int off, int len) {
             Objects.checkFromIndexSize(off, len, cbuf.length);
             if (len == 0) {
                 return 0;
@@ -118,7 +118,7 @@ class LineReaderTest {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
         }
     }
 }
