@@ -73,6 +73,7 @@ public class DocumentParser implements ParserState {
     private final InlineParserFactory inlineParserFactory;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final List<DelimiterProcessor> overrideDelimiterProcessors;
     private final List<LinkProcessor> linkProcessors;
     private final Set<Character> linkMarkers;
     private final IncludeSourceSpans includeSourceSpans;
@@ -85,12 +86,13 @@ public class DocumentParser implements ParserState {
 
     public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
                           List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers,
-                          IncludeSourceSpans includeSourceSpans, int maxOpenBlockParsers) {
+                          List<DelimiterProcessor> overrideDelimiterProcessors, List<LinkProcessor> linkProcessors,
+                          Set<Character> linkMarkers, IncludeSourceSpans includeSourceSpans, int maxOpenBlockParsers) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
+        this.overrideDelimiterProcessors = overrideDelimiterProcessors;
         this.linkProcessors = linkProcessors;
         this.linkMarkers = linkMarkers;
         this.includeSourceSpans = includeSourceSpans;
@@ -481,7 +483,8 @@ public class DocumentParser implements ParserState {
      * Walk through a block & children recursively, parsing string content into inline content where appropriate.
      */
     private void processInlines() {
-        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, linkProcessors, linkMarkers, definitions);
+        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors,
+                overrideDelimiterProcessors, linkProcessors, linkMarkers, definitions);
         var inlineParser = inlineParserFactory.create(context);
 
         for (var blockParser : allBlockParsers) {
