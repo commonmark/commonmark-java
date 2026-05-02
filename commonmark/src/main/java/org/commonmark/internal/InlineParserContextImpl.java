@@ -13,17 +13,20 @@ public class InlineParserContextImpl implements InlineParserContext {
 
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final List<DelimiterProcessor> overrideDelimiterProcessors;
     private final List<LinkProcessor> linkProcessors;
     private final Set<Character> linkMarkers;
     private final Definitions definitions;
 
     public InlineParserContextImpl(List<InlineContentParserFactory> inlineContentParserFactories,
                                    List<DelimiterProcessor> delimiterProcessors,
+                                   List<DelimiterProcessor> overrideDelimiterProcessors,
                                    List<LinkProcessor> linkProcessors,
                                    Set<Character> linkMarkers,
                                    Definitions definitions) {
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
+        this.overrideDelimiterProcessors = overrideDelimiterProcessors;
         this.linkProcessors = linkProcessors;
         this.linkMarkers = linkMarkers;
         this.definitions = definitions;
@@ -37,6 +40,11 @@ public class InlineParserContextImpl implements InlineParserContext {
     @Override
     public List<DelimiterProcessor> getCustomDelimiterProcessors() {
         return delimiterProcessors;
+    }
+
+    @Override
+    public List<DelimiterProcessor> getOverrideDelimiterProcessors() {
+        return overrideDelimiterProcessors;
     }
 
     @Override

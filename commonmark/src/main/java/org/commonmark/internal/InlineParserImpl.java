@@ -42,7 +42,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     public InlineParserImpl(InlineParserContext context) {
         this.context = context;
         this.inlineContentParserFactories = calculateInlineContentParserFactories(context.getCustomInlineContentParserFactories());
-        this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
+        this.delimiterProcessors = calculateDelimiterProcessors(context.getCustomDelimiterProcessors(), context.getOverrideDelimiterProcessors());
         this.linkProcessors = calculateLinkProcessors(context.getCustomLinkProcessors());
         this.linkMarkers = calculateLinkMarkers(context.getCustomLinkMarkers());
         this.specialCharacters = calculateSpecialCharacters(linkMarkers, this.delimiterProcessors.keySet(), this.inlineContentParserFactories);
@@ -66,11 +66,49 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         return list;
     }
 
-    private static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors) {
+    private static Map<Character, DelimiterProcessor> calculateDelimiterProcessors(List<DelimiterProcessor> delimiterProcessors,
+                                                                                         List<DelimiterProcessor> overrideDelimiterProcessors) {
         var map = new HashMap<Character, DelimiterProcessor>();
         addDelimiterProcessors(List.of(new AsteriskDelimiterProcessor(), new UnderscoreDelimiterProcessor()), map);
+        addOverrideDelimiterProcessors(overrideDelimiterProcessors, map);
         addDelimiterProcessors(delimiterProcessors, map);
         return map;
+    }
+
+    private static void addOverrideDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors,
+                                                       Map<Character, DelimiterProcessor> map) {
+        for (DelimiterProcessor delimiterProcessor : delimiterProcessors) {
+            char opening = delimiterProcessor.getOpeningCharacter();
+            char closing = delimiterProcessor.getClosingCharacter();
+            if (opening == closing) {
+                replaceOrAddDelimiterProcessorForChar(opening, delimiterProcessor, map);
+            } else {
+                replaceOrAddDelimiterProcessorForChar(opening, delimiterProcessor, map);
+                replaceOrAddDelimiterProcessorForChar(closing, delimiterProcessor, map);
+            }
+        }
+    }
+
+    private static void replaceOrAddDelimiterProcessorForChar(char delimiterChar,
+                                                              DelimiterProcessor delimiterProcessor,
+                                                              Map<Character, DelimiterProcessor> delimiterProcessors) {
+        DelimiterProcessor existing = delimiterProcessors.get(delimiterChar);
+        if (existing == null) {
+            delimiterProcessors.put(delimiterChar, delimiterProcessor);
+            return;
+        }
+        if (existing instanceof StaggeredDelimiterProcessor) {
+            ((StaggeredDelimiterProcessor) existing).replace(delimiterProcessor);
+            return;
+        }
+        if (existing.getMinLength() == delimiterProcessor.getMinLength()) {
+            delimiterProcessors.put(delimiterChar, delimiterProcessor);
+            return;
+        }
+        StaggeredDelimiterProcessor staggered = new StaggeredDelimiterProcessor(delimiterChar);
+        staggered.add(existing);
+        staggered.add(delimiterProcessor);
+        delimiterProcessors.put(delimiterChar, staggered);
     }
 
     private static void addDelimiterProcessors(Iterable<DelimiterProcessor> delimiterProcessors, Map<Character, DelimiterProcessor> map) {
