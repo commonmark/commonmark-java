@@ -1,7 +1,7 @@
 package org.commonmark.ext.gfm.alerts;
 
 import org.commonmark.Extension;
-import org.commonmark.ext.gfm.alerts.internal.AlertPostProcessor;
+import org.commonmark.ext.gfm.alerts.internal.AlertBlockParser;
 import org.commonmark.ext.gfm.alerts.internal.AlertHtmlNodeRenderer;
 import org.commonmark.ext.gfm.alerts.internal.AlertMarkdownNodeRenderer;
 import org.commonmark.parser.Parser;
@@ -26,6 +26,17 @@ import java.util.Set;
  * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
  * {@link HtmlRenderer.Builder#extensions(Iterable)}).
  * Parsed alerts become {@link Alert} blocks.
+ *
+ * The {@link #create() default configuration} of this extension will match GFM
+ * exactly, with the following exceptions:
+ *
+ * - Alert markers take precedence over link reference definitions.
+ * - Lazy continuation is not allowed between the marker and the body text. Example:
+ *
+ *   <pre>{@code
+ *   > [!NOTE]
+ *   Lazy body text will be parsed as a new paragraph
+ *   }</pre>
  */
 public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
         MarkdownRenderer.MarkdownRendererExtension {
@@ -33,9 +44,13 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
     static final Set<String> STANDARD_TYPES = Set.of("NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION");
 
     private final Map<String, String> customTypes;
+    private final boolean customTitlesAllowed;
+    private final boolean nestedAlertsAllowed;
 
     private AlertsExtension(Builder builder) {
         this.customTypes = new HashMap<>(builder.customTypes);
+        this.customTitlesAllowed = builder.customTitlesAllowed;
+        this.nestedAlertsAllowed = builder.nestedAlertsAllowed;
     }
 
     public static Extension create() {
@@ -50,7 +65,8 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
     public void extend(Parser.Builder parserBuilder) {
         var allowedTypes = new HashSet<>(STANDARD_TYPES);
         allowedTypes.addAll(customTypes.keySet());
-        parserBuilder.postProcessor(new AlertPostProcessor(allowedTypes));
+        parserBuilder.customBlockParserFactory(
+            new AlertBlockParser.Factory(allowedTypes, customTitlesAllowed, nestedAlertsAllowed));
     }
 
     @Override
@@ -83,6 +99,8 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
      */
     public static class Builder {
         private final Map<String, String> customTypes = new HashMap<>();
+        private boolean customTitlesAllowed = false;
+        private boolean nestedAlertsAllowed = false;
 
         /**
          * Adds a custom alert type with a display title.
@@ -105,6 +123,47 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
                 throw new IllegalArgumentException("Type must be uppercase: " + type);
             }
             customTypes.put(type, title);
+            return this;
+        }
+
+        /**
+         * Allows custom titles on alerts. See {@link AlertTitle} for more information.
+         * @return {@code this}
+         */
+        public Builder allowCustomTitles() {
+            customTitlesAllowed = true;
+            return this;
+        }
+
+        /**
+         * Disallows custom titles on alerts. See {@link AlertTitle} for more information.
+         * @return {@code this}
+         */
+        public Builder disallowCustomTitles() {
+            customTitlesAllowed = false;
+            return this;
+        }
+
+        /**
+         * Allows alerts to be parsed within blocks other than {@code Document} (the root).
+         * <p>
+         * Note that even with this enabled, {@link Parser.Builder#maxOpenBlockParsers(int)}
+         * will be respected.
+         * @return {@code this}
+         */
+        public Builder allowNestedAlerts() {
+            nestedAlertsAllowed = true;
+            return this;
+        }
+
+        /**
+         * Prevents alerts from being parsed within blocks other than {@code Document}
+         * (the root). If an alert appears within another block, it will be parsed as
+         * a regular {@code BlockQuote}.
+         * @return {@code this}
+         */
+        public Builder disallowNestedAlerts() {
+            nestedAlertsAllowed = false;
             return this;
         }
 

@@ -1,6 +1,7 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
 import org.commonmark.ext.gfm.alerts.Alert;
+import org.commonmark.ext.gfm.alerts.AlertTitle;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
@@ -35,7 +36,12 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
 
         // Render alert title
         htmlWriter.tag("p", context.extendAttributes(alert, "p", Map.of("class", "markdown-alert-title")));
-        htmlWriter.text(getAlertTitle(type));
+        var first = alert.getFirstChild();
+        if (first instanceof AlertTitle) {
+            renderChildren(first);
+        } else {
+            htmlWriter.text(getAlertTitle(type));
+        }
         htmlWriter.tag("/p");
         htmlWriter.line();
 
@@ -71,7 +77,11 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
         var node = parent.getFirstChild();
         while (node != null) {
             var next = node.getNext();
-            context.render(node);
+
+            // AlertTitle is rendered separately from other nodes.
+            if (!(node instanceof AlertTitle)) {
+                context.render(node);
+            }
             node = next;
         }
     }
