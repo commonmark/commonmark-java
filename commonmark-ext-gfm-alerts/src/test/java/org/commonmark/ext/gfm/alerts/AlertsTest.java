@@ -162,7 +162,7 @@ public class AlertsTest extends RenderingTestCase {
     public void customTitleWithOnlyCommentFallsBackToDefaultTitle() {
         assertRenderingCustomTitles("> [!TIP] <!-- This won't appear --> <!-- This won't either -->\n> Body text",
                 "<div class=\"markdown-alert markdown-alert-tip\" data-alert-type=\"tip\">\n" +
-                "<p class=\"markdown-alert-title\">Tip <!-- This won't appear --> <!-- This won't either --></p>\n" +
+                "<p class=\"markdown-alert-title\">Tip<!-- This won't appear --> <!-- This won't either --></p>\n" +
                 "<p>Body text</p>\n" +
                 "</div>\n");
     }
@@ -234,6 +234,15 @@ public class AlertsTest extends RenderingTestCase {
         assertRenderingCustomTitles("> [!NOTE]   \n> Body text",
                 "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
                 "<p class=\"markdown-alert-title\">Note</p>\n" +
+                "<p>Body text</p>\n" +
+                "</div>\n");
+    }
+
+    @Test
+    public void onlyHtmlCommentsInTitleUseDefaultTitle() {
+        assertRenderingCustomTitles("> [!NOTE] <!-- This won't appear --> <!---> <!-- Neither will this -->\n> Body text",
+                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
+                "<p class=\"markdown-alert-title\">Note<!-- This won't appear --> <!---> <!-- Neither will this --></p>\n" +
                 "<p>Body text</p>\n" +
                 "</div>\n");
     }

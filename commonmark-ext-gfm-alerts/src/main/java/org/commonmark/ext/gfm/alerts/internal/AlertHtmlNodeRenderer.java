@@ -2,7 +2,9 @@ package org.commonmark.ext.gfm.alerts.internal;
 
 import org.commonmark.ext.gfm.alerts.Alert;
 import org.commonmark.ext.gfm.alerts.AlertTitle;
+import org.commonmark.node.HtmlInline;
 import org.commonmark.node.Node;
+import org.commonmark.node.Text;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
@@ -38,6 +40,21 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
         htmlWriter.tag("p", context.extendAttributes(alert, "p", Map.of("class", "markdown-alert-title")));
         var first = alert.getFirstChild();
         if (first instanceof AlertTitle) {
+            /*
+             * If the alert title only contains HTML comments like this:
+             *
+             * > [!TIP] <!-- This won't appear --> <!---> <!-- Neither will this -->
+             * > Body text
+             *
+             * Then the reader will see a blank title. In this case, it's better
+             * to render the default title (but keep the comments for accuracy).
+             *
+             * These comments will be visible when rendered to other formats like
+             * Markdown, so this is only relevant for the HTML renderer.
+             */
+            if (isCommentOnlyTitle(first)) {
+                htmlWriter.text(getAlertTitle(type));
+            }
             renderChildren(first);
         } else {
             htmlWriter.text(getAlertTitle(type));
@@ -71,6 +88,38 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
             default:
                 throw new IllegalStateException("Unknown alert type: " + type);
         }
+    }
+
+    private boolean isCommentOnlyTitle(Node title) {
+        var node = title.getFirstChild();
+        if (node == null) {
+            return false;
+        }
+        while (node != null) {
+            if (node instanceof HtmlInline) {
+                if (!isHtmlComment((HtmlInline) node)) {
+                    return false;
+                }
+            } else if (node instanceof Text) {
+                if (!((Text) node).getLiteral().trim().isEmpty()) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            node = node.getNext();
+        }
+        return true;
+    }
+
+    private boolean isHtmlComment(HtmlInline htmlInline) {
+        String literal = htmlInline.getLiteral();
+        if (literal == null || !literal.startsWith("<!--")) {
+            return false;
+        }
+        return literal.equals("<!-->")
+                || literal.equals("<!--->")
+                || literal.endsWith("-->");
     }
 
     private void renderChildren(Node parent) {
