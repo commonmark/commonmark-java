@@ -6,7 +6,7 @@ Enables highlighting important information using blockquote syntax with five sta
 
 ## Usage
 
-#### Markdown Syntax
+### Markdown Syntax
 
 ```markdown
 > [!NOTE]
@@ -16,7 +16,7 @@ Enables highlighting important information using blockquote syntax with five sta
 > Critical information
 ```
 
-#### Standard GFM Types
+### Standard GFM Types
 
 ```java
 var extension = AlertsExtension.create();
@@ -24,7 +24,7 @@ var parser = Parser.builder().extensions(List.of(extension)).build();
 var renderer = HtmlRenderer.builder().extensions(List.of(extension)).build();
 ```
 
-#### Custom Alert Types
+### Custom Alert Types
 
 Add custom types beyond the five standard GFM types:
 
@@ -36,7 +36,45 @@ var extension = AlertsExtension.builder()
 
 Custom types must be UPPERCASE. Standard type titles can also be overridden for localization.
 
-#### Styling
+### Custom Alert Titles
+
+Allow authors to provide custom titles per alert by adding text after the alert
+marker on the same line:
+
+```java
+var extension = AlertsExtension.builder().allowCustomTitles().build();
+```
+
+```markdown
+> [!NOTE] Keep in mind <!-- Overrides default title of "Note" -->
+> Useful information
+
+> [!WARNING] Be **very** careful <!-- Inline formatting is supported -->
+> Critical information
+```
+
+### Nesting Alerts
+
+By default, alerts cannot be nested within other blocks. Alerts within other
+blocks are parsed as regular block quotes.
+
+```markdown
+<!-- Allowed -->
+> [!NOTE]
+> Useful information
+
+<!-- Not allowed -->
+- > [!NOTE]
+  > Useful information
+```
+
+This behavior can be changed to allow nested alerts:
+
+```java
+var extension = AlertsExtension.builder().allowNestedAlerts().build();
+```
+
+### Styling
 
 Alerts render as `<div>` elements with CSS classes:
 
@@ -51,9 +89,9 @@ Basic CSS example:
 
 ```css
 .markdown-alert {
-    padding: 0.5rem 1rem;
-    margin-bottom: 1rem;
-    border-left: 4px solid;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid;
 }
 
 .markdown-alert-note { border-color: #0969da; background-color: #ddf4ff; }

@@ -15,6 +15,13 @@ import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Tests the default configuration of {@link AlertsExtension} against how
+ * GitHub Flavored Markdown (GFM) parses and renders {@link Alert}s.
+ * <p>
+ * This test should only be used for the default configuration of
+ * {@link AlertsExtension}. Other configurations cause deviation from GFM.
+ */
 @ParameterizedClass
 @MethodSource("data")
 public class AlertsSpecTest extends RenderingTestCase {
