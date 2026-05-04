@@ -7,14 +7,10 @@ import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughMarkdownNodeRe
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughTextContentNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.commonmark.renderer.text.TextContentNodeRendererContext;
-import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
 
 import java.util.Set;
@@ -77,22 +73,12 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new StrikethroughHtmlNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(StrikethroughHtmlNodeRenderer::new);
     }
 
     @Override
     public void extend(TextContentRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new TextContentNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new StrikethroughTextContentNodeRenderer(context);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(StrikethroughTextContentNodeRenderer::new);
     }
 
     @Override

@@ -4,9 +4,6 @@ import org.commonmark.Extension;
 import org.commonmark.ext.image.attributes.internal.ImageAttributesAttributeProvider;
 import org.commonmark.ext.image.attributes.internal.ImageAttributesDelimiterProcessor;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
-import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
@@ -35,11 +32,6 @@ public class ImageAttributesExtension implements Parser.ParserExtension, HtmlRen
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.attributeProviderFactory(new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return ImageAttributesAttributeProvider.create();
-            }
-        });
+        rendererBuilder.attributeProviderFactory(context -> ImageAttributesAttributeProvider.create());
     }
 }

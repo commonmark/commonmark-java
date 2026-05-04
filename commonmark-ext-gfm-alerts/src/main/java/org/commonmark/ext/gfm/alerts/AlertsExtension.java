@@ -6,8 +6,6 @@ import org.commonmark.ext.gfm.alerts.internal.AlertHtmlNodeRenderer;
 import org.commonmark.ext.gfm.alerts.internal.AlertMarkdownNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
@@ -55,12 +53,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new HtmlNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(HtmlNodeRendererContext context) {
-                return new AlertHtmlNodeRenderer(context, customTypes);
-            }
-        });
+        rendererBuilder.nodeRendererFactory(context -> new AlertHtmlNodeRenderer(context, customTypes));
     }
 
     @Override

@@ -2,9 +2,6 @@ package org.commonmark.ext.heading.anchor;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.heading.anchor.internal.HeadingIdAttributeProvider;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
-import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
@@ -55,12 +52,7 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.attributeProviderFactory(new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return HeadingIdAttributeProvider.create(defaultId, idPrefix, idSuffix);
-            }
-        });
+        rendererBuilder.attributeProviderFactory(context -> HeadingIdAttributeProvider.create(defaultId, idPrefix, idSuffix));
     }
 
     public static class Builder {

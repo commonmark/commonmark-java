@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -90,20 +89,9 @@ public class ParserTest {
 
     @Test
     public void inlineParser() {
-        final InlineParser fakeInlineParser = new InlineParser() {
-            @Override
-            public void parse(SourceLines lines, Node node) {
-                node.appendChild(new ThematicBreak());
-            }
-        };
+        final InlineParser fakeInlineParser = (lines, node) -> node.appendChild(new ThematicBreak());
 
-        InlineParserFactory fakeInlineParserFactory = new InlineParserFactory() {
-
-            @Override
-            public InlineParser create(InlineParserContext inlineParserContext) {
-                return fakeInlineParser;
-            }
-        };
+        InlineParserFactory fakeInlineParserFactory = inlineParserContext -> fakeInlineParser;
 
         Parser parser = Parser.builder().inlineParserFactory(fakeInlineParserFactory).build();
         String input = "**bold** **bold** ~~strikethrough~~";

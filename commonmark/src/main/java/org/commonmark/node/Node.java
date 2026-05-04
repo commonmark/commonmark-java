@@ -50,11 +50,10 @@ public abstract class Node {
         if (this.lastChild != null) {
             this.lastChild.next = child;
             child.prev = this.lastChild;
-            this.lastChild = child;
         } else {
             this.firstChild = child;
-            this.lastChild = child;
         }
+        this.lastChild = child;
     }
 
     public void prependChild(Node child) {

@@ -43,7 +43,7 @@ public class SourceSpanRenderer {
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < source.length(); i++) {
-            markers.getOrDefault(i, List.of()).forEach(marker -> sb.append(marker));
+            markers.getOrDefault(i, List.of()).forEach(sb::append);
             sb.append(source.charAt(i));
         }
         return sb.toString();

@@ -78,12 +78,7 @@ public class UsageExampleTest {
     public void addAttributes() {
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder()
-                .attributeProviderFactory(new AttributeProviderFactory() {
-                    @Override
-                    public AttributeProvider create(AttributeProviderContext context) {
-                        return new ImageAttributeProvider();
-                    }
-                })
+                .attributeProviderFactory(context -> new ImageAttributeProvider())
                 .build();
 
         Node document = parser.parse("![text](/url.png)");
@@ -94,19 +89,14 @@ public class UsageExampleTest {
     public void customizeRendering() {
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder()
-                .nodeRendererFactory(new HtmlNodeRendererFactory() {
-                    @Override
-                    public NodeRenderer create(HtmlNodeRendererContext context) {
-                        return new IndentedCodeBlockNodeRenderer(context);
-                    }
-                })
+                .nodeRendererFactory(IndentedCodeBlockNodeRenderer::new)
                 .build();
 
         Node document = parser.parse("Example:\n\n    code");
         assertThat(renderer.render(document)).isEqualTo("<p>Example:</p>\n<pre>code\n</pre>\n");
     }
 
-    class WordCountVisitor extends AbstractVisitor {
+    static class WordCountVisitor extends AbstractVisitor {
 
         int wordCount = 0;
 
@@ -122,7 +112,7 @@ public class UsageExampleTest {
         }
     }
 
-    class ImageAttributeProvider implements AttributeProvider {
+    static class ImageAttributeProvider implements AttributeProvider {
         @Override
         public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
             if (node instanceof Image) {
@@ -131,7 +121,7 @@ public class UsageExampleTest {
         }
     }
 
-    class IndentedCodeBlockNodeRenderer implements NodeRenderer {
+    static class IndentedCodeBlockNodeRenderer implements NodeRenderer {
 
         private final HtmlWriter html;
 

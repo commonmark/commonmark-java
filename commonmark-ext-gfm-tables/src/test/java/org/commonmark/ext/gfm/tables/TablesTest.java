@@ -4,15 +4,12 @@ import org.commonmark.Extension;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
 import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -718,25 +715,17 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void attributeProviderIsApplied() {
-        AttributeProviderFactory factory = new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return new AttributeProvider() {
-                    @Override
-                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
-                        if (node instanceof TableBlock) {
-                            attributes.put("test", "block");
-                        } else if (node instanceof TableHead) {
-                            attributes.put("test", "head");
-                        } else if (node instanceof TableBody) {
-                            attributes.put("test", "body");
-                        } else if (node instanceof TableRow) {
-                            attributes.put("test", "row");
-                        } else if (node instanceof TableCell) {
-                            attributes.put("test", "cell");
-                        }
-                    }
-                };
+        AttributeProviderFactory factory = context -> (node, tagName, attributes) -> {
+            if (node instanceof TableBlock) {
+                attributes.put("test", "block");
+            } else if (node instanceof TableHead) {
+                attributes.put("test", "head");
+            } else if (node instanceof TableBody) {
+                attributes.put("test", "body");
+            } else if (node instanceof TableRow) {
+                attributes.put("test", "row");
+            } else if (node instanceof TableCell) {
+                attributes.put("test", "cell");
             }
         };
         HtmlRenderer renderer = HtmlRenderer.builder()
@@ -762,17 +751,9 @@ public class TablesTest extends RenderingTestCase {
 
     @Test
     public void columnWidthIsRecorded() {
-        AttributeProviderFactory factory = new AttributeProviderFactory() {
-            @Override
-            public AttributeProvider create(AttributeProviderContext context) {
-                return new AttributeProvider() {
-                    @Override
-                    public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
-                        if (node instanceof TableCell && "th".equals(tagName)) {
-                            attributes.put("width", ((TableCell) node).getWidth() + "em");
-                        }
-                    }
-                };
+        AttributeProviderFactory factory = context -> (node, tagName, attributes) -> {
+            if (node instanceof TableCell && "th".equals(tagName)) {
+                attributes.put("width", ((TableCell) node).getWidth() + "em");
             }
         };
         HtmlRenderer renderer = HtmlRenderer.builder()
