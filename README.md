@@ -65,9 +65,9 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
-Parser parser = Parser.builder().build();
-Node document = parser.parse("This is *Markdown*");
-HtmlRenderer renderer = HtmlRenderer.builder().build();
+var parser = Parser.builder().build();
+var document = parser.parse("This is *Markdown*");
+var renderer = HtmlRenderer.builder().build();
 renderer.render(document);  // "<p>This is <em>Markdown</em></p>\n"
 ```
 
@@ -90,14 +90,16 @@ after this.
 import org.commonmark.node.*;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 
-MarkdownRenderer renderer = MarkdownRenderer.builder().build();
-Node document = new Document();
-Heading heading = new Heading();
+// Build document
+var heading = new Heading();
 heading.setLevel(2);
-heading.appendChild(new Text("My title"));
+heading.appendChild(new Text("My heading"));
+var document = new Document();
 document.appendChild(heading);
 
-renderer.render(document);  // "## My title\n"
+// Render to Markdown
+var renderer = MarkdownRenderer.builder().build();
+renderer.render(document);  // "## My heading\n"
 ```
 
 For rendering to plain text with minimal markup, there's also `TextContentRenderer`.
