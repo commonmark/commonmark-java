@@ -26,6 +26,12 @@ public interface InlineParserContext {
     List<DelimiterProcessor> getCustomDelimiterProcessors();
 
     /**
+     * @return delimiter processors that have been configured with
+     * {@link Parser.Builder#overrideDelimiterProcessor(DelimiterProcessor)}
+     */
+    List<DelimiterProcessor> getOverrideDelimiterProcessors();
+
+    /**
      * @return custom link processors that have been configured with {@link Parser.Builder#linkProcessor}.
      */
     List<LinkProcessor> getCustomLinkProcessors();

@@ -2,6 +2,8 @@ package org.commonmark.test;
 
 import org.commonmark.node.*;
 import org.commonmark.parser.*;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
+import org.commonmark.parser.delimiter.DelimiterRun;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.testutil.TestResources;
@@ -97,6 +99,104 @@ public class ParserTest {
         String input = "**bold** **bold** ~~strikethrough~~";
 
         assertThat(parser.parse(input).getFirstChild().getFirstChild()).isInstanceOf(ThematicBreak.class);
+    }
+
+    @Test
+    public void overrideDelimiterProcessorReplacesBuiltInProcessor() {
+        Parser parser = Parser.builder().overrideDelimiterProcessor(new DelimiterProcessor() {
+            @Override
+            public char getOpeningCharacter() {
+                return '*';
+            }
+
+            @Override
+            public char getClosingCharacter() {
+                return '*';
+            }
+
+            @Override
+            public int getMinLength() {
+                return 1;
+            }
+
+            @Override
+            public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
+                return 0;
+            }
+        }).build();
+
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        assertThat(renderer.render(parser.parse("*hello*"))).isEqualTo("<p>*hello*</p>\n");
+    }
+
+    @Test
+    public void overrideDelimiterProcessorCanSwitchAsteriskAndUnderscoreEmphasisSemantics() {
+        Parser parser = Parser.builder()
+            .overrideDelimiterProcessor(new DelimiterProcessor() {
+                @Override
+                public char getOpeningCharacter() {
+                    return '*';
+                }
+
+                @Override
+                public char getClosingCharacter() {
+                    return '*';
+                }
+
+                @Override
+                public int getMinLength() {
+                    return 1;
+                }
+
+                @Override
+                public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
+                    Text opener = openingRun.getOpener();
+                    Node closer = closingRun.getCloser();
+                    StrongEmphasis emphasis = new StrongEmphasis("*");
+                    for (Node node = opener.getNext(); node != closer; ) {
+                        Node next = node.getNext();
+                        emphasis.appendChild(node);
+                        node = next;
+                    }
+                    opener.insertAfter(emphasis);
+                    return 1;
+                }
+            })
+            .overrideDelimiterProcessor(new DelimiterProcessor() {
+                @Override
+                public char getOpeningCharacter() {
+                    return '_';
+                }
+
+                @Override
+                public char getClosingCharacter() {
+                    return '_';
+                }
+
+                @Override
+                public int getMinLength() {
+                    return 1;
+                }
+
+                @Override
+                public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
+                    Text opener = openingRun.getOpener();
+                    Node closer = closingRun.getCloser();
+                    Emphasis emphasis = new Emphasis("_");
+                    for (Node node = opener.getNext(); node != closer; ) {
+                        Node next = node.getNext();
+                        emphasis.appendChild(node);
+                        node = next;
+                    }
+                    opener.insertAfter(emphasis);
+                    return 1;
+                }
+            })
+            .build();
+
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        assertThat(renderer.render(parser.parse("*bold*"))).isEqualTo("<p><strong>bold</strong></p>\n");
+        assertThat(renderer.render(parser.parse("_italic_"))).isEqualTo("<p><em>italic</em></p>\n");
     }
 
     @Test

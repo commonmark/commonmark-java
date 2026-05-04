@@ -260,6 +260,9 @@ all of them via methods on `Parser.Builder`
 - Parsing of inline content can be extended/overridden with `customInlineContentParserFactory`
 - Parsing of [delimiters](https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis) in inline content can be
   extended with `customDelimiterProcessor`
+- Core built-in delimiter parsing can be replaced with `overrideDelimiterProcessor`
+  to support alternate emphasis syntax such as single `_` meaning emphasis and
+  single `*` meaning strong emphasis.
 - Processing of links can be customized with `linkProcessor` and `linkMarker`
 
 #### Thread-safety
