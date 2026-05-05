@@ -339,21 +339,22 @@ Use class `TablesExtension` in artifact `commonmark-ext-gfm-tables`.
 
 Adds support for GitHub-style alerts (also known as callouts or admonitions) as described [here](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts), e.g.:
 
-```
+```markdown
 > [!NOTE]
 > The text of the note.
 ```
 
 As types you can use NOTE, TIP, IMPORTANT, WARNING, CAUTION; or configure the extension to add additional ones.
 
-Use class `AlertsExtension` in artifact `commonmark-ext-gfm-alerts`.
+Use class `AlertsExtension` in artifact `commonmark-ext-gfm-alerts`. See the
+[`AlertsExtension` README](./commonmark-ext-gfm-alerts/README.md) for more information.
 
 ### Footnotes
 
 Enables footnotes like in [GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
 or [Pandoc](https://pandoc.org/MANUAL.html#footnotes):
 
-```
+```markdown
 Main text[^1]
 
 [^1]: Additional text in a footnote
@@ -370,7 +371,7 @@ is based on the text of the heading.
 
 `# Heading` will be rendered as:
 
-```
+```html
 <h1 id="heading">Heading</h1>
 ```
 
@@ -391,7 +392,7 @@ Use class `InsExtension` in artifact `commonmark-ext-ins`.
 
 Adds support for metadata through a YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
 
-```
+```markdown
 ---
 key: value
 list:
@@ -414,11 +415,11 @@ Adds support for specifying attributes (specifically height and width) for image
 
 The attribute elements are given as `key=value` pairs inside curly braces `{ }` after the image node to which they apply,
 for example:
-```
+```markdown
 ![text](/url.png){width=640 height=480}
 ```
 will be rendered as:
-```
+```html
 <img src="/url.png" alt="text" width="640" height="480" />
 ```
 
@@ -436,12 +437,12 @@ whitespace character or the letter `x` in lowercase or uppercase, then a right b
 whitespace before any other content.
 
 For example:
-```
+```markdown
 - [ ] task #1
 - [x] task #2
 ```
 will be rendered as:
-```
+```html
 <ul>
 <li><input type="checkbox" disabled=""> task #1</li>
 <li><input type="checkbox" disabled="" checked=""> task #2</li>

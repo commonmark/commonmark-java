@@ -15,6 +15,14 @@ public class AlertsMarkdownRendererTest {
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 
+    private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES = Set.of(AlertsExtension.builder().allowCustomTitles().build());
+    private static final Parser PARSER_CUSTOM_TITLES = Parser.builder()
+                                                             .extensions(EXTENSIONS_CUSTOM_TITLES)
+                                                             .build();
+    private static final MarkdownRenderer RENDERER_CUSTOM_TITLES = MarkdownRenderer.builder()
+                                                                                   .extensions(EXTENSIONS_CUSTOM_TITLES)
+                                                                                   .build();
+
     @Test
     public void alertRoundTrip() {
         assertRoundTrip("> [!WARNING]\n> Be careful\n");
@@ -37,6 +45,12 @@ public class AlertsMarkdownRendererTest {
     }
 
     @Test
+    public void leadingAndTrailingLinesAreRemoved() {
+        String rendered = RENDERER.render(PARSER.parse(">\n>  \n>[!NOTE]\n> Content\n>\n>   \n"));
+        assertThat(rendered).isEqualTo("> [!NOTE]\n> Content\n");
+    }
+
+    @Test
     public void alertWithMultipleParagraphs() {
         String input = "> [!NOTE]\n> First paragraph\n>\n> Second paragraph\n";
         // MarkdownWriter always writes the prefix including trailing space
@@ -53,21 +67,50 @@ public class AlertsMarkdownRendererTest {
 
         Parser parser = Parser.builder().extensions(Set.of(extension)).build();
         MarkdownRenderer renderer = MarkdownRenderer.builder().extensions(Set.of(extension)).build();
-
         String input = "> [!INFO]\n> Custom type\n";
-        String rendered = renderer.render(parser.parse(input));
-        assertThat(rendered).isEqualTo(input);
+
+        assertRoundTrip(input, parser, renderer);
     }
 
     @Test
     public void alertWithList() {
         String input = "> [!NOTE]\n> Items:\n> \n> - First\n> - Second\n";
-        String rendered = RENDERER.render(PARSER.parse(input));
+        assertRoundTrip(input);
+    }
+
+    // Custom titles
+
+    @Test
+    public void customTitleRoundTrip() {
+        assertRoundTripCustomTitles("> [!WARNING] Custom title\n> Be careful\n");
+    }
+
+    @Test
+    public void customTitleWithFormattingRoundTrip() {
+        assertRoundTripCustomTitles("> [!WARNING] Custom _title **with `formatting`**_\n> Be careful\n");
+    }
+
+    @Test
+    public void customTitleWithMultipleBlocks() {
+        String input = "> [!NOTE]Title\n> First paragraph\n>\n> Second paragraph\n>\n> - > Nested blocks\n";
+        // MarkdownWriter always writes the prefix including trailing space
+        String expected = "> [!NOTE] Title\n> First paragraph\n> \n> Second paragraph\n> \n> - > Nested blocks\n";
+        String rendered = RENDERER_CUSTOM_TITLES.render(PARSER_CUSTOM_TITLES.parse(input));
+        assertThat(rendered).isEqualTo(expected);
+    }
+
+    // Helpers
+
+    private void assertRoundTrip(String input, Parser parser, MarkdownRenderer renderer) {
+        String rendered = renderer.render(parser.parse(input));
         assertThat(rendered).isEqualTo(input);
     }
 
     private void assertRoundTrip(String input) {
-        String rendered = RENDERER.render(PARSER.parse(input));
-        assertThat(rendered).isEqualTo(input);
+        assertRoundTrip(input, PARSER, RENDERER);
+    }
+
+    private void assertRoundTripCustomTitles(String input) {
+        assertRoundTrip(input, PARSER_CUSTOM_TITLES, RENDERER_CUSTOM_TITLES);
     }
 }
