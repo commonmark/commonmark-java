@@ -18,7 +18,7 @@ public class TaskListItemMarkdownNodeRenderer extends TaskListItemNodeRenderer {
     @Override
     public void render(Node node) {
         if (node instanceof TaskListItemMarker) {
-            TaskListItemMarker taskListItemNode = (TaskListItemMarker) node;
+            var taskListItemNode = (TaskListItemMarker) node;
             var checkboxFill = taskListItemNode.isChecked() ? "x" : " ";
             writer.raw("[" + checkboxFill + "] ");
             renderChildren(node);
