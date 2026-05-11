@@ -9,6 +9,7 @@ with the exception that 0.x versions can break between minor versions.
 ## [Unreleased]
 ### Added
 - Allow customizing HTML attributes for alert title `<p>` tag via `AttributeProvider`
+- Support rendering YAML front matter to Markdown
 
 ## [0.28.0] - 2026-03-31
 ### Added
