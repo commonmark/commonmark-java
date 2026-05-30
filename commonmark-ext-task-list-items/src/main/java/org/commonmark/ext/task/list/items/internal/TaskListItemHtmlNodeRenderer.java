@@ -2,15 +2,13 @@ package org.commonmark.ext.task.list.items.internal;
 
 import org.commonmark.ext.task.list.items.TaskListItemMarker;
 import org.commonmark.node.Node;
-import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
-public class TaskListItemHtmlNodeRenderer implements NodeRenderer {
+public class TaskListItemHtmlNodeRenderer extends TaskListItemNodeRenderer {
 
     private final HtmlNodeRendererContext context;
     private final HtmlWriter html;
@@ -18,11 +16,6 @@ public class TaskListItemHtmlNodeRenderer implements NodeRenderer {
     public TaskListItemHtmlNodeRenderer(HtmlNodeRendererContext context) {
         this.context = context;
         this.html = context.getWriter();
-    }
-
-    @Override
-    public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(TaskListItemMarker.class);
     }
 
     @Override
