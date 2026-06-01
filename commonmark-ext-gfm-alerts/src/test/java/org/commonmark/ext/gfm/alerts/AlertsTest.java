@@ -1,12 +1,17 @@
 package org.commonmark.ext.gfm.alerts;
 
 import org.commonmark.Extension;
-import org.commonmark.node.Node;
+import org.commonmark.node.Emphasis;
+import org.commonmark.node.SourceSpan;
+import org.commonmark.node.StrongEmphasis;
+import org.commonmark.node.Text;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,12 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class AlertsTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Set.of(AlertsExtension.create());
-    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
+    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
     private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
     private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES = Set.of(AlertsExtension.builder().allowCustomTitles(true).build());
     private static final Parser PARSER_CUSTOM_TITLES = Parser.builder()
                                                              .extensions(EXTENSIONS_CUSTOM_TITLES)
+                                                             .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
                                                              .build();
     private static final HtmlRenderer HTML_RENDERER_CUSTOM_TITLES = HtmlRenderer.builder()
                                                                                 .extensions(EXTENSIONS_CUSTOM_TITLES)
@@ -39,12 +45,12 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void customType() {
-        Extension extension = AlertsExtension.builder()
+        var extension = AlertsExtension.builder()
                 .addCustomType("INFO", "Information")
                 .build();
 
-        Parser parser = Parser.builder().extensions(Set.of(extension)).build();
-        HtmlRenderer renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
         assertThat(renderer.render(parser.parse("> [!INFO]\n> Custom alert"))).isEqualTo(
                 "<div class=\"markdown-alert markdown-alert-info\" data-alert-type=\"info\">\n" +
@@ -55,14 +61,14 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void multipleCustomTypes() {
-        Extension extension = AlertsExtension.builder()
+        var extension = AlertsExtension.builder()
                 .addCustomType("INFO", "Information")
                 .addCustomType("SUCCESS", "Success!")
                 .addCustomType("DANGER", "Danger!")
                 .build();
 
-        Parser parser = Parser.builder().extensions(Set.of(extension)).build();
-        HtmlRenderer renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
         assertThat(renderer.render(parser.parse("> [!INFO]\n> Info content\n\n> [!SUCCESS]\n> Success content\n\n> [!DANGER]\n> Danger content"))).isEqualTo(
                 "<div class=\"markdown-alert markdown-alert-info\" data-alert-type=\"info\">\n" +
@@ -81,12 +87,12 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void standardTypesWithCustomConfigured() {
-        Extension extension = AlertsExtension.builder()
+        var extension = AlertsExtension.builder()
                 .addCustomType("INFO", "Information")
                 .build();
 
-        Parser parser = Parser.builder().extensions(Set.of(extension)).build();
-        HtmlRenderer renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
         assertThat(renderer.render(parser.parse("> [!NOTE]\n> Standard type"))).isEqualTo(
                 "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
@@ -97,18 +103,38 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void overrideStandardTypeTitle() {
-        Extension extension = AlertsExtension.builder()
+        var extension = AlertsExtension.builder()
                 .addCustomType("NOTE", "Nota")
                 .build();
 
-        Parser parser = Parser.builder().extensions(Set.of(extension)).build();
-        HtmlRenderer renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
         assertThat(renderer.render(parser.parse("> [!NOTE]\n> Localized title"))).isEqualTo(
                 "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
                 "<p class=\"markdown-alert-title\">Nota</p>\n" +
                 "<p>Localized title</p>\n" +
                 "</div>\n");
+    }
+
+    // Custom type validation
+
+    @Test
+    public void customTypeMustBeUppercase() {
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().addCustomType("info", "Information").build());
+    }
+
+    @Test
+    public void customTypeMustNotBeEmpty() {
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().addCustomType("", "Title").build());
+    }
+
+    @Test
+    public void customTypeTitleMustNotBeEmpty() {
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().addCustomType("INFO", "").build());
     }
 
     // Custom titles
@@ -335,9 +361,9 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void nestedAlerts() {
-        Extension extension = AlertsExtension.builder().allowNestedAlerts(true).build();
-        Parser parser = Parser.builder().extensions(Set.of(extension)).build();
-        HtmlRenderer renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
+        var extension = AlertsExtension.builder().allowNestedAlerts(true).build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
         var source = String.join("\n",
                 "> [!TIP]",
@@ -383,49 +409,131 @@ public class AlertsTest extends RenderingTestCase {
         assertThat(renderer.render(parser.parse(source))).isEqualTo(expected);
     }
 
-    // Custom type validation
-
-    @Test
-    public void customTypeMustBeUppercase() {
-        assertThrows(IllegalArgumentException.class, () ->
-                AlertsExtension.builder().addCustomType("info", "Information").build());
-    }
-
-    @Test
-    public void customTypeMustNotBeEmpty() {
-        assertThrows(IllegalArgumentException.class, () ->
-                AlertsExtension.builder().addCustomType("", "Title").build());
-    }
-
-    @Test
-    public void customTypeTitleMustNotBeEmpty() {
-        assertThrows(IllegalArgumentException.class, () ->
-                AlertsExtension.builder().addCustomType("INFO", "").build());
-    }
-
     // AST
 
     @Test
     public void alertParsedAsAlertNode() {
-        Node document = PARSER.parse("> [!NOTE]\n> This is a note");
-        Node firstChild = document.getFirstChild();
+        var document = PARSER.parse("> [!NOTE]\n> This is a note");
+        var firstChild = document.getFirstChild();
         assertThat(firstChild).isInstanceOf(Alert.class);
-        Alert alert = (Alert) firstChild;
+        var alert = (Alert) firstChild;
         assertThat(alert.getType()).isEqualTo("NOTE");
     }
 
     @Test
     public void customTypeParsedAsAlertNode() {
-        Extension extension = AlertsExtension.builder()
+        var extension = AlertsExtension.builder()
                 .addCustomType("INFO", "Information")
                 .build();
 
-        Parser parser = Parser.builder().extensions(Set.of(extension)).build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
 
-        Node document = parser.parse("> [!INFO]\n> Custom alert");
-        Alert alert = (Alert) document.getFirstChild();
+        var document = parser.parse("> [!INFO]\n> Custom alert");
+        var alert = (Alert) document.getFirstChild();
 
         assertThat(alert.getType()).isEqualTo("INFO");
+    }
+
+    // Source positions
+
+    @Test
+    public void titleSourcePositionPreserved() {
+        var source = "> [!NOTE] Custom title\n> Body text";
+        var document = PARSER_CUSTOM_TITLES.parse(source);
+        var alert = (Alert) document.getFirstChild();
+        var title = (AlertTitle) alert.getFirstChild();
+
+        // "Custom title" is at column 10, length 12 in line 0
+        assertThat(title.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 10, 10, 12)));
+    }
+
+    @Test
+    public void titleSourcePositionPreservedBetweenBlocks() {
+        var source = "- List\n\n> [!NOTE] Custom title\n> Body text\n\nPlain paragraph";
+        var document = PARSER_CUSTOM_TITLES.parse(source);
+        var alert = (Alert) document.getFirstChild().getNext();
+        var title = (AlertTitle) alert.getFirstChild();
+
+        // "Custom title" is at column 10, length 12 in line 2
+        assertThat(title.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 10, 18, 12)));
+    }
+
+    @Test
+    public void titleSourcePositionWithLeadingAndTrailingSpaces() {
+        var source = "> [!NOTE]    Custom title   \n> Body text";
+        var document = PARSER_CUSTOM_TITLES.parse(source);
+        var alert = (Alert) document.getFirstChild();
+        var title = (AlertTitle) alert.getFirstChild();
+
+        // Both leading and trailing spaces are trimmed
+        assertThat(title.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 13, 13, 12)));
+    }
+
+    @Test
+    public void titleWithInlineFormattingSourcePosition() {
+        var source = "> [!NOTE] Custom _title_\n> Body text";
+        var document = PARSER_CUSTOM_TITLES.parse(source);
+        var alert = (Alert) document.getFirstChild();
+        var title = (AlertTitle) alert.getFirstChild();
+
+        // "Custom _title_" is at column 10, length 14
+        assertThat(title.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 10, 10, 14)));
+
+        // First child: "Custom " text node
+        var firstText = title.getFirstChild();
+        assertThat(firstText).isInstanceOf(Text.class);
+        assertThat(((Text) firstText).getLiteral()).isEqualTo("Custom ");
+        assertThat(firstText.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 10, 10, 7)));
+
+        // Second child: emphasis node containing "title"
+        var emphasis = firstText.getNext();
+        assertThat(emphasis).isInstanceOf(Emphasis.class);
+        assertThat(emphasis.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 17, 17, 7)));
+
+        // Text inside emphasis: "title"
+        var titleText = emphasis.getFirstChild();
+        assertThat(titleText).isInstanceOf(Text.class);
+        assertThat(((Text) titleText).getLiteral()).isEqualTo("title");
+        assertThat(titleText.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 18, 18, 5)));
+    }
+
+    @Test
+    public void titleWithNestedInlineFormattingSourcePosition() {
+        var source = "> [!NOTE] Text with **bold _and italic_**\n> Body text";
+        var document = PARSER_CUSTOM_TITLES.parse(source);
+        var alert = (Alert) document.getFirstChild();
+        var title = (AlertTitle) alert.getFirstChild();
+
+        // "Custom _title_" is at column 10, length 14
+        assertThat(title.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 10, 10, 31)));
+
+        // First child: "Text with " text node
+        var firstText = title.getFirstChild();
+        assertThat(firstText).isInstanceOf(Text.class);
+        assertThat(((Text) firstText).getLiteral()).isEqualTo("Text with ");
+        assertThat(firstText.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 10, 10, 10)));
+
+        // Second child: strong emphasis node
+        var strong = firstText.getNext();
+        assertThat(strong).isInstanceOf(StrongEmphasis.class);
+        assertThat(strong.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 20, 20, 21)));
+
+        // Inside strong: "bold " text
+        var boldText = strong.getFirstChild();
+        assertThat(boldText).isInstanceOf(Text.class);
+        assertThat(((Text) boldText).getLiteral()).isEqualTo("bold ");
+        assertThat(boldText.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 22, 22, 5)));
+
+        // Inside strong: emphasis node with "and italic"
+        var emphasis = boldText.getNext();
+        assertThat(emphasis).isInstanceOf(Emphasis.class);
+        assertThat(emphasis.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 27, 27, 12)));
+
+        // Text inside emphasis: "and italic"
+        var italicText = emphasis.getFirstChild();
+        assertThat(italicText).isInstanceOf(Text.class);
+        assertThat(((Text) italicText).getLiteral()).isEqualTo("and italic");
+        assertThat(italicText.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 28, 28, 10)));
     }
 
 }

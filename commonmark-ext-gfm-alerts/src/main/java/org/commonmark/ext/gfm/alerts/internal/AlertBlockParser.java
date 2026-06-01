@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -26,11 +27,11 @@ public class AlertBlockParser extends AbstractBlockParser {
     private static final Pattern ALERT_PATTERN_CUSTOM_TITLE = Pattern.compile("^\\[!([a-zA-Z]+)](.*)$");
 
     private final Alert block;
-    private final String titleContent;
+    private final SourceLine titleLine;
 
-    private AlertBlockParser(String type, String titleContent) {
+    private AlertBlockParser(String type, SourceLine titleLine) {
         this.block = new Alert(type);
-        this.titleContent = titleContent;
+        this.titleLine = titleLine;
     }
 
     @Override
@@ -72,7 +73,7 @@ public class AlertBlockParser extends AbstractBlockParser {
 
     @Override
     public void parseInlines(InlineParser inlineParser) {
-        if (titleContent.isEmpty()) {
+        if (titleLine == null || titleLine.getContent().length() == 0) {
             return;
         }
 
@@ -84,7 +85,13 @@ public class AlertBlockParser extends AbstractBlockParser {
          * > But 3*3 = 9
          */
         var titleNode = new AlertTitle();
-        inlineParser.parse(SourceLines.of(SourceLine.of(titleContent, null)), titleNode);
+        inlineParser.parse(SourceLines.of(titleLine), titleNode);
+
+        // Set source spans on the title node from the source line
+        var sourceSpan = titleLine.getSourceSpan();
+        if (sourceSpan != null) {
+            titleNode.setSourceSpans(List.of(sourceSpan));
+        }
 
         // Body blocks were attached as children during block parsing. Prepend the title.
         block.prependChild(titleNode);
@@ -181,13 +188,30 @@ public class AlertBlockParser extends AbstractBlockParser {
                 return BlockStart.none();
             }
 
-            var titleContent = "";
+            SourceLine titleLine = null;
             if (customTitlesAllowed) {
-                titleContent = matcher.group(2).replaceFirst("^[ \\t]+", "").stripTrailing();
+                var fullSourceLine = state.getLine();
+                var fullContent = fullSourceLine.getContent();
+
+                var groupStart = matcher.start(2);
+                var groupEnd = matcher.end(2);
+                var absStart = afterGt + groupStart;
+                var absEnd = afterGt + groupEnd;
+
+                // Trim leading spaces/tabs
+                while (absStart < absEnd && Characters.isSpaceOrTab(fullContent, absStart)) {
+                    absStart++;
+                }
+                // Trim trailing spaces/tabs
+                while (absEnd > absStart && Characters.isSpaceOrTab(fullContent, absEnd - 1)) {
+                    absEnd--;
+                }
+
+                titleLine = fullSourceLine.substring(absStart, absEnd);
             }
 
             // Consume the rest of the first line.
-            var start = BlockStart.of(new AlertBlockParser(type, titleContent)).atIndex(line.length());
+            var start = BlockStart.of(new AlertBlockParser(type, titleLine)).atIndex(line.length());
 
             // If we got here via the promotion path, replace the empty BlockQuote.
             var matched = state.getActiveBlockParser().getBlock();
