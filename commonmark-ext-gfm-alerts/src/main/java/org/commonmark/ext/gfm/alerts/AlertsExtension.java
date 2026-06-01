@@ -120,43 +120,28 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
         }
 
         /**
-         * Allows custom titles on alerts. See {@link AlertTitle} for more information.
+         * Allows or disallows custom titles on alerts. See {@link AlertTitle} for more information.
+         * @param allow Whether to allow or disallow custom titles on alerts.
          * @return {@code this}
          */
-        public Builder allowCustomTitles() {
-            customTitlesAllowed = true;
+        public Builder allowCustomTitles(boolean allow) {
+            customTitlesAllowed = allow;
             return this;
         }
 
         /**
-         * Disallows custom titles on alerts. See {@link AlertTitle} for more information.
-         * @return {@code this}
-         */
-        public Builder disallowCustomTitles() {
-            customTitlesAllowed = false;
-            return this;
-        }
-
-        /**
-         * Allows alerts to be parsed within blocks other than {@code Document} (the root).
+         * Allows or disallows parsing alerts within non-root blocks ({@code Document}).
          * <p>
-         * Note that even with this enabled, {@link Parser.Builder#maxOpenBlockParsers(int)}
-         * will be respected.
-         * @return {@code this}
-         */
-        public Builder allowNestedAlerts() {
-            nestedAlertsAllowed = true;
-            return this;
-        }
-
-        /**
-         * Prevents alerts from being parsed within blocks other than {@code Document}
-         * (the root). If an alert appears within another block, it will be parsed as
+         * When disallowed, if an alert appears within another block, it will be parsed as
          * a regular {@code BlockQuote}.
+         * <p>
+         * Note that even when this is allowed, {@link Parser.Builder#maxOpenBlockParsers(int)}
+         * will be respected.
+         * @param allow Whether to allow or disallow parsing alerts within non-root blocks.
          * @return {@code this}
          */
-        public Builder disallowNestedAlerts() {
-            nestedAlertsAllowed = false;
+        public Builder allowNestedAlerts(boolean allow) {
+            nestedAlertsAllowed = allow;
             return this;
         }
 

@@ -42,7 +42,7 @@ Allow authors to provide custom titles per alert by adding text after the alert
 marker on the same line:
 
 ```java
-var extension = AlertsExtension.builder().allowCustomTitles().build();
+var extension = AlertsExtension.builder().allowCustomTitles(true).build();
 ```
 
 ```markdown
@@ -71,7 +71,7 @@ blocks are parsed as regular block quotes.
 This behavior can be changed to allow nested alerts:
 
 ```java
-var extension = AlertsExtension.builder().allowNestedAlerts().build();
+var extension = AlertsExtension.builder().allowNestedAlerts(true).build();
 ```
 
 ### Styling

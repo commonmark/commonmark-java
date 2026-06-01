@@ -15,7 +15,7 @@ public class AlertsMarkdownRendererTest {
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 
-    private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES = Set.of(AlertsExtension.builder().allowCustomTitles().build());
+    private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES = Set.of(AlertsExtension.builder().allowCustomTitles(true).build());
     private static final Parser PARSER_CUSTOM_TITLES = Parser.builder()
                                                              .extensions(EXTENSIONS_CUSTOM_TITLES)
                                                              .build();

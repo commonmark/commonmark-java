@@ -59,14 +59,14 @@ public class AlertBlockParser extends AbstractBlockParser {
          * (with up to 3 leading spaces, optional space after '>')
          */
         var line = state.getLine().getContent();
-        int nextNonSpace = state.getNextNonSpaceIndex();
+        var nextNonSpace = state.getNextNonSpaceIndex();
         if (state.getIndent() >= 4 // Parsing.CODE_BLOCK_INDENT
                 || nextNonSpace >= line.length()
                 || line.charAt(nextNonSpace) != '>') {
             return BlockContinue.none();
         }
 
-        int newColumn = state.getColumn() + state.getIndent() + 1;
+        var newColumn = state.getColumn() + state.getIndent() + 1;
         if (Characters.isSpaceOrTab(line, nextNonSpace + 1)) {
             newColumn++;
         }
@@ -150,7 +150,7 @@ public class AlertBlockParser extends AbstractBlockParser {
             }
 
             var line = state.getLine().getContent();
-            int nextNonSpace = state.getNextNonSpaceIndex();
+            var nextNonSpace = state.getNextNonSpaceIndex();
 
             // Case A: Fresh start. Line begins with '>'.
             if (nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
@@ -205,24 +205,20 @@ public class AlertBlockParser extends AbstractBlockParser {
                 afterGt = state.getIndex();
             }
 
-            Matcher matcher;
-            if (customTitlesAllowed) {
-                matcher = ALERT_PATTERN_CUSTOM_TITLE.matcher(line.subSequence(afterGt, line.length()));
-            } else {
-                matcher = ALERT_PATTERN_NO_CUSTOM_TITLE.matcher(line.subSequence(afterGt, line.length()));
-            }
+            var pattern = customTitlesAllowed ? ALERT_PATTERN_CUSTOM_TITLE : ALERT_PATTERN_NO_CUSTOM_TITLE;
+            var matcher = pattern.matcher(line.subSequence(afterGt, line.length()));
 
             if (!matcher.matches()) {
                 return BlockStart.none();
             }
 
-            String typeOriginalCase = matcher.group(1);
-            String type = typeOriginalCase.toUpperCase(Locale.ROOT);
+            var typeOriginalCase = matcher.group(1);
+            var type = typeOriginalCase.toUpperCase(Locale.ROOT);
             if (!allowedTypes.contains(type)) {
                 return BlockStart.none();
             }
 
-            String titleContent = "";
+            var titleContent = "";
             if (customTitlesAllowed) {
                 titleContent = matcher.group(2).replaceFirst("^[ \\t]+", "").stripTrailing();
             }

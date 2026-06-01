@@ -18,7 +18,7 @@ public class AlertsTest extends RenderingTestCase {
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
     private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
-    private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES = Set.of(AlertsExtension.builder().allowCustomTitles().build());
+    private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES = Set.of(AlertsExtension.builder().allowCustomTitles(true).build());
     private static final Parser PARSER_CUSTOM_TITLES = Parser.builder()
                                                              .extensions(EXTENSIONS_CUSTOM_TITLES)
                                                              .build();
@@ -335,7 +335,7 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void nestedAlerts() {
-        Extension extension = AlertsExtension.builder().allowNestedAlerts().build();
+        Extension extension = AlertsExtension.builder().allowNestedAlerts(true).build();
         Parser parser = Parser.builder().extensions(Set.of(extension)).build();
         HtmlRenderer renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 

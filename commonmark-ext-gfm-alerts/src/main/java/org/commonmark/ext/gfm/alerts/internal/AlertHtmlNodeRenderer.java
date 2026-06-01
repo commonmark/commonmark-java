@@ -113,7 +113,7 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
     }
 
     private boolean isHtmlComment(HtmlInline htmlInline) {
-        String literal = htmlInline.getLiteral();
+        var literal = htmlInline.getLiteral();
         if (literal == null || !literal.startsWith("<!--")) {
             return false;
         }
