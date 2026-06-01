@@ -134,20 +134,6 @@ Unconfigured custom type is not an alert:
 > Should be blockquote
 ````````````````````````````````
 
-Marker with no content:
-
-```````````````````````````````` example alert
-> [!NOTE]
-````````````````````````````````
-
-Whitespace-only content after marker:
-
-```````````````````````````````` example alert
-> [!TIP]
->   
->  
-````````````````````````````````
-
 Extra space inside marker:
 
 ```````````````````````````````` example alert
@@ -196,14 +182,6 @@ Leading spaces before blockquote marker:
 ```````````````````````````````` example alert
    > [!IMPORTANT]
    > Content
-````````````````````````````````
-
-Blank line after marker ends the blockquote (not an alert):
-
-```````````````````````````````` example alert
-> [!NOTE]
-
-Some text
 ````````````````````````````````
 
 Alert followed by blockquote:

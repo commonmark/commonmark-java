@@ -2,7 +2,6 @@ package org.commonmark.ext.gfm.alerts.internal;
 
 import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.commonmark.ext.gfm.alerts.Alert;
@@ -10,7 +9,6 @@ import org.commonmark.ext.gfm.alerts.AlertTitle;
 import org.commonmark.node.Block;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.Document;
-import org.commonmark.node.Paragraph;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
@@ -28,12 +26,10 @@ public class AlertBlockParser extends AbstractBlockParser {
     private static final Pattern ALERT_PATTERN_CUSTOM_TITLE = Pattern.compile("^\\[!([a-zA-Z]+)](.*)$");
 
     private final Alert block;
-    private final String typeOriginalCase;
     private final String titleContent;
 
-    private AlertBlockParser(String type, String typeOriginalCase, String titleContent) {
+    private AlertBlockParser(String type, String titleContent) {
         this.block = new Alert(type);
-        this.typeOriginalCase = typeOriginalCase;
         this.titleContent = titleContent;
     }
 
@@ -76,16 +72,6 @@ public class AlertBlockParser extends AbstractBlockParser {
 
     @Override
     public void parseInlines(InlineParser inlineParser) {
-        // Determine if there is any non-title body content.
-        if (block.getFirstChild() == null) {
-            /*
-             * Replace the Alert with a BlockQuote whose only paragraph contains
-             * the original first line text.
-             */
-            demoteToBlockQuote(inlineParser);
-            return;
-        }
-
         if (titleContent.isEmpty()) {
             return;
         }
@@ -102,28 +88,6 @@ public class AlertBlockParser extends AbstractBlockParser {
 
         // Body blocks were attached as children during block parsing. Prepend the title.
         block.prependChild(titleNode);
-    }
-
-    private void demoteToBlockQuote(InlineParser inlineParser) {
-        var bq = new BlockQuote();
-        bq.setSourceSpans(block.getSourceSpans());
-        var p = new Paragraph();
-
-        // Build the literal text including the alert marker and title.
-        var literal = "[!" + typeOriginalCase + "]";
-        if (!titleContent.isEmpty()) {
-            /*
-             * This may not preserve the original number of spaces between the
-             * alert marker and title (e.g., if there were 0 or 2+ spaces).
-             */
-            literal += " " + titleContent;
-        }
-
-        // Parse the inlines of the full content (alert marker + title)
-        inlineParser.parse(SourceLines.of(SourceLine.of(literal, null)), p);
-        bq.appendChild(p);
-        block.insertAfter(bq);
-        block.unlink();
     }
 
     public static class Factory extends AbstractBlockParserFactory {
@@ -212,8 +176,7 @@ public class AlertBlockParser extends AbstractBlockParser {
                 return BlockStart.none();
             }
 
-            var typeOriginalCase = matcher.group(1);
-            var type = typeOriginalCase.toUpperCase(Locale.ROOT);
+            var type = matcher.group(1).toUpperCase(Locale.ROOT);
             if (!allowedTypes.contains(type)) {
                 return BlockStart.none();
             }
@@ -224,7 +187,7 @@ public class AlertBlockParser extends AbstractBlockParser {
             }
 
             // Consume the rest of the first line.
-            var start = BlockStart.of(new AlertBlockParser(type, typeOriginalCase, titleContent)).atIndex(line.length());
+            var start = BlockStart.of(new AlertBlockParser(type, titleContent)).atIndex(line.length());
 
             // If we got here via the promotion path, replace the empty BlockQuote.
             var matched = state.getActiveBlockParser().getBlock();

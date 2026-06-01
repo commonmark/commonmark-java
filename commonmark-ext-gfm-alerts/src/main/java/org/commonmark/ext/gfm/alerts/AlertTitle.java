@@ -18,8 +18,7 @@ import org.commonmark.node.CustomNode;
  * the {@code AlertTitle} contains a {@code Text} node ({@code "Custom "}) followed
  * by an {@code Emphasis} node wrapping {@code "title"}.
  *
- * @see AlertsExtension.Builder#allowCustomTitles()
- * @see AlertsExtension.Builder#disallowCustomTitles()
+ * @see AlertsExtension.Builder#allowCustomTitles(boolean)
  */
 public class AlertTitle extends CustomNode {
 }

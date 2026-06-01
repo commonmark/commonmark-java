@@ -214,19 +214,19 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void customTitleNoBody() {
-        // Inlines should be parsed as usual after falling back to a block quote.
+        // Alerts with no body are allowed.
         assertRenderingCustomTitles("> [!NOTE] Custom _title_\n>  \n>\n>",
-                "<blockquote>\n" +
-                "<p>[!NOTE] Custom <em>title</em></p>\n" +
-                "</blockquote>\n");
+                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
+                "<p class=\"markdown-alert-title\">Custom <em>title</em></p>\n" +
+                "</div>\n");
     }
 
     @Test
     public void customTitleNoBodyNoSpace() {
-        assertRenderingCustomTitles("> [!NOTE] Custom _title_\n>  \n>\n>",
-                "<blockquote>\n" +
-                "<p>[!NOTE] Custom <em>title</em></p>\n" +
-                "</blockquote>\n");
+        assertRenderingCustomTitles("> [!NOTE] Custom _title_",
+                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
+                "<p class=\"markdown-alert-title\">Custom <em>title</em></p>\n" +
+                "</div>\n");
     }
 
     @Test
@@ -252,18 +252,18 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void noLazyContinuationAfterMarker() {
         assertRendering("> [!NOTE]\nBody text",
-                "<blockquote>\n" +
-                "<p>[!NOTE]</p>\n" +
-                "</blockquote>\n" +
+                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
+                "<p class=\"markdown-alert-title\">Note</p>\n" +
+                "</div>\n" +
                 "<p>Body text</p>\n");
     }
 
     @Test
     public void noLazyContinuationAfterTitle() {
         assertRenderingCustomTitles("> [!NOTE] Custom title\nBody text",
-                "<blockquote>\n" +
-                "<p>[!NOTE] Custom title</p>\n" +
-                "</blockquote>\n" +
+                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n" +
+                "<p class=\"markdown-alert-title\">Custom title</p>\n" +
+                "</div>\n" +
                 "<p>Body text</p>\n");
     }
 

@@ -236,28 +236,6 @@ Should be blockquote</p>
 </blockquote>
 ````````````````````````````````
 
-Marker with no content:
-
-```````````````````````````````` example alert
-> [!NOTE]
-.
-<blockquote>
-<p>[!NOTE]</p>
-</blockquote>
-````````````````````````````````
-
-Whitespace-only content after marker:
-
-```````````````````````````````` example alert
-> [!TIP]
->   
->  
-.
-<blockquote>
-<p>[!TIP]</p>
-</blockquote>
-````````````````````````````````
-
 Extra space inside marker:
 
 ```````````````````````````````` example alert
@@ -340,19 +318,6 @@ Leading spaces before blockquote marker:
 <p class="markdown-alert-title">Important</p>
 <p>Content</p>
 </div>
-````````````````````````````````
-
-Blank line after marker ends the blockquote (not an alert):
-
-```````````````````````````````` example alert
-> [!NOTE]
-
-Some text
-.
-<blockquote>
-<p>[!NOTE]</p>
-</blockquote>
-<p>Some text</p>
 ````````````````````````````````
 
 Alert followed by blockquote:

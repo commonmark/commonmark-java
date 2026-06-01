@@ -28,7 +28,16 @@ import java.util.Set;
  * The {@link #create() default configuration} of this extension will match GFM
  * exactly, with the following exceptions:
  *
- * - Alert markers take precedence over link reference definitions.
+ * - Alert markers take precedence over <a href="https://spec.commonmark.org/current/#shortcut-reference-link">shortcut reference links</a>.
+ * - Alerts with no content are allowed. Example:
+ *
+ *   <pre>{@code
+ *   <!-- Valid -->
+ *   > [!NOTE]
+ *
+ *   <!-- Also valid if custom titles are allowed -->
+ *   > [!NOTE] Custom title
+ *   }</pre>
  * - Lazy continuation is not allowed between the marker and the body text. Example:
  *
  *   <pre>{@code
