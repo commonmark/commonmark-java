@@ -21,9 +21,10 @@ import java.util.Set;
  * Extension for GFM alerts using {@code [!TYPE]} syntax (GitHub Flavored Markdown).
  * <p>
  * Create with {@link #create()} or {@link #builder()} and configure on builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * Parsed alerts become {@link Alert} blocks.
+ * ({@link Parser.Builder#extensions(Iterable)}, {@link HtmlRenderer.Builder#extensions(Iterable)}).
+ * Parsed alerts become {@link Alert} blocks. If custom alert titles are allowed
+ * via {@link Builder#allowCustomTitles(boolean)}, the inline formatting of those
+ * titles will be parsed into {@link AlertTitle} nodes.
  *
  * The {@link #create() default configuration} of this extension will match GFM
  * exactly, with the following exceptions:
@@ -129,9 +130,11 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
         }
 
         /**
-         * Allows or disallows custom titles on alerts. See {@link AlertTitle} for more information.
+         * Allows or disallows custom titles on alerts. Inline formatting is supported
+         * within these titles.
          * @param allow Whether to allow or disallow custom titles on alerts.
          * @return {@code this}
+         * @see AlertTitle
          */
         public Builder allowCustomTitles(boolean allow) {
             customTitlesAllowed = allow;
