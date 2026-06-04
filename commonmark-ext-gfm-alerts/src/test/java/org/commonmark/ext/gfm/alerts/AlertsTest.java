@@ -137,6 +137,31 @@ public class AlertsTest extends RenderingTestCase {
                 AlertsExtension.builder().addCustomType("INFO", "").build());
     }
 
+    @Test
+    public void removeStandardTypes() {
+        var extension = AlertsExtension.builder().removeTypes("NOTE", "TIP").build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
+
+        assertThat(renderer.render(parser.parse("> [!NOTE]\n> Regular block quote"))).isEqualTo(
+                "<blockquote>\n" +
+                "<p>[!NOTE]\n" +
+                "Regular block quote</p>\n" +
+                "</blockquote>\n");
+
+        assertThat(renderer.render(parser.parse("> [!TIP]\n> Regular block quote"))).isEqualTo(
+                "<blockquote>\n" +
+                "<p>[!TIP]\n" +
+                "Regular block quote</p>\n" +
+                "</blockquote>\n");
+
+        assertThat(renderer.render(parser.parse("> [!IMPORTANT]\n> Alert"))).isEqualTo(
+                "<div class=\"markdown-alert markdown-alert-important\" data-alert-type=\"important\">\n" +
+                "<p class=\"markdown-alert-title\">Important</p>\n" +
+                "<p>Alert</p>\n" +
+                "</div>\n");
+    }
+
     // Custom titles
 
     @Test

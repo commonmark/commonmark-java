@@ -20,6 +20,11 @@ with the exception that 0.x versions can break between minor versions.
     other blocks (including other alerts). See
     [this section of the alerts README](./commonmark-ext-gfm-alerts/README.md#nesting-alerts)
     for more information.
+  - New configuration for `AlertsExtension` to allow alert types (including standard
+    GFM types) to be removed (disallowed).
+    ```java
+    var extension = AlertsExtension.builder().removeTypes("NOTE", "TIP").build();
+    ```
 
 ## [0.28.0] - 2026-03-31
 ### Added
