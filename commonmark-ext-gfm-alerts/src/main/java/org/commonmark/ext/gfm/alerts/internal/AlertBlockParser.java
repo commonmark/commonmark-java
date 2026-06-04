@@ -1,0 +1,226 @@
+package org.commonmark.ext.gfm.alerts.internal;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.commonmark.ext.gfm.alerts.Alert;
+import org.commonmark.ext.gfm.alerts.AlertTitle;
+import org.commonmark.node.Block;
+import org.commonmark.node.BlockQuote;
+import org.commonmark.node.Document;
+import org.commonmark.parser.InlineParser;
+import org.commonmark.parser.SourceLine;
+import org.commonmark.parser.SourceLines;
+import org.commonmark.parser.block.AbstractBlockParser;
+import org.commonmark.parser.block.AbstractBlockParserFactory;
+import org.commonmark.parser.block.BlockContinue;
+import org.commonmark.parser.block.BlockStart;
+import org.commonmark.parser.block.MatchedBlockParser;
+import org.commonmark.parser.block.ParserState;
+import org.commonmark.text.Characters;
+
+public class AlertBlockParser extends AbstractBlockParser {
+
+    private static final Pattern ALERT_PATTERN_NO_CUSTOM_TITLE = Pattern.compile("^\\[!([a-zA-Z]+)]\\s*$");
+    private static final Pattern ALERT_PATTERN_CUSTOM_TITLE = Pattern.compile("^\\[!([a-zA-Z]+)](.*)$");
+
+    private final Alert block;
+    private final SourceLine titleLine;
+
+    private AlertBlockParser(String type, SourceLine titleLine) {
+        this.block = new Alert(type);
+        this.titleLine = titleLine;
+    }
+
+    @Override
+    public Block getBlock() {
+        return block;
+    }
+
+    @Override
+    public boolean isContainer() {
+        return true;
+    }
+
+    @Override
+    public boolean canContain(Block childBlock) {
+        return true;
+    }
+
+    @Override
+    public BlockContinue tryContinue(ParserState state) {
+        /*
+         * Same continuation rule as a block quote: line must start with '>'
+         * (with up to 3 leading spaces, optional space after '>')
+         */
+        var line = state.getLine().getContent();
+        var nextNonSpace = state.getNextNonSpaceIndex();
+        if (state.getIndent() >= 4 // Parsing.CODE_BLOCK_INDENT
+                || nextNonSpace >= line.length()
+                || line.charAt(nextNonSpace) != '>') {
+            return BlockContinue.none();
+        }
+
+        var newColumn = state.getColumn() + state.getIndent() + 1;
+        if (Characters.isSpaceOrTab(line, nextNonSpace + 1)) {
+            newColumn++;
+        }
+
+        return BlockContinue.atColumn(newColumn);
+    }
+
+    @Override
+    public void parseInlines(InlineParser inlineParser) {
+        if (titleLine == null || titleLine.getContent().length() == 0) {
+            return;
+        }
+
+        /*
+         * Inline-parse the title in its own scope so delimiters are isolated
+         * from the body text. For example:
+         *
+         * > [!NOTE] 2*2 = 4
+         * > But 3*3 = 9
+         */
+        var titleNode = new AlertTitle();
+        inlineParser.parse(SourceLines.of(titleLine), titleNode);
+
+        // Set source spans on the title node from the source line
+        var sourceSpan = titleLine.getSourceSpan();
+        if (sourceSpan != null) {
+            titleNode.setSourceSpans(List.of(sourceSpan));
+        }
+
+        // Body blocks were attached as children during block parsing. Prepend the title.
+        block.prependChild(titleNode);
+    }
+
+    public static class Factory extends AbstractBlockParserFactory {
+
+        private final Set<String> allowedTypes;
+        private final boolean customTitlesAllowed;
+        private final boolean nestedAlertsAllowed;
+
+        public Factory(Set<String> allowedTypes, boolean customTitlesAllowed, boolean nestedAlertsAllowed) {
+            this.allowedTypes = allowedTypes;
+            this.customTitlesAllowed = customTitlesAllowed;
+            this.nestedAlertsAllowed = nestedAlertsAllowed;
+        }
+
+        @Override
+        public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
+            // Parsing.CODE_BLOCK_INDENT
+            if (state.getIndent() >= 4) {
+                return BlockStart.none();
+            }
+
+            if (!nestedAlertsAllowed && !isAtRoot(matchedBlockParser.getMatchedBlockParser().getBlock())) {
+                return BlockStart.none();
+            }
+
+            var line = state.getLine().getContent();
+            var nextNonSpace = state.getNextNonSpaceIndex();
+
+            // Case A: Fresh start. Line begins with '>'.
+            if (nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
+                return tryStartFresh(line, nextNonSpace, state);
+            }
+
+            /*
+             * Case B: Promotion. We're already inside a BlockQuote whose body so far is
+             * empty (only blank '>' lines), and the current line (already stripped of
+             * its '>' prefix by BlockQuoteParser.tryContinue) is the marker. Replace the
+             * active block quote with an alert.
+             */
+            var matched = matchedBlockParser.getMatchedBlockParser().getBlock();
+            if (matched instanceof BlockQuote && matched.getFirstChild() == null) {
+                // Null if not a marker. null.replaceActiveBlockParser() would NPE, so guard.
+                return tryStartFresh(line, nextNonSpace, state);
+            }
+
+            return BlockStart.none();
+        }
+
+        private static boolean isAtRoot(Block matched) {
+            if (matched instanceof Document) {
+                return true;
+            }
+
+            /*
+             * Case B: Promotion. The matched block is a top-level (Document-parented)
+             * BlockQuote that's still empty.
+             */
+            if (matched instanceof BlockQuote
+                    && matched.getFirstChild() == null
+                    && matched.getParent() instanceof Document) {
+                return true;
+            }
+
+            return false;
+        }
+
+        private BlockStart tryStartFresh(CharSequence line, int nextNonSpace, ParserState state) {
+            int afterGt;
+            if (nextNonSpace < line.length() && line.charAt(nextNonSpace) == '>') {
+                afterGt = nextNonSpace + 1;
+                if (Characters.isSpaceOrTab(line, afterGt)) {
+                    afterGt++;
+                }
+            } else {
+                /*
+                 * Promotion path: the '>' has already been consumed by the active
+                 * block quote's tryContinue, so state.getIndex() points past it.
+                 */
+                afterGt = state.getIndex();
+            }
+
+            var pattern = customTitlesAllowed ? ALERT_PATTERN_CUSTOM_TITLE : ALERT_PATTERN_NO_CUSTOM_TITLE;
+            var matcher = pattern.matcher(line.subSequence(afterGt, line.length()));
+
+            if (!matcher.matches()) {
+                return BlockStart.none();
+            }
+
+            var type = matcher.group(1).toUpperCase(Locale.ROOT);
+            if (!allowedTypes.contains(type)) {
+                return BlockStart.none();
+            }
+
+            SourceLine titleLine = null;
+            if (customTitlesAllowed) {
+                var fullSourceLine = state.getLine();
+                var fullContent = fullSourceLine.getContent();
+
+                var groupStart = matcher.start(2);
+                var groupEnd = matcher.end(2);
+                var absStart = afterGt + groupStart;
+                var absEnd = afterGt + groupEnd;
+
+                // Trim leading spaces/tabs
+                while (absStart < absEnd && Characters.isSpaceOrTab(fullContent, absStart)) {
+                    absStart++;
+                }
+                // Trim trailing spaces/tabs
+                while (absEnd > absStart && Characters.isSpaceOrTab(fullContent, absEnd - 1)) {
+                    absEnd--;
+                }
+
+                titleLine = fullSourceLine.substring(absStart, absEnd);
+            }
+
+            // Consume the rest of the first line.
+            var start = BlockStart.of(new AlertBlockParser(type, titleLine)).atIndex(line.length());
+
+            // If we got here via the promotion path, replace the empty BlockQuote.
+            var matched = state.getActiveBlockParser().getBlock();
+            if (matched instanceof BlockQuote && matched.getFirstChild() == null
+                    && (nextNonSpace >= line.length() || line.charAt(nextNonSpace) != '>')) {
+                start = start.replaceActiveBlockParser();
+            }
+
+            return start;
+        }
+    }
+}

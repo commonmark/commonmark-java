@@ -8,15 +8,24 @@ with the exception that 0.x versions can break between minor versions.
 
 ## [Unreleased]
 ### Added
-- Allow customizing HTML attributes for alert title `<p>` tag via `AttributeProvider`
 - Support rendering GFM task list items to Markdown
 - Support rendering YAML front matter to Markdown
+- Alerts
+  - Allow customizing HTML attributes for alert title `<p>` tag via `AttributeProvider`
+  - New configuration for `AlertsExtension` to allow authors to provide custom
+    titles per alert. See the
+    [custom titles section of the alerts README](./commonmark-ext-gfm-alerts/README.md#custom-alert-titles)
+    for more information.
+  - New configuration for `AlertsExtension` to allow alerts to be nested within
+    other blocks (including other alerts). See
+    [this section of the alerts README](./commonmark-ext-gfm-alerts/README.md#nesting-alerts)
+    for more information.
 
 ## [0.28.0] - 2026-03-31
 ### Added
 - New extension for alerts (aka callouts/admonitions)
   - Syntax:
-    ```
+    ```markdown
     > [!NOTE]
     > The text of the note.
     ```
@@ -104,9 +113,9 @@ with the exception that 0.x versions can break between minor versions.
 ### Added
 - New extension for footnotes!
   - Syntax:
-    ```
+    ```markdown
     Main text[^1]
-    
+
     [^1]: Additional text in a footnote
     ```
   - Inline footnotes like `^[inline footnote]` are also supported when enabled
@@ -271,7 +280,7 @@ with the exception that 0.x versions can break between minor versions.
   - Use class `ImageAttributesExtension` in artifact `commonmark-ext-image-attributes`
 - Extension for task lists (GitHub-style), thanks @dohertyfjatl
   - Syntax:
-    ```
+    ```markdown
     - [x] task #1
     - [ ] task #2
     ```

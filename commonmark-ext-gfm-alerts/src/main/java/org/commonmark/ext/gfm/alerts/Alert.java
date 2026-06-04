@@ -4,6 +4,8 @@ import org.commonmark.node.CustomBlock;
 
 /**
  * Alert block for highlighting important information using {@code [!TYPE]} syntax.
+ *
+ * @see AlertTitle
  */
 public class Alert extends CustomBlock {
 
