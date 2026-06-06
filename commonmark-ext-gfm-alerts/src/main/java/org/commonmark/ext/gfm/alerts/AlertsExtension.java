@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -51,8 +52,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     /**
      * The standard GitHub Flavored Markdown (GFM) types that the extension
-     * enables by default. They can be removed individually with
-     * {@link Builder#removeTypes(String...)}.
+     * enables by default. These can be overwritten with {@link Builder#setAllowedTypes(Map)}.
      */
     public static final Map<String, String> STANDARD_TYPES = Map.ofEntries(
         Map.entry("NOTE", "Note"),
@@ -114,9 +114,45 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
      * Builder for configuring the alerts extension.
      */
     public static class Builder {
-        private final Map<String, String> allowedTypes = new HashMap<>(STANDARD_TYPES);
+        private Map<String, String> allowedTypes = new HashMap<>(STANDARD_TYPES);
         private boolean customTitlesAllowed = false;
         private boolean nestedAlertsAllowed = false;
+
+        /**
+         * Sets which alert types will be recognized and parsed into {@link Alert} blocks,
+         * completely overwriting any previous configuration.
+         * <p>
+         * By default, {@link AlertsExtension#STANDARD_TYPES} are used.
+         *
+         * @param allowedTypes A map of alert type to the default title for that type.
+         *                     Must not be null/empty or contain any null/empty keys or
+         *                     values. Additionally, all alert types must be uppercase.
+         * @return {@code this}
+         */
+        public Builder setAllowedTypes(Map<String, String> allowedTypes) {
+            Objects.requireNonNull(allowedTypes, "allowedTypes must not be null");
+            if (allowedTypes.isEmpty()) {
+                throw new IllegalArgumentException("allowedTypes must not be empty");
+            }
+
+            for (Map.Entry<String, String> entry : allowedTypes.entrySet()) {
+                var type = Objects.requireNonNull(entry.getKey(), "Types must not be null");
+                if (type.isEmpty()) {
+                    throw new IllegalArgumentException("Types must not be empty");
+                }
+                if (!type.equals(type.toUpperCase(Locale.ROOT))) {
+                    throw new IllegalArgumentException("Types must be uppercase: " + type);
+                }
+
+                var defaultTitle = Objects.requireNonNull(entry.getValue(), "Default titles must not be null: " + type);
+                if (defaultTitle.isEmpty()) {
+                    throw new IllegalArgumentException("Default titles must not be empty: " + type);
+                }
+            }
+
+            this.allowedTypes = Map.copyOf(allowedTypes);
+            return this;
+        }
 
         /**
          * Adds a custom alert type with a default title.
@@ -143,35 +179,9 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
         }
 
         /**
-         * Removes alert types from the allowed list.
-         *
-         * @param types the alert types to remove (must be uppercase)
-         * @return {@code this}
-         * @see AlertsExtension#STANDARD_TYPES
-         */
-        public Builder removeTypes(String... types) {
-            if (types == null) {
-                throw new IllegalArgumentException("Types must not be null");
-            }
-
-            for (String type : types) {
-                if (type == null || type.isEmpty()) {
-                    throw new IllegalArgumentException("Each type must not be null or empty");
-                }
-
-                if (!type.equals(type.toUpperCase(Locale.ROOT))) {
-                    throw new IllegalArgumentException("Type must be uppercase: " + type);
-                }
-
-                allowedTypes.remove(type);
-            }
-
-            return this;
-        }
-
-        /**
          * Allows or disallows custom titles on alerts. Inline formatting is supported
          * within these titles.
+         *
          * @param allow Whether to allow or disallow custom titles on alerts.
          * @return {@code this}
          * @see AlertTitle
@@ -189,6 +199,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
          * <p>
          * Note that even when this is allowed, {@link Parser.Builder#maxOpenBlockParsers(int)}
          * will be respected.
+         *
          * @param allow Whether to allow or disallow parsing alerts within non-root blocks.
          * @return {@code this}
          */

@@ -12,6 +12,7 @@ import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -139,7 +140,8 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void removeStandardTypes() {
-        var extension = AlertsExtension.builder().removeTypes("NOTE", "TIP").build();
+        var allowedTypes = Map.ofEntries(Map.entry("IMPORTANT", "Important"));
+        var extension = AlertsExtension.builder().setAllowedTypes(allowedTypes).build();
         var parser = Parser.builder().extensions(Set.of(extension)).build();
         var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
