@@ -155,30 +155,6 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
         }
 
         /**
-         * Adds a custom alert type with a default title.
-         * <p>
-         * This can also be used to override the default title of standard GFM types
-         * (e.g., for localization).
-         *
-         * @param type the alert type (must be uppercase)
-         * @param title the default title for this alert type
-         * @return {@code this}
-         */
-        public Builder addCustomType(String type, String title) {
-            if (type == null || type.isEmpty()) {
-                throw new IllegalArgumentException("Type must not be null or empty");
-            }
-            if (title == null || title.isEmpty()) {
-                throw new IllegalArgumentException("Title must not be null or empty");
-            }
-            if (!type.equals(type.toUpperCase(Locale.ROOT))) {
-                throw new IllegalArgumentException("Type must be uppercase: " + type);
-            }
-            allowedTypes.put(type, title);
-            return this;
-        }
-
-        /**
          * Allows or disallows custom titles on alerts. Inline formatting is supported
          * within these titles.
          *

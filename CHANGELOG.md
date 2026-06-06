@@ -20,8 +20,9 @@ with the exception that 0.x versions can break between minor versions.
     other blocks (including other alerts). See
     [this section of the alerts README](./commonmark-ext-gfm-alerts/README.md#nesting-alerts)
     for more information.
-  - New configuration for `AlertsExtension` to allow the set of alert types
-    (including standard GFM types) to be completely overwritten.
+  - **Breaking:** `AlertsExtension.Builder#addCustomType` has been changed to
+    `setAllowedTypes` to allow the set of alert types (including standard GFM types)
+    to be completely overwritten.
     ```java
     var extension = AlertsExtension.builder()
             .setAllowedTypes(Map.ofEntries(
@@ -30,6 +31,15 @@ with the exception that 0.x versions can break between minor versions.
                     Map.entry("BUG", "Known Bug")
             ))
             .build();
+    ```
+    Example migration:
+    ```diff
+    + var customTypes = new HashMap<>(AlertsExtension.STANDARD_TYPES);
+    + customTypes.put("BUG", "Known Bug");
+      var extension = AlertsExtension.builder()
+    -   .addCustomType("BUG", "Known Bug")
+    +   .setAllowedTypes(customTypes)
+        .build();
     ```
 
 ## [0.28.0] - 2026-03-31
