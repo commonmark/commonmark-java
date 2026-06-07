@@ -138,8 +138,10 @@ public class AlertsTest extends RenderingTestCase {
                 AlertsExtension.builder().addCustomType("INFO", "").build());
     }
 
+    // Overwriting types
+
     @Test
-    public void removeStandardTypes() {
+    public void overwriteStandardTypes() {
         var allowedTypes = Map.ofEntries(Map.entry("IMPORTANT", "Important"));
         var extension = AlertsExtension.builder()
                 .setAllowedTypes(allowedTypes)
@@ -171,6 +173,29 @@ public class AlertsTest extends RenderingTestCase {
                 "<p class=\"markdown-alert-title\">Known Bug</p>\n" +
                 "<p>Alert</p>\n" +
                 "</div>\n");
+    }
+
+    // Overwriting types validation
+
+    @Test
+    public void overwriteTypesMustBeUppercase() {
+        var allowedTypes = Map.ofEntries(Map.entry("info", "Info"));
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().setAllowedTypes(allowedTypes).build());
+    }
+
+    @Test
+    public void overwriteTypesMustNotBeEmpty() {
+        var allowedTypes = Map.ofEntries(Map.entry("", "Info"));
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().setAllowedTypes(allowedTypes).build());
+    }
+
+    @Test
+    public void overwriteTypesTitleMustNotBeEmpty() {
+        var allowedTypes = Map.ofEntries(Map.entry("INFO", ""));
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().setAllowedTypes(allowedTypes).build());
     }
 
     // Custom titles
