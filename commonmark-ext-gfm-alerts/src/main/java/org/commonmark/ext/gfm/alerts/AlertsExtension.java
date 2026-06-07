@@ -128,6 +128,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
          *                     Must not be null/empty or contain any null/empty keys or
          *                     values. Additionally, all alert types must be uppercase.
          * @return {@code this}
+         * @see Builder#addCustomType(String, String)
          */
         public Builder setAllowedTypes(Map<String, String> allowedTypes) {
             Objects.requireNonNull(allowedTypes, "allowedTypes must not be null");
@@ -136,18 +137,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
             }
 
             for (Map.Entry<String, String> entry : allowedTypes.entrySet()) {
-                var type = Objects.requireNonNull(entry.getKey(), "Types must not be null");
-                if (type.isEmpty()) {
-                    throw new IllegalArgumentException("Types must not be empty");
-                }
-                if (!type.equals(type.toUpperCase(Locale.ROOT))) {
-                    throw new IllegalArgumentException("Types must be uppercase: " + type);
-                }
-
-                var defaultTitle = Objects.requireNonNull(entry.getValue(), "Default titles must not be null: " + type);
-                if (defaultTitle.isEmpty()) {
-                    throw new IllegalArgumentException("Default titles must not be empty: " + type);
-                }
+                validateTypeAndTitle(entry.getKey(), entry.getValue());
             }
 
             this.allowedTypes = new HashMap<>(allowedTypes);
@@ -163,17 +153,10 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
          * @param type the alert type (must be uppercase)
          * @param title the default title for this alert type
          * @return {@code this}
+         * @see Builder#setAllowedTypes(Map)
          */
         public Builder addCustomType(String type, String title) {
-            if (type == null || type.isEmpty()) {
-                throw new IllegalArgumentException("Type must not be null or empty");
-            }
-            if (title == null || title.isEmpty()) {
-                throw new IllegalArgumentException("Title must not be null or empty");
-            }
-            if (!type.equals(type.toUpperCase(Locale.ROOT))) {
-                throw new IllegalArgumentException("Type must be uppercase: " + type);
-            }
+            validateTypeAndTitle(type, title);
             allowedTypes.put(type, title);
             return this;
         }
@@ -213,6 +196,30 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
          */
         public Extension build() {
             return new AlertsExtension(this);
+        }
+
+        /**
+         * Checks whether an alert type and default title are valid.
+         *
+         * @param type The type to validate:
+         *             <p>
+         *             - Must not be null or empty
+         *             - Must be uppercase
+         * @param title The default title to validate. Must not be null or empty.
+         */
+        private void validateTypeAndTitle(String type, String title) {
+            Objects.requireNonNull(type, "Type must not be null");
+            if (type.isEmpty()) {
+                throw new IllegalArgumentException("Type must not be empty");
+            }
+            if (!type.equals(type.toUpperCase(Locale.ROOT))) {
+                throw new IllegalArgumentException("Type must be uppercase: " + type);
+            }
+
+            Objects.requireNonNull(title, "Default title must not be null: " + type);
+            if (title.isEmpty()) {
+                throw new IllegalArgumentException("Default title must not be empty: " + type);
+            }
         }
     }
 }
