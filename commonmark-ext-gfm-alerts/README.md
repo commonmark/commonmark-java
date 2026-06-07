@@ -26,18 +26,27 @@ var renderer = HtmlRenderer.builder().extensions(List.of(extension)).build();
 
 ### Custom Alert Types
 
-By default, the five standard GFM alert types are used. These can be added to or replaced
-with a new set of alert types:
+Add custom types beyond the five standard GFM types:
 
 ```java
-var customTypes = new HashMap<>(AlertsExtension.STANDARD_TYPES);
-customTypes.put("BUG", "Known Bug");
 var extension = AlertsExtension.builder()
-        .setAllowedTypes(customTypes)
+        .addCustomType("BUG", "Known Bug")
         .build();
 ```
 
 Custom types must be UPPERCASE. Standard type titles can also be overridden for localization.
+
+The allowed types (including the five standard GFM types) can also be completely overwritten:
+
+```java
+var extension = AlertsExtension.builder()
+        .setAllowedTypes(Map.ofEntries(
+                Map.entry("IMPORTANT", "Important"),
+                Map.entry("WARNING", "Warning")
+                Map.entry("BUG", "Known Bug")
+        ))
+        .build();
+```
 
 ### Custom Alert Titles
 

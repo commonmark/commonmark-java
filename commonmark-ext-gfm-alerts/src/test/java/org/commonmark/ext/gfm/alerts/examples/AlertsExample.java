@@ -4,7 +4,6 @@ import org.commonmark.ext.gfm.alerts.AlertsExtension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -56,10 +55,8 @@ public class AlertsExample {
         System.out.println("CUSTOM ALERT TYPES");
         System.out.println("=".repeat(60));
 
-        var customTypes = new HashMap<>(AlertsExtension.STANDARD_TYPES);
-        customTypes.put("BUG", "Known Bug");
         var extension = AlertsExtension.builder()
-                .setAllowedTypes(customTypes)
+                .addCustomType("BUG", "Known Bug")
                 .build();
 
         var parser = Parser.builder()

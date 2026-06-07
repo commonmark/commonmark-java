@@ -11,7 +11,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,10 +46,8 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void customType() {
-        var customTypes = new HashMap<>(AlertsExtension.STANDARD_TYPES);
-        customTypes.put("INFO", "Information");
         var extension = AlertsExtension.builder()
-                .setAllowedTypes(customTypes)
+                .addCustomType("INFO", "Information")
                 .build();
 
         var parser = Parser.builder().extensions(Set.of(extension)).build();
@@ -66,11 +63,9 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void multipleCustomTypes() {
         var extension = AlertsExtension.builder()
-                .setAllowedTypes(Map.ofEntries(
-                        Map.entry("INFO", "Information"),
-                        Map.entry("SUCCESS", "Success!"),
-                        Map.entry("DANGER", "Danger!")
-                ))
+                .addCustomType("INFO", "Information")
+                .addCustomType("SUCCESS", "Success!")
+                .addCustomType("DANGER", "Danger!")
                 .build();
 
         var parser = Parser.builder().extensions(Set.of(extension)).build();
@@ -93,10 +88,8 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void standardTypesWithCustomConfigured() {
-        var customTypes = new HashMap<>(AlertsExtension.STANDARD_TYPES);
-        customTypes.put("INFO", "Information");
         var extension = AlertsExtension.builder()
-                .setAllowedTypes(customTypes)
+                .addCustomType("INFO", "Information")
                 .build();
 
         var parser = Parser.builder().extensions(Set.of(extension)).build();
@@ -111,10 +104,8 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void overrideStandardTypeTitle() {
-        var customTypes = new HashMap<>(AlertsExtension.STANDARD_TYPES);
-        customTypes.put("NOTE", "Nota");
         var extension = AlertsExtension.builder()
-                .setAllowedTypes(customTypes)
+                .addCustomType("NOTE", "Nota")
                 .build();
 
         var parser = Parser.builder().extensions(Set.of(extension)).build();
@@ -132,19 +123,19 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void customTypeMustBeUppercase() {
         assertThrows(IllegalArgumentException.class, () ->
-                AlertsExtension.builder().setAllowedTypes(Map.of("info", "Information")).build());
+                AlertsExtension.builder().addCustomType("info", "Information").build());
     }
 
     @Test
     public void customTypeMustNotBeEmpty() {
         assertThrows(IllegalArgumentException.class, () ->
-                AlertsExtension.builder().setAllowedTypes(Map.of("", "Title")).build());
+                AlertsExtension.builder().addCustomType("", "Title").build());
     }
 
     @Test
     public void customTypeTitleMustNotBeEmpty() {
         assertThrows(IllegalArgumentException.class, () ->
-                AlertsExtension.builder().setAllowedTypes(Map.of("INFO", "")).build());
+                AlertsExtension.builder().addCustomType("INFO", "").build());
     }
 
     @Test
@@ -440,10 +431,8 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void customTypeParsedAsAlertNode() {
-        var customTypes = new HashMap<>(AlertsExtension.STANDARD_TYPES);
-        customTypes.put("INFO", "Information");
         var extension = AlertsExtension.builder()
-                .setAllowedTypes(customTypes)
+                .addCustomType("INFO", "Information")
                 .build();
 
         var parser = Parser.builder().extensions(Set.of(extension)).build();
