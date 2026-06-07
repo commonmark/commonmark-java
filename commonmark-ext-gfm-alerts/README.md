@@ -36,6 +36,18 @@ var extension = AlertsExtension.builder()
 
 Custom types must be UPPERCASE. Standard type titles can also be overridden for localization.
 
+The allowed types (including the five standard GFM types) can also be completely overwritten:
+
+```java
+var extension = AlertsExtension.builder()
+        .setAllowedTypes(Map.ofEntries(
+                Map.entry("IMPORTANT", "Important"),
+                Map.entry("WARNING", "Warning")
+                Map.entry("BUG", "Known Bug")
+        ))
+        .build();
+```
+
 ### Custom Alert Titles
 
 Allow authors to provide custom titles per alert by adding text after the alert

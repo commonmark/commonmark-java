@@ -40,41 +40,41 @@ public class AlertsMarkdownRendererTest {
     @Test
     public void lowercaseTypeRendersAsUppercase() {
         // Lowercase input gets normalized to uppercase type
-        String rendered = RENDERER.render(PARSER.parse("> [!note]\n> Content\n"));
+        var rendered = RENDERER.render(PARSER.parse("> [!note]\n> Content\n"));
         assertThat(rendered).isEqualTo("> [!NOTE]\n> Content\n");
     }
 
     @Test
     public void leadingAndTrailingLinesAreRemoved() {
-        String rendered = RENDERER.render(PARSER.parse(">\n>  \n>[!NOTE]\n> Content\n>\n>   \n"));
+        var rendered = RENDERER.render(PARSER.parse(">\n>  \n>[!NOTE]\n> Content\n>\n>   \n"));
         assertThat(rendered).isEqualTo("> [!NOTE]\n> Content\n");
     }
 
     @Test
     public void alertWithMultipleParagraphs() {
-        String input = "> [!NOTE]\n> First paragraph\n>\n> Second paragraph\n";
+        var input = "> [!NOTE]\n> First paragraph\n>\n> Second paragraph\n";
         // MarkdownWriter always writes the prefix including trailing space
-        String expected = "> [!NOTE]\n> First paragraph\n> \n> Second paragraph\n";
-        String rendered = RENDERER.render(PARSER.parse(input));
+        var expected = "> [!NOTE]\n> First paragraph\n> \n> Second paragraph\n";
+        var rendered = RENDERER.render(PARSER.parse(input));
         assertThat(rendered).isEqualTo(expected);
     }
 
     @Test
     public void customTypeRoundTrip() {
-        Extension extension = AlertsExtension.builder()
+        var extension = AlertsExtension.builder()
                 .addCustomType("INFO", "Information")
                 .build();
 
-        Parser parser = Parser.builder().extensions(Set.of(extension)).build();
-        MarkdownRenderer renderer = MarkdownRenderer.builder().extensions(Set.of(extension)).build();
-        String input = "> [!INFO]\n> Custom type\n";
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = MarkdownRenderer.builder().extensions(Set.of(extension)).build();
+        var input = "> [!INFO]\n> Custom type\n";
 
         assertRoundTrip(input, parser, renderer);
     }
 
     @Test
     public void alertWithList() {
-        String input = "> [!NOTE]\n> Items:\n> \n> - First\n> - Second\n";
+        var input = "> [!NOTE]\n> Items:\n> \n> - First\n> - Second\n";
         assertRoundTrip(input);
     }
 
@@ -92,17 +92,17 @@ public class AlertsMarkdownRendererTest {
 
     @Test
     public void customTitleWithMultipleBlocks() {
-        String input = "> [!NOTE]Title\n> First paragraph\n>\n> Second paragraph\n>\n> - > Nested blocks\n";
+        var input = "> [!NOTE]Title\n> First paragraph\n>\n> Second paragraph\n>\n> - > Nested blocks\n";
         // MarkdownWriter always writes the prefix including trailing space
-        String expected = "> [!NOTE] Title\n> First paragraph\n> \n> Second paragraph\n> \n> - > Nested blocks\n";
-        String rendered = RENDERER_CUSTOM_TITLES.render(PARSER_CUSTOM_TITLES.parse(input));
+        var expected = "> [!NOTE] Title\n> First paragraph\n> \n> Second paragraph\n> \n> - > Nested blocks\n";
+        var rendered = RENDERER_CUSTOM_TITLES.render(PARSER_CUSTOM_TITLES.parse(input));
         assertThat(rendered).isEqualTo(expected);
     }
 
     // Helpers
 
     private void assertRoundTrip(String input, Parser parser, MarkdownRenderer renderer) {
-        String rendered = renderer.render(parser.parse(input));
+        var rendered = renderer.render(parser.parse(input));
         assertThat(rendered).isEqualTo(input);
     }
 

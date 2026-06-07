@@ -12,6 +12,7 @@ import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -135,6 +136,66 @@ public class AlertsTest extends RenderingTestCase {
     public void customTypeTitleMustNotBeEmpty() {
         assertThrows(IllegalArgumentException.class, () ->
                 AlertsExtension.builder().addCustomType("INFO", "").build());
+    }
+
+    // Overwriting types
+
+    @Test
+    public void overwriteStandardTypes() {
+        var allowedTypes = Map.ofEntries(Map.entry("IMPORTANT", "Important"));
+        var extension = AlertsExtension.builder()
+                .setAllowedTypes(allowedTypes)
+                .addCustomType("BUG", "Known Bug")
+                .build();
+        var parser = Parser.builder().extensions(Set.of(extension)).build();
+        var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
+
+        assertThat(renderer.render(parser.parse("> [!NOTE]\n> Regular block quote"))).isEqualTo(
+                "<blockquote>\n" +
+                "<p>[!NOTE]\n" +
+                "Regular block quote</p>\n" +
+                "</blockquote>\n");
+
+        assertThat(renderer.render(parser.parse("> [!TIP]\n> Regular block quote"))).isEqualTo(
+                "<blockquote>\n" +
+                "<p>[!TIP]\n" +
+                "Regular block quote</p>\n" +
+                "</blockquote>\n");
+
+        assertThat(renderer.render(parser.parse("> [!IMPORTANT]\n> Alert"))).isEqualTo(
+                "<div class=\"markdown-alert markdown-alert-important\" data-alert-type=\"important\">\n" +
+                "<p class=\"markdown-alert-title\">Important</p>\n" +
+                "<p>Alert</p>\n" +
+                "</div>\n");
+
+        assertThat(renderer.render(parser.parse("> [!BUG]\n> Alert"))).isEqualTo(
+                "<div class=\"markdown-alert markdown-alert-bug\" data-alert-type=\"bug\">\n" +
+                "<p class=\"markdown-alert-title\">Known Bug</p>\n" +
+                "<p>Alert</p>\n" +
+                "</div>\n");
+    }
+
+    // Overwriting types validation
+
+    @Test
+    public void overwriteTypesMustBeUppercase() {
+        var allowedTypes = Map.ofEntries(Map.entry("info", "Info"));
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().setAllowedTypes(allowedTypes).build());
+    }
+
+    @Test
+    public void overwriteTypesMustNotBeEmpty() {
+        var allowedTypes = Map.ofEntries(Map.entry("", "Info"));
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().setAllowedTypes(allowedTypes).build());
+    }
+
+    @Test
+    public void overwriteTypesTitleMustNotBeEmpty() {
+        var allowedTypes = Map.ofEntries(Map.entry("INFO", ""));
+        assertThrows(IllegalArgumentException.class, () ->
+                AlertsExtension.builder().setAllowedTypes(allowedTypes).build());
     }
 
     // Custom titles

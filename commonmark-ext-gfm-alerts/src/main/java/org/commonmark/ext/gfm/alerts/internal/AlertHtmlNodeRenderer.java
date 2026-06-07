@@ -13,12 +13,12 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
 
     private final HtmlWriter htmlWriter;
     private final HtmlNodeRendererContext context;
-    private final Map<String, String> customTypeTitles;
+    private final Map<String, String> allowedTypes;
 
-    public AlertHtmlNodeRenderer(HtmlNodeRendererContext context, Map<String, String> customTypeTitles) {
+    public AlertHtmlNodeRenderer(HtmlNodeRendererContext context, Map<String, String> allowedTypes) {
         this.htmlWriter = context.getWriter();
         this.context = context;
-        this.customTypeTitles = customTypeTitles;
+        this.allowedTypes = allowedTypes;
     }
 
     @Override
@@ -53,24 +53,11 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
     }
 
     private String getAlertTitle(String type) {
-        var customTypeTitle = customTypeTitles.get(type);
-        if (customTypeTitle != null) {
-            return customTypeTitle;
+        var typeTitle = allowedTypes.get(type);
+        if (typeTitle == null) {
+            throw new IllegalStateException("Unknown alert type: " + type);
         }
-        switch (type) {
-            case "NOTE":
-                return "Note";
-            case "TIP":
-                return "Tip";
-            case "IMPORTANT":
-                return "Important";
-            case "WARNING":
-                return "Warning";
-            case "CAUTION":
-                return "Caution";
-            default:
-                throw new IllegalStateException("Unknown alert type: " + type);
-        }
+        return typeTitle;
     }
 
     private void renderChildren(Node parent) {

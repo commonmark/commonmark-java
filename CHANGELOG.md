@@ -20,6 +20,17 @@ with the exception that 0.x versions can break between minor versions.
     other blocks (including other alerts). See
     [this section of the alerts README](./commonmark-ext-gfm-alerts/README.md#nesting-alerts)
     for more information.
+  - New configuration for `AlertsExtension` to allow the set of alert types
+    (including standard GFM types) to be completely overwritten.
+    ```java
+    var extension = AlertsExtension.builder()
+            .setAllowedTypes(Map.ofEntries(
+                    Map.entry("IMPORTANT", "Important"),
+                    Map.entry("WARNING", "Warning")
+                    Map.entry("BUG", "Known Bug")
+            ))
+            .build();
+    ```
 
 ## [0.28.0] - 2026-03-31
 ### Added
