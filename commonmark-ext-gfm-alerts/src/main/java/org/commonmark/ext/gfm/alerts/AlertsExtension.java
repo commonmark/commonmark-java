@@ -150,7 +150,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
                 }
             }
 
-            this.allowedTypes = Map.copyOf(allowedTypes);
+            this.allowedTypes = new HashMap<>(allowedTypes);
             return this;
         }
 

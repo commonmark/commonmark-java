@@ -141,7 +141,10 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void removeStandardTypes() {
         var allowedTypes = Map.ofEntries(Map.entry("IMPORTANT", "Important"));
-        var extension = AlertsExtension.builder().setAllowedTypes(allowedTypes).build();
+        var extension = AlertsExtension.builder()
+                .setAllowedTypes(allowedTypes)
+                .addCustomType("BUG", "Known Bug")
+                .build();
         var parser = Parser.builder().extensions(Set.of(extension)).build();
         var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
@@ -160,6 +163,12 @@ public class AlertsTest extends RenderingTestCase {
         assertThat(renderer.render(parser.parse("> [!IMPORTANT]\n> Alert"))).isEqualTo(
                 "<div class=\"markdown-alert markdown-alert-important\" data-alert-type=\"important\">\n" +
                 "<p class=\"markdown-alert-title\">Important</p>\n" +
+                "<p>Alert</p>\n" +
+                "</div>\n");
+
+        assertThat(renderer.render(parser.parse("> [!BUG]\n> Alert"))).isEqualTo(
+                "<div class=\"markdown-alert markdown-alert-bug\" data-alert-type=\"bug\">\n" +
+                "<p class=\"markdown-alert-title\">Known Bug</p>\n" +
                 "<p>Alert</p>\n" +
                 "</div>\n");
     }
