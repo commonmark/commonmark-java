@@ -24,6 +24,9 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
     @Override
     protected void renderAlert(Alert alert) {
         var type = alert.getType();
+        if (!allowedTypes.containsKey(type)) {
+            throw new IllegalStateException("Unknown alert type: " + type);
+        }
         var cssClass = type.toLowerCase();
 
         htmlWriter.line();
@@ -40,7 +43,7 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
         if (first instanceof AlertTitle) {
             renderChildren(first);
         } else {
-            htmlWriter.text(getAlertTitle(type));
+            htmlWriter.text(allowedTypes.get(type));
         }
         htmlWriter.tag("/p");
         htmlWriter.line();
@@ -52,24 +55,8 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
         htmlWriter.line();
     }
 
-    private String getAlertTitle(String type) {
-        var typeTitle = allowedTypes.get(type);
-        if (typeTitle == null) {
-            throw new IllegalStateException("Unknown alert type: " + type);
-        }
-        return typeTitle;
-    }
-
-    private void renderChildren(Node parent) {
-        var node = parent.getFirstChild();
-        while (node != null) {
-            var next = node.getNext();
-
-            // AlertTitle is rendered separately from other nodes.
-            if (!(node instanceof AlertTitle)) {
-                context.render(node);
-            }
-            node = next;
-        }
+    @Override
+    protected void renderNode(Node node) {
+        context.render(node);
     }
 }

@@ -4,12 +4,14 @@ import org.commonmark.Extension;
 import org.commonmark.ext.gfm.alerts.internal.AlertBlockParser;
 import org.commonmark.ext.gfm.alerts.internal.AlertHtmlNodeRenderer;
 import org.commonmark.ext.gfm.alerts.internal.AlertMarkdownNodeRenderer;
+import org.commonmark.ext.gfm.alerts.internal.AlertTextContentNodeRenderer;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
+import org.commonmark.renderer.text.TextContentRenderer;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -48,7 +50,7 @@ import java.util.Set;
  *   }</pre>
  */
 public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
-        MarkdownRenderer.MarkdownRendererExtension {
+        TextContentRenderer.TextContentRendererExtension, MarkdownRenderer.MarkdownRendererExtension {
 
     /**
      * The standard GitHub Flavored Markdown (GFM) types that the extension
@@ -93,6 +95,11 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
         rendererBuilder.nodeRendererFactory(context -> new AlertHtmlNodeRenderer(context, allowedTypes));
+    }
+
+    @Override
+    public void extend(TextContentRenderer.Builder rendererBuilder) {
+        rendererBuilder.nodeRendererFactory(context -> new AlertTextContentNodeRenderer(context, allowedTypes));
     }
 
     @Override
