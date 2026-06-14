@@ -24,7 +24,8 @@ public class AlertTextContentNodeRenderer extends AlertNodeRenderer {
     @Override
     protected void renderAlert(Alert alert) {
         var type = alert.getType();
-        if (!allowedTypes.containsKey(type)) {
+        var defaultTitle = allowedTypes.get(type);
+        if (defaultTitle == null) {
             throw new IllegalStateException("Unknown alert type: " + type);
         }
 
@@ -32,7 +33,7 @@ public class AlertTextContentNodeRenderer extends AlertNodeRenderer {
         if (first instanceof AlertTitle) {
             renderChildren(first);
         } else {
-            textContent.write(allowedTypes.get(type));
+            textContent.write(defaultTitle);
         }
 
         if (alert.hasBody()) {
