@@ -33,7 +33,6 @@ with the exception that 0.x versions can break between minor versions.
     ```
   - Support rendering alerts to text (#437)
 
-
 ## [0.28.0] - 2026-03-31
 ### Added
 - New extension for alerts (aka callouts/admonitions)
