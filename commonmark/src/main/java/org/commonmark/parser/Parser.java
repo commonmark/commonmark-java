@@ -66,6 +66,10 @@ public class Parser {
         return new Builder();
     }
 
+    private Node processParsedDocument(Node document) {
+        return postProcess(document);
+    }
+
     /**
      * Parse the specified input text into a tree of nodes.
      * <p>
@@ -74,11 +78,12 @@ public class Parser {
      * @param input the text to parse - must not be null
      * @return the root node
      */
+
     public Node parse(String input) {
-        Objects.requireNonNull(input, "input must not be null");
-        DocumentParser documentParser = createDocumentParser();
-        Node document = documentParser.parse(input);
-        return postProcess(document);
+        Objects.requireNonNull(input);
+       DocumentParser documentParser = createDocumentParser();
+
+        return processParsedDocument(documentParser.parse(input));
     }
 
     /**
@@ -100,10 +105,10 @@ public class Parser {
      * @throws IOException when reading throws an exception
      */
     public Node parseReader(Reader input) throws IOException {
-        Objects.requireNonNull(input, "input must not be null");
+        Objects.requireNonNull(input);
         DocumentParser documentParser = createDocumentParser();
-        Node document = documentParser.parse(input);
-        return postProcess(document);
+        return processParsedDocument(documentParser.parse(input));
+
     }
 
     private DocumentParser createDocumentParser() {
