@@ -152,13 +152,18 @@ public class Parser {
         public Builder extensions(Iterable<? extends Extension> extensions) {
             Objects.requireNonNull(extensions, "extensions must not be null");
             for (Extension extension : extensions) {
+                applyExtension(extension);
+            }
+            return this;
+        }
+         private void applyExtension(Extension extension){
                 if (extension instanceof ParserExtension) {
                     ParserExtension parserExtension = (ParserExtension) extension;
                     parserExtension.extend(this);
                 }
             }
-            return this;
-        }
+
+
 
         /**
          * Describe the list of markdown features the parser will recognize and parse.
@@ -222,11 +227,14 @@ public class Parser {
          * @return {@code this}
          */
         public Builder maxOpenBlockParsers(int maxOpenBlockParsers) {
-            if (maxOpenBlockParsers < 0) {
-                throw new IllegalArgumentException("maxOpenBlockParsers must be >= 0");
-            }
+            validateMaxOpenBlockParsers(maxOpenBlockParsers);
             this.maxOpenBlockParsers = maxOpenBlockParsers;
             return this;
+        }
+        private void validateMaxOpenBlockParsers(int value){
+            if (value < 0) {
+                throw new IllegalArgumentException("maxOpenBlockParsers must be >= 0");
+            }
         }
 
         /**
@@ -340,11 +348,10 @@ public class Parser {
         }
 
         private InlineParserFactory getInlineParserFactory() {
-            if (inlineParserFactory != null) {
-                return inlineParserFactory;
-            } else {
-                return InlineParserImpl::new;
-            }
+            return inlineParserFactory != null
+                    ? inlineParserFactory :
+                    InlineParserImpl::new;
+
         }
     }
 
