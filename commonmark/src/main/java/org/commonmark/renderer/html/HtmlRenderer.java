@@ -247,12 +247,18 @@ public class HtmlRenderer implements Renderer {
 
         private RendererContext(HtmlWriter htmlWriter) {
             this.htmlWriter = htmlWriter;
-
-            attributeProviders = new ArrayList<>(attributeProviderFactories.size());
+            this.attributeProviders = createAttributeProviders();
+            initializeNodeRenderers();
+        }
+        private List<AttributeProvider> createAttributeProviders() {
+            List<AttributeProvider> providers = new ArrayList<>(attributeProviderFactories.size());
             for (var attributeProviderFactory : attributeProviderFactories) {
-                attributeProviders.add(attributeProviderFactory.create(this));
+                providers.add(attributeProviderFactory.create(this));
             }
+            return providers;
+        }
 
+        private void initializeNodeRenderers() {
             for (var factory : nodeRendererFactories) {
                 var renderer = factory.create(this);
                 nodeRendererMap.add(renderer);
