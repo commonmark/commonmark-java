@@ -28,6 +28,8 @@ public class HtmlRenderer implements Renderer {
     private final List<AttributeProviderFactory> attributeProviderFactories;
     private final List<HtmlNodeRendererFactory> nodeRendererFactories;
 
+
+
     private HtmlRenderer(Builder builder) {
         this.softbreak = builder.softbreak;
         this.escapeHtml = builder.escapeHtml;
@@ -36,12 +38,19 @@ public class HtmlRenderer implements Renderer {
         this.sanitizeUrls = builder.sanitizeUrls;
         this.urlSanitizer = builder.urlSanitizer;
         this.attributeProviderFactories = new ArrayList<>(builder.attributeProviderFactories);
-
-        this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
-        this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
-        // Add as last. This means clients can override the rendering of core nodes if they want.
-        this.nodeRendererFactories.add(CoreHtmlNodeRenderer::new);
+        // Add as last. This means clients can override the rendering of core nodes if they want.*/
+        this.nodeRendererFactories = buildNodeRenderers(builder);
     }
+    private static List<HtmlNodeRendererFactory> buildNodeRenderers(Builder builder) {
+        List<HtmlNodeRendererFactory> result =
+                new ArrayList<>(builder.nodeRendererFactories.size() + 1);
+
+        result.addAll(builder.nodeRendererFactories);
+        result.add(CoreHtmlNodeRenderer::new);
+
+        return result;
+    }
+
 
     /**
      * Create a new builder for configuring an {@link HtmlRenderer}.
@@ -52,14 +61,19 @@ public class HtmlRenderer implements Renderer {
         return new Builder();
     }
 
+    private RendererContext createContext(Appendable output) {
+        return new RendererContext(new HtmlWriter(output));
+    }
+
     @Override
     public void render(Node node, Appendable output) {
         Objects.requireNonNull(node, "node must not be null");
-        RendererContext context = new RendererContext(new HtmlWriter(output));
+        RendererContext context = createContext(output);
         context.beforeRoot(node);
         context.render(node);
         context.afterRoot(node);
     }
+
 
     @Override
     public String render(Node node) {
