@@ -24,6 +24,8 @@ public class HtmlBlockParser extends AbstractBlockParser {
 
     private static final String OPENTAG = "<" + TAGNAME + ATTRIBUTE + "*" + "\\s*/?>";
     private static final String CLOSETAG = "</" + TAGNAME + "\\s*[>]";
+    private static final int CODE_BLOCK_INDENT = 4;
+    private static final int MAX_HTML_BLOCK_TYPE = 7;
 
     private static final Pattern[][] BLOCK_PATTERNS = new Pattern[][]{
             {null, null}, // not used (no type 0)
@@ -124,8 +126,8 @@ public class HtmlBlockParser extends AbstractBlockParser {
             int nextNonSpace = state.getNextNonSpaceIndex();
             CharSequence line = state.getLine().getContent();
 
-            if (state.getIndent() < 4 && line.charAt(nextNonSpace) == '<') {
-                for (int blockType = 1; blockType <= 7; blockType++) {
+            if (state.getIndent() < CODE_BLOCK_INDENT && line.charAt(nextNonSpace) == '<') {
+                for (int blockType = 1; blockType <= MAX_HTML_BLOCK_TYPE; blockType++) {
                     // Type 7 can not interrupt a paragraph (not even a lazy one)
                     if (blockType == 7 && (
                             matchedBlockParser.getMatchedBlockParser().getBlock() instanceof Paragraph ||

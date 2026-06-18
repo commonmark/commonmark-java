@@ -82,6 +82,10 @@ public class DocumentParser implements ParserState {
 
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
+    private static final int TAB_SIZE = 4;
+    private static final int CODE_INDENT = 4;
+    private static final int NO_INDEX = -1;
+    private static final int NO_COLUMN = -1;
 
     public DocumentParser(DocumentParserConfig config) {
         this.blockParserFactories = config.getBlockParserFactories();
@@ -216,9 +220,9 @@ public class DocumentParser implements ParserState {
                     closeBlockParsers(openBlockParsers.size() - i);
                     return;
                 } else {
-                    if (blockContinue.getNewIndex() != -1) {
+                    if (blockContinue.getNewIndex() != NO_INDEX) {
                         setNewIndex(blockContinue.getNewIndex());
-                    } else if (blockContinue.getNewColumn() != -1) {
+                    } else if (blockContinue.getNewColumn() != NO_COLUMN) {
                         setNewColumn(blockContinue.getNewColumn());
                     }
                     matches++;
@@ -242,7 +246,7 @@ public class DocumentParser implements ParserState {
             findNextNonSpace();
 
             // this is a little performance optimization:
-            if (isBlank() || (indent < Parsing.CODE_BLOCK_INDENT && Characters.isLetter(this.line.getContent(), nextNonSpace))) {
+            if (isBlank() || (indent < CODE_INDENT && Characters.isLetter(this.line.getContent(), nextNonSpace))) {
                 setNewIndex(nextNonSpace);
                 break;
             }
@@ -356,7 +360,7 @@ public class DocumentParser implements ParserState {
                     continue;
                 case '\t':
                     i++;
-                    cols += (4 - (cols % 4));
+                    cols += (TAB_SIZE - (cols % TAB_SIZE));
                     continue;
             }
             blank = false;
