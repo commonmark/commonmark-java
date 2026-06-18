@@ -83,18 +83,15 @@ public class DocumentParser implements ParserState {
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
 
-    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
-                          List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers,
-                          IncludeSourceSpans includeSourceSpans, int maxOpenBlockParsers) {
-        this.blockParserFactories = blockParserFactories;
-        this.inlineParserFactory = inlineParserFactory;
-        this.inlineContentParserFactories = inlineContentParserFactories;
-        this.delimiterProcessors = delimiterProcessors;
-        this.linkProcessors = linkProcessors;
-        this.linkMarkers = linkMarkers;
-        this.includeSourceSpans = includeSourceSpans;
-        this.maxOpenBlockParsers = maxOpenBlockParsers;
+    public DocumentParser(DocumentParserConfig config) {
+        this.blockParserFactories = config.getBlockParserFactories();
+        this.inlineParserFactory = config.getInlineParserFactory();
+        this.inlineContentParserFactories = config.getInlineContentParserFactories();
+        this.delimiterProcessors = config.getDelimiterProcessors();
+        this.linkProcessors = config.getLinkProcessors();
+        this.linkMarkers = config.getLinkMarkers();
+        this.includeSourceSpans = config.getIncludeSourceSpans();
+        this.maxOpenBlockParsers = config.getMaxOpenBlockParsers();
 
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(new OpenBlockParser(documentBlockParser, 0));
@@ -604,3 +601,4 @@ public class DocumentParser implements ParserState {
         }
     }
 }
+
