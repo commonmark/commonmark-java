@@ -1,10 +1,7 @@
 package org.commonmark.parser;
 
 import org.commonmark.Extension;
-import org.commonmark.internal.Definitions;
-import org.commonmark.internal.DocumentParser;
-import org.commonmark.internal.InlineParserContextImpl;
-import org.commonmark.internal.InlineParserImpl;
+import org.commonmark.internal.*;
 import org.commonmark.node.*;
 import org.commonmark.parser.beta.LinkInfo;
 import org.commonmark.parser.beta.LinkProcessor;
@@ -112,8 +109,18 @@ public class Parser {
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories,
-                delimiterProcessors, linkProcessors, linkMarkers, includeSourceSpans, maxOpenBlockParsers);
+         DocumentParserConfig config = new DocumentParserConfig(
+                blockParserFactories,
+                inlineParserFactory,
+                inlineContentParserFactories,
+                delimiterProcessors,
+                linkProcessors,
+                linkMarkers,
+                includeSourceSpans,
+                maxOpenBlockParsers
+        );
+
+        return new DocumentParser(config);
     }
 
     private Node postProcess(Node document) {
