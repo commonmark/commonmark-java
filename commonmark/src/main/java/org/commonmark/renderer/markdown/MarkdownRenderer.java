@@ -130,12 +130,18 @@ public class MarkdownRenderer implements Renderer {
         private RendererContext(MarkdownWriter writer) {
             // Set fields that are used by interface
             this.writer = writer;
+            this.additionalTextEscapes = createAdditionalTextEscapes();
+            initializeNodeRenderers();
+        }
+        private Set<Character> createAdditionalTextEscapes() {
             Set<Character> escapes = new HashSet<>();
             for (MarkdownNodeRendererFactory factory : nodeRendererFactories) {
                 escapes.addAll(factory.getSpecialCharacters());
             }
-            additionalTextEscapes = Collections.unmodifiableSet(escapes);
+            return Collections.unmodifiableSet(escapes);
+        }
 
+        private void initializeNodeRenderers(){
             for (var factory : nodeRendererFactories) {
                 // Pass in this as context here, which uses the fields set above
                 var renderer = factory.create(this);
