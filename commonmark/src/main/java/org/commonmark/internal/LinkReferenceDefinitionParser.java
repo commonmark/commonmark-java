@@ -104,8 +104,12 @@ public class LinkReferenceDefinitionParser {
     }
 
     List<SourceSpan> removeLines(int lines) {
-        var removedSpans = Collections.unmodifiableList(new ArrayList<>(
-                sourceSpans.subList(Math.max(sourceSpans.size() - lines, 0), sourceSpans.size())));
+        var removedSpans = List.copyOf(
+                sourceSpans.subList(
+                        Math.max(sourceSpans.size() - lines, 0),
+                        sourceSpans.size()
+                )
+        );
         removeLast(lines, paragraphLines);
         removeLast(lines, sourceSpans);
         return removedSpans;
