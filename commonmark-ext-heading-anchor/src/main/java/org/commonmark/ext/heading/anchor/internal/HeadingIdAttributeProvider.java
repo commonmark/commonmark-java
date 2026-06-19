@@ -43,11 +43,11 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
                 }
             });
 
-            String finalString = "";
+            StringBuilder sb = new StringBuilder();
             for (String word : wordList) {
-                finalString += word;
+                sb.append(word);
             }
-            finalString = finalString.trim().toLowerCase();
+            String finalString = sb.toString().trim().toLowerCase();
 
             attributes.put("id", idGenerator.generateId(finalString));
         }
