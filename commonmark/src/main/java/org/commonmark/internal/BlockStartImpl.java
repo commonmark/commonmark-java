@@ -36,14 +36,14 @@ public class BlockStartImpl extends BlockStart {
     }
 
     @Override
-    public BlockStart atIndex(int newIndex) {
-        this.newIndex = newIndex;
+    public BlockStart atIndex(int targetIndex) {
+        this.newIndex = targetIndex;
         return this;
     }
 
     @Override
-    public BlockStart atColumn(int newColumn) {
-        this.newColumn = newColumn;
+    public BlockStart atColumn(int targetColumn) {
+        this.newColumn = targetColumn;
         return this;
     }
 

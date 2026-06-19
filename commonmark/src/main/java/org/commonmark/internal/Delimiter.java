@@ -23,15 +23,19 @@ public class Delimiter implements DelimiterRun {
     public Delimiter previous;
     public Delimiter next;
 
-    public Delimiter(List<Text> characters, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
-        this.characters = characters;
-        this.delimiterChar = delimiterChar;
+    public Delimiter(List<Text> delimiterTexts,
+                     char delimiterMarker,
+                     boolean canOpen,
+                     boolean canClose,
+                     Delimiter previous) {
+
+        this.characters = delimiterTexts;
+        this.delimiterChar = delimiterMarker;
         this.canOpen = canOpen;
         this.canClose = canClose;
         this.previous = previous;
-        this.originalLength = characters.size();
+        this.originalLength = delimiterTexts.size();
     }
-
     @Override
     public boolean canOpen() {
         return canOpen;

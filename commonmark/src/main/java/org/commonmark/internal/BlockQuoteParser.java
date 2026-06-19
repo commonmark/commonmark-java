@@ -25,40 +25,46 @@ public class BlockQuoteParser extends AbstractBlockParser {
         return block;
     }
 
+    private static int calculateNewColumn(ParserState state, int nextNonSpace) {
+        int newColumn = state.getColumn() + state.getIndent() + 1;
+
+        if (Characters.isSpaceOrTab(state.getLine().getContent(), nextNonSpace + 1)) {
+            newColumn++;
+        }
+
+        return newColumn;
+    }
+
     @Override
     public BlockContinue tryContinue(ParserState state) {
         int nextNonSpace = state.getNextNonSpaceIndex();
         if (isMarker(state, nextNonSpace)) {
-            int newColumn = state.getColumn() + state.getIndent() + 1;
-            // optional following space or tab
-            if (Characters.isSpaceOrTab(state.getLine().getContent(), nextNonSpace + 1)) {
-                newColumn++;
-            }
-            return BlockContinue.atColumn(newColumn);
-        } else {
-            return BlockContinue.none();
+            return BlockContinue.atColumn(
+                    calculateNewColumn(state, nextNonSpace));
         }
-    }
+
+        return BlockContinue.none();
+        }
+
 
     private static boolean isMarker(ParserState state, int index) {
         CharSequence line = state.getLine().getContent();
         return state.getIndent() < Parsing.CODE_BLOCK_INDENT && index < line.length() && line.charAt(index) == '>';
     }
 
+
+
     public static class Factory extends AbstractBlockParserFactory {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             int nextNonSpace = state.getNextNonSpaceIndex();
             if (isMarker(state, nextNonSpace)) {
-                int newColumn = state.getColumn() + state.getIndent() + 1;
-                // optional following space or tab
-                if (Characters.isSpaceOrTab(state.getLine().getContent(), nextNonSpace + 1)) {
-                    newColumn++;
-                }
-                return BlockStart.of(new BlockQuoteParser()).atColumn(newColumn);
-            } else {
-                return BlockStart.none();
+                return BlockStart.of(new BlockQuoteParser())
+                        .atColumn(BlockQuoteParser.calculateNewColumn(state, nextNonSpace));
+            }
+
+            return BlockStart.none();
             }
         }
     }
-}
+
