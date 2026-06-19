@@ -193,33 +193,33 @@ public class Scanner {
         }
     }
 
-    public int find(char c) {
+    private int findMatching(CharMatcher matcher) {
         int count = 0;
+
         while (true) {
-            char cur = peek();
-            if (cur == Scanner.END) {
+            char current = peek();
+
+            if (current == END) {
                 return -1;
-            } else if (cur == c) {
+            }
+
+            if (matcher.matches(current)) {
                 return count;
             }
+
             count++;
             next();
         }
     }
 
-    public int find(CharMatcher matcher) {
-        int count = 0;
-        while (true) {
-            char c = peek();
-            if (c == END) {
-                return -1;
-            } else if (matcher.matches(c)) {
-                return count;
-            }
-            count++;
-            next();
-        }
+    public int find(char c) {
+        return findMatching(ch -> ch == c);
     }
+
+    public int find(CharMatcher matcher) {
+        return findMatching(matcher);
+    }
+
 
     // Don't expose the int index, because it would be good if we could switch input to a List<String> of lines later
     // instead of one contiguous String.

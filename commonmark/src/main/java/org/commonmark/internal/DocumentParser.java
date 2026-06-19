@@ -200,6 +200,13 @@ public class DocumentParser implements ParserState {
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
      */
+    private boolean shouldFinalizeBlock(BlockContinueImpl blockContinue) {
+        return blockContinue.isFinalize();
+    }
+    private void handleBlockFinalization(int index) {
+        addSourceSpans();
+        closeBlockParsers(openBlockParsers.size() - index);
+    }
     private void parseLine(String ln, int inputIndex) {
         setLine(ln, inputIndex);
 
@@ -215,10 +222,10 @@ public class DocumentParser implements ParserState {
             if (result instanceof BlockContinueImpl) {
                 BlockContinueImpl blockContinue = (BlockContinueImpl) result;
                 openBlockParser.sourceIndex = getIndex();
-                if (blockContinue.isFinalize()) {
-                    addSourceSpans();
-                    closeBlockParsers(openBlockParsers.size() - i);
+                if (shouldFinalizeBlock(blockContinue)) {
+                    handleBlockFinalization(i);
                     return;
+
                 } else {
                     if (blockContinue.getNewIndex() != NO_INDEX) {
                         setNewIndex(blockContinue.getNewIndex());
