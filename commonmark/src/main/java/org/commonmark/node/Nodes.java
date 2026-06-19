@@ -57,10 +57,7 @@ public class Nodes {
             return result;
         }
 
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("remove");
-        }
+
     }
 }
 
