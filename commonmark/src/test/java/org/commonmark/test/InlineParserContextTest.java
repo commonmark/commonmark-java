@@ -54,6 +54,11 @@ public class InlineParserContextTest {
                 }
 
                 @Override
+                public List<DelimiterProcessor> getOverrideDelimiterProcessors() {
+                    return inlineParserContext.getOverrideDelimiterProcessors();
+                }
+
+                @Override
                 public List<LinkProcessor> getCustomLinkProcessors() {
                     return inlineParserContext.getCustomLinkProcessors();
                 }

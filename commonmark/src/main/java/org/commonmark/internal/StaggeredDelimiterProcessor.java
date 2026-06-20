@@ -60,6 +60,19 @@ class StaggeredDelimiterProcessor implements DelimiterProcessor {
         }
     }
 
+    void replace(DelimiterProcessor dp) {
+        final int len = dp.getMinLength();
+        ListIterator<DelimiterProcessor> it = processors.listIterator();
+        while (it.hasNext()) {
+            DelimiterProcessor p = it.next();
+            if (p.getMinLength() == len) {
+                it.set(dp);
+                return;
+            }
+        }
+        add(dp);
+    }
+
     private DelimiterProcessor findProcessor(int len) {
         for (DelimiterProcessor p : processors) {
             if (p.getMinLength() <= len) {

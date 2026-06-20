@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
-
 /**
  * Parses input text to a tree of nodes.
  * <p>
@@ -32,6 +31,7 @@ public class Parser {
     private final List<BlockParserFactory> blockParserFactories;
     private final List<InlineContentParserFactory> inlineContentParserFactories;
     private final List<DelimiterProcessor> delimiterProcessors;
+    private final List<DelimiterProcessor> overrideDelimiterProcessors;
     private final List<LinkProcessor> linkProcessors;
     private final Set<Character> linkMarkers;
     private final InlineParserFactory inlineParserFactory;
@@ -45,6 +45,7 @@ public class Parser {
         this.postProcessors = builder.postProcessors;
         this.inlineContentParserFactories = builder.inlineContentParserFactories;
         this.delimiterProcessors = builder.delimiterProcessors;
+        this.overrideDelimiterProcessors = builder.overrideDelimiterProcessors;
         this.linkProcessors = builder.linkProcessors;
         this.linkMarkers = builder.linkMarkers;
         this.includeSourceSpans = builder.includeSourceSpans;
@@ -53,7 +54,8 @@ public class Parser {
         // Try to construct an inline parser. Invalid configuration might result in an exception, which we want to
         // detect as soon as possible.
         var context = new InlineParserContextImpl(
-                inlineContentParserFactories, delimiterProcessors, linkProcessors, linkMarkers, new Definitions());
+                inlineContentParserFactories, delimiterProcessors, overrideDelimiterProcessors,
+                linkProcessors, linkMarkers, new Definitions());
         this.inlineParserFactory.create(context);
     }
 
@@ -108,7 +110,7 @@ public class Parser {
 
     private DocumentParser createDocumentParser() {
         return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories,
-                delimiterProcessors, linkProcessors, linkMarkers, includeSourceSpans, maxOpenBlockParsers);
+                delimiterProcessors, overrideDelimiterProcessors, linkProcessors, linkMarkers, includeSourceSpans, maxOpenBlockParsers);
     }
 
     private Node postProcess(Node document) {
@@ -125,6 +127,7 @@ public class Parser {
         private final List<BlockParserFactory> blockParserFactories = new ArrayList<>();
         private final List<InlineContentParserFactory> inlineContentParserFactories = new ArrayList<>();
         private final List<DelimiterProcessor> delimiterProcessors = new ArrayList<>();
+        private final List<DelimiterProcessor> overrideDelimiterProcessors = new ArrayList<>();
         private final List<LinkProcessor> linkProcessors = new ArrayList<>();
         private final List<PostProcessor> postProcessors = new ArrayList<>();
         private final Set<Character> linkMarkers = new HashSet<>();
@@ -270,6 +273,23 @@ public class Parser {
         public Builder customDelimiterProcessor(DelimiterProcessor delimiterProcessor) {
             Objects.requireNonNull(delimiterProcessor, "delimiterProcessor must not be null");
             delimiterProcessors.add(delimiterProcessor);
+            return this;
+        }
+
+        /**
+         * Add a delimiter processor that replaces the built-in processor for the same delimiter character.
+         * <p>
+         * This can be used to override core syntax such as emphasis and strong emphasis parsing.
+         * The built-in processor for the same delimiter character and minimum length is replaced.
+         * If a processor with the same delimiter character but a different minimum length exists, it is combined
+         * using the standard staggered delimiter processor behavior.
+         *
+         * @param delimiterProcessor a delimiter processor implementation
+         * @return {@code this}
+         */
+        public Builder overrideDelimiterProcessor(DelimiterProcessor delimiterProcessor) {
+            Objects.requireNonNull(delimiterProcessor, "delimiterProcessor must not be null");
+            overrideDelimiterProcessors.add(delimiterProcessor);
             return this;
         }
 
