@@ -8,20 +8,20 @@ with the exception that 0.x versions can break between minor versions.
 
 ## [Unreleased]
 ### Added
-- Support rendering GFM task list items to Markdown
-- Support rendering YAML front matter to Markdown
+- Support rendering GFM task list items to Markdown (#433)
+- Support rendering YAML front matter to Markdown (#434)
 - Alerts
-  - Allow customizing HTML attributes for alert title `<p>` tag via `AttributeProvider`
+  - Allow customizing HTML attributes for alert title `<p>` tag via `AttributeProvider` (#427)
   - New configuration for `AlertsExtension` to allow authors to provide custom
     titles per alert. See the
     [custom titles section of the alerts README](./commonmark-ext-gfm-alerts/README.md#custom-alert-titles)
-    for more information.
+    for more information. (#430)
   - New configuration for `AlertsExtension` to allow alerts to be nested within
     other blocks (including other alerts). See
     [this section of the alerts README](./commonmark-ext-gfm-alerts/README.md#nesting-alerts)
-    for more information.
+    for more information. (#430)
   - New configuration for `AlertsExtension` to allow the set of alert types
-    (including standard GFM types) to be completely overwritten.
+    (including standard GFM types) to be completely overwritten. (#435)
     ```java
     var extension = AlertsExtension.builder()
             .setAllowedTypes(Map.ofEntries(
@@ -31,6 +31,7 @@ with the exception that 0.x versions can break between minor versions.
             ))
             .build();
     ```
+  - Support rendering alerts to text (#437)
 
 ## [0.28.0] - 2026-03-31
 ### Added

@@ -18,4 +18,43 @@ public class Alert extends CustomBlock {
     public String getType() {
         return type;
     }
+
+    /**
+     * @return Whether this alert has any body content (not including the title).
+     * <p>
+     *
+     * - Examples where this would be {@code true}:
+     *   <pre>{@code
+     *   > [!NOTE]
+     *   > Body text
+     *   }</pre>
+     *   <pre>{@code
+     *   > [!NOTE] Custom title
+     *   > Body text
+     *   }</pre>
+     *
+     * - Examples where this would be {@code false}:
+     *
+     *   <pre>{@code
+     *   > [!NOTE]
+     *   }</pre>
+     *   <pre>{@code
+     *   > [!NOTE]
+     *   >
+     *   >
+     *   }</pre>
+     *   <pre>{@code
+     *   > [!NOTE] Custom title
+     *   }</pre>
+     */
+    public boolean hasBody() {
+        var first = this.getFirstChild();
+        if (first instanceof AlertTitle) {
+            // Body exists if there's a sibling after AlertTitle
+            return first.getNext() != null;
+        } else {
+            // Body exists if there are any children
+            return first != null;
+        }
+    }
 }

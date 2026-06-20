@@ -78,6 +78,18 @@ public class AlertsMarkdownRendererTest {
         assertRoundTrip(input);
     }
 
+    @Test
+    public void alertNoBody() {
+        var input = "> [!NOTE]\n";
+        assertRoundTrip(input);
+    }
+
+    @Test
+    public void alertNoBodyOtherBlocks() {
+        var input = "- List\n\n> [!NOTE]\n\n- List\n";
+        assertRoundTrip(input);
+    }
+
     // Custom titles
 
     @Test
@@ -97,6 +109,18 @@ public class AlertsMarkdownRendererTest {
         var expected = "> [!NOTE] Title\n> First paragraph\n> \n> Second paragraph\n> \n> - > Nested blocks\n";
         var rendered = RENDERER_CUSTOM_TITLES.render(PARSER_CUSTOM_TITLES.parse(input));
         assertThat(rendered).isEqualTo(expected);
+    }
+
+    @Test
+    public void customTitleNoBody() {
+        var input = "> [!WARNING] Custom title\n";
+        assertRoundTripCustomTitles(input);
+    }
+
+    @Test
+    public void customTitleNoBodyOtherBlocks() {
+        var input = "1. Ordered list\n\n> [!WARNING] Custom title\n\n1. Ordered list\n";
+        assertRoundTripCustomTitles(input);
     }
 
     // Helpers

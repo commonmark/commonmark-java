@@ -30,22 +30,17 @@ public class AlertMarkdownNodeRenderer extends AlertNodeRenderer {
             renderChildren(first);
         }
 
-        writer.line();
-        renderChildren(alert);
+        if (alert.hasBody()) {
+            writer.line();
+            renderChildren(alert);
+        }
+
         writer.popPrefix();
         writer.block();
     }
 
-    private void renderChildren(Node parent) {
-        var node = parent.getFirstChild();
-        while (node != null) {
-            var next = node.getNext();
-
-            // AlertTitle is rendered separately from other nodes.
-            if (!(node instanceof AlertTitle)) {
-                context.render(node);
-            }
-            node = next;
-        }
+    @Override
+    protected void renderNode(Node node) {
+        context.render(node);
     }
 }
