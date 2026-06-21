@@ -28,7 +28,7 @@ public class LinkReferenceDefinitionParser {
 
     private StringBuilder label;
     private String destination;
-    private char titleDelimiter;
+    private  TitleDelimiter titleDelimiter;
     private StringBuilder title;
     private boolean referenceValid = false;
 
@@ -205,19 +205,10 @@ public class LinkReferenceDefinitionParser {
             return true;
         }
 
-        titleDelimiter = '\0';
         char c = scanner.peek();
-        switch (c) {
-            case '"':
-            case '\'':
-                titleDelimiter = c;
-                break;
-            case '(':
-                titleDelimiter = ')';
-                break;
-        }
+        titleDelimiter = TitleDelimiter.fromOpeningChar(c);
 
-        if (titleDelimiter != '\0') {
+        if (titleDelimiter != null) {
             state = State.TITLE;
             title = new StringBuilder();
             scanner.next();
@@ -225,7 +216,7 @@ public class LinkReferenceDefinitionParser {
                 title.append('\n');
             }
         } else {
-            // There might be another reference instead, try that for the same character.
+
             state = State.START_DEFINITION;
         }
         return true;
@@ -233,7 +224,7 @@ public class LinkReferenceDefinitionParser {
 
     private boolean title(Scanner scanner) {
         Position start = scanner.position();
-        if (!LinkScanner.scanLinkTitleContent(scanner, titleDelimiter)) {
+        if (!LinkScanner.scanLinkTitleContent(scanner, titleDelimiter.getClosingChar())) {
             // Invalid title, stop. Title collected so far must not be used.
             title = null;
             return false;
@@ -306,5 +297,33 @@ public class LinkReferenceDefinitionParser {
 
         // End state, no matter what kind of lines we add, they won't be references
         PARAGRAPH,
+    }
+    private enum TitleDelimiter {
+        DOUBLE_QUOTE('"'),
+        SINGLE_QUOTE('\''),
+        PARENTHESIS(')');
+
+        private final char closingChar;
+
+        TitleDelimiter(char closingChar) {
+            this.closingChar = closingChar;
+        }
+
+        public char getClosingChar() {
+            return closingChar;
+        }
+
+        public static TitleDelimiter fromOpeningChar(char c) {
+            switch (c) {
+                case '"':
+                    return DOUBLE_QUOTE;
+                case '\'':
+                    return SINGLE_QUOTE;
+                case '(':
+                    return PARENTHESIS;
+                default:
+                    return null;
+            }
+        }
     }
 }
