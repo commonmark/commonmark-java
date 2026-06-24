@@ -15,6 +15,7 @@ public class HeadingParser extends AbstractBlockParser {
 
     private final Heading block = new Heading();
     private final SourceLines content;
+    private static final int MAX_HEADING_LEVEL = 6;
 
     public HeadingParser(int level, SourceLines content) {
         block.setLevel(level);
@@ -76,7 +77,7 @@ public class HeadingParser extends AbstractBlockParser {
         Scanner scanner = Scanner.of(SourceLines.of(line));
         int level = scanner.matchMultiple('#');
 
-        if (level == 0 || level > 6) {
+        if (level == 0 || level > MAX_HEADING_LEVEL) {
             return null;
         }
 

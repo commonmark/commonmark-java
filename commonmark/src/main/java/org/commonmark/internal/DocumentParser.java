@@ -82,19 +82,20 @@ public class DocumentParser implements ParserState {
 
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
+    private static final int TAB_SIZE = 4;
+    private static final int CODE_INDENT = 4;
+    private static final int NO_INDEX = -1;
+    private static final int NO_COLUMN = -1;
 
-    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
-                          List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers,
-                          IncludeSourceSpans includeSourceSpans, int maxOpenBlockParsers) {
-        this.blockParserFactories = blockParserFactories;
-        this.inlineParserFactory = inlineParserFactory;
-        this.inlineContentParserFactories = inlineContentParserFactories;
-        this.delimiterProcessors = delimiterProcessors;
-        this.linkProcessors = linkProcessors;
-        this.linkMarkers = linkMarkers;
-        this.includeSourceSpans = includeSourceSpans;
-        this.maxOpenBlockParsers = maxOpenBlockParsers;
+    public DocumentParser(DocumentParserConfig config) {
+        this.blockParserFactories = config.getBlockParserFactories();
+        this.inlineParserFactory = config.getInlineParserFactory();
+        this.inlineContentParserFactories = config.getInlineContentParserFactories();
+        this.delimiterProcessors = config.getDelimiterProcessors();
+        this.linkProcessors = config.getLinkProcessors();
+        this.linkMarkers = config.getLinkMarkers();
+        this.includeSourceSpans = config.getIncludeSourceSpans();
+        this.maxOpenBlockParsers = config.getMaxOpenBlockParsers();
 
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(new OpenBlockParser(documentBlockParser, 0));
@@ -199,6 +200,13 @@ public class DocumentParser implements ParserState {
      * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
      * line of input, then finalizing the document.
      */
+    private boolean shouldFinalizeBlock(BlockContinueImpl blockContinue) {
+        return blockContinue.isFinalize();
+    }
+    private void handleBlockFinalization(int index) {
+        addSourceSpans();
+        closeBlockParsers(openBlockParsers.size() - index);
+    }
     private void parseLine(String ln, int inputIndex) {
         setLine(ln, inputIndex);
 
@@ -214,14 +222,14 @@ public class DocumentParser implements ParserState {
             if (result instanceof BlockContinueImpl) {
                 BlockContinueImpl blockContinue = (BlockContinueImpl) result;
                 openBlockParser.sourceIndex = getIndex();
-                if (blockContinue.isFinalize()) {
-                    addSourceSpans();
-                    closeBlockParsers(openBlockParsers.size() - i);
+                if (shouldFinalizeBlock(blockContinue)) {
+                    handleBlockFinalization(i);
                     return;
+
                 } else {
-                    if (blockContinue.getNewIndex() != -1) {
+                    if (blockContinue.getNewIndex() != NO_INDEX) {
                         setNewIndex(blockContinue.getNewIndex());
-                    } else if (blockContinue.getNewColumn() != -1) {
+                    } else if (blockContinue.getNewColumn() != NO_COLUMN) {
                         setNewColumn(blockContinue.getNewColumn());
                     }
                     matches++;
@@ -245,7 +253,7 @@ public class DocumentParser implements ParserState {
             findNextNonSpace();
 
             // this is a little performance optimization:
-            if (isBlank() || (indent < Parsing.CODE_BLOCK_INDENT && Characters.isLetter(this.line.getContent(), nextNonSpace))) {
+            if (isBlank() || (indent < CODE_INDENT && Characters.isLetter(this.line.getContent(), nextNonSpace))) {
                 setNewIndex(nextNonSpace);
                 break;
             }
@@ -359,7 +367,7 @@ public class DocumentParser implements ParserState {
                     continue;
                 case '\t':
                     i++;
-                    cols += (4 - (cols % 4));
+                    cols += (TAB_SIZE - (cols % TAB_SIZE));
                     continue;
             }
             blank = false;
@@ -604,3 +612,4 @@ public class DocumentParser implements ParserState {
         }
     }
 }
+

@@ -14,6 +14,7 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     private final FencedCodeBlock block = new FencedCodeBlock();
     private final char fenceChar;
     private final int openingFenceLength;
+    private static final int MIN_FENCE_LENGTH = 3;
 
     private String firstLine;
     private StringBuilder otherLines = new StringBuilder();
@@ -106,13 +107,13 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
                     break loop;
             }
         }
-        if (backticks >= 3 && tildes == 0) {
+        if (backticks >= MIN_FENCE_LENGTH  && tildes == 0) {
             // spec: If the info string comes after a backtick fence, it may not contain any backtick characters.
             if (Characters.find('`', line, index + backticks) != -1) {
                 return null;
             }
             return new FencedCodeBlockParser('`', backticks, indent);
-        } else if (tildes >= 3 && backticks == 0) {
+        } else if (tildes >= MIN_FENCE_LENGTH && backticks == 0) {
             // spec: Info strings for tilde code blocks can contain backticks and tildes
             return new FencedCodeBlockParser('~', tildes, indent);
         } else {

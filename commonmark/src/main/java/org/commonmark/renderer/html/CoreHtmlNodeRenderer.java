@@ -141,9 +141,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     public void visit(IndentedCodeBlock indentedCodeBlock) {
         renderCodeBlock(indentedCodeBlock.getLiteral(), indentedCodeBlock, Map.of());
     }
-
-    @Override
-    public void visit(Link link) {
+    private Map<String, String> createLinkAttributes(Link link) {
         Map<String, String> attrs = new LinkedHashMap<>();
         String url = link.getDestination();
 
@@ -152,12 +150,19 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
             attrs.put("rel", "nofollow");
         }
 
-        url = context.encodeUrl(url);
-        attrs.put("href", url);
+        attrs.put("href", context.encodeUrl(url));
+
         if (link.getTitle() != null) {
             attrs.put("title", link.getTitle());
         }
-        html.tag("a", getAttrs(link, "a", attrs));
+
+        return attrs;
+    }
+
+    @Override
+    public void visit(Link link) {
+
+        html.tag("a", getAttrs(link, "a",createLinkAttributes(link) ));
         visitChildren(link);
         html.tag("/a");
     }
@@ -179,27 +184,32 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         }
         renderListBlock(orderedList, "ol", getAttrs(orderedList, "ol", attrs));
     }
-
-    @Override
-    public void visit(Image image) {
-        String url = image.getDestination();
-
-        AltTextVisitor altTextVisitor = new AltTextVisitor();
-        image.accept(altTextVisitor);
-        String altText = altTextVisitor.getAltText();
-
+    private Map<String, String> createImageAttributes(Image image) {
         Map<String, String> attrs = new LinkedHashMap<>();
+
+        String url = image.getDestination();
         if (context.shouldSanitizeUrls()) {
             url = context.urlSanitizer().sanitizeImageUrl(url);
         }
 
         attrs.put("src", context.encodeUrl(url));
-        attrs.put("alt", altText);
+        attrs.put("alt", extractAltText(image));
+
         if (image.getTitle() != null) {
             attrs.put("title", image.getTitle());
         }
 
-        html.tag("img", getAttrs(image, "img", attrs), true);
+        return attrs;
+    }
+    private String extractAltText(Image image) {
+        AltTextVisitor altTextVisitor = new AltTextVisitor();
+        image.accept(altTextVisitor);
+        return altTextVisitor.getAltText();
+    }
+    @Override
+    public void visit(Image image) {
+
+        html.tag("img", getAttrs(image, "img", createImageAttributes(image)), true);
     }
 
     @Override

@@ -1,10 +1,7 @@
 package org.commonmark.parser;
 
 import org.commonmark.Extension;
-import org.commonmark.internal.Definitions;
-import org.commonmark.internal.DocumentParser;
-import org.commonmark.internal.InlineParserContextImpl;
-import org.commonmark.internal.InlineParserImpl;
+import org.commonmark.internal.*;
 import org.commonmark.node.*;
 import org.commonmark.parser.beta.LinkInfo;
 import org.commonmark.parser.beta.LinkProcessor;
@@ -66,6 +63,10 @@ public class Parser {
         return new Builder();
     }
 
+    private Node processParsedDocument(Node document) {
+        return postProcess(document);
+    }
+
     /**
      * Parse the specified input text into a tree of nodes.
      * <p>
@@ -74,11 +75,12 @@ public class Parser {
      * @param input the text to parse - must not be null
      * @return the root node
      */
+
     public Node parse(String input) {
-        Objects.requireNonNull(input, "input must not be null");
-        DocumentParser documentParser = createDocumentParser();
-        Node document = documentParser.parse(input);
-        return postProcess(document);
+        Objects.requireNonNull(input);
+       DocumentParser documentParser = createDocumentParser();
+
+        return processParsedDocument(documentParser.parse(input));
     }
 
     /**
@@ -100,15 +102,25 @@ public class Parser {
      * @throws IOException when reading throws an exception
      */
     public Node parseReader(Reader input) throws IOException {
-        Objects.requireNonNull(input, "input must not be null");
+        Objects.requireNonNull(input);
         DocumentParser documentParser = createDocumentParser();
-        Node document = documentParser.parse(input);
-        return postProcess(document);
+        return processParsedDocument(documentParser.parse(input));
+
     }
 
     private DocumentParser createDocumentParser() {
-        return new DocumentParser(blockParserFactories, inlineParserFactory, inlineContentParserFactories,
-                delimiterProcessors, linkProcessors, linkMarkers, includeSourceSpans, maxOpenBlockParsers);
+         DocumentParserConfig config = new DocumentParserConfig(
+                blockParserFactories,
+                inlineParserFactory,
+                inlineContentParserFactories,
+                delimiterProcessors,
+                linkProcessors,
+                linkMarkers,
+                includeSourceSpans,
+                maxOpenBlockParsers
+        );
+
+        return new DocumentParser(config);
     }
 
     private Node postProcess(Node document) {
@@ -147,13 +159,18 @@ public class Parser {
         public Builder extensions(Iterable<? extends Extension> extensions) {
             Objects.requireNonNull(extensions, "extensions must not be null");
             for (Extension extension : extensions) {
+                applyExtension(extension);
+            }
+            return this;
+        }
+         private void applyExtension(Extension extension){
                 if (extension instanceof ParserExtension) {
                     ParserExtension parserExtension = (ParserExtension) extension;
                     parserExtension.extend(this);
                 }
             }
-            return this;
-        }
+
+
 
         /**
          * Describe the list of markdown features the parser will recognize and parse.
@@ -217,11 +234,14 @@ public class Parser {
          * @return {@code this}
          */
         public Builder maxOpenBlockParsers(int maxOpenBlockParsers) {
-            if (maxOpenBlockParsers < 0) {
-                throw new IllegalArgumentException("maxOpenBlockParsers must be >= 0");
-            }
+            validateMaxOpenBlockParsers(maxOpenBlockParsers);
             this.maxOpenBlockParsers = maxOpenBlockParsers;
             return this;
+        }
+        private void validateMaxOpenBlockParsers(int value){
+            if (value < 0) {
+                throw new IllegalArgumentException("maxOpenBlockParsers must be >= 0");
+            }
         }
 
         /**
@@ -335,11 +355,10 @@ public class Parser {
         }
 
         private InlineParserFactory getInlineParserFactory() {
-            if (inlineParserFactory != null) {
-                return inlineParserFactory;
-            } else {
-                return InlineParserImpl::new;
-            }
+            return inlineParserFactory != null
+                    ? inlineParserFactory :
+                    InlineParserImpl::new;
+
         }
     }
 

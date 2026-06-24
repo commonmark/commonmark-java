@@ -86,16 +86,24 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
         textContent.write('\"');
     }
 
-    @Override
-    public void visit(FencedCodeBlock fencedCodeBlock) {
-        var literal = stripTrailingNewline(fencedCodeBlock.getLiteral());
+    private void renderCodeBlock(String literal) {
+        literal = stripTrailingNewline(literal);
+
         if (stripNewlines()) {
             textContent.writeStripped(literal);
         } else {
             textContent.write(literal);
         }
+
         textContent.block();
     }
+
+    @Override
+    public void visit(FencedCodeBlock fencedCodeBlock) {
+        renderCodeBlock(fencedCodeBlock.getLiteral());
+    }
+
+
 
     @Override
     public void visit(HardLineBreak hardLineBreak) {
@@ -141,15 +149,8 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
-        var literal = stripTrailingNewline(indentedCodeBlock.getLiteral());
-        if (stripNewlines()) {
-            textContent.writeStripped(literal);
-        } else {
-            textContent.write(literal);
-        }
-        textContent.block();
+        renderCodeBlock(indentedCodeBlock.getLiteral());
     }
-
     @Override
     public void visit(Link link) {
         writeLink(link, link.getTitle(), link.getDestination());

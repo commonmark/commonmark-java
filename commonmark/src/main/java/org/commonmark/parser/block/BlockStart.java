@@ -13,6 +13,7 @@ public abstract class BlockStart {
     /**
      * Result for when there is no block start.
      */
+
     public static BlockStart none() {
         return null;
     }
