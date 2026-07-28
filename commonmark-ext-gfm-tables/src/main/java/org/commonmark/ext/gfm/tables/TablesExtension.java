@@ -32,15 +32,29 @@ public class TablesExtension
                 TextContentRenderer.TextContentRendererExtension,
                 MarkdownRenderer.MarkdownRendererExtension {
 
-    private TablesExtension() {}
+    /** The default limit for the maximum number of cells, see {@link Builder#maxCells(int)}. */
+    public static final int DEFAULT_MAX_CELLS = 1_000_000;
+
+    private final Integer maxCells;
+
+    private TablesExtension(Builder builder) {
+        this.maxCells = builder.maxCells;
+    }
 
     public static Extension create() {
-        return new TablesExtension();
+        return builder().build();
+    }
+
+    /**
+     * @return a builder to configure the behavior of the extension.
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        parserBuilder.customBlockParserFactory(new TableBlockParser.Factory());
+        parserBuilder.customBlockParserFactory(new TableBlockParser.Factory(maxCells));
     }
 
     @Override
@@ -67,5 +81,28 @@ public class TablesExtension
                         return Set.of('|');
                     }
                 });
+    }
+
+    public static class Builder {
+
+        private Integer maxCells = DEFAULT_MAX_CELLS;
+
+        /**
+         * Set the maximum number of cells that are parsed for a single table; if more cells are
+         * present in the source, parsing will throw an exception. This is to guard against
+         * malicious input. The default is {@link #DEFAULT_MAX_CELLS}; use {@code null} for no
+         * limit.
+         */
+        public Builder maxCells(Integer maxCells) {
+            this.maxCells = maxCells;
+            return this;
+        }
+
+        /**
+         * @return a configured extension
+         */
+        public Extension build() {
+            return new TablesExtension(this);
+        }
     }
 }

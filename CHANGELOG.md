@@ -12,6 +12,10 @@ with the exception that 0.x versions can break between minor versions.
   separator from `\n` (e.g. to `\r\n`) (#442)
 - YAML front matter extension: Support extracting the raw YAML content so that you can
   do the YAML parsing using a library (instead of the limited built-in parsing) (#391)
+### Changed
+- Tables extension: Limit max number of parsed table cells by default (1 million cells),
+  see option `maxCells` in `TablesExtension.Builder`. Parsing will throw an error if the limit would be exceeded, to
+  protect against malicious input.
 ### Fixed
 - Fix quadratic runtime when parsing pathological inline HTML (#447)
 

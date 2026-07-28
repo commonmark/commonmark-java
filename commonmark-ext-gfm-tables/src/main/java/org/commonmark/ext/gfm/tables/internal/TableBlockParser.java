@@ -17,12 +17,15 @@ public class TableBlockParser extends AbstractBlockParser {
     private final TableBlock block = new TableBlock();
     private final List<SourceLine> rowLines = new ArrayList<>();
     private final List<TableCellInfo> columns;
+    private final Integer maxCells;
+    private int cells = 0;
 
     private boolean canHaveLazyContinuationLines = true;
 
-    private TableBlockParser(List<TableCellInfo> columns, SourceLine headerLine) {
+    private TableBlockParser(List<TableCellInfo> columns, SourceLine headerLine, Integer maxCells) {
         this.columns = columns;
         this.rowLines.add(headerLine);
+        this.maxCells = maxCells;
     }
 
     @Override
@@ -116,6 +119,15 @@ public class TableBlockParser extends AbstractBlockParser {
     }
 
     private TableCell parseCell(SourceLine cell, int column, InlineParser inlineParser) {
+        if (maxCells != null) {
+            if (cells >= maxCells) {
+                throw new IllegalArgumentException(
+                        "Aborting parsing because maximum number of cells reached (maxCells = "
+                                + maxCells
+                                + ")");
+            }
+            cells++;
+        }
         TableCell tableCell = new TableCell();
         SourceSpan sourceSpan = cell.getSourceSpan();
         if (sourceSpan != null) {
@@ -279,6 +291,12 @@ public class TableBlockParser extends AbstractBlockParser {
 
     public static class Factory extends AbstractBlockParserFactory {
 
+        private final Integer maxCells;
+
+        public Factory(Integer maxCells) {
+            this.maxCells = maxCells;
+        }
+
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             List<SourceLine> paragraphLines = matchedBlockParser.getParagraphLines().getLines();
@@ -295,7 +313,8 @@ public class TableBlockParser extends AbstractBlockParser {
                     SourceLine paragraph = paragraphLines.get(paragraphLines.size() - 1);
                     List<SourceLine> headerCells = split(paragraph);
                     if (columns.size() >= headerCells.size()) {
-                        return BlockStart.of(new TableBlockParser(columns, paragraph))
+                        var parser = new TableBlockParser(columns, paragraph, maxCells);
+                        return BlockStart.of(parser)
                                 .atIndex(state.getIndex())
                                 .replaceParagraphLines(1);
                     }

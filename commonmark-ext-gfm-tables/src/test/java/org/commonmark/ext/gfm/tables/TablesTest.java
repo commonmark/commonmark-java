@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.tables;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -845,6 +846,17 @@ public class TablesTest extends RenderingTestCase {
                                 + "</tr>\n"
                                 + "</tbody>\n"
                                 + "</table>\n");
+    }
+
+    @Test
+    public void testErrorsWhenMaxCellsLimitExceeded() {
+        var extension = TablesExtension.builder().maxCells(6).build();
+        var parser = Parser.builder().extensions(List.of(extension)).build();
+        // Note that even omitted cells count towards the limit as they result in an empty cell
+        var input = " A|B|C\n-|-|-\n1|2\nbad";
+        assertThatThrownBy(() -> parser.parse(input))
+                .hasMessage(
+                        "Aborting parsing because maximum number of cells reached (maxCells = 6)");
     }
 
     @Test
