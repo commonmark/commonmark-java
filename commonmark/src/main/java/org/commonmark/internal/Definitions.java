@@ -1,9 +1,8 @@
 package org.commonmark.internal;
 
-import org.commonmark.node.DefinitionMap;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.commonmark.node.DefinitionMap;
 
 public class Definitions {
 

@@ -51,7 +51,8 @@ public class Html5Entities {
         Map<String, String> entities = new HashMap<>();
         InputStream stream = Html5Entities.class.getResourceAsStream(ENTITY_PATH);
         Charset charset = StandardCharsets.UTF_8;
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, charset))) {
+        try (BufferedReader bufferedReader =
+                new BufferedReader(new InputStreamReader(stream, charset))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.isEmpty()) {
@@ -63,7 +64,8 @@ public class Html5Entities {
                 entities.put(key, value);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Failed reading data for HTML named character references", e);
+            throw new IllegalStateException(
+                    "Failed reading data for HTML named character references", e);
         }
         entities.put("NewLine", "\n");
         return entities;

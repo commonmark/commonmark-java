@@ -1,5 +1,11 @@
 package org.commonmark.ext.gfm.alerts;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.alerts.internal.AlertBlockParser;
 import org.commonmark.ext.gfm.alerts.internal.AlertHtmlNodeRenderer;
@@ -13,61 +19,60 @@ import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
 /**
  * Extension for GFM alerts using {@code [!TYPE]} syntax (GitHub Flavored Markdown).
- * <p>
- * Create with {@link #create()} or {@link #builder()} and configure on builders
- * ({@link Parser.Builder#extensions(Iterable)}, {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * Parsed alerts become {@link Alert} blocks. If custom alert titles are allowed
- * via {@link Builder#allowCustomTitles(boolean)}, the inline formatting of those
- * titles will be parsed into {@link AlertTitle} nodes.
  *
- * The {@link #create() default configuration} of this extension will match GFM
- * exactly, with the following exceptions:
+ * <p>Create with {@link #create()} or {@link #builder()} and configure on builders ({@link
+ * Parser.Builder#extensions(Iterable)}, {@link HtmlRenderer.Builder#extensions(Iterable)}). Parsed
+ * alerts become {@link Alert} blocks. If custom alert titles are allowed via {@link
+ * Builder#allowCustomTitles(boolean)}, the inline formatting of those titles will be parsed into
+ * {@link AlertTitle} nodes.
  *
- * - Alert markers take precedence over <a href="https://spec.commonmark.org/current/#shortcut-reference-link">shortcut reference links</a>.
+ * <p>The {@link #create() default configuration} of this extension will match GFM exactly, with the
+ * following exceptions:
+ *
+ * <p>- Alert markers take precedence over <a
+ * href="https://spec.commonmark.org/current/#shortcut-reference-link">shortcut reference links</a>.
  * - Alerts with no content are allowed. Example:
  *
- *   <pre>{@code
- *   <!-- Valid -->
- *   > [!NOTE]
+ * <pre>{@code
+ * <!-- Valid -->
+ * > [!NOTE]
  *
- *   <!-- Also valid if custom titles are allowed -->
- *   > [!NOTE] Custom title
- *   }</pre>
+ * <!-- Also valid if custom titles are allowed -->
+ * > [!NOTE] Custom title
+ *
+ * }</pre>
+ *
  * - Lazy continuation is not allowed between the marker and the body text. Example:
  *
- *   <pre>{@code
- *   > [!NOTE]
- *   Lazy body text will be parsed as a new paragraph
- *   }</pre>
+ * <pre>{@code
+ * > [!NOTE]
+ * Lazy body text will be parsed as a new paragraph
+ *
+ * }</pre>
  */
-public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
-        TextContentRenderer.TextContentRendererExtension, MarkdownRenderer.MarkdownRendererExtension {
+public class AlertsExtension
+        implements Parser.ParserExtension,
+                HtmlRenderer.HtmlRendererExtension,
+                TextContentRenderer.TextContentRendererExtension,
+                MarkdownRenderer.MarkdownRendererExtension {
 
     /**
-     * The standard GitHub Flavored Markdown (GFM) types that the extension
-     * enables by default. These can be overwritten with {@link Builder#setAllowedTypes(Map)}.
+     * The standard GitHub Flavored Markdown (GFM) types that the extension enables by default.
+     * These can be overwritten with {@link Builder#setAllowedTypes(Map)}.
      */
-    public static final Map<String, String> STANDARD_TYPES = Map.ofEntries(
-        Map.entry("NOTE", "Note"),
-        Map.entry("TIP", "Tip"),
-        Map.entry("IMPORTANT", "Important"),
-        Map.entry("WARNING", "Warning"),
-        Map.entry("CAUTION", "Caution")
-    );
+    public static final Map<String, String> STANDARD_TYPES =
+            Map.ofEntries(
+                    Map.entry("NOTE", "Note"),
+                    Map.entry("TIP", "Tip"),
+                    Map.entry("IMPORTANT", "Important"),
+                    Map.entry("WARNING", "Warning"),
+                    Map.entry("CAUTION", "Caution"));
 
-    /**
-     * A map of alert marker ({@code [!TYPE]}) to the default title for that marker.
-     */
+    /** A map of alert marker ({@code [!TYPE]}) to the default title for that marker. */
     private final Map<String, String> allowedTypes;
+
     private final boolean customTitlesAllowed;
     private final boolean nestedAlertsAllowed;
 
@@ -89,37 +94,39 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
     public void extend(Parser.Builder parserBuilder) {
         var allowedTypesSet = new HashSet<>(allowedTypes.keySet());
         parserBuilder.customBlockParserFactory(
-            new AlertBlockParser.Factory(allowedTypesSet, customTitlesAllowed, nestedAlertsAllowed));
+                new AlertBlockParser.Factory(
+                        allowedTypesSet, customTitlesAllowed, nestedAlertsAllowed));
     }
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(context -> new AlertHtmlNodeRenderer(context, allowedTypes));
+        rendererBuilder.nodeRendererFactory(
+                context -> new AlertHtmlNodeRenderer(context, allowedTypes));
     }
 
     @Override
     public void extend(TextContentRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(context -> new AlertTextContentNodeRenderer(context, allowedTypes));
+        rendererBuilder.nodeRendererFactory(
+                context -> new AlertTextContentNodeRenderer(context, allowedTypes));
     }
 
     @Override
     public void extend(MarkdownRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(MarkdownNodeRendererContext context) {
-                return new AlertMarkdownNodeRenderer(context);
-            }
+        rendererBuilder.nodeRendererFactory(
+                new MarkdownNodeRendererFactory() {
+                    @Override
+                    public NodeRenderer create(MarkdownNodeRendererContext context) {
+                        return new AlertMarkdownNodeRenderer(context);
+                    }
 
-            @Override
-            public Set<Character> getSpecialCharacters() {
-                return Set.of();
-            }
-        });
+                    @Override
+                    public Set<Character> getSpecialCharacters() {
+                        return Set.of();
+                    }
+                });
     }
 
-    /**
-     * Builder for configuring the alerts extension.
-     */
+    /** Builder for configuring the alerts extension. */
     public static class Builder {
         private Map<String, String> allowedTypes = new HashMap<>(STANDARD_TYPES);
         private boolean customTitlesAllowed = false;
@@ -128,12 +135,12 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
         /**
          * Sets which alert types will be recognized and parsed into {@link Alert} blocks,
          * completely overwriting any previous configuration.
-         * <p>
-         * By default, {@link AlertsExtension#STANDARD_TYPES} are used.
          *
-         * @param allowedTypes A map of alert type to the default title for that type.
-         *                     Must not be null/empty or contain any null/empty keys or
-         *                     values. Additionally, all alert types must be uppercase.
+         * <p>By default, {@link AlertsExtension#STANDARD_TYPES} are used.
+         *
+         * @param allowedTypes A map of alert type to the default title for that type. Must not be
+         *     null/empty or contain any null/empty keys or values. Additionally, all alert types
+         *     must be uppercase.
          * @return {@code this}
          * @see Builder#addCustomType(String, String)
          */
@@ -153,9 +160,9 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
         /**
          * Adds a custom alert type with a default title.
-         * <p>
-         * This can also be used to override the default title of standard GFM types
-         * (e.g., for localization).
+         *
+         * <p>This can also be used to override the default title of standard GFM types (e.g., for
+         * localization).
          *
          * @param type the alert type (must be uppercase)
          * @param title the default title for this alert type
@@ -169,8 +176,8 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
         }
 
         /**
-         * Allows or disallows custom titles on alerts. Inline formatting is supported
-         * within these titles.
+         * Allows or disallows custom titles on alerts. Inline formatting is supported within these
+         * titles.
          *
          * @param allow Whether to allow or disallow custom titles on alerts.
          * @return {@code this}
@@ -183,11 +190,11 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
         /**
          * Allows or disallows parsing alerts within non-root blocks ({@code Document}).
-         * <p>
-         * When disallowed, if an alert appears within another block, it will be parsed as
-         * a regular {@code BlockQuote}.
-         * <p>
-         * Note that even when this is allowed, {@link Parser.Builder#maxOpenBlockParsers(int)}
+         *
+         * <p>When disallowed, if an alert appears within another block, it will be parsed as a
+         * regular {@code BlockQuote}.
+         *
+         * <p>Note that even when this is allowed, {@link Parser.Builder#maxOpenBlockParsers(int)}
          * will be respected.
          *
          * @param allow Whether to allow or disallow parsing alerts within non-root blocks.
@@ -208,10 +215,7 @@ public class AlertsExtension implements Parser.ParserExtension, HtmlRenderer.Htm
         /**
          * Checks whether an alert type and default title are valid.
          *
-         * @param type The type to validate:
-         *             <p>
-         *             - Must not be null or empty
-         *             - Must be uppercase
+         * @param type The type to validate. Must be uppercase.
          * @param title The default title to validate. Must not be null or empty.
          */
         private void validateTypeAndTitle(String type, String title) {

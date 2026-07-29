@@ -1,19 +1,19 @@
 package org.commonmark.ext.gfm.strikethrough;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class StrikethroughMarkdownRendererTest {
 
     private static final Set<Extension> EXTENSIONS = Set.of(StrikethroughExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
+    private static final MarkdownRenderer RENDERER =
+            MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void testStrikethrough() {

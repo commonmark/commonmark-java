@@ -1,9 +1,8 @@
 package org.commonmark.parser;
 
-import org.commonmark.node.SourceSpan;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.commonmark.node.SourceSpan;
 
 /**
  * A set of lines ({@link SourceLine}) from the input source.

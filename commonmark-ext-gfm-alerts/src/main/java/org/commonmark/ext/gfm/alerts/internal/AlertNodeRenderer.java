@@ -1,11 +1,10 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
+import java.util.Set;
 import org.commonmark.ext.gfm.alerts.Alert;
 import org.commonmark.ext.gfm.alerts.AlertTitle;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
-
-import java.util.Set;
 
 public abstract class AlertNodeRenderer implements NodeRenderer {
 
@@ -23,8 +22,8 @@ public abstract class AlertNodeRenderer implements NodeRenderer {
     protected abstract void renderAlert(Alert alert);
 
     /**
-     * Renders the children of a parent node, excluding {@link AlertTitle} nodes.
-     * {@link AlertTitle} is rendered separately from other content.
+     * Renders the children of a parent node, excluding {@link AlertTitle} nodes. {@link AlertTitle}
+     * is rendered separately from other content.
      *
      * @param parent the parent node whose children should be rendered
      */
@@ -42,8 +41,8 @@ public abstract class AlertNodeRenderer implements NodeRenderer {
     }
 
     /**
-     * Renders a single node. Subclasses must implement this to delegate
-     * to their context's render method.
+     * Renders a single node. Subclasses must implement this to delegate to their context's render
+     * method.
      *
      * @param node the node to render
      */

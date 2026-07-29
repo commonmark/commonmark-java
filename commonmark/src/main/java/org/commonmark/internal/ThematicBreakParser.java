@@ -41,8 +41,9 @@ public class ThematicBreakParser extends AbstractBlockParser {
         }
     }
 
-    // spec: A line consisting of 0-3 spaces of indentation, followed by a sequence of three or more matching -, _, or *
-    // characters, each followed optionally by any number of spaces, forms a thematic break.
+    // spec: A line consisting of 0-3 spaces of indentation, followed by a sequence of three or more
+    // matching -, _, or * characters, each followed optionally by any number of spaces, forms a
+    // thematic break.
     private static boolean isThematicBreak(CharSequence line, int index) {
         int dashes = 0;
         int underscores = 0;
@@ -68,8 +69,8 @@ public class ThematicBreakParser extends AbstractBlockParser {
             }
         }
 
-        return ((dashes >= 3 && underscores == 0 && asterisks == 0) ||
-                (underscores >= 3 && dashes == 0 && asterisks == 0) ||
-                (asterisks >= 3 && dashes == 0 && underscores == 0));
+        return ((dashes >= 3 && underscores == 0 && asterisks == 0)
+                || (underscores >= 3 && dashes == 0 && asterisks == 0)
+                || (asterisks >= 3 && dashes == 0 && underscores == 0));
     }
 }

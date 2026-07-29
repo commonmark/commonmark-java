@@ -1,18 +1,17 @@
 package org.commonmark.ui;
 
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.text.TextContentRenderer;
-
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.text.TextContentRenderer;
 
 /**
- * Simple UI to quickly test out different rendering of CommonMark inputs.
- * Similar to <a href="https://spec.commonmark.org/dingus/">commonmark.js dingus</a>.
- **/
+ * Simple UI to quickly test out different rendering of CommonMark inputs. Similar to <a
+ * href="https://spec.commonmark.org/dingus/">commonmark.js dingus</a>.
+ */
 public class DingusApp {
 
     private final Parser parser = Parser.builder().build();
@@ -57,21 +56,22 @@ public class DingusApp {
         input.setLineWrap(true);
         input.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 
-        input.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateOutput(input.getText());
-            }
+        input.getDocument()
+                .addDocumentListener(
+                        new DocumentListener() {
+                            @Override
+                            public void insertUpdate(DocumentEvent e) {
+                                updateOutput(input.getText());
+                            }
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateOutput(input.getText());
-            }
+                            @Override
+                            public void removeUpdate(DocumentEvent e) {
+                                updateOutput(input.getText());
+                            }
 
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
-        });
+                            @Override
+                            public void changedUpdate(DocumentEvent e) {}
+                        });
 
         tabbedPane.addTab("HTML rendered", htmlVisualRendererOutput);
         tabbedPane.addTab("HTML source", htmlSourceRendererOutput);
@@ -79,10 +79,11 @@ public class DingusApp {
 
         tabbedPane.addChangeListener(e -> updateOutput(input.getText()));
 
-        input.setText("# Example\n" +
-                "Enter text *here* and see how it renders on the right.\n\n" +
-                "* Try\n* this\n\n" +
-                "```\nor this\n```");
+        input.setText(
+                "# Example\n"
+                        + "Enter text *here* and see how it renders on the right.\n\n"
+                        + "* Try\n* this\n\n"
+                        + "```\nor this\n```");
         updateOutput(input.getText());
 
         frame.setLayout(new GridLayout());

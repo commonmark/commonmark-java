@@ -1,5 +1,9 @@
 package org.commonmark.ext.autolink;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
@@ -8,64 +12,69 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class AutolinkTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Set.of(AutolinkExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
+    private static final HtmlRenderer RENDERER =
+            HtmlRenderer.builder().extensions(EXTENSIONS).build();
 
-    private static final Set<Extension> NO_WWW_EXTENSIONS = Set.of(AutolinkExtension.builder()
-        .linkTypes(AutolinkType.URL, AutolinkType.EMAIL)
-        .build());
-    private static final Parser NO_WWW_PARSER = Parser.builder().extensions(NO_WWW_EXTENSIONS).build();
-    private static final HtmlRenderer NO_WWW_RENDERER = HtmlRenderer.builder().extensions(NO_WWW_EXTENSIONS).build();
+    private static final Set<Extension> NO_WWW_EXTENSIONS =
+            Set.of(
+                    AutolinkExtension.builder()
+                            .linkTypes(AutolinkType.URL, AutolinkType.EMAIL)
+                            .build());
+    private static final Parser NO_WWW_PARSER =
+            Parser.builder().extensions(NO_WWW_EXTENSIONS).build();
+    private static final HtmlRenderer NO_WWW_RENDERER =
+            HtmlRenderer.builder().extensions(NO_WWW_EXTENSIONS).build();
 
     @Test
     public void oneTextNode() {
-        assertRendering("foo http://one.org/ bar http://two.org/",
+        assertRendering(
+                "foo http://one.org/ bar http://two.org/",
                 "<p>foo <a href=\"http://one.org/\">http://one.org/</a> bar <a href=\"http://two.org/\">http://two.org/</a></p>\n");
     }
 
     @Test
     public void textNodeAndOthers() {
-        assertRendering("foo http://one.org/ bar `code` baz http://two.org/",
+        assertRendering(
+                "foo http://one.org/ bar `code` baz http://two.org/",
                 "<p>foo <a href=\"http://one.org/\">http://one.org/</a> bar <code>code</code> baz <a href=\"http://two.org/\">http://two.org/</a></p>\n");
     }
 
     @Test
     public void tricky() {
-        assertRendering("http://example.com/one. Example 2 (see http://example.com/two). Example 3: http://example.com/foo_(bar)",
-                "<p><a href=\"http://example.com/one\">http://example.com/one</a>. " +
-                        "Example 2 (see <a href=\"http://example.com/two\">http://example.com/two</a>). " +
-                        "Example 3: <a href=\"http://example.com/foo_(bar)\">http://example.com/foo_(bar)</a></p>\n");
+        assertRendering(
+                "http://example.com/one. Example 2 (see http://example.com/two). Example 3: http://example.com/foo_(bar)",
+                "<p><a href=\"http://example.com/one\">http://example.com/one</a>. "
+                        + "Example 2 (see <a href=\"http://example.com/two\">http://example.com/two</a>). "
+                        + "Example 3: <a href=\"http://example.com/foo_(bar)\">http://example.com/foo_(bar)</a></p>\n");
     }
 
     @Test
     public void emailUsesMailto() {
-        assertRendering("foo@example.com",
+        assertRendering(
+                "foo@example.com",
                 "<p><a href=\"mailto:foo@example.com\">foo@example.com</a></p>\n");
     }
 
     @Test
     public void emailWithTldNotLinked() {
-        assertRendering("foo@com",
-                "<p>foo@com</p>\n");
+        assertRendering("foo@com", "<p>foo@com</p>\n");
     }
 
     @Test
     public void dontLinkTextWithinLinks() {
-        assertRendering("<http://example.com>",
+        assertRendering(
+                "<http://example.com>",
                 "<p><a href=\"http://example.com\">http://example.com</a></p>\n");
     }
 
     @Test
     public void wwwLinks() {
-        assertRendering("www.example.com",
+        assertRendering(
+                "www.example.com",
                 "<p><a href=\"http://www.example.com\">www.example.com</a></p>\n");
     }
 
@@ -77,14 +86,17 @@ public class AutolinkTest extends RenderingTestCase {
 
     @Test
     public void sourceSpans() {
-        Parser parser = Parser.builder()
-                .extensions(EXTENSIONS)
-                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
-                .build();
-        Node document = parser.parse("abc\n" +
-                "http://example.com/one\n" +
-                "def http://example.com/two\n" +
-                "ghi http://example.com/three jkl");
+        Parser parser =
+                Parser.builder()
+                        .extensions(EXTENSIONS)
+                        .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                        .build();
+        Node document =
+                parser.parse(
+                        "abc\n"
+                                + "http://example.com/one\n"
+                                + "def http://example.com/two\n"
+                                + "ghi http://example.com/three jkl");
 
         Paragraph paragraph = (Paragraph) document.getFirstChild();
         Text abc = (Text) paragraph.getFirstChild();

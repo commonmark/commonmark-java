@@ -1,13 +1,13 @@
 package org.commonmark.internal;
 
+import static org.commonmark.internal.util.Escaping.unescapeString;
+
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 import org.commonmark.text.Characters;
-
-import static org.commonmark.internal.util.Escaping.unescapeString;
 
 public class FencedCodeBlockParser extends AbstractBlockParser {
 
@@ -36,7 +36,9 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         int nextNonSpace = state.getNextNonSpaceIndex();
         int newIndex = state.getIndex();
         CharSequence line = state.getLine().getContent();
-        if (state.getIndent() < Parsing.CODE_BLOCK_INDENT && nextNonSpace < line.length() && tryClosing(line, nextNonSpace)) {
+        if (state.getIndent() < Parsing.CODE_BLOCK_INDENT
+                && nextNonSpace < line.length()
+                && tryClosing(line, nextNonSpace)) {
             // closing fence - we're at end of line, so we can finalize now
             return BlockContinue.finished();
         } else {
@@ -78,17 +80,19 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
             }
 
             int nextNonSpace = state.getNextNonSpaceIndex();
-            FencedCodeBlockParser blockParser = checkOpener(state.getLine().getContent(), nextNonSpace, indent);
+            FencedCodeBlockParser blockParser =
+                    checkOpener(state.getLine().getContent(), nextNonSpace, indent);
             if (blockParser != null) {
-                return BlockStart.of(blockParser).atIndex(nextNonSpace + blockParser.block.getOpeningFenceLength());
+                return BlockStart.of(blockParser)
+                        .atIndex(nextNonSpace + blockParser.block.getOpeningFenceLength());
             } else {
                 return BlockStart.none();
             }
         }
     }
 
-    // spec: A code fence is a sequence of at least three consecutive backtick characters (`) or tildes (~). (Tildes and
-    // backticks cannot be mixed.)
+    // spec: A code fence is a sequence of at least three consecutive backtick characters (`) or
+    // tildes (~). (Tildes and backticks cannot be mixed.)
     private static FencedCodeBlockParser checkOpener(CharSequence line, int index, int indent) {
         int backticks = 0;
         int tildes = 0;
@@ -107,7 +111,8 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
             }
         }
         if (backticks >= 3 && tildes == 0) {
-            // spec: If the info string comes after a backtick fence, it may not contain any backtick characters.
+            // spec: If the info string comes after a backtick fence, it may not contain any
+            // backtick characters.
             if (Characters.find('`', line, index + backticks) != -1) {
                 return null;
             }
@@ -120,8 +125,9 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
         }
     }
 
-    // spec: The content of the code block consists of all subsequent lines, until a closing code fence of the same type
-    // as the code block began with (backticks or tildes), and with at least as many backticks or tildes as the opening
+    // spec: The content of the code block consists of all subsequent lines, until a closing code
+    // fence of the same type as the code block began with (backticks or tildes), and with at least
+    // as many backticks or tildes as the opening
     // code fence.
     private boolean tryClosing(CharSequence line, int index) {
         int fences = Characters.skip(fenceChar, line, index, line.length()) - index;

@@ -9,5 +9,4 @@ public interface PostProcessor {
      * @return the result of post-processing, may be a modified {@code node} argument
      */
     Node process(Node node);
-
 }

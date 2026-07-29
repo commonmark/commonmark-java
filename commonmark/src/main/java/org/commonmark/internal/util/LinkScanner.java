@@ -5,9 +5,9 @@ import org.commonmark.parser.beta.Scanner;
 public class LinkScanner {
 
     /**
-     * Attempt to scan the contents of a link label (inside the brackets), stopping after the content or returning false.
-     * The stopped position can bei either the closing {@code ]}, or the end of the line if the label continues on
-     * the next line.
+     * Attempt to scan the contents of a link label (inside the brackets), stopping after the
+     * content or returning false. The stopped position can bei either the closing {@code ]}, or the
+     * end of the line if the label continues on the next line.
      */
     public static boolean scanLinkLabelContent(Scanner scanner) {
         while (scanner.hasNext()) {
@@ -21,8 +21,8 @@ public class LinkScanner {
                 case ']':
                     return true;
                 case '[':
-                    // spec: Unescaped square bracket characters are not allowed inside the opening and closing
-                    // square brackets of link labels.
+                    // spec: Unescaped square bracket characters are not allowed inside the opening
+                    // and closing square brackets of link labels.
                     return false;
                 default:
                     scanner.next();
@@ -31,9 +31,7 @@ public class LinkScanner {
         return true;
     }
 
-    /**
-     * Attempt to scan a link destination, stopping after the destination or returning false.
-     */
+    /** Attempt to scan a link destination, stopping after the destination or returning false. */
     public static boolean scanLinkDestination(Scanner scanner) {
         if (!scanner.hasNext()) {
             return false;
@@ -115,9 +113,9 @@ public class LinkScanner {
         return true;
     }
 
-    // spec: a nonempty sequence of characters that does not start with <, does not include ASCII space or control
-    // characters, and includes parentheses only if (a) they are backslash-escaped or (b) they are part of a balanced
-    // pair of unescaped parentheses
+    // spec: a nonempty sequence of characters that does not start with <, does not include ASCII
+    // space or control characters, and includes parentheses only if (a) they are backslash-escaped
+    // or (b) they are part of a balanced pair of unescaped parentheses
     private static boolean scanLinkDestinationWithBalancedParens(Scanner scanner) {
         int parens = 0;
         boolean empty = true;

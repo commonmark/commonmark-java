@@ -1,5 +1,6 @@
 package org.commonmark.integration;
 
+import java.util.List;
 import org.commonmark.testutil.TestResources;
 import org.commonmark.testutil.example.ExampleReader;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -12,20 +13,21 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 
-import java.util.List;
-
 @State(Scope.Benchmark)
 public class PegDownBenchmark {
 
     private static final String SPEC = TestResources.readAsString(TestResources.getSpec());
-    private static final List<String> SPEC_EXAMPLES = ExampleReader.readExampleSources(TestResources.getSpec());
-    private static final PegDownProcessor PROCESSOR = new PegDownProcessor(Extensions.FENCED_CODE_BLOCKS);
+    private static final List<String> SPEC_EXAMPLES =
+            ExampleReader.readExampleSources(TestResources.getSpec());
+    private static final PegDownProcessor PROCESSOR =
+            new PegDownProcessor(Extensions.FENCED_CODE_BLOCKS);
 
     public static void main(String[] args) throws Exception {
-        Options options = new OptionsBuilder()
-                .parent(new CommandLineOptions(args))
-                .include(PegDownBenchmark.class.getName() + ".*")
-                .build();
+        Options options =
+                new OptionsBuilder()
+                        .parent(new CommandLineOptions(args))
+                        .include(PegDownBenchmark.class.getName() + ".*")
+                        .build();
         new Runner(options).run();
     }
 
@@ -47,5 +49,4 @@ public class PegDownBenchmark {
         }
         return length;
     }
-
 }

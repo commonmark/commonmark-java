@@ -1,11 +1,7 @@
 package org.commonmark.test;
 
-import org.commonmark.node.*;
-import org.commonmark.parser.*;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.markdown.MarkdownRenderer;
-import org.commonmark.testutil.TestResources;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,9 +12,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.commonmark.node.*;
+import org.commonmark.parser.*;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
+import org.commonmark.testutil.TestResources;
+import org.junit.jupiter.api.Test;
 
 public class ParserTest {
 
@@ -62,8 +61,12 @@ public class ParserTest {
     @Test
     public void enabledBlockTypesThrowsWhenGivenUnknownClass() {
         // BulletList can't be enabled separately at the moment, only all ListBlock types
-        assertThatThrownBy(() ->
-                Parser.builder().enabledBlockTypes(Set.of(Heading.class, BulletList.class)).build()).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(
+                        () ->
+                                Parser.builder()
+                                        .enabledBlockTypes(Set.of(Heading.class, BulletList.class))
+                                        .build())
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -89,14 +92,16 @@ public class ParserTest {
 
     @Test
     public void inlineParser() {
-        final InlineParser fakeInlineParser = (lines, node) -> node.appendChild(new ThematicBreak());
+        final InlineParser fakeInlineParser =
+                (lines, node) -> node.appendChild(new ThematicBreak());
 
         InlineParserFactory fakeInlineParserFactory = inlineParserContext -> fakeInlineParser;
 
         Parser parser = Parser.builder().inlineParserFactory(fakeInlineParserFactory).build();
         String input = "**bold** **bold** ~~strikethrough~~";
 
-        assertThat(parser.parse(input).getFirstChild().getFirstChild()).isInstanceOf(ThematicBreak.class);
+        assertThat(parser.parse(input).getFirstChild().getFirstChild())
+                .isInstanceOf(ThematicBreak.class);
     }
 
     @Test
@@ -123,8 +128,8 @@ public class ParserTest {
 
     @Test
     public void maxOpenBlockParsersMustBeZeroOrGreater() {
-        assertThatThrownBy(() ->
-                Parser.builder().maxOpenBlockParsers(-1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> Parser.builder().maxOpenBlockParsers(-1))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -169,11 +174,10 @@ public class ParserTest {
     public void maxOpenBlockParsersAlsoLimitsMixedListAndBlockQuoteNesting() {
         var parser = Parser.builder().maxOpenBlockParsers(5).build();
 
-        var document = parser.parse(String.join("\n",
-                "- level1",
-                "  > level2",
-                "  > > level3",
-                "  > > > level4"));
+        var document =
+                parser.parse(
+                        String.join(
+                                "\n", "- level1", "  > level2", "  > > level3", "  > > > level4"));
 
         var listBlock = document.getFirstChild();
         assertThat(listBlock).isInstanceOf(BulletList.class);

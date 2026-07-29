@@ -1,5 +1,8 @@
 package org.commonmark.ext.front.matter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import org.commonmark.Extension;
 import org.commonmark.node.Document;
 import org.commonmark.node.Node;
@@ -9,15 +12,12 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class YamlFrontMatterMarkdownRendererTest {
 
     private static final List<Extension> EXTENSIONS = List.of(YamlFrontMatterExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
+    private static final MarkdownRenderer RENDERER =
+            MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 
     // ===== Round-trip tests (parse string -> render -> compare to input) =====
 
@@ -43,7 +43,8 @@ public class YamlFrontMatterMarkdownRendererTest {
 
     @Test
     public void testRoundTripLiteralBlock() {
-        assertRoundTrip("---\ndescription: |\n  first line\n  second line\n---\n\nMarkdown content\n");
+        assertRoundTrip(
+                "---\ndescription: |\n  first line\n  second line\n---\n\nMarkdown content\n");
     }
 
     @Test
@@ -84,7 +85,9 @@ public class YamlFrontMatterMarkdownRendererTest {
 
     @Test
     public void testProgrammaticallyBuilt() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("title", List.of("My Document"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("title", List.of("My Document"))));
 
         assertRenderedEquals(doc, "---\ntitle: My Document\n---\n\nMarkdown content\n");
     }
@@ -93,29 +96,40 @@ public class YamlFrontMatterMarkdownRendererTest {
 
     @Test
     public void testValueWithColonSpace() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("key", List.of("value with a: colon inside"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(
+                                new YamlFrontMatterNode(
+                                        "key", List.of("value with a: colon inside"))));
 
-        assertRenderedEquals(doc, "---\nkey: 'value with a: colon inside'\n---\n\nMarkdown content\n");
+        assertRenderedEquals(
+                doc, "---\nkey: 'value with a: colon inside'\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testValueWithColonNoSpace() {
         // Colon without trailing space is fine unquoted (e.g. timestamps, URLs)
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("time", List.of("12:30:00"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("time", List.of("12:30:00"))));
 
         assertRenderedEquals(doc, "---\ntime: 12:30:00\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testValueStartingWithDash() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("key", List.of("- not a list"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("key", List.of("- not a list"))));
 
         assertRenderedEquals(doc, "---\nkey: '- not a list'\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testValueStartingWithUnmatchedBracket() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("key", List.of("[broken"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("key", List.of("[broken"))));
 
         assertRenderedEquals(doc, "---\nkey: '[broken'\n---\n\nMarkdown content\n");
     }
@@ -123,14 +137,18 @@ public class YamlFrontMatterMarkdownRendererTest {
     @Test
     public void testValueStartingWithMatchedBrackets() {
         // Valid flow list - should NOT be quoted
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("flowList", List.of("[1, 2, 3]"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("flowList", List.of("[1, 2, 3]"))));
 
         assertRenderedEquals(doc, "---\nflowList: [1, 2, 3]\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testValueStartingWithUnmatchedBrace() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("key", List.of("{broken"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("key", List.of("{broken"))));
 
         assertRenderedEquals(doc, "---\nkey: '{broken'\n---\n\nMarkdown content\n");
     }
@@ -138,35 +156,47 @@ public class YamlFrontMatterMarkdownRendererTest {
     @Test
     public void testValueStartingWithMatchedBraces() {
         // Valid flow mapping - should NOT be quoted
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("flowMapping", List.of("{key: val}"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("flowMapping", List.of("{key: val}"))));
 
         assertRenderedEquals(doc, "---\nflowMapping: {key: val}\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testValueContainingHashComment() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("key", List.of("value # not a comment"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("key", List.of("value # not a comment"))));
 
         assertRenderedEquals(doc, "---\nkey: 'value # not a comment'\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testValueContainingApostrophe() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("key", List.of("it's a test"))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("key", List.of("it's a test"))));
 
         assertRenderedEquals(doc, "---\nkey: 'it''s a test'\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testEmptyStringValue() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("empty", List.of(""))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(new YamlFrontMatterNode("empty", List.of(""))));
 
         assertRenderedEquals(doc, "---\nempty: ''\n---\n\nMarkdown content\n");
     }
 
     @Test
     public void testValueStartingWithDoubleQuote() {
-        var doc = buildDocumentWithFrontMatter(List.of(new YamlFrontMatterNode("key", List.of("\"quotes within value\""))));
+        var doc =
+                buildDocumentWithFrontMatter(
+                        List.of(
+                                new YamlFrontMatterNode(
+                                        "key", List.of("\"quotes within value\""))));
 
         assertRenderedEquals(doc, "---\nkey: '\"quotes within value\"'\n---\n\nMarkdown content\n");
     }

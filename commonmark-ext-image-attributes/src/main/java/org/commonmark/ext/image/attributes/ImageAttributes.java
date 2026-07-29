@@ -1,13 +1,10 @@
 package org.commonmark.ext.image.attributes;
 
+import java.util.Map;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Delimited;
 
-import java.util.Map;
-
-/**
- * A node containing text and other inline nodes as children.
- */
+/** A node containing text and other inline nodes as children. */
 public class ImageAttributes extends CustomNode implements Delimited {
 
     private final Map<String, String> attributes;

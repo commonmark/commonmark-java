@@ -28,7 +28,8 @@ public class HeadingParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        // In both ATX and Setext headings, once we have the heading markup, there's nothing more to parse.
+        // In both ATX and Setext headings, once we have the heading markup, there's nothing more to
+        // parse.
         return BlockContinue.none();
     }
 
@@ -48,7 +49,8 @@ public class HeadingParser extends AbstractBlockParser {
             SourceLine line = state.getLine();
             int nextNonSpace = state.getNextNonSpaceIndex();
             if (line.getContent().charAt(nextNonSpace) == '#') {
-                HeadingParser atxHeading = getAtxHeading(line.substring(nextNonSpace, line.getContent().length()));
+                HeadingParser atxHeading =
+                        getAtxHeading(line.substring(nextNonSpace, line.getContent().length()));
                 if (atxHeading != null) {
                     return BlockStart.of(atxHeading).atIndex(line.getContent().length());
                 }
@@ -68,10 +70,11 @@ public class HeadingParser extends AbstractBlockParser {
         }
     }
 
-    // spec: An ATX heading consists of a string of characters, parsed as inline content, between an opening sequence of
-    // 1-6 unescaped # characters and an optional closing sequence of any number of unescaped # characters. The opening
-    // sequence of # characters must be followed by a space or by the end of line. The optional closing sequence of #s
-    // must be preceded by a space and may be followed by spaces only.
+    // spec: An ATX heading consists of a string of characters, parsed as inline content, between an
+    // opening sequence of 1-6 unescaped # characters and an optional closing sequence of any number
+    // of unescaped # characters. The opening sequence of # characters must be followed by a space
+    // or by the end of line. The optional closing sequence of #s must be preceded by a space and
+    // may be followed by spaces only.
     private static HeadingParser getAtxHeading(SourceLine line) {
         Scanner scanner = Scanner.of(SourceLines.of(line));
         int level = scanner.matchMultiple('#');
@@ -102,7 +105,8 @@ public class HeadingParser extends AbstractBlockParser {
                     if (hashCanEnd) {
                         scanner.matchMultiple('#');
                         int whitespace = scanner.whitespace();
-                        // If there's other characters, the hashes and spaces were part of the heading
+                        // If there's other characters, the hashes and spaces were part of the
+                        // heading
                         if (scanner.hasNext()) {
                             end = scanner.position();
                         }
@@ -132,8 +136,8 @@ public class HeadingParser extends AbstractBlockParser {
         return new HeadingParser(level, source);
     }
 
-    // spec: A setext heading underline is a sequence of = characters or a sequence of - characters, with no more than
-    // 3 spaces indentation and any number of trailing spaces.
+    // spec: A setext heading underline is a sequence of = characters or a sequence of - characters,
+    // with no more than 3 spaces indentation and any number of trailing spaces.
     private static int getSetextHeadingLevel(CharSequence line, int index) {
         switch (line.charAt(index)) {
             case '=':

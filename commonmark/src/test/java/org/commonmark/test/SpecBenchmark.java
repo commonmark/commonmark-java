@@ -1,5 +1,6 @@
 package org.commonmark.test;
 
+import java.util.List;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -11,8 +12,6 @@ import org.openjdk.jmh.runner.options.CommandLineOptions;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.List;
-
 @State(Scope.Benchmark)
 @Fork(5)
 @Warmup(iterations = 10)
@@ -20,17 +19,19 @@ import java.util.List;
 public class SpecBenchmark {
 
     private static final String SPEC = TestResources.readAsString(TestResources.getSpec());
-    private static final List<String> SPEC_EXAMPLES = ExampleReader.readExampleSources(TestResources.getSpec());
+    private static final List<String> SPEC_EXAMPLES =
+            ExampleReader.readExampleSources(TestResources.getSpec());
     private static final Parser PARSER = Parser.builder().build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
 
     private static final Node SPEC_NODE = PARSER.parse(SPEC);
 
     public static void main(String[] args) throws Exception {
-        Options options = new OptionsBuilder()
-                .parent(new CommandLineOptions(args))
-                .include(SpecBenchmark.class.getName() + ".*")
-                .build();
+        Options options =
+                new OptionsBuilder()
+                        .parent(new CommandLineOptions(args))
+                        .include(SpecBenchmark.class.getName() + ".*")
+                        .build();
         new Runner(options).run();
     }
 

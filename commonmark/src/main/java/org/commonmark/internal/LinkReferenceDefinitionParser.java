@@ -1,5 +1,8 @@
 package org.commonmark.internal;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.internal.util.LinkScanner;
 import org.commonmark.node.LinkReferenceDefinition;
@@ -9,14 +12,11 @@ import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.beta.Position;
 import org.commonmark.parser.beta.Scanner;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Parser for link reference definitions at the beginning of a paragraph.
  *
- * @see <a href="https://spec.commonmark.org/0.31.2/#link-reference-definitions">Link reference definitions</a>
+ * @see <a href="https://spec.commonmark.org/0.31.2/#link-reference-definitions">Link reference
+ *     definitions</a>
  */
 public class LinkReferenceDefinitionParser {
 
@@ -35,8 +35,8 @@ public class LinkReferenceDefinitionParser {
     public void parse(SourceLine line) {
         paragraphLines.add(line);
         if (state == State.PARAGRAPH) {
-            // We're in a paragraph now. Link reference definitions can only appear at the beginning, so once
-            // we're in a paragraph, there's no going back.
+            // We're in a paragraph now. Link reference definitions can only appear at the
+            // beginning, so once we're in a paragraph, there's no going back.
             return;
         }
 
@@ -44,35 +44,41 @@ public class LinkReferenceDefinitionParser {
         while (scanner.hasNext()) {
             boolean success;
             switch (state) {
-                case START_DEFINITION: {
-                    success = startDefinition(scanner);
-                    break;
-                }
-                case LABEL: {
-                    success = label(scanner);
-                    break;
-                }
-                case DESTINATION: {
-                    success = destination(scanner);
-                    break;
-                }
-                case START_TITLE: {
-                    success = startTitle(scanner);
-                    break;
-                }
-                case TITLE: {
-                    success = title(scanner);
-                    break;
-                }
-                default: {
-                    throw new IllegalStateException("Unknown parsing state: " + state);
-                }
+                case START_DEFINITION:
+                    {
+                        success = startDefinition(scanner);
+                        break;
+                    }
+                case LABEL:
+                    {
+                        success = label(scanner);
+                        break;
+                    }
+                case DESTINATION:
+                    {
+                        success = destination(scanner);
+                        break;
+                    }
+                case START_TITLE:
+                    {
+                        success = startTitle(scanner);
+                        break;
+                    }
+                case TITLE:
+                    {
+                        success = title(scanner);
+                        break;
+                    }
+                default:
+                    {
+                        throw new IllegalStateException("Unknown parsing state: " + state);
+                    }
             }
             // Parsing failed, which means we fall back to treating text as a paragraph.
             if (!success) {
                 state = State.PARAGRAPH;
-                // If parsing of the title part failed, we still have a valid reference that we can add, and we need to
-                // do it before the source span for this line is added.
+                // If parsing of the title part failed, we still have a valid reference that we can
+                // add, and we need to do it before the source span for this line is added.
                 finishReference();
                 return;
             }
@@ -104,16 +110,20 @@ public class LinkReferenceDefinitionParser {
     }
 
     List<SourceSpan> removeLines(int lines) {
-        var removedSpans = Collections.unmodifiableList(new ArrayList<>(
-                sourceSpans.subList(Math.max(sourceSpans.size() - lines, 0), sourceSpans.size())));
+        var removedSpans =
+                Collections.unmodifiableList(
+                        new ArrayList<>(
+                                sourceSpans.subList(
+                                        Math.max(sourceSpans.size() - lines, 0),
+                                        sourceSpans.size())));
         removeLast(lines, paragraphLines);
         removeLast(lines, sourceSpans);
         return removedSpans;
     }
 
     private boolean startDefinition(Scanner scanner) {
-        // Finish any outstanding references now. We don't do this earlier because we need addSourceSpan to have been
-        // called before we do it.
+        // Finish any outstanding references now. We don't do this earlier because we need
+        // addSourceSpan to have been called before we do it.
         finishReference();
 
         scanner.whitespace();
@@ -175,14 +185,15 @@ public class LinkReferenceDefinitionParser {
         }
 
         String rawDestination = scanner.getSource(start, scanner.position()).getContent();
-        destination = rawDestination.startsWith("<") ?
-                rawDestination.substring(1, rawDestination.length() - 1) :
-                rawDestination;
+        destination =
+                rawDestination.startsWith("<")
+                        ? rawDestination.substring(1, rawDestination.length() - 1)
+                        : rawDestination;
 
         int whitespace = scanner.whitespace();
         if (!scanner.hasNext()) {
-            // Destination was at end of line, so this is a valid reference for sure (and maybe a title).
-            // If not at end of line, wait for title to be valid first.
+            // Destination was at end of line, so this is a valid reference for sure (and maybe a
+            // title). If not at end of line, wait for title to be valid first.
             referenceValid = true;
             paragraphLines.clear();
         } else if (whitespace == 0) {
@@ -238,7 +249,8 @@ public class LinkReferenceDefinitionParser {
         title.append(scanner.getSource(start, scanner.position()).getContent());
 
         if (!scanner.hasNext()) {
-            // Title ran until the end of line, so continue on next line (until we find the delimiter)
+            // Title ran until the end of line, so continue on next line (until we find the
+            // delimiter)
             title.append('\n');
             return true;
         }

@@ -1,9 +1,9 @@
 package org.commonmark.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.commonmark.renderer.text.TextContentWriter;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class TextContentWriterTest {
 

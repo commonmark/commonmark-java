@@ -1,11 +1,11 @@
 package org.commonmark.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.commonmark.internal.LinkReferenceDefinitionParser.State;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.SourceLine;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class LinkReferenceDefinitionParserTest {
 
@@ -149,8 +149,8 @@ class LinkReferenceDefinitionParserTest {
     void testTitleMultiline3() {
         parse("[foo]: /url");
         assertThat(parser.getState()).isEqualTo(State.START_TITLE);
-        // Note that this looks like a valid title until we parse "bad", at which point we need to treat the whole line
-        // as a paragraph line and discard any already parsed title.
+        // Note that this looks like a valid title until we parse "bad", at which point we need to
+        // treat the whole line as a paragraph line and discard any already parsed title.
         parse("\"title\" bad");
         assertThat(parser.getState()).isEqualTo(State.PARAGRAPH);
 
@@ -192,13 +192,15 @@ class LinkReferenceDefinitionParserTest {
         assertParagraphLines(paragraphContent, parser);
     }
 
-    private static void assertDef(LinkReferenceDefinition def, String label, String destination, String title) {
+    private static void assertDef(
+            LinkReferenceDefinition def, String label, String destination, String title) {
         assertThat(def.getLabel()).isEqualTo(label);
         assertThat(def.getDestination()).isEqualTo(destination);
         assertThat(def.getTitle()).isEqualTo(title);
     }
 
-    private static void assertParagraphLines(String expectedContent, LinkReferenceDefinitionParser parser) {
+    private static void assertParagraphLines(
+            String expectedContent, LinkReferenceDefinitionParser parser) {
         String actual = parser.getParagraphLines().getContent();
         assertThat(actual).isEqualTo(expectedContent);
     }

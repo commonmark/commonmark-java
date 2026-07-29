@@ -9,7 +9,13 @@ public class Example {
     private final String source;
     private final String html;
 
-    public Example(String filename, String section, String info, int exampleNumber, String source, String html) {
+    public Example(
+            String filename,
+            String section,
+            String info,
+            int exampleNumber,
+            String source,
+            String html) {
         this.filename = filename;
         this.section = section;
         this.info = info;

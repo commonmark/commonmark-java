@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import org.commonmark.ext.gfm.alerts.Alert;
 import org.commonmark.ext.gfm.alerts.AlertTitle;
 import org.commonmark.node.Block;
@@ -23,8 +22,10 @@ import org.commonmark.text.Characters;
 
 public class AlertBlockParser extends AbstractBlockParser {
 
-    private static final Pattern ALERT_PATTERN_NO_CUSTOM_TITLE = Pattern.compile("^\\[!([a-zA-Z]+)]\\s*$");
-    private static final Pattern ALERT_PATTERN_CUSTOM_TITLE = Pattern.compile("^\\[!([a-zA-Z]+)](.*)$");
+    private static final Pattern ALERT_PATTERN_NO_CUSTOM_TITLE =
+            Pattern.compile("^\\[!([a-zA-Z]+)]\\s*$");
+    private static final Pattern ALERT_PATTERN_CUSTOM_TITLE =
+            Pattern.compile("^\\[!([a-zA-Z]+)](.*)$");
 
     private final Alert block;
     private final SourceLine titleLine;
@@ -103,7 +104,10 @@ public class AlertBlockParser extends AbstractBlockParser {
         private final boolean customTitlesAllowed;
         private final boolean nestedAlertsAllowed;
 
-        public Factory(Set<String> allowedTypes, boolean customTitlesAllowed, boolean nestedAlertsAllowed) {
+        public Factory(
+                Set<String> allowedTypes,
+                boolean customTitlesAllowed,
+                boolean nestedAlertsAllowed) {
             this.allowedTypes = allowedTypes;
             this.customTitlesAllowed = customTitlesAllowed;
             this.nestedAlertsAllowed = nestedAlertsAllowed;
@@ -116,7 +120,8 @@ public class AlertBlockParser extends AbstractBlockParser {
                 return BlockStart.none();
             }
 
-            if (!nestedAlertsAllowed && !isAtRoot(matchedBlockParser.getMatchedBlockParser().getBlock())) {
+            if (!nestedAlertsAllowed
+                    && !isAtRoot(matchedBlockParser.getMatchedBlockParser().getBlock())) {
                 return BlockStart.none();
             }
 
@@ -176,7 +181,10 @@ public class AlertBlockParser extends AbstractBlockParser {
                 afterGt = state.getIndex();
             }
 
-            var pattern = customTitlesAllowed ? ALERT_PATTERN_CUSTOM_TITLE : ALERT_PATTERN_NO_CUSTOM_TITLE;
+            var pattern =
+                    customTitlesAllowed
+                            ? ALERT_PATTERN_CUSTOM_TITLE
+                            : ALERT_PATTERN_NO_CUSTOM_TITLE;
             var matcher = pattern.matcher(line.subSequence(afterGt, line.length()));
 
             if (!matcher.matches()) {
@@ -215,7 +223,8 @@ public class AlertBlockParser extends AbstractBlockParser {
 
             // If we got here via the promotion path, replace the empty BlockQuote.
             var matched = state.getActiveBlockParser().getBlock();
-            if (matched instanceof BlockQuote && matched.getFirstChild() == null
+            if (matched instanceof BlockQuote
+                    && matched.getFirstChild() == null
                     && (nextNonSpace >= line.length() || line.charAt(nextNonSpace) != '>')) {
                 start = start.replaceActiveBlockParser();
             }

@@ -43,7 +43,10 @@ public class StrikethroughDelimiterProcessor implements DelimiterProcessor {
             Text opener = openingRun.getOpener();
 
             // Wrap nodes between delimiters in strikethrough.
-            String delimiter = openingRun.length() == 1 ? opener.getLiteral() : opener.getLiteral() + opener.getLiteral();
+            String delimiter =
+                    openingRun.length() == 1
+                            ? opener.getLiteral()
+                            : opener.getLiteral() + opener.getLiteral();
             Node strikethrough = new Strikethrough(delimiter);
 
             SourceSpans sourceSpans = new SourceSpans();

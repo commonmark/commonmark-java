@@ -2,6 +2,7 @@ package org.commonmark.node;
 
 /**
  * A thematic break, e.g. between text:
+ *
  * <pre>
  * Some text
  *

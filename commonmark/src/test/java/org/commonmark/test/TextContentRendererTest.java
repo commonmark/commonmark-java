@@ -1,26 +1,28 @@
 package org.commonmark.test;
 
+import java.util.Set;
 import org.commonmark.node.Link;
 import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.text.LineBreakRendering;
 import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentNodeRendererFactory;
 import org.commonmark.renderer.text.TextContentRenderer;
-import org.commonmark.parser.Parser;
 import org.commonmark.testutil.Asserts;
 import org.junit.jupiter.api.Test;
-
-import java.util.Set;
 
 public class TextContentRendererTest {
 
     private static final Parser PARSER = Parser.builder().build();
-    private static final TextContentRenderer COMPACT_RENDERER = TextContentRenderer.builder().build();
-    private static final TextContentRenderer SEPARATE_RENDERER = TextContentRenderer.builder()
-            .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
-    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder()
-            .lineBreakRendering(LineBreakRendering.STRIP).build();
+    private static final TextContentRenderer COMPACT_RENDERER =
+            TextContentRenderer.builder().build();
+    private static final TextContentRenderer SEPARATE_RENDERER =
+            TextContentRenderer.builder()
+                    .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS)
+                    .build();
+    private static final TextContentRenderer STRIPPED_RENDERER =
+            TextContentRenderer.builder().lineBreakRendering(LineBreakRendering.STRIP).build();
 
     @Test
     public void textContentText() {
@@ -82,7 +84,8 @@ public class TextContentRendererTest {
 
     @Test
     public void textContentImages() {
-        assertAll("foo ![text](http://link \"title\") bar", "foo \"text\" (title: http://link) bar");
+        assertAll(
+                "foo ![text](http://link \"title\") bar", "foo \"text\" (title: http://link) bar");
         assertAll("foo ![text](http://link) bar", "foo \"text\" (http://link) bar");
         assertAll("foo ![text]() bar", "foo \"text\" bar");
     }
@@ -138,7 +141,6 @@ public class TextContentRendererTest {
         // Separate preserves it
         assertSeparate(s, "foo\n\n* bar\n\n* baz");
         assertStripped(s, "foo bar baz");
-
     }
 
     @Test
@@ -182,13 +184,14 @@ public class TextContentRendererTest {
 
     @Test
     public void textContentHtml() {
-        String html = "<table>\n" +
-                "  <tr>\n" +
-                "    <td>\n" +
-                "           foobar\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "</table>";
+        String html =
+                "<table>\n"
+                        + "  <tr>\n"
+                        + "    <td>\n"
+                        + "           foobar\n"
+                        + "    </td>\n"
+                        + "  </tr>\n"
+                        + "</table>";
         assertCompact(html, html);
         assertSeparate(html, html);
 
@@ -198,9 +201,7 @@ public class TextContentRendererTest {
 
     @Test
     public void testContentNestedLists() {
-        var s = "List:\n" +
-                "1. 2) 3. \n" +
-                "end";
+        var s = "List:\n" + "1. 2) 3. \n" + "end";
         assertCompact(s, s);
 
         var s2 = "1. A\n   1) B\n      1. Test";
@@ -209,35 +210,37 @@ public class TextContentRendererTest {
 
     @Test
     public void testOverrideNodeRendering() {
-        var nodeRendererFactory = new TextContentNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(TextContentNodeRendererContext context) {
-                return new NodeRenderer() {
-
+        var nodeRendererFactory =
+                new TextContentNodeRendererFactory() {
                     @Override
-                    public Set<Class<? extends Node>> getNodeTypes() {
-                        return Set.of(Link.class);
-                    }
+                    public NodeRenderer create(TextContentNodeRendererContext context) {
+                        return new NodeRenderer() {
 
-                    @Override
-                    public void render(Node node) {
-                        context.getWriter().write('"');
-                        renderChildren(node);
-                        context.getWriter().write('"');
-                    }
+                            @Override
+                            public Set<Class<? extends Node>> getNodeTypes() {
+                                return Set.of(Link.class);
+                            }
 
-                    private void renderChildren(Node parent) {
-                        Node node = parent.getFirstChild();
-                        while (node != null) {
-                            Node next = node.getNext();
-                            context.render(node);
-                            node = next;
-                        }
+                            @Override
+                            public void render(Node node) {
+                                context.getWriter().write('"');
+                                renderChildren(node);
+                                context.getWriter().write('"');
+                            }
+
+                            private void renderChildren(Node parent) {
+                                Node node = parent.getFirstChild();
+                                while (node != null) {
+                                    Node next = node.getNext();
+                                    context.render(node);
+                                    node = next;
+                                }
+                            }
+                        };
                     }
                 };
-            }
-        };
-        var renderer = TextContentRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
+        var renderer =
+                TextContentRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
         var source = "Hi [Example](https://example.com)";
         Asserts.assertRendering(source, "Hi \"Example\"", renderer.render(PARSER.parse(source)));
     }

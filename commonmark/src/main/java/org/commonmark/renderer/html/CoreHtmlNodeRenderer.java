@@ -1,11 +1,10 @@
 package org.commonmark.renderer.html;
 
-import org.commonmark.node.*;
-import org.commonmark.renderer.NodeRenderer;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.commonmark.node.*;
+import org.commonmark.renderer.NodeRenderer;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
@@ -42,8 +41,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
                 Code.class,
                 HtmlInline.class,
                 SoftLineBreak.class,
-                HardLineBreak.class
-        );
+                HardLineBreak.class);
     }
 
     @Override
@@ -69,9 +67,12 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(Paragraph paragraph) {
-        boolean omitP = isInTightList(paragraph) || //
-                (context.shouldOmitSingleParagraphP() && paragraph.getParent() instanceof Document && //
-                        paragraph.getPrevious() == null && paragraph.getNext() == null);
+        boolean omitP =
+                isInTightList(paragraph)
+                        || (context.shouldOmitSingleParagraphP()
+                                && paragraph.getParent() instanceof Document
+                                && paragraph.getPrevious() == null
+                                && paragraph.getNext() == null);
         if (!omitP) {
             html.line();
             html.tag("p", getAttrs(paragraph, "p"));
@@ -172,7 +173,8 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(OrderedList orderedList) {
-        int start = orderedList.getMarkerStartNumber() != null ? orderedList.getMarkerStartNumber() : 1;
+        int start =
+                orderedList.getMarkerStartNumber() != null ? orderedList.getMarkerStartNumber() : 1;
         Map<String, String> attrs = new LinkedHashMap<>();
         if (start != 1) {
             attrs.put("start", String.valueOf(start));
@@ -268,7 +270,8 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         html.line();
     }
 
-    private void renderListBlock(ListBlock listBlock, String tagName, Map<String, String> attributes) {
+    private void renderListBlock(
+            ListBlock listBlock, String tagName, Map<String, String> attributes) {
         html.line();
         html.tag(tagName, attributes);
         html.line();
@@ -294,7 +297,8 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         return getAttrs(node, tagName, Map.of());
     }
 
-    private Map<String, String> getAttrs(Node node, String tagName, Map<String, String> defaultAttributes) {
+    private Map<String, String> getAttrs(
+            Node node, String tagName, Map<String, String> defaultAttributes) {
         return context.extendAttributes(node, tagName, defaultAttributes);
     }
 

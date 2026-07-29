@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.tables;
 
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
 import org.commonmark.ext.gfm.tables.internal.TableHtmlNodeRenderer;
@@ -13,26 +14,25 @@ import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 
-import java.util.Set;
-
 /**
  * Extension for GFM tables using "|" pipes (GitHub Flavored Markdown).
- * <p>
- * Create it with {@link #create()} and then configure it on the builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * </p>
- * <p>
- * The parsed tables are turned into {@link TableBlock} blocks.
- * </p>
  *
- * @see <a href="https://github.github.com/gfm/#tables-extension-">Tables (extension) in GitHub Flavored Markdown Spec</a>
+ * <p>Create it with {@link #create()} and then configure it on the builders ({@link
+ * org.commonmark.parser.Parser.Builder#extensions(Iterable)}, {@link
+ * HtmlRenderer.Builder#extensions(Iterable)}).
+ *
+ * <p>The parsed tables are turned into {@link TableBlock} blocks.
+ *
+ * @see <a href="https://github.github.com/gfm/#tables-extension-">Tables (extension) in GitHub
+ *     Flavored Markdown Spec</a>
  */
-public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
-        TextContentRenderer.TextContentRendererExtension, MarkdownRenderer.MarkdownRendererExtension {
+public class TablesExtension
+        implements Parser.ParserExtension,
+                HtmlRenderer.HtmlRendererExtension,
+                TextContentRenderer.TextContentRendererExtension,
+                MarkdownRenderer.MarkdownRendererExtension {
 
-    private TablesExtension() {
-    }
+    private TablesExtension() {}
 
     public static Extension create() {
         return new TablesExtension();
@@ -55,16 +55,17 @@ public class TablesExtension implements Parser.ParserExtension, HtmlRenderer.Htm
 
     @Override
     public void extend(MarkdownRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(MarkdownNodeRendererContext context) {
-                return new TableMarkdownNodeRenderer(context);
-            }
+        rendererBuilder.nodeRendererFactory(
+                new MarkdownNodeRendererFactory() {
+                    @Override
+                    public NodeRenderer create(MarkdownNodeRendererContext context) {
+                        return new TableMarkdownNodeRenderer(context);
+                    }
 
-            @Override
-            public Set<Character> getSpecialCharacters() {
-                return Set.of('|');
-            }
-        });
+                    @Override
+                    public Set<Character> getSpecialCharacters() {
+                        return Set.of('|');
+                    }
+                });
     }
 }

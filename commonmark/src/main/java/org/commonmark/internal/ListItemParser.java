@@ -13,8 +13,8 @@ public class ListItemParser extends AbstractBlockParser {
     private final ListItem block = new ListItem();
 
     /**
-     * Minimum number of columns that the content has to be indented (relative to the containing block) to be part of
-     * this list item.
+     * Minimum number of columns that the content has to be indented (relative to the containing
+     * block) to be part of this list item.
      */
     private int contentIndent;
 
@@ -36,8 +36,8 @@ public class ListItemParser extends AbstractBlockParser {
         if (hadBlankLine) {
             // We saw a blank line in this list item, that means the list block is loose.
             //
-            // spec: if any of its constituent list items directly contain two block-level elements with a blank line
-            // between them
+            // spec: if any of its constituent list items directly contain two block-level elements
+            // with a blank line between them
             Block parent = block.getParent();
             if (parent instanceof ListBlock) {
                 ((ListBlock) parent).setTight(false);
@@ -59,7 +59,8 @@ public class ListItemParser extends AbstractBlockParser {
                 return BlockContinue.none();
             } else {
                 Block activeBlock = state.getActiveBlockParser().getBlock();
-                // If the active block is a code block, blank lines in it should not affect if the list is tight.
+                // If the active block is a code block, blank lines in it should not affect if the
+                // list is tight.
                 hadBlankLine = activeBlock instanceof Paragraph || activeBlock instanceof ListItem;
                 return BlockContinue.atIndex(state.getNextNonSpaceIndex());
             }

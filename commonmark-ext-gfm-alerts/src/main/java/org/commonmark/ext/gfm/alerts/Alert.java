@@ -21,31 +21,32 @@ public class Alert extends CustomBlock {
 
     /**
      * @return Whether this alert has any body content (not including the title).
-     * <p>
+     *     <p>- Examples where this would be {@code true}:
+     *     <pre>{@code
+     * > [!NOTE]
+     * > Body text
      *
-     * - Examples where this would be {@code true}:
-     *   <pre>{@code
-     *   > [!NOTE]
-     *   > Body text
-     *   }</pre>
-     *   <pre>{@code
-     *   > [!NOTE] Custom title
-     *   > Body text
-     *   }</pre>
+     * }</pre>
+     *     <pre>{@code
+     * > [!NOTE] Custom title
+     * > Body text
      *
-     * - Examples where this would be {@code false}:
+     * }</pre>
+     *     - Examples where this would be {@code false}:
+     *     <pre>{@code
+     * > [!NOTE]
      *
-     *   <pre>{@code
-     *   > [!NOTE]
-     *   }</pre>
-     *   <pre>{@code
-     *   > [!NOTE]
-     *   >
-     *   >
-     *   }</pre>
-     *   <pre>{@code
-     *   > [!NOTE] Custom title
-     *   }</pre>
+     * }</pre>
+     *     <pre>{@code
+     * > [!NOTE]
+     * >
+     * >
+     *
+     * }</pre>
+     *     <pre>{@code
+     * > [!NOTE] Custom title
+     *
+     * }</pre>
      */
     public boolean hasBody() {
         var first = this.getFirstChild();

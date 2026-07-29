@@ -1,12 +1,11 @@
 package org.commonmark.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class LinkReferenceDefinitionNodeTest {
 
@@ -47,14 +46,16 @@ public class LinkReferenceDefinitionNodeTest {
 
     @Test
     public void testMultipleDefinitionsWithSameLabel() {
-        Node document = parse("This is a paragraph with a [foo] link.\n\n[foo]: /url1\n[foo]: /url2");
+        Node document =
+                parse("This is a paragraph with a [foo] link.\n\n[foo]: /url1\n[foo]: /url2");
         List<Node> nodes = Nodes.getChildren(document);
 
         assertThat(nodes).hasSize(3);
         assertThat(nodes.get(0)).isInstanceOf(Paragraph.class);
         LinkReferenceDefinition def1 = assertDef(nodes.get(1), "foo");
         assertThat(def1.getDestination()).isEqualTo("/url1");
-        // When there's multiple definitions with the same label, the first one "wins", as in reference links will use
+        // When there's multiple definitions with the same label, the first one "wins", as in
+        // reference links will use
         // that. But we still want to preserve the original definitions in the document.
         LinkReferenceDefinition def2 = assertDef(nodes.get(2), "foo");
         assertThat(def2.getDestination()).isEqualTo("/url2");

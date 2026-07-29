@@ -1,5 +1,8 @@
 package org.commonmark.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.InlineParser;
@@ -8,15 +11,12 @@ import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.block.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class BlockParserFactoryTest {
 
     @Test
     public void customBlockParserFactory() {
-        var parser = Parser.builder().customBlockParserFactory(new DashBlockParser.Factory()).build();
+        var parser =
+                Parser.builder().customBlockParserFactory(new DashBlockParser.Factory()).build();
 
         // The dashes would normally be a ThematicBreak
         var doc = parser.parse("hey\n\n---\n");
@@ -28,10 +28,11 @@ public class BlockParserFactoryTest {
 
     @Test
     public void replaceActiveBlockParser() {
-        var parser = Parser.builder()
-                .customBlockParserFactory(new StarHeadingBlockParser.Factory())
-                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
-                .build();
+        var parser =
+                Parser.builder()
+                        .customBlockParserFactory(new StarHeadingBlockParser.Factory())
+                        .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                        .build();
 
         var doc = parser.parse("a\nbc\n***\n");
 
@@ -46,16 +47,17 @@ public class BlockParserFactoryTest {
         assertThat(((Text) bc).getLiteral()).isEqualTo("bc");
         assertThat(bc.getNext()).isNull();
 
-        assertThat(heading.getSourceSpans()).isEqualTo(List.of(
-                SourceSpan.of(0, 0, 0, 1),
-                SourceSpan.of(1, 0, 2, 2),
-                SourceSpan.of(2, 0, 5, 3)));
+        assertThat(heading.getSourceSpans())
+                .isEqualTo(
+                        List.of(
+                                SourceSpan.of(0, 0, 0, 1),
+                                SourceSpan.of(1, 0, 2, 2),
+                                SourceSpan.of(2, 0, 5, 3)));
         assertThat(a.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(0, 0, 0, 1)));
         assertThat(bc.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 2, 2)));
     }
 
-    private static class DashBlock extends CustomBlock {
-    }
+    private static class DashBlock extends CustomBlock {}
 
     private static class DashBlockParser extends AbstractBlockParser {
 
@@ -83,8 +85,7 @@ public class BlockParserFactoryTest {
         }
     }
 
-    private static class StarHeading extends CustomBlock {
-    }
+    private static class StarHeading extends CustomBlock {}
 
     private static class StarHeadingBlockParser extends AbstractBlockParser {
 

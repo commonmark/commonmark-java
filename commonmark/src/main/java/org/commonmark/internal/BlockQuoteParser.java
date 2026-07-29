@@ -42,7 +42,9 @@ public class BlockQuoteParser extends AbstractBlockParser {
 
     private static boolean isMarker(ParserState state, int index) {
         CharSequence line = state.getLine().getContent();
-        return state.getIndent() < Parsing.CODE_BLOCK_INDENT && index < line.length() && line.charAt(index) == '>';
+        return state.getIndent() < Parsing.CODE_BLOCK_INDENT
+                && index < line.length()
+                && line.charAt(index) == '>';
     }
 
     public static class Factory extends AbstractBlockParserFactory {

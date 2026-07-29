@@ -9,8 +9,5 @@ package org.commonmark.integration;
 // And the javadoc plugin doesn't like if there's no classes with documentation,
 //
 
-/**
- * Module with integration tests.
- */
-public class IntegrationTests {
-}
+/** Module with integration tests. */
+public class IntegrationTests {}

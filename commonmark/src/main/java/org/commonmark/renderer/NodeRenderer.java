@@ -1,12 +1,9 @@
 package org.commonmark.renderer;
 
+import java.util.Set;
 import org.commonmark.node.Node;
 
-import java.util.Set;
-
-/**
- * A renderer for a set of node types.
- */
+/** A renderer for a set of node types. */
 public interface NodeRenderer {
 
     /**
@@ -26,14 +23,12 @@ public interface NodeRenderer {
      *
      * @param rootNode the root (top-level) node
      */
-    default void beforeRoot(Node rootNode) {
-    }
+    default void beforeRoot(Node rootNode) {}
 
     /**
      * Called after the root node is rendered, to do any final processing at the end.
      *
      * @param rootNode the root (top-level) node
      */
-    default void afterRoot(Node rootNode) {
-    }
+    default void afterRoot(Node rootNode) {}
 }

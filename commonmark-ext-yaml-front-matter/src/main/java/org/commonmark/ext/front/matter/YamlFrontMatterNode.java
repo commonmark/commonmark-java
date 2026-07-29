@@ -1,8 +1,7 @@
 package org.commonmark.ext.front.matter;
 
-import org.commonmark.node.CustomNode;
-
 import java.util.List;
+import org.commonmark.node.CustomNode;
 
 public class YamlFrontMatterNode extends CustomNode {
     private String key;

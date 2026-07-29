@@ -1,5 +1,8 @@
 package org.commonmark.internal;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.util.*;
 import org.commonmark.internal.util.LineReader;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.*;
@@ -7,26 +10,24 @@ import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.InlineParserFactory;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
-import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.beta.InlineContentParserFactory;
+import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.block.*;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.text.Characters;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.*;
-
 public class DocumentParser implements ParserState {
 
-    private static final Set<Class<? extends Block>> CORE_FACTORY_TYPES = new LinkedHashSet<>(List.of(
-            BlockQuote.class,
-            Heading.class,
-            FencedCodeBlock.class,
-            HtmlBlock.class,
-            ThematicBreak.class,
-            ListBlock.class,
-            IndentedCodeBlock.class));
+    private static final Set<Class<? extends Block>> CORE_FACTORY_TYPES =
+            new LinkedHashSet<>(
+                    List.of(
+                            BlockQuote.class,
+                            Heading.class,
+                            FencedCodeBlock.class,
+                            HtmlBlock.class,
+                            ThematicBreak.class,
+                            ListBlock.class,
+                            IndentedCodeBlock.class));
 
     private static final Map<Class<? extends Block>, BlockParserFactory> NODES_TO_CORE_FACTORIES;
 
@@ -44,24 +45,16 @@ public class DocumentParser implements ParserState {
 
     private SourceLine line;
 
-    /**
-     * Line index (0-based)
-     */
+    /** Line index (0-based) */
     private int lineIndex = -1;
 
-    /**
-     * current index (offset) in input line (0-based)
-     */
+    /** current index (offset) in input line (0-based) */
     private int index = 0;
 
-    /**
-     * current column of input line (tab causes column to go to next 4-space tab stop) (0-based)
-     */
+    /** current column of input line (tab causes column to go to next 4-space tab stop) (0-based) */
     private int column = 0;
 
-    /**
-     * if the current column is within a tab character (partially consumed tab)
-     */
+    /** if the current column is within a tab character (partially consumed tab) */
     private boolean columnIsInTab;
 
     private int nextNonSpace = 0;
@@ -83,10 +76,15 @@ public class DocumentParser implements ParserState {
     private final List<OpenBlockParser> openBlockParsers = new ArrayList<>();
     private final List<BlockParser> allBlockParsers = new ArrayList<>();
 
-    public DocumentParser(List<BlockParserFactory> blockParserFactories, InlineParserFactory inlineParserFactory,
-                          List<InlineContentParserFactory> inlineContentParserFactories, List<DelimiterProcessor> delimiterProcessors,
-                          List<LinkProcessor> linkProcessors, Set<Character> linkMarkers,
-                          IncludeSourceSpans includeSourceSpans, int maxOpenBlockParsers) {
+    public DocumentParser(
+            List<BlockParserFactory> blockParserFactories,
+            InlineParserFactory inlineParserFactory,
+            List<InlineContentParserFactory> inlineContentParserFactories,
+            List<DelimiterProcessor> delimiterProcessors,
+            List<LinkProcessor> linkProcessors,
+            Set<Character> linkMarkers,
+            IncludeSourceSpans includeSourceSpans,
+            int maxOpenBlockParsers) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.inlineContentParserFactories = inlineContentParserFactories;
@@ -104,8 +102,11 @@ public class DocumentParser implements ParserState {
         return CORE_FACTORY_TYPES;
     }
 
-    public static List<BlockParserFactory> calculateBlockParserFactories(List<BlockParserFactory> customBlockParserFactories, Set<Class<? extends Block>> enabledBlockTypes) {
-        // By having the custom factories come first, extensions are able to change behavior of core syntax.
+    public static List<BlockParserFactory> calculateBlockParserFactories(
+            List<BlockParserFactory> customBlockParserFactories,
+            Set<Class<? extends Block>> enabledBlockTypes) {
+        // By having the custom factories come first, extensions are able to change behavior of core
+        // syntax.
         List<BlockParserFactory> list = new ArrayList<>(customBlockParserFactories);
         for (Class<? extends Block> blockType : enabledBlockTypes) {
             list.add(NODES_TO_CORE_FACTORIES.get(blockType));
@@ -116,21 +117,25 @@ public class DocumentParser implements ParserState {
     public static void checkEnabledBlockTypes(Set<Class<? extends Block>> enabledBlockTypes) {
         for (Class<? extends Block> enabledBlockType : enabledBlockTypes) {
             if (!NODES_TO_CORE_FACTORIES.containsKey(enabledBlockType)) {
-                throw new IllegalArgumentException("Can't enable block type " + enabledBlockType + ", possible options are: " + NODES_TO_CORE_FACTORIES.keySet());
+                throw new IllegalArgumentException(
+                        "Can't enable block type "
+                                + enabledBlockType
+                                + ", possible options are: "
+                                + NODES_TO_CORE_FACTORIES.keySet());
             }
         }
     }
 
-    /**
-     * The main parsing function. Returns a parsed document AST.
-     */
+    /** The main parsing function. Returns a parsed document AST. */
     public Document parse(String input) {
         int lineStart = 0;
         int lineBreak;
         while ((lineBreak = Characters.findLineBreak(input, lineStart)) != -1) {
             String line = input.substring(lineStart, lineBreak);
             parseLine(line, lineStart);
-            if (lineBreak + 1 < input.length() && input.charAt(lineBreak) == '\r' && input.charAt(lineBreak + 1) == '\n') {
+            if (lineBreak + 1 < input.length()
+                    && input.charAt(lineBreak) == '\r'
+                    && input.charAt(lineBreak + 1) == '\n') {
                 lineStart = lineBreak + 2;
             } else {
                 lineStart = lineBreak + 1;
@@ -196,14 +201,15 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Analyze a line of text and update the document appropriately. We parse markdown text by calling this on each
-     * line of input, then finalizing the document.
+     * Analyze a line of text and update the document appropriately. We parse markdown text by
+     * calling this on each line of input, then finalizing the document.
      */
     private void parseLine(String ln, int inputIndex) {
         setLine(ln, inputIndex);
 
         // For each containing block, try to parse the associated line start.
-        // The document will always match, so we can skip the first block parser and start at 1 matches
+        // The document will always match, so we can skip the first block parser and start at 1
+        // matches
         int matches = 1;
         for (int i = 1; i < openBlockParsers.size(); i++) {
             OpenBlockParser openBlockParser = openBlockParsers.get(i);
@@ -239,13 +245,16 @@ public class DocumentParser implements ParserState {
 
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
-        boolean tryBlockStarts = blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
+        boolean tryBlockStarts =
+                blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
         while (tryBlockStarts) {
             lastIndex = index;
             findNextNonSpace();
 
             // this is a little performance optimization:
-            if (isBlank() || (indent < Parsing.CODE_BLOCK_INDENT && Characters.isLetter(this.line.getContent(), nextNonSpace))) {
+            if (isBlank()
+                    || (indent < Parsing.CODE_BLOCK_INDENT
+                            && Characters.isLetter(this.line.getContent(), nextNonSpace))) {
                 setNewIndex(nextNonSpace);
                 break;
             }
@@ -259,7 +268,8 @@ public class DocumentParser implements ParserState {
             startedNewBlock = true;
             int sourceIndex = getIndex();
 
-            // We're starting a new block. If we have any previous blocks that need to be closed, we need to do it now.
+            // We're starting a new block. If we have any previous blocks that need to be closed, we
+            // need to do it now.
             if (unmatchedBlocks > 0) {
                 closeBlockParsers(unmatchedBlocks);
                 unmatchedBlocks = 0;
@@ -272,11 +282,15 @@ public class DocumentParser implements ParserState {
             }
 
             List<SourceSpan> replacedSourceSpans = null;
-            if (blockStart.getReplaceParagraphLines() >= 1 || blockStart.isReplaceActiveBlockParser()) {
+            if (blockStart.getReplaceParagraphLines() >= 1
+                    || blockStart.isReplaceActiveBlockParser()) {
                 var activeBlockParser = getActiveBlockParser();
                 if (activeBlockParser instanceof ParagraphParser) {
                     var paragraphParser = (ParagraphParser) activeBlockParser;
-                    var lines = blockStart.isReplaceActiveBlockParser() ? Integer.MAX_VALUE : blockStart.getReplaceParagraphLines();
+                    var lines =
+                            blockStart.isReplaceActiveBlockParser()
+                                    ? Integer.MAX_VALUE
+                                    : blockStart.getReplaceParagraphLines();
                     replacedSourceSpans = replaceParagraphLines(lines, paragraphParser);
                 } else if (blockStart.isReplaceActiveBlockParser()) {
                     replacedSourceSpans = prepareActiveBlockParserForReplacement(activeBlockParser);
@@ -297,8 +311,9 @@ public class DocumentParser implements ParserState {
         // appropriate block.
 
         // First check for a lazy continuation line
-        if (!startedNewBlock && !isBlank() &&
-                getActiveBlockParser().canHaveLazyContinuationLines()) {
+        if (!startedNewBlock
+                && !isBlank()
+                && getActiveBlockParser().canHaveLazyContinuationLines()) {
             openBlockParsers.get(openBlockParsers.size() - 1).sourceIndex = lastIndex;
             // lazy paragraph continuation
             addLine();
@@ -324,7 +339,8 @@ public class DocumentParser implements ParserState {
                 // list item
                 // ```
                 //
-                // The first line does not start a paragraph yet, but we still want to record source positions.
+                // The first line does not start a paragraph yet, but we still want to record source
+                // positions.
                 addSourceSpans();
             }
         }
@@ -416,13 +432,14 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Add line content to the active block parser. We assume it can accept lines -- that check should be done before
-     * calling this.
+     * Add line content to the active block parser. We assume it can accept lines -- that check
+     * should be done before calling this.
      */
     private void addLine() {
         CharSequence content;
         if (columnIsInTab) {
-            // Our column is in a partially consumed tab. Expand the remaining columns (to the next tab stop) to spaces.
+            // Our column is in a partially consumed tab. Expand the remaining columns (to the next
+            // tab stop) to spaces.
             int afterTab = index + 1;
             CharSequence rest = line.getContent().subSequence(afterTab, line.getContent().length());
             int spaces = Parsing.columnsToNextTabStop(column);
@@ -438,8 +455,10 @@ public class DocumentParser implements ParserState {
             content = line.getContent().subSequence(index, line.getContent().length());
         }
         SourceSpan sourceSpan = null;
-        if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES && index < line.getSourceSpan().getLength()) {
-            // Note that if we're in a partially-consumed tab the length of the source span and the content don't match.
+        if (includeSourceSpans == IncludeSourceSpans.BLOCKS_AND_INLINES
+                && index < line.getSourceSpan().getLength()) {
+            // Note that if we're in a partially-consumed tab the length of the source span and the
+            // content don't match.
             sourceSpan = line.getSourceSpan().subSpan(index);
         }
         getActiveBlockParser().addLine(SourceLine.of(content, sourceSpan));
@@ -448,15 +467,17 @@ public class DocumentParser implements ParserState {
 
     private void addSourceSpans() {
         if (includeSourceSpans != IncludeSourceSpans.NONE) {
-            // Don't add source spans for Document itself (it would get the whole source text), so start at 1, not 0
+            // Don't add source spans for Document itself (it would get the whole source text), so
+            // start at 1, not 0
             for (int i = 1; i < openBlockParsers.size(); i++) {
                 var openBlockParser = openBlockParsers.get(i);
-                // In case of a lazy continuation line, the index is less than where the block parser would expect the
-                // contents to start, so let's use whichever is smaller.
+                // In case of a lazy continuation line, the index is less than where the block
+                // parser would expect the contents to start, so let's use whichever is smaller.
                 int blockIndex = Math.min(openBlockParser.sourceIndex, index);
                 int length = line.getContent().length() - blockIndex;
                 if (length != 0) {
-                    openBlockParser.blockParser.addSourceSpan(line.getSourceSpan().subSpan(blockIndex));
+                    openBlockParser.blockParser.addSourceSpan(
+                            line.getSourceSpan().subSpan(blockIndex));
                 }
             }
         }
@@ -477,10 +498,17 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Walk through a block & children recursively, parsing string content into inline content where appropriate.
+     * Walk through a block & children recursively, parsing string content into inline content where
+     * appropriate.
      */
     private void processInlines() {
-        var context = new InlineParserContextImpl(inlineContentParserFactories, delimiterProcessors, linkProcessors, linkMarkers, definitions);
+        var context =
+                new InlineParserContextImpl(
+                        inlineContentParserFactories,
+                        delimiterProcessors,
+                        linkProcessors,
+                        linkMarkers,
+                        definitions);
         var inlineParser = inlineParserFactory.create(context);
 
         for (var blockParser : allBlockParsers) {
@@ -489,8 +517,8 @@ public class DocumentParser implements ParserState {
     }
 
     /**
-     * Add block of type tag as a child of the tip. If the tip can't accept children, close and finalize it and try
-     * its parent, and so on until we find a block that can accept children.
+     * Add block of type tag as a child of the tip. If the tip can't accept children, close and
+     * finalize it and try its parent, and so on until we find a block that can accept children.
      */
     private void addChild(OpenBlockParser openBlockParser) {
         while (!getActiveBlockParser().canContain(openBlockParser.blockParser.getBlock())) {
@@ -522,7 +550,8 @@ public class DocumentParser implements ParserState {
         // Note that we don't want to parse inlines here, as it's getting replaced.
         deactivateBlockParser();
 
-        // Do this so that source positions are calculated, which we will carry over to the replacing block.
+        // Do this so that source positions are calculated, which we will carry over to the
+        // replacing block.
         blockParser.closeBlock();
         blockParser.getBlock().unlink();
         return blockParser.getBlock().getSourceSpans();
@@ -538,16 +567,16 @@ public class DocumentParser implements ParserState {
         for (int i = 0; i < count; i++) {
             BlockParser blockParser = deactivateBlockParser().blockParser;
             finalize(blockParser);
-            // Remember for inline parsing. Note that a lot of blocks don't need inline parsing. We could have a
-            // separate interface (e.g. BlockParserWithInlines) so that we only have to remember those that actually
-            // have inlines to parse.
+            // Remember for inline parsing. Note that a lot of blocks don't need inline parsing. We
+            // could have a separate interface (e.g. BlockParserWithInlines) so that we only have to
+            // remember those that actually have inlines to parse.
             allBlockParsers.add(blockParser);
         }
     }
 
     /**
-     * Finalize a block. Close it and do any necessary postprocessing, e.g. setting the content of blocks and
-     * collecting link reference definitions from paragraphs.
+     * Finalize a block. Close it and do any necessary postprocessing, e.g. setting the content of
+     * blocks and collecting link reference definitions from paragraphs.
      */
     private void finalize(BlockParser blockParser) {
         addDefinitionsFrom(blockParser);
@@ -560,9 +589,7 @@ public class DocumentParser implements ParserState {
         }
     }
 
-    /**
-     * Prepares the input line replacing {@code \0}
-     */
+    /** Prepares the input line replacing {@code \0} */
     private static String prepareLine(String line) {
         if (line.indexOf('\0') == -1) {
             return line;

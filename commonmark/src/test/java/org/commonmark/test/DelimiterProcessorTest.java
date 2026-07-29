@@ -1,5 +1,10 @@
 package org.commonmark.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.Locale;
+import java.util.Set;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
 import org.commonmark.node.Text;
@@ -13,23 +18,20 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
-import java.util.Locale;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 public class DelimiterProcessorTest extends RenderingTestCase {
 
-    private static final Parser PARSER = Parser.builder().customDelimiterProcessor(new AsymmetricDelimiterProcessor()).build();
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().nodeRendererFactory(new UpperCaseNodeRendererFactory()).build();
+    private static final Parser PARSER =
+            Parser.builder().customDelimiterProcessor(new AsymmetricDelimiterProcessor()).build();
+    private static final HtmlRenderer RENDERER =
+            HtmlRenderer.builder().nodeRendererFactory(new UpperCaseNodeRendererFactory()).build();
 
     @Test
     public void delimiterProcessorWithInvalidDelimiterUse() {
-        Parser parser = Parser.builder()
-                .customDelimiterProcessor(new CustomDelimiterProcessor(':', 0))
-                .customDelimiterProcessor(new CustomDelimiterProcessor(';', -1))
-                .build();
+        Parser parser =
+                Parser.builder()
+                        .customDelimiterProcessor(new CustomDelimiterProcessor(':', 0))
+                        .customDelimiterProcessor(new CustomDelimiterProcessor(';', -1))
+                        .build();
         assertThat(RENDERER.render(parser.parse(":test:"))).isEqualTo("<p>:test:</p>\n");
         assertThat(RENDERER.render(parser.parse(";test;"))).isEqualTo("<p>;test;</p>\n");
     }
@@ -51,21 +53,26 @@ public class DelimiterProcessorTest extends RenderingTestCase {
 
     @Test
     public void multipleDelimitersWithDifferentLengths() {
-        Parser parser = Parser.builder()
-                .customDelimiterProcessor(new OneDelimiterProcessor())
-                .customDelimiterProcessor(new TwoDelimiterProcessor())
-                .build();
-        assertThat(RENDERER.render(parser.parse("+one+ ++two++"))).isEqualTo("<p>(1)one(/1) (2)two(/2)</p>\n");
-        assertThat(RENDERER.render(parser.parse("+++both+++"))).isEqualTo("<p>(1)(2)both(/2)(/1)</p>\n");
+        Parser parser =
+                Parser.builder()
+                        .customDelimiterProcessor(new OneDelimiterProcessor())
+                        .customDelimiterProcessor(new TwoDelimiterProcessor())
+                        .build();
+        assertThat(RENDERER.render(parser.parse("+one+ ++two++")))
+                .isEqualTo("<p>(1)one(/1) (2)two(/2)</p>\n");
+        assertThat(RENDERER.render(parser.parse("+++both+++")))
+                .isEqualTo("<p>(1)(2)both(/2)(/1)</p>\n");
     }
 
     @Test
     public void multipleDelimitersWithSameLengthConflict() {
-        assertThatThrownBy(() ->
-                Parser.builder()
-                        .customDelimiterProcessor(new OneDelimiterProcessor())
-                        .customDelimiterProcessor(new OneDelimiterProcessor())
-                        .build()).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(
+                        () ->
+                                Parser.builder()
+                                        .customDelimiterProcessor(new OneDelimiterProcessor())
+                                        .customDelimiterProcessor(new OneDelimiterProcessor())
+                                        .build())
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Override
@@ -139,8 +146,7 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         }
     }
 
-    private static class UpperCaseNode extends CustomNode {
-    }
+    private static class UpperCaseNode extends CustomNode {}
 
     private static class UpperCaseNodeRendererFactory implements HtmlNodeRendererFactory {
 
@@ -166,7 +172,9 @@ public class DelimiterProcessorTest extends RenderingTestCase {
         @Override
         public void render(Node node) {
             UpperCaseNode upperCaseNode = (UpperCaseNode) node;
-            for (Node child = upperCaseNode.getFirstChild(); child != null; child = child.getNext()) {
+            for (Node child = upperCaseNode.getFirstChild();
+                    child != null;
+                    child = child.getNext()) {
                 if (child instanceof Text) {
                     Text text = (Text) child;
                     text.setLiteral(text.getLiteral().toUpperCase(Locale.ENGLISH));

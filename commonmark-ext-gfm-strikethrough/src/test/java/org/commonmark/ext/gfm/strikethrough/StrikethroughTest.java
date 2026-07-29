@@ -1,5 +1,9 @@
 package org.commonmark.ext.gfm.strikethrough;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
@@ -14,18 +18,14 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class StrikethroughTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Set.of(StrikethroughExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
-    private static final TextContentRenderer CONTENT_RENDERER = TextContentRenderer.builder()
-            .extensions(EXTENSIONS).build();
+    private static final HtmlRenderer HTML_RENDERER =
+            HtmlRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer CONTENT_RENDERER =
+            TextContentRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void oneTildeIsEnough() {
@@ -70,13 +70,15 @@ public class StrikethroughTest extends RenderingTestCase {
 
     @Test
     public void strikethroughWholeParagraphWithOtherDelimiters() {
-        assertRendering("~~Paragraph with *emphasis* and __strong emphasis__~~",
+        assertRendering(
+                "~~Paragraph with *emphasis* and __strong emphasis__~~",
                 "<p><del>Paragraph with <em>emphasis</em> and <strong>strong emphasis</strong></del></p>\n");
     }
 
     @Test
     public void insideBlockQuote() {
-        assertRendering("> strike ~~that~~",
+        assertRendering(
+                "> strike ~~that~~",
                 "<blockquote>\n<p>strike <del>that</del></p>\n</blockquote>\n");
     }
 
@@ -96,12 +98,15 @@ public class StrikethroughTest extends RenderingTestCase {
 
     @Test
     public void requireTwoTildesOption() {
-        Parser parser = Parser.builder()
-                .extensions(Set.of(StrikethroughExtension.builder()
-                        .requireTwoTildes(true)
-                        .build()))
-                .customDelimiterProcessor(new SubscriptDelimiterProcessor())
-                .build();
+        Parser parser =
+                Parser.builder()
+                        .extensions(
+                                Set.of(
+                                        StrikethroughExtension.builder()
+                                                .requireTwoTildes(true)
+                                                .build()))
+                        .customDelimiterProcessor(new SubscriptDelimiterProcessor())
+                        .build();
 
         Node document = parser.parse("~foo~ ~~bar~~");
         assertThat(CONTENT_RENDERER.render(document)).isEqualTo("(sub)foo(/sub) /bar/");
@@ -109,10 +114,11 @@ public class StrikethroughTest extends RenderingTestCase {
 
     @Test
     public void sourceSpans() {
-        Parser parser = Parser.builder()
-                .extensions(EXTENSIONS)
-                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
-                .build();
+        Parser parser =
+                Parser.builder()
+                        .extensions(EXTENSIONS)
+                        .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                        .build();
 
         Node document = parser.parse("hey ~~there~~\n");
         Paragraph block = (Paragraph) document.getFirstChild();

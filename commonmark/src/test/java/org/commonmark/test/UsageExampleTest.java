@@ -1,5 +1,13 @@
 package org.commonmark.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Set;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
@@ -8,15 +16,6 @@ import org.commonmark.renderer.html.*;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class UsageExampleTest {
 
@@ -44,7 +43,8 @@ public class UsageExampleTest {
     @Disabled
     public void parseReaderRender() throws IOException {
         Parser parser = Parser.builder().build();
-        try (InputStreamReader reader = new InputStreamReader(new FileInputStream("file.md"), StandardCharsets.UTF_8)) {
+        try (InputStreamReader reader =
+                new InputStreamReader(new FileInputStream("file.md"), StandardCharsets.UTF_8)) {
             Node document = parser.parseReader(reader);
             // ...
         }
@@ -61,7 +61,8 @@ public class UsageExampleTest {
 
     @Test
     public void sourcePositions() {
-        var parser = Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
+        var parser =
+                Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
 
         var source = "foo\n\nbar *baz*";
         var doc = parser.parse(source);
@@ -71,26 +72,30 @@ public class UsageExampleTest {
         assertThat(s.getColumnIndex()).isEqualTo(4);
         assertThat(s.getInputIndex()).isEqualTo(9);
         assertThat(s.getLength()).isEqualTo(5);
-        assertThat(source.substring(s.getInputIndex(), s.getInputIndex() + s.getLength())).isEqualTo("*baz*");
+        assertThat(source.substring(s.getInputIndex(), s.getInputIndex() + s.getLength()))
+                .isEqualTo("*baz*");
     }
 
     @Test
     public void addAttributes() {
         Parser parser = Parser.builder().build();
-        HtmlRenderer renderer = HtmlRenderer.builder()
-                .attributeProviderFactory(context -> new ImageAttributeProvider())
-                .build();
+        HtmlRenderer renderer =
+                HtmlRenderer.builder()
+                        .attributeProviderFactory(context -> new ImageAttributeProvider())
+                        .build();
 
         Node document = parser.parse("![text](/url.png)");
-        assertThat(renderer.render(document)).isEqualTo("<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n");
+        assertThat(renderer.render(document))
+                .isEqualTo("<p><img src=\"/url.png\" alt=\"text\" class=\"border\" /></p>\n");
     }
 
     @Test
     public void customizeRendering() {
         Parser parser = Parser.builder().build();
-        HtmlRenderer renderer = HtmlRenderer.builder()
-                .nodeRendererFactory(IndentedCodeBlockNodeRenderer::new)
-                .build();
+        HtmlRenderer renderer =
+                HtmlRenderer.builder()
+                        .nodeRendererFactory(IndentedCodeBlockNodeRenderer::new)
+                        .build();
 
         Node document = parser.parse("Example:\n\n    code");
         assertThat(renderer.render(document)).isEqualTo("<p>Example:</p>\n<pre>code\n</pre>\n");
@@ -104,10 +109,12 @@ public class UsageExampleTest {
         public void visit(Text text) {
             // This is called for all Text nodes. Override other visit methods for other node types.
 
-            // Count words (this is just an example, don't actually do it this way for various reasons).
+            // Count words (this is just an example, don't actually do it this way for various
+            // reasons).
             wordCount += text.getLiteral().split("\\W+").length;
 
-            // Descend into children (could be omitted in this case because Text nodes don't have children).
+            // Descend into children (could be omitted in this case because Text nodes don't have
+            // children).
             visitChildren(text);
         }
     }

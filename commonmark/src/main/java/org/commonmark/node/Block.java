@@ -1,8 +1,6 @@
 package org.commonmark.node;
 
-/**
- * Block nodes such as paragraphs, list blocks, code blocks etc.
- */
+/** Block nodes such as paragraphs, list blocks, code blocks etc. */
 public abstract class Block extends Node {
 
     @Override
@@ -13,7 +11,8 @@ public abstract class Block extends Node {
     @Override
     protected void setParent(Node parent) {
         if (!(parent instanceof Block)) {
-            throw new IllegalArgumentException("Parent of block must also be block (can not be inline)");
+            throw new IllegalArgumentException(
+                    "Parent of block must also be block (can not be inline)");
         }
         super.setParent(parent);
     }

@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.alerts;
 
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.text.LineBreakRendering;
@@ -7,33 +8,45 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.Asserts;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
 public class AlertsTextContentRendererTest {
 
     private static final Set<Extension> EXTENSIONS = Set.of(AlertsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
 
-    private static final TextContentRenderer COMPACT_RENDERER = TextContentRenderer.builder()
-            .extensions(EXTENSIONS).build();
-    private static final TextContentRenderer SEPARATE_RENDERER = TextContentRenderer.builder()
-            .extensions(EXTENSIONS).lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
-    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder()
-            .extensions(EXTENSIONS).lineBreakRendering(LineBreakRendering.STRIP).build();
+    private static final TextContentRenderer COMPACT_RENDERER =
+            TextContentRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer SEPARATE_RENDERER =
+            TextContentRenderer.builder()
+                    .extensions(EXTENSIONS)
+                    .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS)
+                    .build();
+    private static final TextContentRenderer STRIPPED_RENDERER =
+            TextContentRenderer.builder()
+                    .extensions(EXTENSIONS)
+                    .lineBreakRendering(LineBreakRendering.STRIP)
+                    .build();
 
-    private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES = Set.of(
-            AlertsExtension.builder().allowCustomTitles(true).allowNestedAlerts(true).build());
-    private static final Parser PARSER_CUSTOM_TITLES = Parser.builder()
-            .extensions(EXTENSIONS_CUSTOM_TITLES).build();
+    private static final Set<Extension> EXTENSIONS_CUSTOM_TITLES =
+            Set.of(
+                    AlertsExtension.builder()
+                            .allowCustomTitles(true)
+                            .allowNestedAlerts(true)
+                            .build());
+    private static final Parser PARSER_CUSTOM_TITLES =
+            Parser.builder().extensions(EXTENSIONS_CUSTOM_TITLES).build();
 
-    private static final TextContentRenderer COMPACT_RENDERER_CUSTOM = TextContentRenderer.builder()
-            .extensions(EXTENSIONS_CUSTOM_TITLES).build();
-    private static final TextContentRenderer SEPARATE_RENDERER_CUSTOM = TextContentRenderer.builder()
-            .extensions(EXTENSIONS_CUSTOM_TITLES)
-            .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
-    private static final TextContentRenderer STRIPPED_RENDERER_CUSTOM = TextContentRenderer.builder()
-            .extensions(EXTENSIONS_CUSTOM_TITLES)
-            .lineBreakRendering(LineBreakRendering.STRIP).build();
+    private static final TextContentRenderer COMPACT_RENDERER_CUSTOM =
+            TextContentRenderer.builder().extensions(EXTENSIONS_CUSTOM_TITLES).build();
+    private static final TextContentRenderer SEPARATE_RENDERER_CUSTOM =
+            TextContentRenderer.builder()
+                    .extensions(EXTENSIONS_CUSTOM_TITLES)
+                    .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS)
+                    .build();
+    private static final TextContentRenderer STRIPPED_RENDERER_CUSTOM =
+            TextContentRenderer.builder()
+                    .extensions(EXTENSIONS_CUSTOM_TITLES)
+                    .lineBreakRendering(LineBreakRendering.STRIP)
+                    .build();
 
     @Test
     public void alertNoBody() {
@@ -123,7 +136,8 @@ public class AlertsTextContentRendererTest {
     public void alertWithinAlert() {
         var source = "> [!NOTE] Custom title\n> Body text\n> > [!WARNING]\n> > Nested body text";
         assertCompactCustomTitles(source, "Custom title\nBody text\nWarning\nNested body text");
-        assertSeparateCustomTitles(source, "Custom title\n\nBody text\n\nWarning\n\nNested body text");
+        assertSeparateCustomTitles(
+                source, "Custom title\n\nBody text\n\nWarning\n\nNested body text");
         assertStrippedCustomTitles(source, "Custom title: Body text Warning: Nested body text");
     }
 

@@ -1,38 +1,36 @@
 package org.commonmark.test;
 
-import org.commonmark.node.*;
-import org.commonmark.parser.Parser;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.commonmark.node.*;
+import org.commonmark.parser.Parser;
+import org.junit.jupiter.api.Test;
 
 public class DelimitedTest {
 
     @Test
     public void emphasisDelimiters() {
-        String input = "* *emphasis* \n"
-                + "* **strong** \n"
-                + "* _important_ \n"
-                + "* __CRITICAL__ \n";
+        String input =
+                "* *emphasis* \n" + "* **strong** \n" + "* _important_ \n" + "* __CRITICAL__ \n";
 
         Parser parser = Parser.builder().build();
         Node document = parser.parse(input);
 
         final List<Delimited> list = new ArrayList<>();
-        Visitor visitor = new AbstractVisitor() {
-            @Override
-            public void visit(Emphasis node) {
-                list.add(node);
-            }
+        Visitor visitor =
+                new AbstractVisitor() {
+                    @Override
+                    public void visit(Emphasis node) {
+                        list.add(node);
+                    }
 
-            @Override
-            public void visit(StrongEmphasis node) {
-                list.add(node);
-            }
-        };
+                    @Override
+                    public void visit(StrongEmphasis node) {
+                        list.add(node);
+                    }
+                };
         document.accept(visitor);
 
         assertThat(list).hasSize(4);

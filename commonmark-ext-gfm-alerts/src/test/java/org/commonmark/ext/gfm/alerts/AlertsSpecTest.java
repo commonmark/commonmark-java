@@ -1,5 +1,8 @@
 package org.commonmark.ext.gfm.alerts;
 
+import java.net.URL;
+import java.util.List;
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -11,16 +14,12 @@ import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Set;
-
 /**
- * Tests the default configuration of {@link AlertsExtension} against how
- * GitHub Flavored Markdown (GFM) parses and renders {@link Alert}s.
- * <p>
- * This test should only be used for the default configuration of
- * {@link AlertsExtension}. Other configurations cause deviation from GFM.
+ * Tests the default configuration of {@link AlertsExtension} against how GitHub Flavored Markdown
+ * (GFM) parses and renders {@link Alert}s.
+ *
+ * <p>This test should only be used for the default configuration of {@link AlertsExtension}. Other
+ * configurations cause deviation from GFM.
  */
 @ParameterizedClass
 @MethodSource("data")
@@ -28,11 +27,12 @@ public class AlertsSpecTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Set.of(AlertsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    // Use softbreak("<br>") to match GitHub's rendering for easier comparison with GitHub API output.
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).softbreak("<br>\n").build();
+    // Use softbreak("<br>") to match GitHub's rendering for easier comparison with GitHub API
+    // output.
+    private static final HtmlRenderer RENDERER =
+            HtmlRenderer.builder().extensions(EXTENSIONS).softbreak("<br>\n").build();
 
-    @Parameter
-    Example example;
+    @Parameter Example example;
 
     static List<Example> data() {
         URL spec = AlertsSpecTest.class.getResource("/alerts-spec.txt");

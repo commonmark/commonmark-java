@@ -1,5 +1,7 @@
 package org.commonmark.internal;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.commonmark.internal.util.Parsing;
 import org.commonmark.node.Block;
 import org.commonmark.node.IndentedCodeBlock;
@@ -7,9 +9,6 @@ import org.commonmark.node.Paragraph;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 import org.commonmark.text.Characters;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class IndentedCodeBlockParser extends AbstractBlockParser {
 
@@ -62,12 +61,14 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             // An indented code block cannot interrupt a paragraph.
-            if (state.getIndent() >= Parsing.CODE_BLOCK_INDENT && !state.isBlank() && !(state.getActiveBlockParser().getBlock() instanceof Paragraph)) {
-                return BlockStart.of(new IndentedCodeBlockParser()).atColumn(state.getColumn() + Parsing.CODE_BLOCK_INDENT);
+            if (state.getIndent() >= Parsing.CODE_BLOCK_INDENT
+                    && !state.isBlank()
+                    && !(state.getActiveBlockParser().getBlock() instanceof Paragraph)) {
+                return BlockStart.of(new IndentedCodeBlockParser())
+                        .atColumn(state.getColumn() + Parsing.CODE_BLOCK_INDENT);
             } else {
                 return BlockStart.none();
             }
         }
     }
 }
-

@@ -1,16 +1,13 @@
 package org.commonmark.renderer.text;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.commonmark.Extension;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.Renderer;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Renders nodes to plain text content with minimal markup-like additions.
- */
+/** Renders nodes to plain text content with minimal markup-like additions. */
 public class TextContentRenderer implements Renderer {
 
     private final LineBreakRendering lineBreakRendering;
@@ -37,7 +34,8 @@ public class TextContentRenderer implements Renderer {
 
     @Override
     public void render(Node node, Appendable output) {
-        RendererContext context = new RendererContext(new TextContentWriter(output, lineBreakRendering));
+        RendererContext context =
+                new RendererContext(new TextContentWriter(output, lineBreakRendering));
         context.render(node);
     }
 
@@ -64,8 +62,8 @@ public class TextContentRenderer implements Renderer {
         }
 
         /**
-         * Configure how line breaks (newlines) are rendered, see {@link LineBreakRendering}.
-         * The default is {@link LineBreakRendering#COMPACT}.
+         * Configure how line breaks (newlines) are rendered, see {@link LineBreakRendering}. The
+         * default is {@link LineBreakRendering#COMPACT}.
          *
          * @param lineBreakRendering the mode to use
          * @return {@code this}
@@ -78,23 +76,26 @@ public class TextContentRenderer implements Renderer {
         /**
          * Set the value of flag for stripping new lines.
          *
-         * @param stripNewlines true for stripping new lines and render text as "single line",
-         *                      false for keeping all line breaks
+         * @param stripNewlines true for stripping new lines and render text as "single line", false
+         *     for keeping all line breaks
          * @return {@code this}
-         * @deprecated Use {@link #lineBreakRendering(LineBreakRendering)} with {@link LineBreakRendering#STRIP} instead
+         * @deprecated Use {@link #lineBreakRendering(LineBreakRendering)} with {@link
+         *     LineBreakRendering#STRIP} instead
          */
         @Deprecated
         public Builder stripNewlines(boolean stripNewlines) {
-            this.lineBreakRendering = stripNewlines ? LineBreakRendering.STRIP : LineBreakRendering.COMPACT;
+            this.lineBreakRendering =
+                    stripNewlines ? LineBreakRendering.STRIP : LineBreakRendering.COMPACT;
             return this;
         }
 
         /**
-         * Add a factory for instantiating a node renderer (done when rendering). This allows to override the rendering
-         * of node types or define rendering for custom node types.
-         * <p>
-         * If multiple node renderers for the same node type are created, the one from the factory that was added first
-         * "wins". (This is how the rendering for core node types can be overridden; the default rendering comes last.)
+         * Add a factory for instantiating a node renderer (done when rendering). This allows to
+         * override the rendering of node types or define rendering for custom node types.
+         *
+         * <p>If multiple node renderers for the same node type are created, the one from the
+         * factory that was added first "wins". (This is how the rendering for core node types can
+         * be overridden; the default rendering comes last.)
          *
          * @param nodeRendererFactory the factory for creating a node renderer
          * @return {@code this}
@@ -120,9 +121,7 @@ public class TextContentRenderer implements Renderer {
         }
     }
 
-    /**
-     * Extension for {@link TextContentRenderer}.
-     */
+    /** Extension for {@link TextContentRenderer}. */
     public interface TextContentRendererExtension extends Extension {
         void extend(TextContentRenderer.Builder rendererBuilder);
     }

@@ -1,15 +1,12 @@
 package org.commonmark.test;
 
+import java.util.*;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
 
-import java.util.*;
-
 public class SourceSpanRenderer {
 
-    /**
-     * Render source spans in the document using source position's line and column index.
-     */
+    /** Render source spans in the document using source position's line and column index. */
     public static String renderWithLineColumn(Node document, String source) {
         SourceSpanMarkersVisitor visitor = new SourceSpanMarkersVisitor();
         document.accept(visitor);
@@ -33,9 +30,7 @@ public class SourceSpanRenderer {
         return sb.toString();
     }
 
-    /**
-     * Render source spans in the document using source position's input index.
-     */
+    /** Render source spans in the document using source position's input index. */
     public static String renderWithInputIndex(Node document, String source) {
         SourceSpanMarkersVisitor visitor = new SourceSpanMarkersVisitor();
         document.accept(visitor);
@@ -49,7 +44,8 @@ public class SourceSpanRenderer {
         return sb.toString();
     }
 
-    private static void appendMarkers(Map<Integer, List<String>> lineMarkers, int columnIndex, StringBuilder sb) {
+    private static void appendMarkers(
+            Map<Integer, List<String>> lineMarkers, int columnIndex, StringBuilder sb) {
         if (lineMarkers != null) {
             List<String> columnMarkers = lineMarkers.get(columnIndex);
             if (columnMarkers != null) {
@@ -93,7 +89,9 @@ public class SourceSpanRenderer {
                     getMarkers(line, col + length).add(0, closer);
 
                     inputIndexMarkers.computeIfAbsent(input, k -> new LinkedList<>()).add(opener);
-                    inputIndexMarkers.computeIfAbsent(input + length, k -> new LinkedList<>()).add(0, closer);
+                    inputIndexMarkers
+                            .computeIfAbsent(input + length, k -> new LinkedList<>())
+                            .add(0, closer);
                 }
                 markerIndex++;
             }

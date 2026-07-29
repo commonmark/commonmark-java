@@ -1,19 +1,19 @@
 package org.commonmark.ext.gfm.tables;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class TableMarkdownRendererTest {
 
     private static final Set<Extension> EXTENSIONS = Set.of(TablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
+    private static final MarkdownRenderer RENDERER =
+            MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void testHeadNoBody() {
@@ -60,7 +60,8 @@ public class TableMarkdownRendererTest {
 
     @Test
     public void testEscaped() {
-        // `|` in Text nodes needs to be escaped, otherwise the generated Markdown does not get parsed back as a table
+        // `|` in Text nodes needs to be escaped, otherwise the generated Markdown does not get
+        // parsed back as a table
         assertRoundTrip("\\|Abc\\|\n\\|---\\|\n");
     }
 

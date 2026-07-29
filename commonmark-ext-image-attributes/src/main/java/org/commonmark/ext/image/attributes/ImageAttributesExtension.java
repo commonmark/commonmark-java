@@ -8,18 +8,17 @@ import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
  * Extension for adding attributes to image nodes.
- * <p>
- * Create it with {@link #create()} and then configure it on the builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * </p>
+ *
+ * <p>Create it with {@link #create()} and then configure it on the builders ({@link
+ * org.commonmark.parser.Parser.Builder#extensions(Iterable)}, {@link
+ * HtmlRenderer.Builder#extensions(Iterable)}).
  *
  * @since 0.15.0
  */
-public class ImageAttributesExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
+public class ImageAttributesExtension
+        implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
 
-    private ImageAttributesExtension() {
-    }
+    private ImageAttributesExtension() {}
 
     public static Extension create() {
         return new ImageAttributesExtension();
@@ -32,6 +31,7 @@ public class ImageAttributesExtension implements Parser.ParserExtension, HtmlRen
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.attributeProviderFactory(context -> ImageAttributesAttributeProvider.create());
+        rendererBuilder.attributeProviderFactory(
+                context -> ImageAttributesAttributeProvider.create());
     }
 }

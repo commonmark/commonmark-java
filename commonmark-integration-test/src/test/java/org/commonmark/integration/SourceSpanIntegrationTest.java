@@ -3,15 +3,14 @@ package org.commonmark.integration;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 
-/**
- * Spec and all extensions, with source spans enabled.
- */
+/** Spec and all extensions, with source spans enabled. */
 public class SourceSpanIntegrationTest extends SpecIntegrationTest {
 
-    protected static final Parser PARSER = Parser.builder()
-            .extensions(Extensions.ALL_EXTENSIONS)
-            .includeSourceSpans(IncludeSourceSpans.BLOCKS)
-            .build();
+    protected static final Parser PARSER =
+            Parser.builder()
+                    .extensions(Extensions.ALL_EXTENSIONS)
+                    .includeSourceSpans(IncludeSourceSpans.BLOCKS)
+                    .build();
 
     @Override
     protected String render(String source) {

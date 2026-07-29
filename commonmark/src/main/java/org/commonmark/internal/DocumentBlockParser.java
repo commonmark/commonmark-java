@@ -29,5 +29,4 @@ public class DocumentBlockParser extends AbstractBlockParser {
     public BlockContinue tryContinue(ParserState state) {
         return BlockContinue.atIndex(state.getIndex());
     }
-
 }

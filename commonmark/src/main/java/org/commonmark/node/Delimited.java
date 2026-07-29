@@ -1,8 +1,6 @@
 package org.commonmark.node;
 
-/**
- * A node that uses delimiters in the source form (e.g. <code>*bold*</code>).
- */
+/** A node that uses delimiters in the source form (e.g. <code>*bold*</code>). */
 public interface Delimited {
 
     /**

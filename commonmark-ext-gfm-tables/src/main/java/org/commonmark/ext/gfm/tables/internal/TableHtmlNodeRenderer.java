@@ -1,11 +1,10 @@
 package org.commonmark.ext.gfm.tables.internal;
 
+import java.util.Map;
 import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
-
-import java.util.Map;
 
 public class TableHtmlNodeRenderer extends TableNodeRenderer {
 
@@ -69,7 +68,8 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
 
     private Map<String, String> getCellAttributes(TableCell tableCell, String tagName) {
         if (tableCell.getAlignment() != null) {
-            return context.extendAttributes(tableCell, tagName, Map.of("align", getAlignValue(tableCell.getAlignment())));
+            return context.extendAttributes(
+                    tableCell, tagName, Map.of("align", getAlignValue(tableCell.getAlignment())));
         } else {
             return context.extendAttributes(tableCell, tagName, Map.of());
         }
