@@ -1,6 +1,9 @@
 package org.commonmark.test;
 
 import java.util.concurrent.TimeUnit;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.testutil.Asserts;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -67,9 +70,12 @@ public class PathologicalTest extends CoreRenderingTestCase {
     public void nestedBlockQuotes() {
         // this is limited by the stack size because visitor is recursive
         x = 1000;
-        assertRendering(
-                "> ".repeat(x) + "a\n",
-                "<blockquote>\n".repeat(x) + "<p>a</p>\n" + "</blockquote>\n".repeat(x));
+        var source = "> ".repeat(x) + "a\n";
+        var expected = "<blockquote>\n".repeat(x) + "<p>a</p>\n" + "</blockquote>\n".repeat(x);
+
+        var parser = Parser.builder().maxOpenBlockParsers(Integer.MAX_VALUE).build();
+        var renderer = HtmlRenderer.builder().build();
+        Asserts.assertRendering(source, expected, renderer.render(parser.parse(source)));
     }
 
     @Test

@@ -148,7 +148,7 @@ public class Parser {
                 DocumentParser.getDefaultBlockParserTypes();
         private InlineParserFactory inlineParserFactory;
         private IncludeSourceSpans includeSourceSpans = IncludeSourceSpans.NONE;
-        private int maxOpenBlockParsers = Integer.MAX_VALUE;
+        private int maxOpenBlockParsers = 100;
 
         /**
          * @return the configured {@link Parser}
@@ -227,10 +227,9 @@ public class Parser {
          * Limit how many block parsers may be open at once while parsing.
          *
          * <p>Once the limit is reached, additional block starts are treated as plain text instead
-         * of creating deeper nested block structure.
+         * of creating deeper nested block structure. The document root parser is not counted.
          *
-         * <p>The document root parser is not counted. The default is unlimited, so callers that
-         * keep using {@code Parser.builder().build()} preserve behavior.
+         * <p>The default is 100; use {@link Integer#MAX_VALUE} for no limit.
          *
          * @param maxOpenBlockParsers maximum number of open non-document block parsers, must be
          *     zero or greater

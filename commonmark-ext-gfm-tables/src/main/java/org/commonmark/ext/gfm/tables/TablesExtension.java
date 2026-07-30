@@ -90,8 +90,9 @@ public class TablesExtension
         /**
          * Set the maximum number of cells that are parsed for a single table; if more cells are
          * present in the source, parsing will throw an exception. This is to guard against
-         * malicious input. The default is {@link #DEFAULT_MAX_CELLS}; use {@code null} for no
-         * limit.
+         * malicious input.
+         *
+         * <p>The default is {@link #DEFAULT_MAX_CELLS}; use {@code null} for no limit.
          */
         public Builder maxCells(Integer maxCells) {
             this.maxCells = maxCells;

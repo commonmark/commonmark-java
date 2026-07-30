@@ -14,8 +14,10 @@ with the exception that 0.x versions can break between minor versions.
   do the YAML parsing using a library (instead of the limited built-in parsing) (#391)
 ### Changed
 - Tables extension: Limit max number of parsed table cells by default (1 million cells),
-  see option `maxCells` in `TablesExtension.Builder`. Parsing will throw an error if the limit would be exceeded, to
-  protect against malicious input.
+  see option `maxCells` in `TablesExtension.Builder`. Parsing will throw an error if the
+  limit would be exceeded, to protect against malicious input.
+- The default for `maxOpenBlockParsers` for `Parser.Builder` is now 100; configure the
+  option to remove the limit.
 ### Fixed
 - Fix quadratic runtime when parsing pathological inline HTML (#447)
 
