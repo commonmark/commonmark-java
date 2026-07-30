@@ -16,7 +16,7 @@ public class YamlSubsetParser implements FrontMatterParser {
 
     private boolean inLiteral;
     private String currentKey;
-    private List<String> currentValues;
+    private List<StringBuilder> currentValues;
 
     public YamlSubsetParser() {
         inLiteral = false;
@@ -29,7 +29,7 @@ public class YamlSubsetParser implements FrontMatterParser {
         Matcher matcher = REGEX_METADATA.matcher(line.getContent());
         if (matcher.matches()) {
             if (currentKey != null) {
-                block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
+                block.appendChild(createNode());
             }
 
             inLiteral = false;
@@ -39,23 +39,23 @@ public class YamlSubsetParser implements FrontMatterParser {
             if ("|".equals(value)) {
                 inLiteral = true;
             } else if (!"".equals(value)) {
-                currentValues.add(parseString(value));
+                currentValues.add(new StringBuilder(parseString(value)));
             }
         } else {
             if (inLiteral) {
                 matcher = REGEX_METADATA_LITERAL.matcher(line.getContent());
                 if (matcher.matches()) {
                     if (currentValues.size() == 1) {
-                        currentValues.set(0, currentValues.get(0) + "\n" + matcher.group(1).trim());
+                        currentValues.get(0).append('\n').append(matcher.group(1).trim());
                     } else {
-                        currentValues.add(matcher.group(1).trim());
+                        currentValues.add(new StringBuilder(matcher.group(1).trim()));
                     }
                 }
             } else {
                 matcher = REGEX_METADATA_LIST.matcher(line.getContent());
                 if (matcher.matches()) {
                     String value = matcher.group(1);
-                    currentValues.add(parseString(value));
+                    currentValues.add(new StringBuilder(parseString(value)));
                 }
             }
         }
@@ -64,9 +64,17 @@ public class YamlSubsetParser implements FrontMatterParser {
     @Override
     public SeparatorRole onEndingSeparator(YamlFrontMatterBlock block, SourceLine separator) {
         if (currentKey != null) {
-            block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
+            block.appendChild(createNode());
         }
         return SeparatorRole.BLOCK_END;
+    }
+
+    private YamlFrontMatterNode createNode() {
+        var values = new ArrayList<String>();
+        for (var value : currentValues) {
+            values.add(value.toString());
+        }
+        return new YamlFrontMatterNode(currentKey, values);
     }
 
     private static String parseString(String s) {

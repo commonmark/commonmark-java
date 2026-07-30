@@ -20,6 +20,7 @@ with the exception that 0.x versions can break between minor versions.
   option to remove the limit.
 ### Fixed
 - Fix quadratic runtime when parsing pathological inline HTML (#447)
+- YAML front matter extension: Fix inefficient string concatenation for literal-block values (`|`)
 
 ## [0.29.0] - 2026-06-20
 ### Added
