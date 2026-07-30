@@ -1,5 +1,6 @@
 package org.commonmark.ext.footnotes.internal;
 
+import java.util.Set;
 import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.ext.footnotes.FootnoteReference;
 import org.commonmark.ext.footnotes.InlineFootnote;
@@ -7,8 +8,6 @@ import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownWriter;
-
-import java.util.Set;
 
 public class FootnoteMarkdownNodeRenderer implements NodeRenderer {
 

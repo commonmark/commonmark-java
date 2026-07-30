@@ -25,5 +25,4 @@ public class BlockContinueImpl extends BlockContinue {
     public boolean isFinalize() {
         return finalize;
     }
-
 }

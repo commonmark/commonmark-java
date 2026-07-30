@@ -6,8 +6,8 @@ import java.util.List;
 
 /**
  * The base class of all CommonMark AST nodes ({@link Block} and inlines).
- * <p>
- * A node can have multiple children, and a parent (except for the root node).
+ *
+ * <p>A node can have multiple children, and a parent (except for the root node).
  */
 public abstract class Node {
 
@@ -85,9 +85,7 @@ public abstract class Node {
         this.prev = null;
     }
 
-    /**
-     * Inserts the {@code sibling} node after {@code this} node.
-     */
+    /** Inserts the {@code sibling} node after {@code this} node. */
     public void insertAfter(Node sibling) {
         sibling.unlink();
         sibling.next = this.next;
@@ -102,9 +100,7 @@ public abstract class Node {
         }
     }
 
-    /**
-     * Inserts the {@code sibling} node before {@code this} node.
-     */
+    /** Inserts the {@code sibling} node before {@code this} node. */
     public void insertBefore(Node sibling) {
         sibling.unlink();
         sibling.prev = this.prev;

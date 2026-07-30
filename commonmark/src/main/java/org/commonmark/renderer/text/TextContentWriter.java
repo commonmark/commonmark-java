@@ -41,8 +41,13 @@ public class TextContentWriter {
     }
 
     public void block() {
-        blockSeparator = lineBreakRendering == LineBreakRendering.STRIP ? " " : //
-                lineBreakRendering == LineBreakRendering.COMPACT || isTight() ? "\n" : "\n\n";
+        blockSeparator =
+                lineBreakRendering == LineBreakRendering.STRIP
+                        ? " "
+                        : //
+                        lineBreakRendering == LineBreakRendering.COMPACT || isTight()
+                                ? "\n"
+                                : "\n\n";
     }
 
     public void resetBlock() {
@@ -64,8 +69,8 @@ public class TextContentWriter {
     }
 
     /**
-     * Push a prefix onto the top of the stack. All prefixes are written at the beginning of each line, until the
-     * prefix is popped again.
+     * Push a prefix onto the top of the stack. All prefixes are written at the beginning of each
+     * line, until the prefix is popped again.
      *
      * @param prefix the raw prefix string
      */
@@ -82,28 +87,24 @@ public class TextContentWriter {
         write(prefix);
     }
 
-    /**
-     * Remove the last prefix from the top of the stack.
-     */
+    /** Remove the last prefix from the top of the stack. */
     public void popPrefix() {
         prefixes.removeLast();
     }
 
     /**
-     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by a blank line. Tight
-     * is where blocks are not separated by a blank line. Tight blocks are used in lists, if there are no blank lines
-     * within the list.
-     * <p>
-     * Note that changing this does not affect block separators that have already been enqueued with {@link #block()},
-     * only future ones.
+     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by
+     * a blank line. Tight is where blocks are not separated by a blank line. Tight blocks are used
+     * in lists, if there are no blank lines within the list.
+     *
+     * <p>Note that changing this does not affect block separators that have already been enqueued
+     * with {@link #block()}, only future ones.
      */
     public void pushTight(boolean tight) {
         this.tight.addLast(tight);
     }
 
-    /**
-     * Remove the last "tight" setting from the top of the stack.
-     */
+    /** Remove the last "tight" setting from the top of the stack. */
     public void popTight() {
         this.tight.removeLast();
     }
@@ -119,7 +120,8 @@ public class TextContentWriter {
     }
 
     /**
-     * If a block separator has been enqueued with {@link #block()} but not yet written, write it now.
+     * If a block separator has been enqueued with {@link #block()} but not yet written, write it
+     * now.
      */
     private void flushBlockSeparator() {
         if (blockSeparator != null) {

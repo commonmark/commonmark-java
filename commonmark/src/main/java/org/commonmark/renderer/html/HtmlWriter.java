@@ -1,10 +1,9 @@
 package org.commonmark.renderer.html;
 
-import org.commonmark.internal.util.Escaping;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import org.commonmark.internal.util.Escaping;
 
 public class HtmlWriter {
 

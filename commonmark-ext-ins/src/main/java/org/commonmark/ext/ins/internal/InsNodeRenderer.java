@@ -1,10 +1,9 @@
 package org.commonmark.ext.ins.internal;
 
+import java.util.Set;
 import org.commonmark.ext.ins.Ins;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
-
-import java.util.Set;
 
 abstract class InsNodeRenderer implements NodeRenderer {
 

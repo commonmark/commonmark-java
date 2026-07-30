@@ -2,6 +2,7 @@ package org.commonmark.node;
 
 /**
  * Inline code span, e.g.:
+ *
  * <pre>
  * Some `inline code`
  * </pre>
@@ -12,8 +13,7 @@ public class Code extends Node {
 
     private String literal;
 
-    public Code() {
-    }
+    public Code() {}
 
     public Code(String literal) {
         this.literal = literal;
@@ -25,8 +25,8 @@ public class Code extends Node {
     }
 
     /**
-     * @return the literal text in the code span (note that it's not necessarily the raw text between tildes,
-     * e.g. when spaces are stripped)
+     * @return the literal text in the code span (note that it's not necessarily the raw text
+     *     between tildes, e.g. when spaces are stripped)
      */
     public String getLiteral() {
         return literal;

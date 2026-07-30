@@ -1,10 +1,10 @@
 package org.commonmark.test;
 
-import org.commonmark.node.SourceSpan;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.commonmark.node.SourceSpan;
+import org.junit.jupiter.api.Test;
 
 public class SourceSpanTest {
 
@@ -19,7 +19,8 @@ public class SourceSpanTest {
         assertThat(span.subSpan(2)).isEqualTo(SourceSpan.of(1, 4, 5, 3));
         assertThat(span.subSpan(3)).isEqualTo(SourceSpan.of(1, 5, 6, 2));
         assertThat(span.subSpan(4)).isEqualTo(SourceSpan.of(1, 6, 7, 1));
-        // Not sure if empty spans are useful, but it probably makes sense to mirror how substrings work
+        // Not sure if empty spans are useful, but it probably makes sense to mirror how substrings
+        // work
         assertThat(span.subSpan(5)).isEqualTo(SourceSpan.of(1, 7, 8, 0));
         assertThat("abcde".substring(5)).isEqualTo("");
 
@@ -39,30 +40,35 @@ public class SourceSpanTest {
     @Test
     public void testSubSpanBeginIndexNegative() {
         var sourceSpan = SourceSpan.of(1, 2, 3, 5);
-        assertThatThrownBy(() -> sourceSpan.subSpan(-1)).isInstanceOf(IndexOutOfBoundsException.class);
+        assertThatThrownBy(() -> sourceSpan.subSpan(-1))
+                .isInstanceOf(IndexOutOfBoundsException.class);
     }
 
     @Test
     public void testSubSpanBeginIndexOutOfBounds() {
         var sourceSpan = SourceSpan.of(1, 2, 3, 5);
-        assertThatThrownBy(() -> sourceSpan.subSpan(6)).isInstanceOf(IndexOutOfBoundsException.class);
+        assertThatThrownBy(() -> sourceSpan.subSpan(6))
+                .isInstanceOf(IndexOutOfBoundsException.class);
     }
 
     @Test
     public void testSubSpanEndIndexNegative() {
         var sourceSpan = SourceSpan.of(1, 2, 3, 5);
-        assertThatThrownBy(() -> sourceSpan.subSpan(0, -1)).isInstanceOf(IndexOutOfBoundsException.class);
+        assertThatThrownBy(() -> sourceSpan.subSpan(0, -1))
+                .isInstanceOf(IndexOutOfBoundsException.class);
     }
 
     @Test
     public void testSubSpanEndIndexOutOfBounds() {
         var sourceSpan = SourceSpan.of(1, 2, 3, 5);
-        assertThatThrownBy(() -> sourceSpan.subSpan(0, 6)).isInstanceOf(IndexOutOfBoundsException.class);
+        assertThatThrownBy(() -> sourceSpan.subSpan(0, 6))
+                .isInstanceOf(IndexOutOfBoundsException.class);
     }
 
     @Test
     public void testSubSpanBeginIndexGreaterThanEndIndex() {
         var sourceSpan = SourceSpan.of(1, 2, 3, 5);
-        assertThatThrownBy(() -> sourceSpan.subSpan(2, 1)).isInstanceOf(IndexOutOfBoundsException.class);
+        assertThatThrownBy(() -> sourceSpan.subSpan(2, 1))
+                .isInstanceOf(IndexOutOfBoundsException.class);
     }
 }

@@ -14,19 +14,19 @@ import org.commonmark.renderer.markdown.MarkdownRenderer;
 
 /**
  * Extension for adding task list items.
- * <p>
- * Create it with {@link #create()} and then configure it on the builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * </p>
+ *
+ * <p>Create it with {@link #create()} and then configure it on the builders ({@link
+ * org.commonmark.parser.Parser.Builder#extensions(Iterable)}, {@link
+ * HtmlRenderer.Builder#extensions(Iterable)}).
  *
  * @since 0.15.0
  */
-public class TaskListItemsExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
-        MarkdownRenderer.MarkdownRendererExtension {
+public class TaskListItemsExtension
+        implements Parser.ParserExtension,
+                HtmlRenderer.HtmlRendererExtension,
+                MarkdownRenderer.MarkdownRendererExtension {
 
-    private TaskListItemsExtension() {
-    }
+    private TaskListItemsExtension() {}
 
     public static Extension create() {
         return new TaskListItemsExtension();
@@ -44,16 +44,17 @@ public class TaskListItemsExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(MarkdownRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(MarkdownNodeRendererContext context) {
-                return new TaskListItemMarkdownNodeRenderer(context);
-            }
+        rendererBuilder.nodeRendererFactory(
+                new MarkdownNodeRendererFactory() {
+                    @Override
+                    public NodeRenderer create(MarkdownNodeRendererContext context) {
+                        return new TaskListItemMarkdownNodeRenderer(context);
+                    }
 
-            @Override
-            public Set<Character> getSpecialCharacters() {
-                return Set.of();
-            }
-        });
+                    @Override
+                    public Set<Character> getSpecialCharacters() {
+                        return Set.of();
+                    }
+                });
     }
 }

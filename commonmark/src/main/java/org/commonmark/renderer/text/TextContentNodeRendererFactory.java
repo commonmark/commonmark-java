@@ -2,9 +2,7 @@ package org.commonmark.renderer.text;
 
 import org.commonmark.renderer.NodeRenderer;
 
-/**
- * Factory for instantiating new node renderers when rendering is done.
- */
+/** Factory for instantiating new node renderers when rendering is done. */
 public interface TextContentNodeRendererFactory {
 
     /**

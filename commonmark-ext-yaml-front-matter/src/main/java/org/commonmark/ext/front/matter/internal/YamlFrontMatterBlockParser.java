@@ -1,18 +1,18 @@
 package org.commonmark.ext.front.matter.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
 import org.commonmark.ext.front.matter.YamlFrontMatterNode;
 import org.commonmark.node.Block;
 import org.commonmark.node.Document;
 import org.commonmark.parser.block.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class YamlFrontMatterBlockParser extends AbstractBlockParser {
-    private static final Pattern REGEX_METADATA = Pattern.compile("^[ ]{0,3}([A-Za-z0-9._-]+):\\s*(.*)");
+    private static final Pattern REGEX_METADATA =
+            Pattern.compile("^[ ]{0,3}([A-Za-z0-9._-]+):\\s*(.*)");
     private static final Pattern REGEX_METADATA_LIST = Pattern.compile("^[ ]+-\\s*(.*)");
     private static final Pattern REGEX_METADATA_LITERAL = Pattern.compile("^\\s*(.*)");
     private static final Pattern REGEX_BEGIN = Pattern.compile("^-{3}(\\s.*)?");
@@ -95,9 +95,7 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
         } else if (s.startsWith("\"") && s.endsWith("\"")) {
             String inner = s.substring(1, s.length() - 1);
             // Only support escaped `\` and `"`, nothing else.
-            return inner
-                    .replace("\\\"", "\"")
-                    .replace("\\\\", "\\");
+            return inner.replace("\\\"", "\"").replace("\\\\", "\\");
         } else {
             return s;
         }
@@ -109,9 +107,11 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
             CharSequence line = state.getLine().getContent();
             BlockParser parentParser = matchedBlockParser.getMatchedBlockParser();
             // check whether this line is the first line of whole document or not
-            if (parentParser.getBlock() instanceof Document && parentParser.getBlock().getFirstChild() == null &&
-                    REGEX_BEGIN.matcher(line).matches()) {
-                return BlockStart.of(new YamlFrontMatterBlockParser()).atIndex(state.getNextNonSpaceIndex());
+            if (parentParser.getBlock() instanceof Document
+                    && parentParser.getBlock().getFirstChild() == null
+                    && REGEX_BEGIN.matcher(line).matches()) {
+                return BlockStart.of(new YamlFrontMatterBlockParser())
+                        .atIndex(state.getNextNonSpaceIndex());
             }
 
             return BlockStart.none();

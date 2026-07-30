@@ -1,10 +1,9 @@
 package org.commonmark.ext.gfm.strikethrough.internal;
 
+import java.util.Set;
 import org.commonmark.ext.gfm.strikethrough.Strikethrough;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
-
-import java.util.Set;
 
 abstract class StrikethroughNodeRenderer implements NodeRenderer {
 

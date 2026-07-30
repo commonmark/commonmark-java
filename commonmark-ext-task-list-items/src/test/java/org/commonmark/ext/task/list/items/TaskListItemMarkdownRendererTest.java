@@ -1,5 +1,7 @@
 package org.commonmark.ext.task.list.items;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.node.BulletList;
@@ -12,13 +14,12 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class TaskListItemMarkdownRendererTest {
 
     private static final Set<Extension> EXTENSIONS = Set.of(TaskListItemsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
+    private static final MarkdownRenderer RENDERER =
+            MarkdownRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void testCheckedRoundTrip() {

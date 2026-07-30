@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
+import java.util.Map;
 import org.commonmark.ext.gfm.alerts.Alert;
 import org.commonmark.ext.gfm.alerts.AlertTitle;
 import org.commonmark.node.Node;
@@ -7,15 +8,14 @@ import org.commonmark.renderer.text.LineBreakRendering;
 import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentWriter;
 
-import java.util.Map;
-
 public class AlertTextContentNodeRenderer extends AlertNodeRenderer {
 
     private final TextContentNodeRendererContext context;
     private final TextContentWriter textContent;
     private final Map<String, String> allowedTypes;
 
-    public AlertTextContentNodeRenderer(TextContentNodeRendererContext context, Map<String, String> allowedTypes) {
+    public AlertTextContentNodeRenderer(
+            TextContentNodeRendererContext context, Map<String, String> allowedTypes) {
         this.context = context;
         this.textContent = context.getWriter();
         this.allowedTypes = allowedTypes;

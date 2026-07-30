@@ -1,12 +1,11 @@
 package org.commonmark.ext.task.list.items.internal;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.commonmark.ext.task.list.items.TaskListItemMarker;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class TaskListItemHtmlNodeRenderer extends TaskListItemNodeRenderer {
 

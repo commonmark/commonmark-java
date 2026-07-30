@@ -1,32 +1,30 @@
 package org.commonmark.parser;
 
-import org.commonmark.node.LinkReferenceDefinition;
-import org.commonmark.parser.beta.LinkProcessor;
-import org.commonmark.parser.beta.InlineContentParserFactory;
-import org.commonmark.parser.delimiter.DelimiterProcessor;
-
 import java.util.List;
 import java.util.Set;
+import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.parser.beta.InlineContentParserFactory;
+import org.commonmark.parser.beta.LinkProcessor;
+import org.commonmark.parser.delimiter.DelimiterProcessor;
 
-/**
- * Context for inline parsing.
- */
+/** Context for inline parsing. */
 public interface InlineParserContext {
 
     /**
-     * @return custom inline content parsers that have been configured with
-     * {@link Parser.Builder#customInlineContentParserFactory(InlineContentParserFactory)}
+     * @return custom inline content parsers that have been configured with {@link
+     *     Parser.Builder#customInlineContentParserFactory(InlineContentParserFactory)}
      */
     List<InlineContentParserFactory> getCustomInlineContentParserFactories();
 
     /**
-     * @return custom delimiter processors that have been configured with
-     * {@link Parser.Builder#customDelimiterProcessor(DelimiterProcessor)}
+     * @return custom delimiter processors that have been configured with {@link
+     *     Parser.Builder#customDelimiterProcessor(DelimiterProcessor)}
      */
     List<DelimiterProcessor> getCustomDelimiterProcessors();
 
     /**
-     * @return custom link processors that have been configured with {@link Parser.Builder#linkProcessor}.
+     * @return custom link processors that have been configured with {@link
+     *     Parser.Builder#linkProcessor}.
      */
     List<LinkProcessor> getCustomLinkProcessors();
 
@@ -37,9 +35,9 @@ public interface InlineParserContext {
 
     /**
      * Look up a {@link LinkReferenceDefinition} for a given label.
-     * <p>
-     * Note that the passed in label does not need to be normalized; implementations are responsible for doing the
-     * normalization before lookup.
+     *
+     * <p>Note that the passed in label does not need to be normalized; implementations are
+     * responsible for doing the normalization before lookup.
      *
      * @param label the link label to look up
      * @return the definition if one exists, {@code null} otherwise
@@ -50,9 +48,9 @@ public interface InlineParserContext {
 
     /**
      * Look up a definition of a type for a given label.
-     * <p>
-     * Note that the passed in label does not need to be normalized; implementations are responsible for doing the
-     * normalization before lookup.
+     *
+     * <p>Note that the passed in label does not need to be normalized; implementations are
+     * responsible for doing the normalization before lookup.
      *
      * @return the definition if one exists, null otherwise
      */

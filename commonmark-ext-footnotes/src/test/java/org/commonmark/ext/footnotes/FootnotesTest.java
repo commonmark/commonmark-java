@@ -1,17 +1,16 @@
 package org.commonmark.ext.footnotes;
 
-import org.commonmark.Extension;
-import org.commonmark.node.*;
-import org.commonmark.parser.IncludeSourceSpans;
-import org.commonmark.parser.Parser;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.commonmark.Extension;
+import org.commonmark.node.*;
+import org.commonmark.parser.IncludeSourceSpans;
+import org.commonmark.parser.Parser;
+import org.junit.jupiter.api.Test;
 
 public class FootnotesTest {
 
@@ -35,7 +34,8 @@ public class FootnotesTest {
 
     @Test
     public void testDefBlockStartInterrupts() {
-        // This is different from a link reference definition, which can only be at the start of paragraphs.
+        // This is different from a link reference definition, which can only be at the start of
+        // paragraphs.
         var doc = PARSER.parse("test\n[^1]: footnote\n");
         var paragraph = find(doc, Paragraph.class);
         var def = find(doc, FootnoteDefinition.class);
@@ -172,7 +172,8 @@ public class FootnotesTest {
 
     @Test
     public void testRefWithEmphasisAround() {
-        // Emphasis around footnote reference, the * inside needs to be removed from emphasis processing
+        // Emphasis around footnote reference, the * inside needs to be removed from emphasis
+        // processing
         var doc = PARSER.parse("Test *abc [^foo*] def*\n\n[^foo*]: def\n");
         var ref = find(doc, FootnoteReference.class);
         assertThat(ref.getLabel()).isEqualTo("foo*");
@@ -193,8 +194,9 @@ public class FootnotesTest {
 
     @Test
     public void testRefAsLabelOnly() {
-        // [^bar] is a footnote but [foo] is just text, because full reference links (text `foo`, label `^bar`) don't
-        // resolve as footnotes. If `[foo][^bar]` fails to parse as a bracket, `[^bar]` by itself needs to be tried.
+        // [^bar] is a footnote but [foo] is just text, because full reference links (text `foo`,
+        // label `^bar`) don't resolve as footnotes. If `[foo][^bar]` fails to parse as a bracket,
+        // `[^bar]` by itself needs to be tried.
         var doc = PARSER.parse("Test [foo][^bar]\n\n[^bar]: footnote\n");
         var ref = find(doc, FootnoteReference.class);
         assertThat(ref.getLabel()).isEqualTo("bar");
@@ -204,7 +206,8 @@ public class FootnotesTest {
 
     @Test
     public void testRefWithEmptyLabel() {
-        // [^bar] is a footnote but [] is just text, because collapsed reference links don't resolve as footnotes
+        // [^bar] is a footnote but [] is just text, because collapsed reference links don't resolve
+        // as footnotes
         var doc = PARSER.parse("Test [^bar][]\n\n[^bar]: footnote\n");
         var ref = find(doc, FootnoteReference.class);
         assertThat(ref.getLabel()).isEqualTo("bar");
@@ -237,8 +240,8 @@ public class FootnotesTest {
 
     @Test
     public void testPreferReferenceLink() {
-        // This is tricky because `[^*foo*][foo]` is a valid link already. If `[foo]` was not defined, the first bracket
-        // would be a footnote.
+        // This is tricky because `[^*foo*][foo]` is a valid link already. If `[foo]` was not
+        // defined, the first bracket would be a footnote.
         var doc = PARSER.parse("Test [^*foo*][foo]\n\n[^*foo*]: /url\n\n[foo]: /url");
         assertNone(doc, FootnoteReference.class);
     }
@@ -256,10 +259,13 @@ public class FootnotesTest {
 
     @Test
     public void testFootnoteInLink() {
-        // Expected to behave the same way as a link within a link, see https://spec.commonmark.org/0.31.2/#example-518
-        // i.e. the first (inner) link is parsed, which means the outer one becomes plain text, as nesting links is not
-        // allowed.
-        var doc = PARSER.parse("[link with footnote ref [^1]](https://example.com)\n\n[^1]: footnote\n");
+        // Expected to behave the same way as a link within a link, see
+        // https://spec.commonmark.org/0.31.2/#example-518
+        // i.e. the first (inner) link is parsed, which means the outer one becomes plain text, as
+        // nesting links is not allowed.
+        var doc =
+                PARSER.parse(
+                        "[link with footnote ref [^1]](https://example.com)\n\n[^1]: footnote\n");
         var ref = find(doc, FootnoteReference.class);
         assertThat(ref.getLabel()).isEqualTo("1");
         var paragraph = doc.getFirstChild();
@@ -269,7 +275,9 @@ public class FootnotesTest {
 
     @Test
     public void testFootnoteWithMarkerInLink() {
-        var doc = PARSER.parse("[link with footnote ref ![^1]](https://example.com)\n\n[^1]: footnote\n");
+        var doc =
+                PARSER.parse(
+                        "[link with footnote ref ![^1]](https://example.com)\n\n[^1]: footnote\n");
         var ref = find(doc, FootnoteReference.class);
         assertThat(ref.getLabel()).isEqualTo("1");
         var paragraph = doc.getFirstChild();
@@ -325,7 +333,11 @@ public class FootnotesTest {
 
     @Test
     public void testSourcePositions() {
-        var parser = Parser.builder().extensions(EXTENSIONS).includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build();
+        var parser =
+                Parser.builder()
+                        .extensions(EXTENSIONS)
+                        .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                        .build();
 
         var doc = parser.parse("Test [^foo]\n\n[^foo]: /url\n");
         var ref = find(doc, FootnoteReference.class);
@@ -336,11 +348,15 @@ public class FootnotesTest {
     }
 
     private static void assertNone(Node parent, Class<?> nodeClass) {
-        assertThat(tryFind(parent, nodeClass)).as(() -> "Node " + parent + " containing " + nodeClass).isNull();
+        assertThat(tryFind(parent, nodeClass))
+                .as(() -> "Node " + parent + " containing " + nodeClass)
+                .isNull();
     }
 
     private static <T> T find(Node parent, Class<T> nodeClass) {
-        return Objects.requireNonNull(tryFind(parent, nodeClass), "Could not find a " + nodeClass.getSimpleName() + " node in " + parent);
+        return Objects.requireNonNull(
+                tryFind(parent, nodeClass),
+                "Could not find a " + nodeClass.getSimpleName() + " node in " + parent);
     }
 
     private static <T> T tryFind(Node parent, Class<T> nodeClass) {

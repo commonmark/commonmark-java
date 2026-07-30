@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.tables;
 
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.text.LineBreakRendering;
@@ -7,19 +8,25 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.Asserts;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
 public class TablesTextContentTest {
 
     private static final Set<Extension> EXTENSIONS = Set.of(TablesExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final TextContentRenderer RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer RENDERER =
+            TextContentRenderer.builder().extensions(EXTENSIONS).build();
 
-    private static final TextContentRenderer COMPACT_RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS).build();
-    private static final TextContentRenderer SEPARATE_RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS)
-            .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS).build();
-    private static final TextContentRenderer STRIPPED_RENDERER = TextContentRenderer.builder().extensions(EXTENSIONS)
-            .lineBreakRendering(LineBreakRendering.STRIP).build();
+    private static final TextContentRenderer COMPACT_RENDERER =
+            TextContentRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer SEPARATE_RENDERER =
+            TextContentRenderer.builder()
+                    .extensions(EXTENSIONS)
+                    .lineBreakRendering(LineBreakRendering.SEPARATE_BLOCKS)
+                    .build();
+    private static final TextContentRenderer STRIPPED_RENDERER =
+            TextContentRenderer.builder()
+                    .extensions(EXTENSIONS)
+                    .lineBreakRendering(LineBreakRendering.STRIP)
+                    .build();
 
     @Test
     public void oneHeadNoBody() {

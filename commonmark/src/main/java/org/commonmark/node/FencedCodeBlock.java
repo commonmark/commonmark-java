@@ -2,12 +2,14 @@ package org.commonmark.node;
 
 /**
  * A fenced code block, e.g.:
+ *
  * <pre>
  * ```
  * foo
  * bar
  * ```
  * </pre>
+ *
  * <p>
  *
  * @see <a href="https://spec.commonmark.org/0.31.2/#fenced-code-blocks">CommonMark Spec</a>
@@ -28,7 +30,8 @@ public class FencedCodeBlock extends Block {
     }
 
     /**
-     * @return the fence character that was used, e.g. {@code `} or {@code ~}, if available, or null otherwise
+     * @return the fence character that was used, e.g. {@code `} or {@code ~}, if available, or null
+     *     otherwise
      */
     public String getFenceCharacter() {
         return fenceCharacter;
@@ -39,8 +42,8 @@ public class FencedCodeBlock extends Block {
     }
 
     /**
-     * @return the length of the opening fence (how many of {{@link #getFenceCharacter()}} were used to start the code
-     * block) if available, or null otherwise
+     * @return the length of the opening fence (how many of {{@link #getFenceCharacter()}} were used
+     *     to start the code block) if available, or null otherwise
      */
     public Integer getOpeningFenceLength() {
         return openingFenceLength;
@@ -55,8 +58,8 @@ public class FencedCodeBlock extends Block {
     }
 
     /**
-     * @return the length of the closing fence (how many of {@link #getFenceCharacter()} were used to end the code
-     * block) if available, or null otherwise
+     * @return the length of the closing fence (how many of {@link #getFenceCharacter()} were used
+     *     to end the code block) if available, or null otherwise
      */
     public Integer getClosingFenceLength() {
         return closingFenceLength;
@@ -102,7 +105,9 @@ public class FencedCodeBlock extends Block {
      */
     @Deprecated
     public char getFenceChar() {
-        return fenceCharacter != null && !fenceCharacter.isEmpty() ? fenceCharacter.charAt(0) : '\0';
+        return fenceCharacter != null && !fenceCharacter.isEmpty()
+                ? fenceCharacter.charAt(0)
+                : '\0';
     }
 
     /**
@@ -132,7 +137,8 @@ public class FencedCodeBlock extends Block {
     private static void checkFenceLengths(Integer openingFenceLength, Integer closingFenceLength) {
         if (openingFenceLength != null && closingFenceLength != null) {
             if (closingFenceLength < openingFenceLength) {
-                throw new IllegalArgumentException("fence lengths required to be: closingFenceLength >= openingFenceLength");
+                throw new IllegalArgumentException(
+                        "fence lengths required to be: closingFenceLength >= openingFenceLength");
             }
         }
     }

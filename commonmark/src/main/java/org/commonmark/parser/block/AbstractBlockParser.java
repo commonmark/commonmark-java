@@ -1,12 +1,11 @@
 package org.commonmark.parser.block;
 
+import java.util.List;
 import org.commonmark.node.Block;
 import org.commonmark.node.DefinitionMap;
 import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.SourceLine;
-
-import java.util.List;
 
 public abstract class AbstractBlockParser implements BlockParser {
 
@@ -26,8 +25,7 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     @Override
-    public void addLine(SourceLine line) {
-    }
+    public void addLine(SourceLine line) {}
 
     @Override
     public void addSourceSpan(SourceSpan sourceSpan) {
@@ -40,11 +38,8 @@ public abstract class AbstractBlockParser implements BlockParser {
     }
 
     @Override
-    public void closeBlock() {
-    }
+    public void closeBlock() {}
 
     @Override
-    public void parseInlines(InlineParser inlineParser) {
-    }
-
+    public void parseInlines(InlineParser inlineParser) {}
 }

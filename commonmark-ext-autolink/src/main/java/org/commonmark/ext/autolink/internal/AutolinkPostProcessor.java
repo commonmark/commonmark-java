@@ -1,5 +1,6 @@
 package org.commonmark.ext.autolink.internal;
 
+import java.util.*;
 import org.commonmark.ext.autolink.AutolinkType;
 import org.commonmark.node.*;
 import org.commonmark.parser.PostProcessor;
@@ -7,8 +8,6 @@ import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
 import org.nibor.autolink.Span;
-
-import java.util.*;
 
 public class AutolinkPostProcessor implements PostProcessor {
 
@@ -38,9 +37,7 @@ public class AutolinkPostProcessor implements PostProcessor {
             }
         }
 
-        this.linkExtractor = LinkExtractor.builder()
-                .linkTypes(types)
-                .build();
+        this.linkExtractor = LinkExtractor.builder().linkTypes(types).build();
     }
 
     @Override

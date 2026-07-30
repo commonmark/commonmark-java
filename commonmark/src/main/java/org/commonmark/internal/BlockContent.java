@@ -25,5 +25,4 @@ class BlockContent {
     public String getString() {
         return sb.toString();
     }
-
 }

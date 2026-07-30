@@ -1,13 +1,10 @@
 package org.commonmark.renderer.markdown;
 
-import org.commonmark.text.CharMatcher;
-
 import java.io.IOException;
 import java.util.LinkedList;
+import org.commonmark.text.CharMatcher;
 
-/**
- * Writer for Markdown (CommonMark) text.
- */
+/** Writer for Markdown (CommonMark) text. */
 public class MarkdownWriter {
 
     private final Appendable buffer;
@@ -16,8 +13,9 @@ public class MarkdownWriter {
     private char lastChar;
     private boolean atLineStart = true;
 
-    // Stacks of settings that affect various rendering behaviors. The common pattern here is that callers use "push" to
-    // change a setting, render some nodes, and then "pop" the setting off the stack again to restore previous state.
+    // Stacks of settings that affect various rendering behaviors. The common pattern here is that
+    // callers use "push" to change a setting, render some nodes, and then "pop" the setting off the
+    // stack again to restore previous state.
     private final LinkedList<String> prefixes = new LinkedList<>();
     private final LinkedList<Boolean> tight = new LinkedList<>();
     private final LinkedList<CharMatcher> rawEscapes = new LinkedList<>();
@@ -26,17 +24,13 @@ public class MarkdownWriter {
         buffer = out;
     }
 
-    /**
-     * Write the supplied string (raw/unescaped except if {@link #pushRawEscape} was used).
-     */
+    /** Write the supplied string (raw/unescaped except if {@link #pushRawEscape} was used). */
     public void raw(String s) {
         flushBlockSeparator();
         write(s, null);
     }
 
-    /**
-     * Write the supplied character (raw/unescaped except if {@link #pushRawEscape} was used).
-     */
+    /** Write the supplied character (raw/unescaped except if {@link #pushRawEscape} was used). */
     public void raw(char c) {
         flushBlockSeparator();
         write(c);
@@ -45,7 +39,7 @@ public class MarkdownWriter {
     /**
      * Write the supplied string with escaping.
      *
-     * @param s      the string to write
+     * @param s the string to write
      * @param escape which characters to escape
      */
     public void text(String s, CharMatcher escape) {
@@ -59,9 +53,7 @@ public class MarkdownWriter {
         atLineStart = false;
     }
 
-    /**
-     * Write a newline (line terminator).
-     */
+    /** Write a newline (line terminator). */
     public void line() {
         write('\n');
         writePrefixes();
@@ -69,19 +61,20 @@ public class MarkdownWriter {
     }
 
     /**
-     * Enqueue a block separator to be written before the next text is written. Block separators are not written
-     * straight away because if there are no more blocks to write we don't want a separator (at the end of the document).
+     * Enqueue a block separator to be written before the next text is written. Block separators are
+     * not written straight away because if there are no more blocks to write we don't want a
+     * separator (at the end of the document).
      */
     public void block() {
-        // Remember whether this should be a tight or loose separator now because tight could get changed in between
-        // this and the next flush.
+        // Remember whether this should be a tight or loose separator now because tight could get
+        // changed in between this and the next flush.
         blockSeparator = isTight() ? 1 : 2;
         atLineStart = true;
     }
 
     /**
-     * Push a prefix onto the top of the stack. All prefixes are written at the beginning of each line, until the
-     * prefix is popped again.
+     * Push a prefix onto the top of the stack. All prefixes are written at the beginning of each
+     * line, until the prefix is popped again.
      *
      * @param prefix the raw prefix string
      */
@@ -100,36 +93,32 @@ public class MarkdownWriter {
         atLineStart = tmp;
     }
 
-    /**
-     * Remove the last prefix from the top of the stack.
-     */
+    /** Remove the last prefix from the top of the stack. */
     public void popPrefix() {
         prefixes.removeLast();
     }
 
     /**
-     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by a blank line. Tight
-     * is where blocks are not separated by a blank line. Tight blocks are used in lists, if there are no blank lines
-     * within the list.
-     * <p>
-     * Note that changing this does not affect block separators that have already been enqueued with {@link #block()},
-     * only future ones.
+     * Change whether blocks are tight or loose. Loose is the default where blocks are separated by
+     * a blank line. Tight is where blocks are not separated by a blank line. Tight blocks are used
+     * in lists, if there are no blank lines within the list.
+     *
+     * <p>Note that changing this does not affect block separators that have already been enqueued
+     * with {@link #block()}, only future ones.
      */
     public void pushTight(boolean tight) {
         this.tight.addLast(tight);
     }
 
-    /**
-     * Remove the last "tight" setting from the top of the stack.
-     */
+    /** Remove the last "tight" setting from the top of the stack. */
     public void popTight() {
         this.tight.removeLast();
     }
 
     /**
-     * Escape the characters matching the supplied matcher, in all text (text and raw). This might be useful to
-     * extensions that add another layer of syntax, e.g. the tables extension that uses `|` to separate cells and needs
-     * all `|` characters to be escaped (even in code spans).
+     * Escape the characters matching the supplied matcher, in all text (text and raw). This might
+     * be useful to extensions that add another layer of syntax, e.g. the tables extension that uses
+     * `|` to separate cells and needs all `|` characters to be escaped (even in code spans).
      *
      * @param rawEscape the characters to escape in raw text
      */
@@ -137,9 +126,7 @@ public class MarkdownWriter {
         rawEscapes.add(rawEscape);
     }
 
-    /**
-     * Remove the last raw escape from the top of the stack.
-     */
+    /** Remove the last raw escape from the top of the stack. */
     public void popRawEscape() {
         rawEscapes.removeLast();
     }
@@ -152,7 +139,8 @@ public class MarkdownWriter {
     }
 
     /**
-     * @return whether we're at the line start (not counting any prefixes), i.e. after a {@link #line} or {@link #block}.
+     * @return whether we're at the line start (not counting any prefixes), i.e. after a {@link
+     *     #line} or {@link #block}.
      */
     public boolean isAtLineStart() {
         return atLineStart;
@@ -199,7 +187,8 @@ public class MarkdownWriter {
     }
 
     /**
-     * If a block separator has been enqueued with {@link #block()} but not yet written, write it now.
+     * If a block separator has been enqueued with {@link #block()} but not yet written, write it
+     * now.
      */
     private void flushBlockSeparator() {
         if (blockSeparator != 0) {

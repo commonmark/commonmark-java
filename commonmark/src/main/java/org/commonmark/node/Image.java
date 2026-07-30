@@ -2,6 +2,7 @@ package org.commonmark.node;
 
 /**
  * An image, e.g.:
+ *
  * <pre>
  * ![foo](/url "title")
  * </pre>
@@ -13,8 +14,7 @@ public class Image extends Node {
     private String destination;
     private String title;
 
-    public Image() {
-    }
+    public Image() {}
 
     public Image(String destination, String title) {
         this.destination = destination;

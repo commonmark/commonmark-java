@@ -1,22 +1,22 @@
 package org.commonmark.renderer.markdown;
 
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.text.AsciiMatcher;
 import org.commonmark.text.CharMatcher;
 import org.commonmark.text.Characters;
 
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
- * <p>
- * Note that while sometimes it would be easier to record what kind of syntax was used on parsing (e.g. ATX vs Setext
- * heading), this renderer is intended to also work for documents that were created by directly creating
- * {@link Node Nodes} instead. So in order to support that, it sometimes needs to do a bit more work.
+ *
+ * <p>Note that while sometimes it would be easier to record what kind of syntax was used on parsing
+ * (e.g. ATX vs Setext heading), this renderer is intended to also work for documents that were
+ * created by directly creating {@link Node Nodes} instead. So in order to support that, it
+ * sometimes needs to do a bit more work.
  */
 public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRenderer {
 
@@ -33,9 +33,10 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     protected final MarkdownNodeRendererContext context;
     private final MarkdownWriter writer;
+
     /**
-     * If we're currently within a {@link BulletList} or {@link OrderedList}, this keeps the context of that list.
-     * It has a parent field so that it can represent a stack (for nested lists).
+     * If we're currently within a {@link BulletList} or {@link OrderedList}, this keeps the context
+     * of that list. It has a parent field so that it can represent a stack (for nested lists).
      */
     private ListHolder listHolder;
 
@@ -43,7 +44,11 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         this.context = context;
         this.writer = context.getWriter();
 
-        textEscape = AsciiMatcher.builder().anyOf("[]<>`*_&\n\\").anyOf(context.getSpecialCharacters()).build();
+        textEscape =
+                AsciiMatcher.builder()
+                        .anyOf("[]<>`*_&\n\\")
+                        .anyOf(context.getSpecialCharacters())
+                        .build();
         textEscapeInHeading = AsciiMatcher.builder(textEscape).anyOf("#").build();
     }
 
@@ -69,8 +74,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 SoftLineBreak.class,
                 StrongEmphasis.class,
                 Text.class,
-                ThematicBreak.class
-        );
+                ThematicBreak.class);
     }
 
     @Override
@@ -108,8 +112,8 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 visitChildren(heading);
                 writer.line();
                 if (heading.getLevel() == 1) {
-                    // Note that it would be nice to match the length of the contents instead of just using 3, but that's
-                    // not easy.
+                    // Note that it would be nice to match the length of the contents instead of
+                    // just using 3, but that's not easy.
                     writer.raw("===");
                 } else {
                     writer.raw("---");
@@ -132,8 +136,8 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
         String literal = indentedCodeBlock.getLiteral();
-        // We need to respect line prefixes which is why we need to write it line by line (e.g. an indented code block
-        // within a block quote)
+        // We need to respect line prefixes which is why we need to write it line by line (e.g. an
+        // indented code block within a block quote)
         writer.writePrefix("    ");
         writer.pushPrefix("    ");
         List<String> lines = getLines(literal);
@@ -151,19 +155,24 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     @Override
     public void visit(FencedCodeBlock codeBlock) {
         String literal = codeBlock.getLiteral();
-        String fenceChar = codeBlock.getFenceCharacter() != null ? codeBlock.getFenceCharacter() : "`";
+        String fenceChar =
+                codeBlock.getFenceCharacter() != null ? codeBlock.getFenceCharacter() : "`";
         int openingFenceLength;
         if (codeBlock.getOpeningFenceLength() != null) {
             // If we have a known fence length, use it
             openingFenceLength = codeBlock.getOpeningFenceLength();
         } else {
-            // Otherwise, calculate the closing fence length pessimistically, e.g. if the code block itself contains a
-            // line with ```, we need to use a fence of length 4. If ``` occurs with non-whitespace characters on a
+            // Otherwise, calculate the closing fence length pessimistically, e.g. if the code block
+            // itself contains a line with ```, we need to use a fence of length 4. If ``` occurs
+            // with non-whitespace characters on a
             // line, we technically don't need a longer fence, but it's not incorrect to do so.
             int fenceCharsInLiteral = findMaxRunLength(fenceChar, literal);
             openingFenceLength = Math.max(fenceCharsInLiteral + 1, 3);
         }
-        int closingFenceLength = codeBlock.getClosingFenceLength() != null ? codeBlock.getClosingFenceLength() : openingFenceLength;
+        int closingFenceLength =
+                codeBlock.getClosingFenceLength() != null
+                        ? codeBlock.getClosingFenceLength()
+                        : openingFenceLength;
 
         String openingFence = repeat(fenceChar, openingFenceLength);
         String closingFence = repeat(fenceChar, closingFenceLength);
@@ -251,13 +260,19 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             marker = repeat(" ", markerIndent) + bulletListHolder.marker;
         } else if (listHolder instanceof OrderedListHolder) {
             OrderedListHolder orderedListHolder = (OrderedListHolder) listHolder;
-            marker = repeat(" ", markerIndent) + orderedListHolder.number + orderedListHolder.delimiter;
+            marker =
+                    repeat(" ", markerIndent)
+                            + orderedListHolder.number
+                            + orderedListHolder.delimiter;
             orderedListHolder.number++;
         } else {
             throw new IllegalStateException("Unknown list holder type: " + listHolder);
         }
         Integer contentIndent = listItem.getContentIndent();
-        String spaces = contentIndent != null ? repeat(" ", Math.max(contentIndent - marker.length(), 1)) : " ";
+        String spaces =
+                contentIndent != null
+                        ? repeat(" ", Math.max(contentIndent - marker.length(), 1))
+                        : " ";
         writer.writePrefix(marker);
         writer.writePrefix(spaces);
         writer.pushPrefix(repeat(" ", marker.length() + spaces.length()));
@@ -281,10 +296,14 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             writer.raw('`');
         }
         // If the literal starts or ends with a backtick, surround it with a single space.
-        // If it starts and ends with a space (but is not only spaces), add an additional space (otherwise they would
-        // get removed on parsing).
-        boolean addSpace = literal.startsWith("`") || literal.endsWith("`") ||
-                (literal.startsWith(" ") && literal.endsWith(" ") && Characters.hasNonSpace(literal));
+        // If it starts and ends with a space (but is not only spaces), add an additional space
+        // (otherwise they would get removed on parsing).
+        boolean addSpace =
+                literal.startsWith("`")
+                        || literal.endsWith("`")
+                        || (literal.startsWith(" ")
+                                && literal.endsWith(" ")
+                                && Characters.hasNonSpace(literal));
         if (addSpace) {
             writer.raw(' ');
         }
@@ -345,38 +364,47 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
     @Override
     public void visit(Text text) {
-        // Text is tricky. In Markdown special characters (`-`, `#` etc.) can be escaped (`\-`, `\#` etc.) so that
-        // they're parsed as plain text. Currently, whether a character was escaped or not is not recorded in the Node,
-        // so here we don't know. If we just wrote out those characters unescaped, the resulting Markdown would change
-        // meaning (turn into a list item, heading, etc.).
-        // You might say "Why not store that in the Node when parsing", but that wouldn't work for the use case where
-        // nodes are constructed directly instead of via parsing. This renderer needs to work for that too.
-        // So currently, when in doubt, we escape. For special characters only occurring at the beginning of a line,
-        // we only escape them then (we wouldn't want to escape every `.` for example).
+        // Text is tricky. In Markdown special characters (`-`, `#` etc.) can be escaped (`\-`, `\#`
+        // etc.) so that they're parsed as plain text. Currently, whether a character was escaped or
+        // not is not recorded in the Node, so here we don't know. If we just wrote out those
+        // characters unescaped, the resulting Markdown would change meaning (turn into a list item,
+        // heading, etc.).
+        //
+        // You might say "Why not store that in the Node when parsing", but that wouldn't work for
+        // the use case where nodes are constructed directly instead of via parsing. This renderer
+        // needs to work for that too.
+        //
+        // So currently, when in doubt, we escape. For special characters only occurring at the
+        // beginning of a line, we only escape them then (we wouldn't want to escape every `.` for
+        // example).
         String literal = text.getLiteral();
         if (writer.isAtLineStart() && !literal.isEmpty()) {
             char c = literal.charAt(0);
             switch (c) {
-                case '-': {
-                    // Would be ambiguous with a bullet list marker, escape
-                    writer.raw("\\-");
-                    literal = literal.substring(1);
-                    break;
-                }
-                case '#': {
-                    // Would be ambiguous with an ATX heading, escape
-                    writer.raw("\\#");
-                    literal = literal.substring(1);
-                    break;
-                }
-                case '=': {
-                    // Would be ambiguous with a Setext heading, escape unless it's the first line in the block
-                    if (text.getPrevious() != null) {
-                        writer.raw("\\=");
+                case '-':
+                    {
+                        // Would be ambiguous with a bullet list marker, escape
+                        writer.raw("\\-");
                         literal = literal.substring(1);
+                        break;
                     }
-                    break;
-                }
+                case '#':
+                    {
+                        // Would be ambiguous with an ATX heading, escape
+                        writer.raw("\\#");
+                        literal = literal.substring(1);
+                        break;
+                    }
+                case '=':
+                    {
+                        // Would be ambiguous with a Setext heading, escape unless it's the first
+                        // line in the block
+                        if (text.getPrevious() != null) {
+                            writer.raw("\\=");
+                            literal = literal.substring(1);
+                        }
+                        break;
+                    }
                 case '0':
                 case '1':
                 case '2':
@@ -386,26 +414,29 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 case '6':
                 case '7':
                 case '8':
-                case '9': {
-                    // Check for ordered list marker
-                    Matcher m = orderedListMarkerPattern.matcher(literal);
-                    if (m.find()) {
-                        writer.raw(m.group(1));
-                        writer.raw("\\" + m.group(2));
-                        literal = literal.substring(m.end());
+                case '9':
+                    {
+                        // Check for ordered list marker
+                        Matcher m = orderedListMarkerPattern.matcher(literal);
+                        if (m.find()) {
+                            writer.raw(m.group(1));
+                            writer.raw("\\" + m.group(2));
+                            literal = literal.substring(m.end());
+                        }
+                        break;
                     }
-                    break;
-                }
-                case '\t': {
-                    writer.raw("&#9;");
-                    literal = literal.substring(1);
-                    break;
-                }
-                case ' ': {
-                    writer.raw("&#32;");
-                    literal = literal.substring(1);
-                    break;
-                }
+                case '\t':
+                    {
+                        writer.raw("&#9;");
+                        literal = literal.substring(1);
+                        break;
+                    }
+                case ' ':
+                    {
+                        writer.raw("&#32;");
+                        literal = literal.substring(1);
+                        break;
+                    }
             }
         }
 
@@ -467,13 +498,13 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     private static List<String> getLines(String literal) {
-        // Without -1, split would discard all trailing empty strings, which is not what we want, e.g. it would
-        // return the same result for "abc", "abc\n" and "abc\n\n".
+        // Without -1, split would discard all trailing empty strings, which is not what we want,
+        // e.g. it would return the same result for "abc", "abc\n" and "abc\n\n".
         // With -1, it returns ["abc"], ["abc", ""] and ["abc", "", ""].
         String[] parts = literal.split("\n", -1);
         if (parts[parts.length - 1].isEmpty()) {
-            // But we don't want the last empty string, as "\n" is used as a line terminator (not a separator),
-            // so return without the last element.
+            // But we don't want the last empty string, as "\n" is used as a line terminator (not a
+            // separator), so return without the last element.
             return List.of(parts).subList(0, parts.length - 1);
         } else {
             return List.of(parts);
@@ -524,14 +555,18 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
 
         protected OrderedListHolder(ListHolder parent, OrderedList orderedList) {
             super(parent);
-            delimiter = orderedList.getMarkerDelimiter() != null ? orderedList.getMarkerDelimiter() : ".";
-            number = orderedList.getMarkerStartNumber() != null ? orderedList.getMarkerStartNumber() : 1;
+            delimiter =
+                    orderedList.getMarkerDelimiter() != null
+                            ? orderedList.getMarkerDelimiter()
+                            : ".";
+            number =
+                    orderedList.getMarkerStartNumber() != null
+                            ? orderedList.getMarkerStartNumber()
+                            : 1;
         }
     }
 
-    /**
-     * Visits nodes to check if there are any soft or hard line breaks.
-     */
+    /** Visits nodes to check if there are any soft or hard line breaks. */
     private static class LineBreakVisitor extends AbstractVisitor {
         private boolean lineBreak = false;
 

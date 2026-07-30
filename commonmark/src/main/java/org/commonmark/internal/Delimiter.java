@@ -1,13 +1,10 @@
 package org.commonmark.internal;
 
+import java.util.List;
 import org.commonmark.node.Text;
 import org.commonmark.parser.delimiter.DelimiterRun;
 
-import java.util.List;
-
-/**
- * Delimiter (emphasis, strong emphasis or custom emphasis).
- */
+/** Delimiter (emphasis, strong emphasis or custom emphasis). */
 public class Delimiter implements DelimiterRun {
 
     public final List<Text> characters;
@@ -23,7 +20,12 @@ public class Delimiter implements DelimiterRun {
     public Delimiter previous;
     public Delimiter next;
 
-    public Delimiter(List<Text> characters, char delimiterChar, boolean canOpen, boolean canClose, Delimiter previous) {
+    public Delimiter(
+            List<Text> characters,
+            char delimiterChar,
+            boolean canOpen,
+            boolean canClose,
+            Delimiter previous) {
         this.characters = characters;
         this.delimiterChar = delimiterChar;
         this.canOpen = canOpen;
@@ -65,7 +67,8 @@ public class Delimiter implements DelimiterRun {
     @Override
     public Iterable<Text> getOpeners(int length) {
         if (!(length >= 1 && length <= length())) {
-            throw new IllegalArgumentException("length must be between 1 and " + length() + ", was " + length);
+            throw new IllegalArgumentException(
+                    "length must be between 1 and " + length() + ", was " + length);
         }
 
         return characters.subList(characters.size() - length, characters.size());
@@ -74,7 +77,8 @@ public class Delimiter implements DelimiterRun {
     @Override
     public Iterable<Text> getClosers(int length) {
         if (!(length >= 1 && length <= length())) {
-            throw new IllegalArgumentException("length must be between 1 and " + length() + ", was " + length);
+            throw new IllegalArgumentException(
+                    "length must be between 1 and " + length() + ", was " + length);
         }
 
         return characters.subList(0, length);

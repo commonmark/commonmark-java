@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.strikethrough;
 
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughDelimiterProcessor;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughHtmlNodeRenderer;
@@ -13,38 +14,40 @@ import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 
-import java.util.Set;
-
 /**
  * Extension for GFM strikethrough using {@code ~} or {@code ~~} (GitHub Flavored Markdown).
- * <p>Example input:</p>
+ *
+ * <p>Example input:
+ *
  * <pre>{@code ~foo~ or ~~bar~~}</pre>
- * <p>Example output (HTML):</p>
+ *
+ * <p>Example output (HTML):
+ *
  * <pre>{@code <del>foo</del> or <del>bar</del>}</pre>
- * <p>
- * Create the extension with {@link #create()} and then add it to the parser and renderer builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * </p>
- * <p>
- * The parsed strikethrough text regions are turned into {@link Strikethrough} nodes.
- * </p>
- * <p>
- * If you have another extension that only uses a single tilde ({@code ~}) syntax, you will have to configure this
- * {@link StrikethroughExtension} to only accept the double tilde syntax, like this:
- * </p>
- * <pre>
- *     {@code
- *     StrikethroughExtension.builder().requireTwoTildes(true).build();
- *     }
- * </pre>
- * <p>
- * If you don't do that, there's a conflict between the two extensions and you will get an
- * {@link IllegalArgumentException} when constructing the parser.
- * </p>
+ *
+ * <p>Create the extension with {@link #create()} and then add it to the parser and renderer
+ * builders ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)}, {@link
+ * HtmlRenderer.Builder#extensions(Iterable)}).
+ *
+ * <p>The parsed strikethrough text regions are turned into {@link Strikethrough} nodes.
+ *
+ * <p>If you have another extension that only uses a single tilde ({@code ~}) syntax, you will have
+ * to configure this {@link StrikethroughExtension} to only accept the double tilde syntax, like
+ * this:
+ *
+ * <pre>{@code
+ * StrikethroughExtension.builder().requireTwoTildes(true).build();
+ *
+ * }</pre>
+ *
+ * <p>If you don't do that, there's a conflict between the two extensions and you will get an {@link
+ * IllegalArgumentException} when constructing the parser.
  */
-public class StrikethroughExtension implements Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
-        TextContentRenderer.TextContentRendererExtension, MarkdownRenderer.MarkdownRendererExtension {
+public class StrikethroughExtension
+        implements Parser.ParserExtension,
+                HtmlRenderer.HtmlRendererExtension,
+                TextContentRenderer.TextContentRendererExtension,
+                MarkdownRenderer.MarkdownRendererExtension {
 
     private final boolean requireTwoTildes;
 
@@ -68,7 +71,8 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        parserBuilder.customDelimiterProcessor(new StrikethroughDelimiterProcessor(requireTwoTildes));
+        parserBuilder.customDelimiterProcessor(
+                new StrikethroughDelimiterProcessor(requireTwoTildes));
     }
 
     @Override
@@ -83,17 +87,18 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
 
     @Override
     public void extend(MarkdownRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(MarkdownNodeRendererContext context) {
-                return new StrikethroughMarkdownNodeRenderer(context);
-            }
+        rendererBuilder.nodeRendererFactory(
+                new MarkdownNodeRendererFactory() {
+                    @Override
+                    public NodeRenderer create(MarkdownNodeRendererContext context) {
+                        return new StrikethroughMarkdownNodeRenderer(context);
+                    }
 
-            @Override
-            public Set<Character> getSpecialCharacters() {
-                return Set.of('~');
-            }
-        });
+                    @Override
+                    public Set<Character> getSpecialCharacters() {
+                        return Set.of('~');
+                    }
+                });
     }
 
     public static class Builder {
@@ -101,8 +106,9 @@ public class StrikethroughExtension implements Parser.ParserExtension, HtmlRende
         private boolean requireTwoTildes = false;
 
         /**
-         * @param requireTwoTildes Whether two tilde characters ({@code ~~}) are required for strikethrough or whether
-         *                         one is also enough. Default is {@code false}; both a single tilde and two tildes can be used for strikethrough.
+         * @param requireTwoTildes Whether two tilde characters ({@code ~~}) are required for
+         *     strikethrough or whether one is also enough. Default is {@code false}; both a single
+         *     tilde and two tildes can be used for strikethrough.
          * @return {@code this}
          */
         public Builder requireTwoTildes(boolean requireTwoTildes) {

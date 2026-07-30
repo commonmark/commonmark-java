@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Reader for files containing examples of CommonMark source and the expected HTML rendering (e.g. spec.txt).
+ * Reader for files containing examples of CommonMark source and the expected HTML rendering (e.g.
+ * spec.txt).
  */
 public class ExampleReader {
 
@@ -45,11 +46,15 @@ public class ExampleReader {
 
     public static List<Example> readExamples(URL url, String info) {
         var examples = readExamples(url);
-        return examples.stream().filter(e -> e.getInfo().contains(info)).collect(Collectors.toList());
+        return examples.stream()
+                .filter(e -> e.getInfo().contains(info))
+                .collect(Collectors.toList());
     }
 
     public static List<Object[]> readExampleObjects(URL url, String info) {
-        return readExamples(url, info).stream().map(e -> new Object[]{e}).collect(Collectors.toList());
+        return readExamples(url, info).stream()
+                .map(e -> new Object[] {e})
+                .collect(Collectors.toList());
     }
 
     public static List<String> readExampleSources(URL url) {
@@ -64,8 +69,8 @@ public class ExampleReader {
     private List<Example> read() throws IOException {
         resetContents();
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 processLine(line);
@@ -101,8 +106,15 @@ public class ExampleReader {
             case HTML:
                 if (line.equals("````````````````````````````````")) {
                     state = State.BEFORE;
-                    examples.add(new Example(filename, section, info, exampleNumber,
-                            source.toString(), html.toString()));
+                    var example =
+                            new Example(
+                                    filename,
+                                    section,
+                                    info,
+                                    exampleNumber,
+                                    source.toString(),
+                                    html.toString());
+                    examples.add(example);
                     resetContents();
                 } else {
                     html.append(line).append('\n');
@@ -117,6 +129,8 @@ public class ExampleReader {
     }
 
     private enum State {
-        BEFORE, SOURCE, HTML
+        BEFORE,
+        SOURCE,
+        HTML
     }
 }

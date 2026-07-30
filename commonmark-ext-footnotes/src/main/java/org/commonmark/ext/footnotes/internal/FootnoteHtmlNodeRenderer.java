@@ -1,5 +1,7 @@
 package org.commonmark.ext.footnotes.internal;
 
+import java.util.*;
+import java.util.function.Consumer;
 import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.ext.footnotes.FootnoteReference;
 import org.commonmark.ext.footnotes.InlineFootnote;
@@ -8,64 +10,68 @@ import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 
-import java.util.*;
-import java.util.function.Consumer;
-
 /**
  * HTML rendering for footnotes.
- * <p>
- * Aims to match the rendering of cmark-gfm (which is slightly different from GitHub's when it comes to class
- * attributes, not sure why).
- * <p>
- * Some notes on how rendering works:
+ *
+ * <p>Aims to match the rendering of cmark-gfm (which is slightly different from GitHub's when it
+ * comes to class attributes, not sure why).
+ *
+ * <p>Some notes on how rendering works:
+ *
  * <ul>
- * <li>Footnotes are numbered according to the order of references, starting at 1</li>
- * <li>Definitions are rendered at the end of the document, regardless of where the definition was in the source</li>
- * <li>Definitions are ordered by number</li>
- * <li>Definitions have links back to their references (one or more)</li>
+ *   <li>Footnotes are numbered according to the order of references, starting at 1
+ *   <li>Definitions are rendered at the end of the document, regardless of where the definition was
+ *       in the source
+ *   <li>Definitions are ordered by number
+ *   <li>Definitions have links back to their references (one or more)
  * </ul>
  *
  * <h4>Nested footnotes</h4>
- * Text in footnote definitions can reference other footnotes, even ones that aren't referenced in the main text.
- * This makes them tricky because it's not enough to just go through the main text for references.
- * And before we can render a definition, we need to know all references (because we add links back to references).
- * <p>
- * In other words, footnotes form a directed graph. Footnotes can reference each other so cycles are possible too.
- * <p>
- * One way to implement it, which is what cmark-gfm does, is to go through the whole document (including definitions)
- * and find all references in order. That guarantees that all definitions are found, but it has strange results for
- * ordering or when the reference is in an unreferenced definition, see tests. In graph terms, it renders all
- * definitions that have an incoming edge, no matter whether they are connected to the main text or not.
- * <p>
- * The way we implement it:
+ *
+ * Text in footnote definitions can reference other footnotes, even ones that aren't referenced in
+ * the main text. This makes them tricky because it's not enough to just go through the main text
+ * for references. And before we can render a definition, we need to know all references (because we
+ * add links back to references).
+ *
+ * <p>In other words, footnotes form a directed graph. Footnotes can reference each other so cycles
+ * are possible too.
+ *
+ * <p>One way to implement it, which is what cmark-gfm does, is to go through the whole document
+ * (including definitions) and find all references in order. That guarantees that all definitions
+ * are found, but it has strange results for ordering or when the reference is in an unreferenced
+ * definition, see tests. In graph terms, it renders all definitions that have an incoming edge, no
+ * matter whether they are connected to the main text or not.
+ *
+ * <p>The way we implement it:
+ *
  * <ol>
- * <li>Start with the references in the main text; we can render them as we go</li>
- * <li>After the main text is rendered, we have the referenced definitions, but there might be more from definition text</li>
- * <li>To find the remaining definitions, we visit the definitions from before to look at references</li>
- * <li>Repeat (breadth-first search) until we've found all definitions (note that we can't render before that's done because of backrefs)</li>
- * <li>Now render the definitions (and any references inside)</li>
+ *   <li>Start with the references in the main text; we can render them as we go
+ *   <li>After the main text is rendered, we have the referenced definitions, but there might be
+ *       more from definition text
+ *   <li>To find the remaining definitions, we visit the definitions from before to look at
+ *       references
+ *   <li>Repeat (breadth-first search) until we've found all definitions (note that we can't render
+ *       before that's done because of backrefs)
+ *   <li>Now render the definitions (and any references inside)
  * </ol>
- * This means we only render definitions whose references are actually rendered, and in a meaningful order (all main
- * text footnotes first, then any nested ones).
+ *
+ * This means we only render definitions whose references are actually rendered, and in a meaningful
+ * order (all main text footnotes first, then any nested ones).
  */
 public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
     private final HtmlWriter html;
     private final HtmlNodeRendererContext context;
 
-    /**
-     * All definitions (even potentially unused ones), for looking up references
-     */
+    /** All definitions (even potentially unused ones), for looking up references */
     private DefinitionMap<FootnoteDefinition> definitionMap;
 
-    /**
-     * Definitions that were referenced, in order in which they should be rendered.
-     */
+    /** Definitions that were referenced, in order in which they should be rendered. */
     private final Map<Node, ReferencedDefinition> referencedDefinitions = new LinkedHashMap<>();
 
     /**
-     * Information about references that should be rendered as footnotes. This doesn't contain all references, just the
-     * ones from inside definitions.
+     * Information about references that should be rendered as footnotes. This doesn't contain all
+     * references, just the ones from inside definitions.
      */
     private final Map<Node, ReferenceInfo> references = new HashMap<>();
 
@@ -81,7 +87,8 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
     @Override
     public void beforeRoot(Node rootNode) {
-        // Collect all definitions first, so we can look them up when encountering a reference later.
+        // Collect all definitions first, so we can look them up when encountering a reference
+        // later.
         var visitor = new DefinitionVisitor();
         rootNode.accept(visitor);
         definitionMap = visitor.definitions;
@@ -90,11 +97,12 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     @Override
     public void render(Node node) {
         if (node instanceof FootnoteReference) {
-            // This is called for all references, even ones inside definitions that we render at the end.
-            // Inside definitions, we have registered the reference already.
+            // This is called for all references, even ones inside definitions that we render at the
+            // end. Inside definitions, we have registered the reference already.
             var ref = (FootnoteReference) node;
             // Use containsKey because if value is null, we don't need to try registering again.
-            var info = references.containsKey(ref) ? references.get(ref) : tryRegisterReference(ref);
+            var info =
+                    references.containsKey(ref) ? references.get(ref) : tryRegisterReference(ref);
             if (info != null) {
                 renderReference(ref, info);
             } else {
@@ -126,26 +134,30 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         html.tag("ol");
         html.line();
 
-        // Check whether there are any footnotes inside the definitions that we're about to render. For those, we might
-        // need to render more definitions. So do a breadth-first search to find all relevant definitions.
+        // Check whether there are any footnotes inside the definitions that we're about to render.
+        // For those, we might need to render more definitions. So do a breadth-first search to find
+        // all relevant definitions.
         var check = new LinkedList<>(referencedDefinitions.keySet());
         while (!check.isEmpty()) {
             var def = check.removeFirst();
-            def.accept(new ShallowReferenceVisitor(def, node -> {
-                if (node instanceof FootnoteReference) {
-                    var ref = (FootnoteReference) node;
-                    var d = definitionMap.get(ref.getLabel());
-                    if (d != null) {
-                        if (!referencedDefinitions.containsKey(d)) {
-                            check.addLast(d);
-                        }
-                        references.put(ref, registerReference(d, d.getLabel()));
-                    }
-                } else if (node instanceof InlineFootnote) {
-                    check.addLast(node);
-                    references.put(node, registerReference(node, null));
-                }
-            }));
+            def.accept(
+                    new ShallowReferenceVisitor(
+                            def,
+                            node -> {
+                                if (node instanceof FootnoteReference) {
+                                    var ref = (FootnoteReference) node;
+                                    var d = definitionMap.get(ref.getLabel());
+                                    if (d != null) {
+                                        if (!referencedDefinitions.containsKey(d)) {
+                                            check.addLast(d);
+                                        }
+                                        references.put(ref, registerReference(d, d.getLabel()));
+                                    }
+                                } else if (node instanceof InlineFootnote) {
+                                    check.addLast(node);
+                                    references.put(node, registerReference(node, null));
+                                }
+                            }));
         }
 
         for (var entry : referencedDefinitions.entrySet()) {
@@ -169,15 +181,19 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
     private ReferenceInfo registerReference(Node node, String label) {
         // The first referenced definition gets number 1, second one 2, etc.
-        var referencedDef = referencedDefinitions.computeIfAbsent(node, k -> {
-            var num = referencedDefinitions.size() + 1;
-            var key = definitionKey(label, num);
-            return new ReferencedDefinition(num, key);
-        });
+        var referencedDef =
+                referencedDefinitions.computeIfAbsent(
+                        node,
+                        k -> {
+                            var num = referencedDefinitions.size() + 1;
+                            var key = definitionKey(label, num);
+                            return new ReferencedDefinition(num, key);
+                        });
         var definitionNumber = referencedDef.definitionNumber;
-        // The reference number for that particular definition. E.g. if there's two references for the same definition,
-        // the first one is 1, the second one 2, etc. This is needed to give each reference a unique ID so that each
-        // reference can get its own backlink from the definition.
+        // The reference number for that particular definition. E.g. if there's two references for
+        // the same definition, the first one is 1, the second one 2, etc. This is needed to give
+        // each reference a unique ID so that each reference can get its own backlink from the
+        // definition.
         var refNumber = referencedDef.references.size() + 1;
         var definitionKey = referencedDef.definitionKey;
         var id = referenceId(definitionKey, refNumber);
@@ -212,8 +228,9 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
             var node = def.getFirstChild();
             while (node != lastParagraph) {
                 if (node instanceof Paragraph) {
-                    // Because we're manually rendering the <p> for the last paragraph, do the same for all other
-                    // paragraphs for consistency (Paragraph rendering might be overwritten by a custom renderer).
+                    // Because we're manually rendering the <p> for the last paragraph, do the same
+                    // for all other paragraphs for consistency (Paragraph rendering might be
+                    // overwritten by a custom renderer).
                     html.tag("p", context.extendAttributes(node, "p", Map.of()));
                     renderChildren(node);
                     html.tag("/p");
@@ -252,7 +269,9 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
         for (int i = 0; i < refs.size(); i++) {
             var ref = refs.get(i);
             var refNumber = i + 1;
-            var idx = referencedDefinition.definitionNumber + (refNumber > 1 ? ("-" + refNumber) : "");
+            var idx =
+                    referencedDefinition.definitionNumber
+                            + (refNumber > 1 ? ("-" + refNumber) : "");
 
             var attrs = new LinkedHashMap<String, String>();
             attrs.put("href", "#" + ref);
@@ -262,7 +281,9 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
             attrs.put("aria-label", "Back to reference " + idx);
             html.tag("a", context.extendAttributes(def, "a", attrs));
             if (refNumber > 1) {
-                html.tag("sup", context.extendAttributes(def, "sup", Map.of("class", "footnote-ref")));
+                html.tag(
+                        "sup",
+                        context.extendAttributes(def, "sup", Map.of("class", "footnote-ref")));
                 html.raw(String.valueOf(refNumber));
                 html.tag("/sup");
             }
@@ -280,8 +301,9 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     }
 
     private String definitionKey(String label, int number) {
-        // Named definitions use the pattern "fn-{name}" and inline definitions use "fn{number}" so as not to conflict.
-        // "fn{number}" is also what pandoc uses (for all types), starting with number 1.
+        // Named definitions use the pattern "fn-{name}" and inline definitions use "fn{number}" so
+        // as not to conflict. "fn{number}" is also what pandoc uses (for all types), starting with
+        // number 1.
         if (label != null) {
             return "-" + label;
         } else {
@@ -304,7 +326,8 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
     private static class DefinitionVisitor extends AbstractVisitor {
 
-        private final DefinitionMap<FootnoteDefinition> definitions = new DefinitionMap<>(FootnoteDefinition.class);
+        private final DefinitionMap<FootnoteDefinition> definitions =
+                new DefinitionMap<>(FootnoteDefinition.class);
 
         @Override
         public void visit(CustomBlock customBlock) {
@@ -318,8 +341,8 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     }
 
     /**
-     * Visit footnote references/inline footnotes inside the parent (but not the parent itself). We want a shallow visit
-     * because the caller wants to control when to descend.
+     * Visit footnote references/inline footnotes inside the parent (but not the parent itself). We
+     * want a shallow visit because the caller wants to control when to descend.
      */
     private static class ShallowReferenceVisitor extends AbstractVisitor {
         private final Node parent;
@@ -349,17 +372,16 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     }
 
     private static class ReferencedDefinition {
-        /**
-         * The definition number, starting from 1, and in order in which they're referenced.
-         */
+        /** The definition number, starting from 1, and in order in which they're referenced. */
         final int definitionNumber;
+
         /**
-         * The unique key of the definition. Together with a static prefix it forms the ID used in the HTML.
+         * The unique key of the definition. Together with a static prefix it forms the ID used in
+         * the HTML.
          */
         final String definitionKey;
-        /**
-         * The IDs of references for this definition, for backrefs.
-         */
+
+        /** The IDs of references for this definition, for backrefs. */
         final List<String> references = new ArrayList<>();
 
         ReferencedDefinition(int definitionNumber, String definitionKey) {
@@ -370,16 +392,15 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
     private static class ReferenceInfo {
         /**
-         * The ID of the reference; in the corresponding definition, a link back to this reference will be rendered.
+         * The ID of the reference; in the corresponding definition, a link back to this reference
+         * will be rendered.
          */
         private final String id;
-        /**
-         * The ID of the definition, for linking to the definition.
-         */
+
+        /** The ID of the definition, for linking to the definition. */
         private final String definitionId;
-        /**
-         * The definition number, rendered in superscript.
-         */
+
+        /** The definition number, rendered in superscript. */
         private final int definitionNumber;
 
         private ReferenceInfo(String id, String definitionId, int definitionNumber) {

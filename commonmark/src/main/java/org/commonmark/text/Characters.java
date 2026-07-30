@@ -1,8 +1,6 @@
 package org.commonmark.text;
 
-/**
- * Functions for finding characters in strings or checking characters.
- */
+/** Functions for finding characters in strings or checking characters. */
 public class Characters {
 
     public static int find(char c, CharSequence s, int startIndex) {
@@ -57,7 +55,8 @@ public class Characters {
     }
 
     /**
-     * @see <a href="https://spec.commonmark.org/0.31.2/#unicode-punctuation-character">Unicode punctuation character</a>
+     * @see <a href="https://spec.commonmark.org/0.31.2/#unicode-punctuation-character">Unicode
+     *     punctuation character</a>
      */
     public static boolean isPunctuationCodePoint(int codePoint) {
         switch (Character.getType(codePoint)) {
@@ -69,7 +68,7 @@ public class Characters {
             case Character.OTHER_PUNCTUATION:
             case Character.INITIAL_QUOTE_PUNCTUATION:
             case Character.FINAL_QUOTE_PUNCTUATION:
-                // General category "S" (symbol)
+            // General category "S" (symbol)
             case Character.MATH_SYMBOL:
             case Character.CURRENCY_SYMBOL:
             case Character.MODIFIER_SYMBOL:
@@ -94,9 +93,11 @@ public class Characters {
     }
 
     /**
-     * Check whether the provided code point is a Unicode whitespace character as defined in the spec.
+     * Check whether the provided code point is a Unicode whitespace character as defined in the
+     * spec.
      *
-     * @see <a href="https://spec.commonmark.org/0.31.2/#unicode-whitespace-character">Unicode whitespace character</a>
+     * @see <a href="https://spec.commonmark.org/0.31.2/#unicode-whitespace-character">Unicode
+     *     whitespace character</a>
      */
     public static boolean isWhitespaceCodePoint(int codePoint) {
         switch (codePoint) {

@@ -30,9 +30,9 @@ public abstract class EmphasisDelimiterProcessor implements DelimiterProcessor {
     @Override
     public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
         // "multiple of 3" rule for internal delimiter runs
-        if ((openingRun.canClose() || closingRun.canOpen()) &&
-                closingRun.originalLength() % 3 != 0 &&
-                (openingRun.originalLength() + closingRun.originalLength()) % 3 == 0) {
+        if ((openingRun.canClose() || closingRun.canOpen())
+                && closingRun.originalLength() % 3 != 0
+                && (openingRun.originalLength() + closingRun.originalLength()) % 3 == 0) {
             return 0;
         }
 

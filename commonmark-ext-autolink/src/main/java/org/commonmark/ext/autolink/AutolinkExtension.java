@@ -2,7 +2,6 @@ package org.commonmark.ext.autolink;
 
 import java.util.EnumSet;
 import java.util.Set;
-
 import org.commonmark.Extension;
 import org.commonmark.ext.autolink.internal.AutolinkPostProcessor;
 import org.commonmark.parser.Parser;
@@ -10,14 +9,12 @@ import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
  * Extension for automatically turning plain URLs and email addresses into links.
- * <p>
- * Create it with {@link #create()} and then configure it on the builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * </p>
- * <p>
- * The parsed links are turned into normal {@link org.commonmark.node.Link} nodes.
- * </p>
+ *
+ * <p>Create it with {@link #create()} and then configure it on the builders ({@link
+ * org.commonmark.parser.Parser.Builder#extensions(Iterable)}, {@link
+ * HtmlRenderer.Builder#extensions(Iterable)}).
+ *
+ * <p>The parsed links are turned into normal {@link org.commonmark.node.Link} nodes.
  */
 public class AutolinkExtension implements Parser.ParserExtension {
 
@@ -51,8 +48,8 @@ public class AutolinkExtension implements Parser.ParserExtension {
         private Set<AutolinkType> linkTypes = EnumSet.allOf(AutolinkType.class);
 
         /**
-         * @param linkTypes the link types that should be converted. By default,
-         *                  all {@link AutolinkType}s are converted.
+         * @param linkTypes the link types that should be converted. By default, all {@link
+         *     AutolinkType}s are converted.
          * @return {@code this}
          */
         public Builder linkTypes(AutolinkType... linkTypes) {
@@ -64,8 +61,8 @@ public class AutolinkExtension implements Parser.ParserExtension {
         }
 
         /**
-         * @param linkTypes the link types that should be converted. By default,
-         *                  all {@link AutolinkType}s are converted.
+         * @param linkTypes the link types that should be converted. By default, all {@link
+         *     AutolinkType}s are converted.
          * @return {@code this}
          */
         public Builder linkTypes(Set<AutolinkType> linkTypes) {

@@ -1,5 +1,9 @@
 package org.commonmark.ext.ins;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
@@ -11,18 +15,14 @@ import org.commonmark.renderer.text.TextContentRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class InsTest extends RenderingTestCase {
 
     private static final Set<Extension> EXTENSIONS = Set.of(InsExtension.create());
     private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final HtmlRenderer RENDERER = HtmlRenderer.builder().extensions(EXTENSIONS).build();
-    private static final TextContentRenderer CONTENT_RENDERER = TextContentRenderer.builder()
-            .extensions(EXTENSIONS).build();
+    private static final HtmlRenderer RENDERER =
+            HtmlRenderer.builder().extensions(EXTENSIONS).build();
+    private static final TextContentRenderer CONTENT_RENDERER =
+            TextContentRenderer.builder().extensions(EXTENSIONS).build();
 
     @Test
     public void onePlusIsNotEnough() {
@@ -68,13 +68,15 @@ public class InsTest extends RenderingTestCase {
 
     @Test
     public void insWholeParagraphWithOtherDelimiters() {
-        assertRendering("++Paragraph with *emphasis* and __strong emphasis__++",
+        assertRendering(
+                "++Paragraph with *emphasis* and __strong emphasis__++",
                 "<p><ins>Paragraph with <em>emphasis</em> and <strong>strong emphasis</strong></ins></p>\n");
     }
 
     @Test
     public void insideBlockQuote() {
-        assertRendering("> underline ++that++",
+        assertRendering(
+                "> underline ++that++",
                 "<blockquote>\n<p>underline <ins>that</ins></p>\n</blockquote>\n");
     }
 
@@ -94,10 +96,11 @@ public class InsTest extends RenderingTestCase {
 
     @Test
     public void sourceSpans() {
-        Parser parser = Parser.builder()
-                .extensions(EXTENSIONS)
-                .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
-                .build();
+        Parser parser =
+                Parser.builder()
+                        .extensions(EXTENSIONS)
+                        .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                        .build();
 
         Node document = parser.parse("hey ++there++\n");
         Paragraph block = (Paragraph) document.getFirstChild();

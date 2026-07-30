@@ -1,5 +1,7 @@
 package org.commonmark.ext.gfm.tables.internal;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Block;
 import org.commonmark.node.Node;
@@ -9,9 +11,6 @@ import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.block.*;
 import org.commonmark.text.Characters;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TableBlockParser extends AbstractBlockParser {
 
@@ -42,8 +41,10 @@ public class TableBlockParser extends AbstractBlockParser {
         int pipe = Characters.find('|', content, state.getNextNonSpaceIndex());
         if (pipe != -1) {
             if (pipe == state.getNextNonSpaceIndex()) {
-                // If we *only* have a pipe character (and whitespace), that is not a valid table row and ends the table.
-                if (Characters.skipSpaceTab(content, pipe + 1, content.length()) == content.length()) {
+                // If we *only* have a pipe character (and whitespace), that is not a valid table
+                // row and ends the table.
+                if (Characters.skipSpaceTab(content, pipe + 1, content.length())
+                        == content.length()) {
                     // We also don't want the pipe to be added via lazy continuation.
                     canHaveLazyContinuationLines = false;
                     return BlockContinue.none();
@@ -88,7 +89,8 @@ public class TableBlockParser extends AbstractBlockParser {
         // Body starts at index 2. 0 is header, 1 is separator.
         for (int rowIndex = 2; rowIndex < rowLines.size(); rowIndex++) {
             SourceLine rowLine = rowLines.get(rowIndex);
-            SourceSpan sourceSpan = rowIndex < sourceSpans.size() ? sourceSpans.get(rowIndex) : null;
+            SourceSpan sourceSpan =
+                    rowIndex < sourceSpans.size() ? sourceSpans.get(rowIndex) : null;
             List<SourceLine> cells = split(rowLine);
             TableRow row = new TableRow();
             if (sourceSpan != null) {
@@ -103,7 +105,8 @@ public class TableBlockParser extends AbstractBlockParser {
             }
 
             if (body == null) {
-                // It's valid to have a table without body. In that case, don't add an empty TableBody node.
+                // It's valid to have a table without body. In that case, don't add an empty
+                // TableBody node.
                 body = new TableBody();
                 block.appendChild(body);
             }
@@ -152,9 +155,10 @@ public class TableBlockParser extends AbstractBlockParser {
             switch (c) {
                 case '\\':
                     if (i + 1 < cellEnd && row.charAt(i + 1) == '|') {
-                        // Pipe is special for table parsing. An escaped pipe doesn't result in a new cell, but is
-                        // passed down to inline parsing as an unescaped pipe. Note that that applies even for the `\|`
-                        // in an input like `\\|` - in other words, table parsing doesn't support escaping backslashes.
+                        // Pipe is special for table parsing. An escaped pipe doesn't result in a
+                        // new cell, but is passed down to inline parsing as an unescaped pipe. Note
+                        // that that applies even for the `\|` in an input like `\\|` - in other
+                        // words, table parsing doesn't support escaping backslashes.
                         sb.append('|');
                         i++;
                     } else {
@@ -176,7 +180,10 @@ public class TableBlockParser extends AbstractBlockParser {
         }
         if (sb.length() > 0) {
             String content = sb.toString();
-            cells.add(SourceLine.of(content, line.substring(cellStart, line.getContent().length()).getSourceSpan()));
+            cells.add(
+                    SourceLine.of(
+                            content,
+                            line.substring(cellStart, line.getContent().length()).getSourceSpan()));
         }
         return cells;
     }
@@ -211,7 +218,8 @@ public class TableBlockParser extends AbstractBlockParser {
                 case '-':
                 case ':':
                     if (pipes == 0 && !columns.isEmpty()) {
-                        // Need a pipe after the first column (first column doesn't need to start with one)
+                        // Need a pipe after the first column (first column doesn't need to start
+                        // with one)
                         return null;
                     }
                     boolean left = false;
@@ -274,9 +282,14 @@ public class TableBlockParser extends AbstractBlockParser {
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
             List<SourceLine> paragraphLines = matchedBlockParser.getParagraphLines().getLines();
-            if (!paragraphLines.isEmpty() && Characters.find('|', paragraphLines.get(paragraphLines.size() - 1).getContent(), 0) != -1) {
+            if (paragraphLines.isEmpty()) {
+                return BlockStart.none();
+            }
+            var previousLine = paragraphLines.get(paragraphLines.size() - 1).getContent();
+            if (Characters.find('|', previousLine, 0) != -1) {
                 SourceLine line = state.getLine();
-                SourceLine separatorLine = line.substring(state.getIndex(), line.getContent().length());
+                SourceLine separatorLine =
+                        line.substring(state.getIndex(), line.getContent().length());
                 List<TableCellInfo> columns = parseSeparator(separatorLine.getContent());
                 if (columns != null && !columns.isEmpty()) {
                     SourceLine paragraph = paragraphLines.get(paragraphLines.size() - 1);

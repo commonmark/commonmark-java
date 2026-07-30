@@ -1,13 +1,12 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.commonmark.ext.gfm.alerts.Alert;
 import org.commonmark.ext.gfm.alerts.AlertTitle;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
 
@@ -15,7 +14,8 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
     private final HtmlNodeRendererContext context;
     private final Map<String, String> allowedTypes;
 
-    public AlertHtmlNodeRenderer(HtmlNodeRendererContext context, Map<String, String> allowedTypes) {
+    public AlertHtmlNodeRenderer(
+            HtmlNodeRendererContext context, Map<String, String> allowedTypes) {
         this.htmlWriter = context.getWriter();
         this.context = context;
         this.allowedTypes = allowedTypes;
@@ -39,7 +39,8 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
         htmlWriter.line();
 
         // Render alert title
-        htmlWriter.tag("p", context.extendAttributes(alert, "p", Map.of("class", "markdown-alert-title")));
+        htmlWriter.tag(
+                "p", context.extendAttributes(alert, "p", Map.of("class", "markdown-alert-title")));
         var first = alert.getFirstChild();
         if (first instanceof AlertTitle) {
             renderChildren(first);

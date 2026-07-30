@@ -2,9 +2,7 @@ package org.commonmark.ext.gfm.tables;
 
 import org.commonmark.node.CustomNode;
 
-/**
- * Table cell of a {@link TableRow} containing inline nodes.
- */
+/** Table cell of a {@link TableRow} containing inline nodes. */
 public class TableCell extends CustomNode {
 
     private boolean header;
@@ -34,7 +32,8 @@ public class TableCell extends CustomNode {
     }
 
     /**
-     * @return the cell width (the number of dash and colon characters in the delimiter row of the table for this column)
+     * @return the cell width (the number of dash and colon characters in the delimiter row of the
+     *     table for this column)
      */
     public int getWidth() {
         return width;
@@ -44,11 +43,10 @@ public class TableCell extends CustomNode {
         this.width = width;
     }
 
-    /**
-     * How the cell is aligned horizontally.
-     */
+    /** How the cell is aligned horizontally. */
     public enum Alignment {
-        LEFT, CENTER, RIGHT
+        LEFT,
+        CENTER,
+        RIGHT
     }
-
 }

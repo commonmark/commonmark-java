@@ -28,7 +28,8 @@ public class InsDelimiterProcessor implements DelimiterProcessor {
     @Override
     public int process(DelimiterRun openingRun, DelimiterRun closingRun) {
         if (openingRun.length() >= 2 && closingRun.length() >= 2) {
-            // Use exactly two delimiters even if we have more, and don't care about internal openers/closers.
+            // Use exactly two delimiters even if we have more, and don't care about internal
+            // openers/closers.
 
             Text opener = openingRun.getOpener();
 

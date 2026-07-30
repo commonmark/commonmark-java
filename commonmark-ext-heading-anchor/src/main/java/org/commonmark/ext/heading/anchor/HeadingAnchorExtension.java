@@ -6,17 +6,20 @@ import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
  * Extension for adding auto generated IDs to headings.
- * <p>
- * Create it with {@link #create()} or {@link #builder()} and then configure it on the
- * renderer builder ({@link HtmlRenderer.Builder#extensions(Iterable)}).
- * <p>
- * The heading text will be used to create the id. Multiple headings with the
- * same text will result in appending a hyphen and number. For example:
+ *
+ * <p>Create it with {@link #create()} or {@link #builder()} and then configure it on the renderer
+ * builder ({@link HtmlRenderer.Builder#extensions(Iterable)}).
+ *
+ * <p>The heading text will be used to create the id. Multiple headings with the same text will
+ * result in appending a hyphen and number. For example:
+ *
  * <pre><code>
  * # Heading
  * # Heading
  * </code></pre>
+ *
  * will result in
+ *
  * <pre><code>
  * &lt;h1 id="heading"&gt;Heading&lt;/h1&gt;
  * &lt;h1 id="heading-1"&gt;Heading&lt;/h1&gt;
@@ -52,7 +55,8 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
 
     @Override
     public void extend(HtmlRenderer.Builder rendererBuilder) {
-        rendererBuilder.attributeProviderFactory(context -> HeadingIdAttributeProvider.create(defaultId, idPrefix, idSuffix));
+        rendererBuilder.attributeProviderFactory(
+                context -> HeadingIdAttributeProvider.create(defaultId, idPrefix, idSuffix));
     }
 
     public static class Builder {
@@ -61,7 +65,8 @@ public class HeadingAnchorExtension implements HtmlRenderer.HtmlRendererExtensio
         private String idSuffix = "";
 
         /**
-         * @param value Default value for the id to take if no generated id can be extracted. Default "id"
+         * @param value Default value for the id to take if no generated id can be extracted.
+         *     Default "id"
          * @return {@code this}
          */
         public Builder defaultId(String value) {

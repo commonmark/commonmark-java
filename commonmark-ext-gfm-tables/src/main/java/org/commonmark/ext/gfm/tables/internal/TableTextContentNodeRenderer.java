@@ -10,7 +10,8 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.renderer.text.TextContentWriter;
 
 /**
- * The Table node renderer that is needed for rendering GFM tables (GitHub Flavored Markdown) to text content.
+ * The Table node renderer that is needed for rendering GFM tables (GitHub Flavored Markdown) to
+ * text content.
  */
 public class TableTextContentNodeRenderer extends TableNodeRenderer {
 

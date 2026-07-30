@@ -1,8 +1,8 @@
 package org.commonmark.text;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 public class CharactersTest {
 
@@ -10,14 +10,48 @@ public class CharactersTest {
     public void isPunctuation() {
         // From https://spec.commonmark.org/0.29/#ascii-punctuation-character
         char[] chars = {
-                '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', // (U+0021–2F)
-                ':', ';', '<', '=', '>', '?', '@', // (U+003A–0040)
-                '[', '\\', ']', '^', '_', '`', // (U+005B–0060)
-                '{', '|', '}', '~' // (U+007B–007E)
+            // (U+0021–2F)
+            '!',
+            '"',
+            '#',
+            '$',
+            '%',
+            '&',
+            '\'',
+            '(',
+            ')',
+            '*',
+            '+',
+            ',',
+            '-',
+            '.',
+            '/',
+            // (U+003A–0040)
+            ':',
+            ';',
+            '<',
+            '=',
+            '>',
+            '?',
+            '@',
+            // (U+005B–0060)
+            '[',
+            '\\',
+            ']',
+            '^',
+            '_',
+            '`',
+            // (U+007B–007E)
+            '{',
+            '|',
+            '}',
+            '~'
         };
 
         for (char c : chars) {
-            assertThat(Characters.isPunctuationCodePoint(c)).as("Expected to be punctuation: " + c).isTrue();
+            assertThat(Characters.isPunctuationCodePoint(c))
+                    .as("Expected to be punctuation: " + c)
+                    .isTrue();
         }
     }
 

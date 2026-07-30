@@ -1,26 +1,23 @@
 package org.commonmark.ext.heading.anchor.internal;
 
-import org.commonmark.ext.heading.anchor.IdGenerator;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.node.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.commonmark.ext.heading.anchor.IdGenerator;
+import org.commonmark.node.*;
+import org.commonmark.renderer.html.AttributeProvider;
 
 public class HeadingIdAttributeProvider implements AttributeProvider {
 
     private final IdGenerator idGenerator;
 
     private HeadingIdAttributeProvider(String defaultId, String prefix, String suffix) {
-        idGenerator = IdGenerator.builder()
-                .defaultId(defaultId)
-                .prefix(prefix)
-                .suffix(suffix)
-                .build();
+        idGenerator =
+                IdGenerator.builder().defaultId(defaultId).prefix(prefix).suffix(suffix).build();
     }
 
-    public static HeadingIdAttributeProvider create(String defaultId, String prefix, String suffix) {
+    public static HeadingIdAttributeProvider create(
+            String defaultId, String prefix, String suffix) {
         return new HeadingIdAttributeProvider(defaultId, prefix, suffix);
     }
 
@@ -31,17 +28,18 @@ public class HeadingIdAttributeProvider implements AttributeProvider {
 
             final List<String> wordList = new ArrayList<>();
 
-            node.accept(new AbstractVisitor() {
-                @Override
-                public void visit(Text text) {
-                    wordList.add(text.getLiteral());
-                }
+            node.accept(
+                    new AbstractVisitor() {
+                        @Override
+                        public void visit(Text text) {
+                            wordList.add(text.getLiteral());
+                        }
 
-                @Override
-                public void visit(Code code) {
-                    wordList.add(code.getLiteral());
-                }
-            });
+                        @Override
+                        public void visit(Code code) {
+                            wordList.add(code.getLiteral());
+                        }
+                    });
 
             String finalString = "";
             for (String word : wordList) {

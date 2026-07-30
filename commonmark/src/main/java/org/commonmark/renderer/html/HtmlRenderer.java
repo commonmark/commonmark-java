@@ -1,17 +1,17 @@
 package org.commonmark.renderer.html;
 
+import java.util.*;
 import org.commonmark.Extension;
 import org.commonmark.internal.renderer.NodeRendererMap;
 import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.*;
 import org.commonmark.renderer.Renderer;
 
-import java.util.*;
-
 /**
  * Renders a tree of nodes to HTML.
- * <p>
- * Start with the {@link #builder} method to configure the renderer. Example:
+ *
+ * <p>Start with the {@link #builder} method to configure the renderer. Example:
+ *
  * <pre><code>
  * HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
  * renderer.render(node);
@@ -69,9 +69,7 @@ public class HtmlRenderer implements Renderer {
         return sb.toString();
     }
 
-    /**
-     * Builder for configuring an {@link HtmlRenderer}. See methods for default configuration.
-     */
+    /** Builder for configuring an {@link HtmlRenderer}. See methods for default configuration. */
     public static class Builder {
 
         private String softbreak = "\n";
@@ -91,12 +89,12 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
-         * The HTML to use for rendering a softbreak, defaults to {@code "\n"} (meaning the rendered result doesn't have
-         * a line break).
-         * <p>
-         * Set it to {@code "<br>"} (or {@code "<br />"} to make them hard breaks.
-         * <p>
-         * Set it to {@code " "} to ignore line wrapping in the source.
+         * The HTML to use for rendering a softbreak, defaults to {@code "\n"} (meaning the rendered
+         * result doesn't have a line break).
+         *
+         * <p>Set it to {@code "<br>"} (or {@code "<br />"} to make them hard breaks.
+         *
+         * <p>Set it to {@code " "} to ignore line wrapping in the source.
          *
          * @param softbreak HTML for softbreak
          * @return {@code this}
@@ -107,10 +105,12 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
-         * Whether {@link HtmlInline} and {@link HtmlBlock} should be escaped, defaults to {@code false}.
-         * <p>
-         * Note that {@link HtmlInline} is only a tag itself, not the text between an opening tag and a closing tag. So
-         * markup in the text will be parsed as normal and is not affected by this option.
+         * Whether {@link HtmlInline} and {@link HtmlBlock} should be escaped, defaults to {@code
+         * false}.
+         *
+         * <p>Note that {@link HtmlInline} is only a tag itself, not the text between an opening tag
+         * and a closing tag. So markup in the text will be parsed as normal and is not affected by
+         * this option.
          *
          * @param escapeHtml true for escaping, false for preserving raw HTML
          * @return {@code this}
@@ -121,7 +121,8 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
-         * Whether {@link Image} src and {@link Link} href should be sanitized, defaults to {@code false}.
+         * Whether {@link Image} src and {@link Link} href should be sanitized, defaults to {@code
+         * false}.
          *
          * @param sanitizeUrls true for sanitization, false for preserving raw attribute
          * @return {@code this}
@@ -146,13 +147,15 @@ public class HtmlRenderer implements Renderer {
 
         /**
          * Whether URLs of link or images should be percent-encoded, defaults to {@code false}.
-         * <p>
-         * If enabled, the following is done:
+         *
+         * <p>If enabled, the following is done:
+         *
          * <ul>
-         * <li>Existing percent-encoded parts are preserved (e.g. "%20" is kept as "%20")</li>
-         * <li>Reserved characters such as "/" are preserved, except for "[" and "]" (see encodeURI in JS)</li>
-         * <li>Unreserved characters such as "a" are preserved</li>
-         * <li>Other characters such umlauts are percent-encoded</li>
+         *   <li>Existing percent-encoded parts are preserved (e.g. "%20" is kept as "%20")
+         *   <li>Reserved characters such as "/" are preserved, except for "[" and "]" (see
+         *       encodeURI in JS)
+         *   <li>Unreserved characters such as "a" are preserved
+         *   <li>Other characters such umlauts are percent-encoded
          * </ul>
          *
          * @param percentEncodeUrls true to percent-encode, false for leaving as-is
@@ -164,8 +167,9 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
-         * Whether documents that only contain a single paragraph should be rendered without the {@code <p>} tag. Set to
-         * {@code true} to render without the tag; the default of {@code false} always renders the tag.
+         * Whether documents that only contain a single paragraph should be rendered without the
+         * {@code <p>} tag. Set to {@code true} to render without the tag; the default of {@code
+         * false} always renders the tag.
          *
          * @return {@code this}
          */
@@ -175,23 +179,26 @@ public class HtmlRenderer implements Renderer {
         }
 
         /**
-         * Add a factory for an attribute provider for adding/changing HTML attributes to the rendered tags.
+         * Add a factory for an attribute provider for adding/changing HTML attributes to the
+         * rendered tags.
          *
          * @param attributeProviderFactory the attribute provider factory to add
          * @return {@code this}
          */
         public Builder attributeProviderFactory(AttributeProviderFactory attributeProviderFactory) {
-            Objects.requireNonNull(attributeProviderFactory, "attributeProviderFactory must not be null");
+            Objects.requireNonNull(
+                    attributeProviderFactory, "attributeProviderFactory must not be null");
             this.attributeProviderFactories.add(attributeProviderFactory);
             return this;
         }
 
         /**
-         * Add a factory for instantiating a node renderer (done when rendering). This allows to override the rendering
-         * of node types or define rendering for custom node types.
-         * <p>
-         * If multiple node renderers for the same node type are created, the one from the factory that was added first
-         * "wins". (This is how the rendering for core node types can be overridden; the default rendering comes last.)
+         * Add a factory for instantiating a node renderer (done when rendering). This allows to
+         * override the rendering of node types or define rendering for custom node types.
+         *
+         * <p>If multiple node renderers for the same node type are created, the one from the
+         * factory that was added first "wins". (This is how the rendering for core node types can
+         * be overridden; the default rendering comes last.)
          *
          * @param nodeRendererFactory the factory for creating a node renderer
          * @return {@code this}
@@ -218,9 +225,7 @@ public class HtmlRenderer implements Renderer {
         }
     }
 
-    /**
-     * Extension for {@link HtmlRenderer}.
-     */
+    /** Extension for {@link HtmlRenderer}. */
     public interface HtmlRendererExtension extends Extension {
         void extend(Builder rendererBuilder);
     }
@@ -275,7 +280,8 @@ public class HtmlRenderer implements Renderer {
         }
 
         @Override
-        public Map<String, String> extendAttributes(Node node, String tagName, Map<String, String> attributes) {
+        public Map<String, String> extendAttributes(
+                Node node, String tagName, Map<String, String> attributes) {
             Map<String, String> attrs = new LinkedHashMap<>(attributes);
             setCustomAttributes(node, tagName, attrs);
             return attrs;

@@ -1,16 +1,13 @@
 package org.commonmark.ext.footnotes.internal;
 
+import java.util.List;
 import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.node.Block;
 import org.commonmark.node.DefinitionMap;
 import org.commonmark.parser.block.*;
 import org.commonmark.text.Characters;
 
-import java.util.List;
-
-/**
- * Parser for a single {@link FootnoteDefinition} block.
- */
+/** Parser for a single {@link FootnoteDefinition} block. */
 public class FootnoteBlockParser extends AbstractBlockParser {
 
     private final FootnoteDefinition block;
@@ -37,16 +34,18 @@ public class FootnoteBlockParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
         if (parserState.getIndent() >= 4) {
-            // It looks like content needs to be indented by 4 so that it's part of a footnote (instead of starting a new block).
+            // It looks like content needs to be indented by 4 so that it's part of a footnote
+            // (instead of starting a new block).
             return BlockContinue.atColumn(4);
         } else if (parserState.isBlank()) {
-            // A blank line doesn't finish a footnote yet. If there's another line with indent >= 4 after it,
-            // that should result in another paragraph in this footnote definition.
+            // A blank line doesn't finish a footnote yet. If there's another line with indent >= 4
+            // after it, that should result in another paragraph in this footnote definition.
             return BlockContinue.atIndex(parserState.getIndex());
         } else {
-            // We're not continuing to give other block parsers a chance to interrupt this definition.
-            // But if no other block parser applied (including another FootnotesBlockParser), we will
-            // accept the line via lazy continuation (same as a block quote).
+            // We're not continuing to give other block parsers a chance to interrupt this
+            // definition. But if no other block parser applied (including another
+            // FootnotesBlockParser), we will accept the line via lazy continuation (same as a block
+            // quote).
             return BlockContinue.none();
         }
     }
@@ -82,11 +81,16 @@ public class FootnoteBlockParser extends AbstractBlockParser {
                 var c = content.charAt(index);
                 switch (c) {
                     case ']':
-                        if (index > labelStart && index + 1 < content.length() && content.charAt(index + 1) == ':') {
+                        if (index > labelStart
+                                && index + 1 < content.length()
+                                && content.charAt(index + 1) == ':') {
                             var label = content.subSequence(labelStart, index).toString();
-                            // After the colon, any number of spaces is skipped (not part of the content)
-                            var afterSpaces = Characters.skipSpaceTab(content, index + 2, content.length());
-                            return BlockStart.of(new FootnoteBlockParser(label)).atIndex(afterSpaces);
+                            // After the colon, any number of spaces is skipped (not part of the
+                            // content)
+                            var afterSpaces =
+                                    Characters.skipSpaceTab(content, index + 2, content.length());
+                            return BlockStart.of(new FootnoteBlockParser(label))
+                                    .atIndex(afterSpaces);
                         } else {
                             return BlockStart.none();
                         }

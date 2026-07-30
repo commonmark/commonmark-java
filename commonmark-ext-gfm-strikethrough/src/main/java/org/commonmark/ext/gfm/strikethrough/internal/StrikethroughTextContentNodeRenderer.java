@@ -1,8 +1,8 @@
 package org.commonmark.ext.gfm.strikethrough.internal;
 
-import org.commonmark.renderer.text.TextContentWriter;
-import org.commonmark.renderer.text.TextContentNodeRendererContext;
 import org.commonmark.node.Node;
+import org.commonmark.renderer.text.TextContentNodeRendererContext;
+import org.commonmark.renderer.text.TextContentWriter;
 
 public class StrikethroughTextContentNodeRenderer extends StrikethroughNodeRenderer {
 

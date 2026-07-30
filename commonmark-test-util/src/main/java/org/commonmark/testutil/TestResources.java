@@ -20,13 +20,14 @@ public class TestResources {
     public static List<URL> getRegressions() {
         return List.of(
                 TestResources.class.getResource("/cmark-regression.txt"),
-                TestResources.class.getResource("/commonmark.js-regression.txt")
-        );
+                TestResources.class.getResource("/commonmark.js-regression.txt"));
     }
 
     public static String readAsString(URL url) {
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(
+                        new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);

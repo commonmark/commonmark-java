@@ -13,19 +13,18 @@ import org.commonmark.renderer.markdown.MarkdownRenderer;
 
 /**
  * Extension for YAML-like metadata.
- * <p>
- * Create it with {@link #create()} and then configure it on the builders
- * ({@link org.commonmark.parser.Parser.Builder#extensions(Iterable)},
- * {@link HtmlRenderer.Builder#extensions(Iterable)}).
- * </p>
- * <p>
- * The parsed metadata is turned into {@link YamlFrontMatterNode}. You can access the metadata using {@link YamlFrontMatterVisitor}.
- * </p>
+ *
+ * <p>Create it with {@link #create()} and then configure it on the builders ({@link
+ * org.commonmark.parser.Parser.Builder#extensions(Iterable)}, {@link
+ * HtmlRenderer.Builder#extensions(Iterable)}).
+ *
+ * <p>The parsed metadata is turned into {@link YamlFrontMatterNode}. You can access the metadata
+ * using {@link YamlFrontMatterVisitor}.
  */
-public class YamlFrontMatterExtension implements Parser.ParserExtension, MarkdownRenderer.MarkdownRendererExtension {
+public class YamlFrontMatterExtension
+        implements Parser.ParserExtension, MarkdownRenderer.MarkdownRendererExtension {
 
-    private YamlFrontMatterExtension() {
-    }
+    private YamlFrontMatterExtension() {}
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
@@ -38,16 +37,17 @@ public class YamlFrontMatterExtension implements Parser.ParserExtension, Markdow
 
     @Override
     public void extend(MarkdownRenderer.Builder rendererBuilder) {
-        rendererBuilder.nodeRendererFactory(new MarkdownNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(MarkdownNodeRendererContext context) {
-                return new YamlFrontMatterMarkdownNodeRenderer(context);
-            }
+        rendererBuilder.nodeRendererFactory(
+                new MarkdownNodeRendererFactory() {
+                    @Override
+                    public NodeRenderer create(MarkdownNodeRendererContext context) {
+                        return new YamlFrontMatterMarkdownNodeRenderer(context);
+                    }
 
-            @Override
-            public Set<Character> getSpecialCharacters() {
-                return Set.of();
-            }
-        });
+                    @Override
+                    public Set<Character> getSpecialCharacters() {
+                        return Set.of();
+                    }
+                });
     }
 }

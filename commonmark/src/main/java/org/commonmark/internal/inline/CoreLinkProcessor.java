@@ -28,9 +28,11 @@ public class CoreLinkProcessor implements LinkProcessor {
         return LinkResult.none();
     }
 
-    private static LinkResult process(LinkInfo linkInfo, Scanner scanner, String destination, String title) {
+    private static LinkResult process(
+            LinkInfo linkInfo, Scanner scanner, String destination, String title) {
         if (linkInfo.marker() != null && linkInfo.marker().getLiteral().equals("!")) {
-            return LinkResult.wrapTextIn(new Image(destination, title), scanner.position()).includeMarker();
+            return LinkResult.wrapTextIn(new Image(destination, title), scanner.position())
+                    .includeMarker();
         }
         return LinkResult.wrapTextIn(new Link(destination, title), scanner.position());
     }

@@ -1,5 +1,8 @@
 package org.commonmark.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.testutil.TestResources;
@@ -9,21 +12,14 @@ import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * Tests various substrings of the spec examples to check for out of bounds exceptions.
- */
+/** Tests various substrings of the spec examples to check for out of bounds exceptions. */
 @ParameterizedClass
 @MethodSource("data")
 public class BoundsIntegrationTest {
 
     private static final Parser PARSER = Parser.builder().build();
 
-    @Parameter
-    String input;
+    @Parameter String input;
 
     static List<String> data() {
         return ExampleReader.readExampleSources(TestResources.getSpec());

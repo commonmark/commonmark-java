@@ -2,8 +2,8 @@ package org.commonmark.node;
 
 /**
  * Node visitor.
- * <p>
- * Implementations should subclass {@link AbstractVisitor} instead of implementing this directly.
+ *
+ * <p>Implementations should subclass {@link AbstractVisitor} instead of implementing this directly.
  */
 public interface Visitor {
 

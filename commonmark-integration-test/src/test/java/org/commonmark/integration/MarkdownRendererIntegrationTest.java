@@ -1,15 +1,17 @@
 package org.commonmark.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class MarkdownRendererIntegrationTest {
 
-    private static final Parser PARSER = Parser.builder().extensions(Extensions.ALL_EXTENSIONS).build();
-    private static final MarkdownRenderer RENDERER = MarkdownRenderer.builder().extensions(Extensions.ALL_EXTENSIONS).build();
+    private static final Parser PARSER =
+            Parser.builder().extensions(Extensions.ALL_EXTENSIONS).build();
+    private static final MarkdownRenderer RENDERER =
+            MarkdownRenderer.builder().extensions(Extensions.ALL_EXTENSIONS).build();
 
     @Test
     public void testStrikethroughInTable() {

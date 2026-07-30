@@ -2,13 +2,10 @@ package org.commonmark.parser.block;
 
 import org.commonmark.internal.BlockContinueImpl;
 
-/**
- * Result object for continuing parsing of a block, see static methods for constructors.
- */
+/** Result object for continuing parsing of a block, see static methods for constructors. */
 public class BlockContinue {
 
-    protected BlockContinue() {
-    }
+    protected BlockContinue() {}
 
     public static BlockContinue none() {
         return null;
@@ -25,5 +22,4 @@ public class BlockContinue {
     public static BlockContinue finished() {
         return new BlockContinueImpl(-1, -1, true);
     }
-
 }

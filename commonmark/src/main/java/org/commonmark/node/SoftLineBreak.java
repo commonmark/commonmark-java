@@ -2,6 +2,7 @@ package org.commonmark.node;
 
 /**
  * A soft line break (as opposed to a {@link HardLineBreak}), e.g. between:
+ *
  * <pre>
  * foo
  * bar

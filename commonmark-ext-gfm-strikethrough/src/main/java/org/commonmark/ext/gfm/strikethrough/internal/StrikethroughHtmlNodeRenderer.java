@@ -1,10 +1,9 @@
 package org.commonmark.ext.gfm.strikethrough.internal;
 
+import java.util.Map;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
-
-import java.util.Map;
 
 public class StrikethroughHtmlNodeRenderer extends StrikethroughNodeRenderer {
 

@@ -1,9 +1,8 @@
 package org.commonmark.renderer.text;
 
+import java.util.Set;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
-
-import java.util.Set;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
@@ -42,8 +41,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
                 Code.class,
                 HtmlInline.class,
                 SoftLineBreak.class,
-                HardLineBreak.class
-        );
+                HardLineBreak.class);
     }
 
     @Override

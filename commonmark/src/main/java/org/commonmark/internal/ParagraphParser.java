@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import java.util.List;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
 import org.commonmark.parser.SourceLine;
@@ -8,12 +9,11 @@ import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
 
-import java.util.List;
-
 public class ParagraphParser extends AbstractBlockParser {
 
     private final Paragraph block = new Paragraph();
-    private final LinkReferenceDefinitionParser linkReferenceDefinitionParser = new LinkReferenceDefinitionParser();
+    private final LinkReferenceDefinitionParser linkReferenceDefinitionParser =
+            new LinkReferenceDefinitionParser();
 
     @Override
     public boolean canHaveLazyContinuationLines() {

@@ -1,5 +1,11 @@
 package org.commonmark.renderer.markdown;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -8,27 +14,22 @@ import org.commonmark.testutil.example.Example;
 import org.commonmark.testutil.example.ExampleReader;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Tests Markdown rendering using the examples in the spec like this:
+ *
  * <ol>
- * <li>Parses the source to an AST and then renders it back to Markdown</li>
- * <li>Parses that to an AST and then renders it to HTML</li>
- * <li>Compares that HTML to the expected HTML of the example:
- * If it's the same, then the expected elements were preserved in the Markdown rendering</li>
+ *   <li>Parses the source to an AST and then renders it back to Markdown
+ *   <li>Parses that to an AST and then renders it to HTML
+ *   <li>Compares that HTML to the expected HTML of the example: If it's the same, then the expected
+ *       elements were preserved in the Markdown rendering
  * </ol>
  */
 public class SpecMarkdownRendererTest {
 
     public static final MarkdownRenderer MARKDOWN_RENDERER = MarkdownRenderer.builder().build();
     // The spec says URL-escaping is optional, but the examples assume that it's enabled.
-    public static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().percentEncodeUrls(true).build();
+    public static final HtmlRenderer HTML_RENDERER =
+            HtmlRenderer.builder().percentEncodeUrls(true).build();
 
     @Test
     public void testCoverage() {

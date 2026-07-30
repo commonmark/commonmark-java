@@ -9,12 +9,9 @@ import java.util.Iterator;
  */
 public class Nodes {
 
-    private Nodes() {
-    }
+    private Nodes() {}
 
-    /**
-     * The nodes between (not including) start and end.
-     */
+    /** The nodes between (not including) start and end. */
     public static Iterable<Node> between(Node start, Node end) {
         return new NodeIterable(start.getNext(), end);
     }
@@ -63,4 +60,3 @@ public class Nodes {
         }
     }
 }
-

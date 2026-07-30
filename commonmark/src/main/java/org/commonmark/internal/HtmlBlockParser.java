@@ -1,12 +1,11 @@
 package org.commonmark.internal;
 
+import java.util.regex.Pattern;
 import org.commonmark.node.Block;
 import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.Paragraph;
 import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
-
-import java.util.regex.Pattern;
 
 public class HtmlBlockParser extends AbstractBlockParser {
 
@@ -15,63 +14,56 @@ public class HtmlBlockParser extends AbstractBlockParser {
     private static final String UNQUOTEDVALUE = "[^\"'=<>`\\x00-\\x20]+";
     private static final String SINGLEQUOTEDVALUE = "'[^']*'";
     private static final String DOUBLEQUOTEDVALUE = "\"[^\"]*\"";
-    private static final String ATTRIBUTEVALUE = "(?:" + UNQUOTEDVALUE + "|" + SINGLEQUOTEDVALUE
-            + "|" + DOUBLEQUOTEDVALUE + ")";
-    private static final String ATTRIBUTEVALUESPEC = "(?:" + "\\s*=" + "\\s*" + ATTRIBUTEVALUE
-            + ")";
-    private static final String ATTRIBUTE = "(?:" + "\\s+" + ATTRIBUTENAME + ATTRIBUTEVALUESPEC
-            + "?)";
+    private static final String ATTRIBUTEVALUE =
+            "(?:" + UNQUOTEDVALUE + "|" + SINGLEQUOTEDVALUE + "|" + DOUBLEQUOTEDVALUE + ")";
+    private static final String ATTRIBUTEVALUESPEC =
+            "(?:" + "\\s*=" + "\\s*" + ATTRIBUTEVALUE + ")";
+    private static final String ATTRIBUTE =
+            "(?:" + "\\s+" + ATTRIBUTENAME + ATTRIBUTEVALUESPEC + "?)";
 
     private static final String OPENTAG = "<" + TAGNAME + ATTRIBUTE + "*" + "\\s*/?>";
     private static final String CLOSETAG = "</" + TAGNAME + "\\s*[>]";
 
-    private static final Pattern[][] BLOCK_PATTERNS = new Pattern[][]{
-            {null, null}, // not used (no type 0)
-            {
-                    Pattern.compile("^<(?:script|pre|style|textarea)(?:\\s|>|$)", Pattern.CASE_INSENSITIVE),
+    private static final Pattern[][] BLOCK_PATTERNS =
+            new Pattern[][] {
+                {null, null}, // not used (no type 0)
+                {
+                    Pattern.compile(
+                            "^<(?:script|pre|style|textarea)(?:\\s|>|$)", Pattern.CASE_INSENSITIVE),
                     Pattern.compile("</(?:script|pre|style|textarea)>", Pattern.CASE_INSENSITIVE)
-            },
-            {
-                    Pattern.compile("^<!--"),
-                    Pattern.compile("-->")
-            },
-            {
-                    Pattern.compile("^<[?]"),
-                    Pattern.compile("\\?>")
-            },
-            {
-                    Pattern.compile("^<![A-Z]"),
-                    Pattern.compile(">")
-            },
-            {
-                    Pattern.compile("^<!\\[CDATA\\["),
-                    Pattern.compile("\\]\\]>")
-            },
-            {
-                    Pattern.compile("^</?(?:" +
-                            "address|article|aside|" +
-                            "base|basefont|blockquote|body|" +
-                            "caption|center|col|colgroup|" +
-                            "dd|details|dialog|dir|div|dl|dt|" +
-                            "fieldset|figcaption|figure|footer|form|frame|frameset|" +
-                            "h1|h2|h3|h4|h5|h6|head|header|hr|html|" +
-                            "iframe|" +
-                            "legend|li|link|" +
-                            "main|menu|menuitem|" +
-                            "nav|noframes|" +
-                            "ol|optgroup|option|" +
-                            "p|param|" +
-                            "search|section|summary|" +
-                            "table|tbody|td|tfoot|th|thead|title|tr|track|" +
-                            "ul" +
-                            ")(?:\\s|[/]?[>]|$)", Pattern.CASE_INSENSITIVE),
+                },
+                {Pattern.compile("^<!--"), Pattern.compile("-->")},
+                {Pattern.compile("^<[?]"), Pattern.compile("\\?>")},
+                {Pattern.compile("^<![A-Z]"), Pattern.compile(">")},
+                {Pattern.compile("^<!\\[CDATA\\["), Pattern.compile("\\]\\]>")},
+                {
+                    Pattern.compile(
+                            "^</?(?:"
+                                    + "address|article|aside|"
+                                    + "base|basefont|blockquote|body|"
+                                    + "caption|center|col|colgroup|"
+                                    + "dd|details|dialog|dir|div|dl|dt|"
+                                    + "fieldset|figcaption|figure|footer|form|frame|frameset|"
+                                    + "h1|h2|h3|h4|h5|h6|head|header|hr|html|"
+                                    + "iframe|"
+                                    + "legend|li|link|"
+                                    + "main|menu|menuitem|"
+                                    + "nav|noframes|"
+                                    + "ol|optgroup|option|"
+                                    + "p|param|"
+                                    + "search|section|summary|"
+                                    + "table|tbody|td|tfoot|th|thead|title|tr|track|"
+                                    + "ul"
+                                    + ")(?:\\s|[/]?[>]|$)",
+                            Pattern.CASE_INSENSITIVE),
                     null // terminated by blank line
-            },
-            {
-                    Pattern.compile("^(?:" + OPENTAG + '|' + CLOSETAG + ")\\s*$", Pattern.CASE_INSENSITIVE),
+                },
+                {
+                    Pattern.compile(
+                            "^(?:" + OPENTAG + '|' + CLOSETAG + ")\\s*$", Pattern.CASE_INSENSITIVE),
                     null // terminated by blank line
-            }
-    };
+                }
+            };
 
     private final HtmlBlock block = new HtmlBlock();
     private final Pattern closingPattern;
@@ -127,14 +119,17 @@ public class HtmlBlockParser extends AbstractBlockParser {
             if (state.getIndent() < 4 && line.charAt(nextNonSpace) == '<') {
                 for (int blockType = 1; blockType <= 7; blockType++) {
                     // Type 7 can not interrupt a paragraph (not even a lazy one)
-                    if (blockType == 7 && (
-                            matchedBlockParser.getMatchedBlockParser().getBlock() instanceof Paragraph ||
-                                    state.getActiveBlockParser().canHaveLazyContinuationLines())) {
+                    if (blockType == 7
+                            && (matchedBlockParser.getMatchedBlockParser().getBlock()
+                                            instanceof Paragraph
+                                    || state.getActiveBlockParser()
+                                            .canHaveLazyContinuationLines())) {
                         continue;
                     }
                     Pattern opener = BLOCK_PATTERNS[blockType][0];
                     Pattern closer = BLOCK_PATTERNS[blockType][1];
-                    boolean matches = opener.matcher(line.subSequence(nextNonSpace, line.length())).find();
+                    boolean matches =
+                            opener.matcher(line.subSequence(nextNonSpace, line.length())).find();
                     if (matches) {
                         return BlockStart.of(new HtmlBlockParser(closer)).atIndex(state.getIndex());
                     }

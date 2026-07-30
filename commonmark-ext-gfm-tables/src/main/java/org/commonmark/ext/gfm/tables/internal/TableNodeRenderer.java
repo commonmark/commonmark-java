@@ -1,10 +1,9 @@
 package org.commonmark.ext.gfm.tables.internal;
 
+import java.util.Set;
 import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.NodeRenderer;
-
-import java.util.Set;
 
 abstract class TableNodeRenderer implements NodeRenderer {
 
@@ -15,8 +14,7 @@ abstract class TableNodeRenderer implements NodeRenderer {
                 TableHead.class,
                 TableBody.class,
                 TableRow.class,
-                TableCell.class
-        );
+                TableCell.class);
     }
 
     @Override

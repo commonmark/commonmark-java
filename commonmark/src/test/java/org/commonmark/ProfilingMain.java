@@ -1,17 +1,17 @@
 package org.commonmark;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.TestResources;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ProfilingMain {
 
     private static final String SPEC = TestResources.readAsString(TestResources.getSpec());
-    //    private static final List<String> SPEC_EXAMPLES = ExampleReader.readExampleSources(TestResources.getSpec());
+    //    private static final List<String> SPEC_EXAMPLES =
+    // ExampleReader.readExampleSources(TestResources.getSpec());
     private static final Parser PARSER = Parser.builder().build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
 

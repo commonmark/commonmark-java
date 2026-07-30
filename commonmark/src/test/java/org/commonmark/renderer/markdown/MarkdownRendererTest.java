@@ -1,14 +1,13 @@
 package org.commonmark.renderer.markdown;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.commonmark.testutil.Asserts.assertRendering;
+
+import java.util.Set;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.junit.jupiter.api.Test;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.commonmark.testutil.Asserts.assertRendering;
 
 public class MarkdownRendererTest {
 
@@ -120,12 +119,14 @@ public class MarkdownRendererTest {
         // Tight list where the second item contains a loose list
         assertRoundTrip("- Foo\n  - Bar\n  \n  - Baz\n");
 
-        // List item indent. This is a tricky one, but here the amount of space between the list marker and "one"
-        // determines whether "two" is part of the list item or an indented code block.
-        // In this case, it's an indented code block because it's not indented enough to be part of the list item.
-        // If the renderer would just use "- one", then "two" would change from being an indented code block to being
-        // a paragraph in the list item! So it is important for the renderer to preserve the content indent of the list
-        // item.
+        // List item indent. This is a tricky one, but here the amount of space between the list
+        // marker and "one" determines whether "two" is part of the list item or an indented code
+        // block.
+        // In this case, it's an indented code block because it's not indented enough to be part of
+        // the list item.
+        // If the renderer would just use "- one", then "two" would change from being an indented
+        // code block to being a paragraph in the list item! So it is important for the renderer to
+        // preserve the content indent of the list item.
         assertRoundTrip(" -    one\n\n     two\n");
 
         // Empty list
@@ -192,8 +193,8 @@ public class MarkdownRendererTest {
 
     @Test
     public void testEscaping() {
-        // These are a bit tricky. We always escape some characters, even though they only need escaping if they would
-        // otherwise result in a different parse result (e.g. a link):
+        // These are a bit tricky. We always escape some characters, even though they only need
+        // escaping if they would otherwise result in a different parse result (e.g. a link):
         assertRoundTrip("\\[a\\](/uri)\n");
         assertRoundTrip("\\`abc\\`\n");
 
@@ -250,7 +251,8 @@ public class MarkdownRendererTest {
         // Not emphasis (needs * inside words)
         assertRoundTrip("foo\\_bar\\_\n");
 
-        // Even when rendering a manually constructed tree, the emphasis delimiter needs to be chosen correctly.
+        // Even when rendering a manually constructed tree, the emphasis delimiter needs to be
+        // chosen correctly.
         Document doc = new Document();
         Paragraph p = new Paragraph();
         doc.appendChild(p);
@@ -312,29 +314,31 @@ public class MarkdownRendererTest {
 
     @Test
     public void overrideNodeRender() {
-        var nodeRendererFactory = new MarkdownNodeRendererFactory() {
-            @Override
-            public NodeRenderer create(MarkdownNodeRendererContext context) {
-                return new NodeRenderer() {
+        var nodeRendererFactory =
+                new MarkdownNodeRendererFactory() {
                     @Override
-                    public Set<Class<? extends Node>> getNodeTypes() {
-                        return Set.of(Heading.class);
+                    public NodeRenderer create(MarkdownNodeRendererContext context) {
+                        return new NodeRenderer() {
+                            @Override
+                            public Set<Class<? extends Node>> getNodeTypes() {
+                                return Set.of(Heading.class);
+                            }
+
+                            @Override
+                            public void render(Node node) {
+                                context.getWriter().raw("# Custom heading");
+                            }
+                        };
                     }
 
                     @Override
-                    public void render(Node node) {
-                        context.getWriter().raw("# Custom heading");
+                    public Set<Character> getSpecialCharacters() {
+                        return Set.of();
                     }
                 };
-            }
 
-            @Override
-            public Set<Character> getSpecialCharacters() {
-                return Set.of();
-            }
-        };
-
-        MarkdownRenderer renderer = MarkdownRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
+        MarkdownRenderer renderer =
+                MarkdownRenderer.builder().nodeRendererFactory(nodeRendererFactory).build();
         String rendered = renderer.render(parse("# Hello"));
         assertThat(rendered).isEqualTo("# Custom heading\n");
     }
