@@ -21,6 +21,7 @@ with the exception that 0.x versions can break between minor versions.
 ### Fixed
 - Fix quadratic runtime when parsing pathological inline HTML (#447)
 - YAML front matter extension: Fix inefficient string concatenation for literal-block values (`|`)
+- Fix quadratic runtime when parsing pathological emphasis like `"a**b" + "c* ".repeat(100_000)`
 
 ## [0.29.0] - 2026-06-20
 ### Added

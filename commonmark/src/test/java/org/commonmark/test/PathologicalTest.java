@@ -60,6 +60,12 @@ public class PathologicalTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void openerSearchLowerBound() {
+        var s = "a**b" + "c* ".repeat(80_000); // ~240 KB
+        assertRendering(s, "<p>" + s.trim() + "</p>\n");
+    }
+
+    @Test
     public void nestedBrackets() {
         assertRendering(
                 "[".repeat(x) + "a" + "]".repeat(x),

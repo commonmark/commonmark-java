@@ -154,6 +154,13 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         assertRendering("a***b* c*", "<p>a*<em><em>b</em> c</em></p>\n");
     }
 
+    // https://github.com/commonmark/cmark/issues/383
+    @Test
+    public void emphasis() {
+        assertRendering(
+                "*****Hello*world****", "<p>**<em><strong>Hello<em>world</em></strong></em></p>\n");
+    }
+
     @Test
     public void renderEvenRegexpProducesStackoverflow() {
         render(

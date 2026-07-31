@@ -735,8 +735,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private void processDelimiters(Delimiter stackBottom) {
-
-        Map<Character, Delimiter> openersBottom = new HashMap<>();
+        // Keep track of the bottom of each kind of opener to have a lower bound on search
+        var openerBottoms = new HashMap<DelimiterSearchKey, Delimiter>();
 
         // find first closer above stackBottom:
         Delimiter closer = lastDelimiter;
@@ -745,26 +745,27 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
         // move forward, looking for closers, and handling each
         while (closer != null) {
-            char delimiterChar = closer.delimiterChar;
-
-            DelimiterProcessor delimiterProcessor = delimiterProcessors.get(delimiterChar);
+            var delimiterProcessor = delimiterProcessors.get(closer.delimiterChar);
             if (!closer.canClose() || delimiterProcessor == null) {
                 closer = closer.next;
                 continue;
             }
+
+            var searchKey =
+                    new DelimiterSearchKey(
+                            closer.delimiterChar,
+                            // Also distinguish by length of run and whether closer can open.
+                            closer.originalLength() % 3 + (closer.canOpen() ? 3 : 0));
+            var openerBottom = openerBottoms.get(searchKey);
 
             char openingDelimiterChar = delimiterProcessor.getOpeningCharacter();
 
             // Found delimiter closer. Now look back for first matching opener.
             int usedDelims = 0;
             boolean openerFound = false;
-            boolean potentialOpenerFound = false;
             Delimiter opener = closer.previous;
-            while (opener != null
-                    && opener != stackBottom
-                    && opener != openersBottom.get(delimiterChar)) {
+            while (opener != null && opener != stackBottom && opener != openerBottom) {
                 if (opener.canOpen() && opener.delimiterChar == openingDelimiterChar) {
-                    potentialOpenerFound = true;
                     usedDelims = delimiterProcessor.process(opener, closer);
                     if (usedDelims > 0) {
                         openerFound = true;
@@ -775,20 +776,12 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             }
 
             if (!openerFound) {
-                if (!potentialOpenerFound) {
-                    // Set lower bound for future searches for openers.
-                    // Only do this when we didn't even have a potential
-                    // opener (one that matches the character and can open).
-                    // If an opener was rejected because of the number of
-                    // delimiters (e.g. because of the "multiple of 3" rule),
-                    // we want to consider it next time because the number
-                    // of delimiters can change as we continue processing.
-                    openersBottom.put(delimiterChar, closer.previous);
-                    if (!closer.canOpen()) {
-                        // We can remove a closer that can't be an opener,
-                        // once we've seen there's no matching opener:
-                        removeDelimiterKeepNode(closer);
-                    }
+                // Set lower bound for future searches for openers.
+                openerBottoms.put(searchKey, closer.previous);
+                if (!closer.canOpen()) {
+                    // We can remove a closer that can't be an opener,
+                    // once we've seen there's no matching opener:
+                    removeDelimiterKeepNode(closer);
                 }
                 closer = closer.next;
                 continue;
@@ -928,6 +921,28 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             if (sourceSpans != null) {
                 first.setSourceSpans(sourceSpans.getSourceSpans());
             }
+        }
+    }
+
+    private static class DelimiterSearchKey {
+        private char delimiterChar;
+        private int caseNumber;
+
+        private DelimiterSearchKey(char delimiterChar, int caseNumber) {
+            this.delimiterChar = delimiterChar;
+            this.caseNumber = caseNumber;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof DelimiterSearchKey)) return false;
+            DelimiterSearchKey that = (DelimiterSearchKey) o;
+            return delimiterChar == that.delimiterChar && caseNumber == that.caseNumber;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(delimiterChar, caseNumber);
         }
     }
 
