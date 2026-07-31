@@ -125,4 +125,12 @@ public class PathologicalTest extends CoreRenderingTestCase {
         assertRendering(
                 "x <![CDATA[ >".repeat(x), "<p>" + "x &lt;![CDATA[ &gt;".repeat(x) + "</p>\n");
     }
+
+    @Test
+    public void autolinkWithoutCloser() {
+        var count = 160_000;
+        // 160 KB, no '>'
+        var source = "<".repeat(count);
+        assertRendering(source, "<p>" + "&lt;".repeat(count) + "</p>\n");
+    }
 }

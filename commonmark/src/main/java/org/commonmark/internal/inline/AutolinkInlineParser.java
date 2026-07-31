@@ -6,9 +6,13 @@ import org.commonmark.node.Link;
 import org.commonmark.node.Text;
 import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.beta.*;
+import org.commonmark.text.AsciiMatcher;
+import org.commonmark.text.CharMatcher;
 
 /** Attempt to parse an autolink (URL or email in pointy brackets). */
 public class AutolinkInlineParser implements InlineContentParser {
+
+    private static final CharMatcher ANGLE_BRACKETS = AsciiMatcher.builder().c('<').c('>').build();
 
     private static final Pattern URI =
             Pattern.compile("^[a-zA-Z][a-zA-Z0-9.+-]{1,31}:[^<>\u0000-\u0020]*$");
@@ -22,7 +26,11 @@ public class AutolinkInlineParser implements InlineContentParser {
         Scanner scanner = inlineParserState.scanner();
         scanner.next();
         Position textStart = scanner.position();
-        if (scanner.find('>') > 0) {
+        if (scanner.find(ANGLE_BRACKETS) > 0) {
+            if (scanner.peek() != '>') {
+                return ParsedInline.none();
+            }
+
             SourceLines textSource = scanner.getSource(textStart, scanner.position());
             String content = textSource.getContent();
             scanner.next();
