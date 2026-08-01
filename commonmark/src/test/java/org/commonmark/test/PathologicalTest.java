@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 
-/** Pathological input cases (from commonmark.js). */
+/** Pathological input cases. */
 @Timeout(value = 3, unit = TimeUnit.SECONDS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class PathologicalTest extends CoreRenderingTestCase {
@@ -132,5 +132,17 @@ public class PathologicalTest extends CoreRenderingTestCase {
         // 160 KB, no '>'
         var source = "<".repeat(count);
         assertRendering(source, "<p>" + "&lt;".repeat(count) + "</p>\n");
+    }
+
+    @Test
+    public void backticksDistinctLengths() {
+        var sb = new StringBuilder();
+        // ~4.5 MB
+        for (int i = 1; i <= 3000; i++) {
+            sb.append("`".repeat(i));
+            sb.append('x');
+        }
+        var source = sb.toString();
+        assertRendering(source, "<p>" + source + "</p>\n");
     }
 }
