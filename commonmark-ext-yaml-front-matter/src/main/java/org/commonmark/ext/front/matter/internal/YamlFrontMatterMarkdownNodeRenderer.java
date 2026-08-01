@@ -1,13 +1,14 @@
 package org.commonmark.ext.front.matter.internal;
 
 import java.util.List;
+
+import org.commonmark.ext.front.matter.YamlFrontMatterContent;
 import org.commonmark.ext.front.matter.YamlFrontMatterNode;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownWriter;
 
 public class YamlFrontMatterMarkdownNodeRenderer extends YamlFrontMatterNodeRenderer {
-
     private final MarkdownWriter writer;
 
     public YamlFrontMatterMarkdownNodeRenderer(MarkdownNodeRendererContext context) {
@@ -21,6 +22,8 @@ public class YamlFrontMatterMarkdownNodeRenderer extends YamlFrontMatterNodeRend
         while (child != null) {
             if (child instanceof YamlFrontMatterNode) {
                 renderNode((YamlFrontMatterNode) child);
+            } else if (child instanceof YamlFrontMatterContent) {
+                renderContent((YamlFrontMatterContent) child);
             }
             child = child.getNext();
         }
@@ -112,5 +115,13 @@ public class YamlFrontMatterMarkdownNodeRenderer extends YamlFrontMatterNodeRend
     private boolean isFlowCollection(String value) {
         return (value.startsWith("[") && value.endsWith("]"))
                 || (value.startsWith("{") && value.endsWith("}"));
+    }
+
+    private void renderContent(YamlFrontMatterContent content) {
+        String body = content.getContent();
+        writer.raw(body);
+        if (!body.endsWith("\n")) {
+            writer.raw('\n');
+        }
     }
 }
