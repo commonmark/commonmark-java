@@ -152,4 +152,12 @@ public class PathologicalTest extends CoreRenderingTestCase {
         var s = "<a" + " a".repeat(4000);
         assertRendering(s, "<p>&lt;a" + " a".repeat(4000) + "</p>\n");
     }
+
+    @Test
+    public void autolinkEmail() {
+        // ~8 KB autolink
+        var email = "a@" + "a.".repeat(4000) + "a";
+        var s = "<" + email + ">";
+        assertRendering(s, "<p><a href=\"mailto:" + email + "\">" + email + "</a></p>\n");
+    }
 }

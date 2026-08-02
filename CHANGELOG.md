@@ -25,6 +25,7 @@ with the exception that 0.x versions can break between minor versions.
 - Fix quadratic runtime when parsing input like `"<".repeat(100_000)`
 - Fix quadratic runtime when parsing pathological backticks
 - Fix StackOverflowError when parsing pathological HTML block attributes
+- Fix StackOverflowError when parsing pathological autolink email addresses
 
 ## [0.29.0] - 2026-06-20
 ### Added
