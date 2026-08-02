@@ -25,7 +25,7 @@ abstract class YamlFrontMatterTestCase extends RenderingTestCase {
     protected String getFrontMatterContent(String input) {
         Node document = parser.parse(input);
 
-        return YamlFrontMatterVisitor.readContent(document);
+        return YamlFrontMatterVisitor.readRawContent(document);
     }
 
     protected Map<String, List<String>> getFrontMatterData(String input) {

@@ -4,8 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.commonmark.ext.front.matter.extractor.YamlDataExtractor;
-import org.commonmark.ext.front.matter.extractor.YamlContentExtractor;
+import org.commonmark.ext.front.matter.parser.YamlSubsetParser;
+import org.commonmark.ext.front.matter.parser.RawContentParser;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
@@ -23,10 +23,10 @@ public class YamlFrontMatterVisitor extends AbstractVisitor {
 
     /**
      * Reads the YAML front matter metadata, if the Markdown
-     * document has the YAML front matter and the extension
-     * uses {@link YamlDataExtractor} (default).
+     * document has the front matter and the extension
+     * uses {@link YamlSubsetParser} (default).
      *
-     * @return The data stored in YAML front matter or empty map
+     * @return The data stored in YAML front matter or empty map.
      */
     public static Map<String, List<String>> readData(Node document) {
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
@@ -35,16 +35,15 @@ public class YamlFrontMatterVisitor extends AbstractVisitor {
     }
 
     /**
-     * Reads the YAML Front Matter metadata as a string, if the Markdown
-     * document has the YAML Front Matter and the extension uses
-     * {@link YamlContentExtractor} (default).
+     * Reads the raw content of the front matter, if the Markdown document has
+     * the front matter and the extension uses {@link RawContentParser}.
      *
-     * @return The content of YAML front matter as string or empty string.
+     * @return Raw content of the front matter as string or empty string.
      */
-    public static String readContent(Node document) {
+    public static String readRawContent(Node document) {
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
         document.accept(visitor);
-        return visitor.getContent();
+        return visitor.getRawContent();
     }
 
     @Override
@@ -55,8 +54,8 @@ public class YamlFrontMatterVisitor extends AbstractVisitor {
                     ((YamlFrontMatterNode) customNode).getValues()
             );
             present = true;
-        } else if (customNode instanceof YamlFrontMatterContent) {
-            content = ((YamlFrontMatterContent) customNode).getContent();
+        } else if (customNode instanceof YamlFrontMatterRawContent) {
+            content = ((YamlFrontMatterRawContent) customNode).getContent();
             present = true;
         } else {
             super.visit(customNode);
@@ -65,7 +64,7 @@ public class YamlFrontMatterVisitor extends AbstractVisitor {
 
     /**
      * Returns the YAML front matter metadata, if the Markdown document has
-     * the YAML front matter and the extension uses {@link YamlDataExtractor}
+     * the front matter and the extension uses {@link YamlSubsetParser}
      * (default).
      *
      * @return The data stored in YAML front matter or empty map
@@ -75,13 +74,13 @@ public class YamlFrontMatterVisitor extends AbstractVisitor {
     }
 
     /**
-     * Returns the YAML Front Matter metadata as a string, if the Markdown
-     * document has the YAML Front Matter and the extension uses
-     * {@link YamlContentExtractor} (default).
+     * Returns the raw content of the front matter, if the Markdown
+     * document has the front matter and the extension uses
+     * {@link RawContentParser}.
      *
-     * @return The content of YAML front matter as string or empty string.
+     * @return Raw content of the front matter as string or empty string.
      */
-    public String getContent() {
+    public String getRawContent() {
         return content;
     }
 

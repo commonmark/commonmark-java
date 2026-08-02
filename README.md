@@ -411,7 +411,7 @@ document start here
 Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`:
 
 ```java
-import org.commonmark.ext.front.matter.extractor.YamlContentExtractor;
+import org.commonmark.ext.front.matter.parser.RawContentParser;
 
 List<Extension> extensions = List.of(YamlFrontMatterExtension.create());
 Parser parser = Parser.builder()
@@ -422,22 +422,22 @@ Node document = parser.parse(markdownDocument);
 Map<String, List<String>> frontMatter = YamlFrontMatterVisitor.readData(document);
 ```
 
-Alternatively, you can use initialize the extension with `YamlContentExtractor` that saves the YAML front matter content
-as a string for further processing with other tools:
+Alternatively, you can use initialize the extension with `RawContentParser` to capture the entire front matter as a
+string for further processing with other tools:
 
 ```java
-import org.commonmark.ext.front.matter.extractor.YamlContentExtractor;
+import org.commonmark.ext.front.matter.parser.RawContentParser;
 
-List<Extension> extensions = List.of(YamlFrontMatterExtension.create(new YamlContentExtractor.Factory()));
+List<Extension> extensions = List.of(YamlFrontMatterExtension.create(new RawContentParser.Factory()));
 Parser parser = Parser.builder()
     .extensions(extensions)
     .build();
 
 Node document = parser.parse(markdownDocument);
-String frontMatter = YamlFrontMatterVisitor.readContent(document);
+String frontMatter = YamlFrontMatterVisitor.readRawContent(document);
 ```
 
-You can also write a custom extractor by implementing `YamlFrontMatterExtractor` interface.
+You can also write a custom front matter parser by implementing `FrontMatterParser` interface.
 
 ### Image Attributes
 

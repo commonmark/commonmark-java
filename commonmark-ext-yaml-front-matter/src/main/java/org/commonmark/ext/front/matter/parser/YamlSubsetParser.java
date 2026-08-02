@@ -1,16 +1,16 @@
-package org.commonmark.ext.front.matter.extractor;
+package org.commonmark.ext.front.matter.parser;
 
-import org.commonmark.ext.front.matter.YamlFrontMatterExtractor;
+import org.commonmark.ext.front.matter.FrontMatterParser;
 import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
 import org.commonmark.ext.front.matter.YamlFrontMatterNode;
-import org.commonmark.parser.block.BlockContinue;
+import org.commonmark.parser.SourceLine;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class YamlDataExtractor implements YamlFrontMatterExtractor {
+public class YamlSubsetParser implements FrontMatterParser {
     private static final Pattern REGEX_METADATA =
             Pattern.compile("^[ ]{0,3}([A-Za-z0-9._-]+):\\s*(.*)");
     private static final Pattern REGEX_METADATA_LIST = Pattern.compile("^[ ]+-\\s*(.*)");
@@ -20,15 +20,15 @@ public class YamlDataExtractor implements YamlFrontMatterExtractor {
     private String currentKey;
     private List<String> currentValues;
 
-    public YamlDataExtractor() {
+    public YamlSubsetParser() {
         inLiteral = false;
         currentKey = null;
         currentValues = new ArrayList<>();
     }
 
     @Override
-    public void onNextLine(YamlFrontMatterBlock block, CharSequence line) {
-        Matcher matcher = REGEX_METADATA.matcher(line);
+    public void onNextLine(YamlFrontMatterBlock block, SourceLine line) {
+        Matcher matcher = REGEX_METADATA.matcher(line.getContent());
         if (matcher.matches()) {
             if (currentKey != null) {
                 block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
@@ -45,7 +45,7 @@ public class YamlDataExtractor implements YamlFrontMatterExtractor {
             }
         } else {
             if (inLiteral) {
-                matcher = REGEX_METADATA_LITERAL.matcher(line);
+                matcher = REGEX_METADATA_LITERAL.matcher(line.getContent());
                 if (matcher.matches()) {
                     if (currentValues.size() == 1) {
                         currentValues.set(0, currentValues.get(0) + "\n" + matcher.group(1).trim());
@@ -54,7 +54,7 @@ public class YamlDataExtractor implements YamlFrontMatterExtractor {
                     }
                 }
             } else {
-                matcher = REGEX_METADATA_LIST.matcher(line);
+                matcher = REGEX_METADATA_LIST.matcher(line.getContent());
                 if (matcher.matches()) {
                     String value = matcher.group(1);
                     currentValues.add(parseString(value));
@@ -64,11 +64,11 @@ public class YamlDataExtractor implements YamlFrontMatterExtractor {
     }
 
     @Override
-    public BlockContinue onBlockEnd(YamlFrontMatterBlock block) {
+    public SeparatorRole onEndingSeparator(YamlFrontMatterBlock block, SourceLine separator) {
         if (currentKey != null) {
             block.appendChild(new YamlFrontMatterNode(currentKey, currentValues));
         }
-        return BlockContinue.finished();
+        return SeparatorRole.BLOCK_END;
     }
 
     private static String parseString(String s) {
@@ -87,10 +87,10 @@ public class YamlDataExtractor implements YamlFrontMatterExtractor {
         }
     }
 
-    public static class Factory implements YamlFrontMatterExtractor.Factory {
+    public static class Factory implements FrontMatterParser.Factory {
         @Override
-        public YamlFrontMatterExtractor create() {
-            return new YamlDataExtractor();
+        public FrontMatterParser create() {
+            return new YamlSubsetParser();
         }
     }
 }

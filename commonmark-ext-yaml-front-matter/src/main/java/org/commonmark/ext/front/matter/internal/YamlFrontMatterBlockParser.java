@@ -2,10 +2,11 @@ package org.commonmark.ext.front.matter.internal;
 
 import java.util.regex.Pattern;
 
-import org.commonmark.ext.front.matter.YamlFrontMatterExtractor;
+import org.commonmark.ext.front.matter.FrontMatterParser;
 import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
 import org.commonmark.node.Block;
 import org.commonmark.node.Document;
+import org.commonmark.parser.SourceLine;
 import org.commonmark.parser.block.*;
 
 public class YamlFrontMatterBlockParser extends AbstractBlockParser {
@@ -13,10 +14,10 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
     private static final Pattern REGEX_END = Pattern.compile("^(-{3}|\\.{3})(\\s.*)?");
 
     private YamlFrontMatterBlock block;
-    private YamlFrontMatterExtractor extractor;
+    private FrontMatterParser frontMatterParser;
 
-    public YamlFrontMatterBlockParser(YamlFrontMatterExtractor extractor) {
-        this.extractor = extractor;
+    public YamlFrontMatterBlockParser(FrontMatterParser frontMatterParser) {
+        this.frontMatterParser = frontMatterParser;
         block = new YamlFrontMatterBlock();
     }
 
@@ -27,21 +28,26 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState parserState) {
-        final CharSequence line = parserState.getLine().getContent();
+        final SourceLine line = parserState.getLine();
 
-        if (REGEX_END.matcher(line).matches()) {
-            return extractor.onBlockEnd(block);
+        if (REGEX_END.matcher(line.getContent()).matches()) {
+            switch (frontMatterParser.onEndingSeparator(block, line)) {
+                case BLOCK_END:
+                    return BlockContinue.finished();
+                case CONTENT:
+                    return BlockContinue.atIndex(parserState.getIndex());
+            }
         }
 
-        extractor.onNextLine(block, line);
+        frontMatterParser.onNextLine(block, line);
         return BlockContinue.atIndex(parserState.getIndex());
     }
 
     public static class Factory extends AbstractBlockParserFactory {
-        private YamlFrontMatterExtractor.Factory yamlExtractorFactory;
+        private FrontMatterParser.Factory frontMatterParserFactory;
 
-        public Factory(YamlFrontMatterExtractor.Factory factory) {
-            this.yamlExtractorFactory = factory;
+        public Factory(FrontMatterParser.Factory factory) {
+            this.frontMatterParserFactory = factory;
         }
 
         @Override
@@ -52,7 +58,7 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
             if (parentParser.getBlock() instanceof Document
                     && parentParser.getBlock().getFirstChild() == null
                     && REGEX_BEGIN.matcher(line).matches()) {
-                return BlockStart.of(new YamlFrontMatterBlockParser(yamlExtractorFactory.create()))
+                return BlockStart.of(new YamlFrontMatterBlockParser(frontMatterParserFactory.create()))
                         .atIndex(state.getNextNonSpaceIndex());
             }
 

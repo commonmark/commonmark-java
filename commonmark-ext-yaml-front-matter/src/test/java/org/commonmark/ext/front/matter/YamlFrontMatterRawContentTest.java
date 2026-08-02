@@ -1,7 +1,7 @@
 package org.commonmark.ext.front.matter;
 
 import org.commonmark.Extension;
-import org.commonmark.ext.front.matter.extractor.YamlContentExtractor;
+import org.commonmark.ext.front.matter.parser.RawContentParser;
 import org.commonmark.node.Node;
 import org.junit.jupiter.api.Test;
 
@@ -11,9 +11,9 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class YamlFrontMatterContentTest extends YamlFrontMatterTestCase {
+public class YamlFrontMatterRawContentTest extends YamlFrontMatterTestCase {
     private static final Set<Extension> EXTENSIONS = Set.of(
-            YamlFrontMatterExtension.create(new YamlContentExtractor.Factory())
+            YamlFrontMatterExtension.create(new RawContentParser.Factory())
     );
 
     @Override
@@ -22,7 +22,7 @@ public class YamlFrontMatterContentTest extends YamlFrontMatterTestCase {
     }
 
     @Test
-    public void frontMatterAsStringContent() {
+    public void frontMatterAsRawContent() {
         final String input = "---" + "\n  first: foo" + "\n  second: bar" + "\n..." + "\n" + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
@@ -48,14 +48,14 @@ public class YamlFrontMatterContentTest extends YamlFrontMatterTestCase {
         final String input = "---" + "\nhello: world" + "\n---" + "\n";
 
         Node document = parser.parse(input);
-        YamlFrontMatterContent contentNode = (YamlFrontMatterContent) document.getFirstChild().getFirstChild();
+        YamlFrontMatterRawContent contentNode = (YamlFrontMatterRawContent) document.getFirstChild().getFirstChild();
 
         contentNode.setContent("see: you\n");
 
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
         document.accept(visitor);
 
-        String content = visitor.getContent();
+        String content = visitor.getRawContent();
         assertThat(visitor.isFrontMatterPresent()).isTrue();
         assertThat(content).isEqualTo("see: you\n");
     }
@@ -77,7 +77,7 @@ public class YamlFrontMatterContentTest extends YamlFrontMatterTestCase {
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
         document.accept(visitor);
 
-        assertThat(visitor.getContent()).isNotEmpty();
+        assertThat(visitor.getRawContent()).isNotEmpty();
         assertThat(visitor.isFrontMatterPresent()).isTrue();
     }
 
@@ -89,7 +89,7 @@ public class YamlFrontMatterContentTest extends YamlFrontMatterTestCase {
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
         document.accept(visitor);
 
-        assertThat(visitor.getContent()).isEmpty();
+        assertThat(visitor.getRawContent()).isEmpty();
         assertThat(visitor.isFrontMatterPresent()).isFalse();
     }
 }

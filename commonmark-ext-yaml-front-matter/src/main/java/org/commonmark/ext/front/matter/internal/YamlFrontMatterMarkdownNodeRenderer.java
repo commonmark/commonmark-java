@@ -2,7 +2,7 @@ package org.commonmark.ext.front.matter.internal;
 
 import java.util.List;
 
-import org.commonmark.ext.front.matter.YamlFrontMatterContent;
+import org.commonmark.ext.front.matter.YamlFrontMatterRawContent;
 import org.commonmark.ext.front.matter.YamlFrontMatterNode;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
@@ -22,8 +22,8 @@ public class YamlFrontMatterMarkdownNodeRenderer extends YamlFrontMatterNodeRend
         while (child != null) {
             if (child instanceof YamlFrontMatterNode) {
                 renderNode((YamlFrontMatterNode) child);
-            } else if (child instanceof YamlFrontMatterContent) {
-                renderContent((YamlFrontMatterContent) child);
+            } else if (child instanceof YamlFrontMatterRawContent) {
+                renderContent((YamlFrontMatterRawContent) child);
             }
             child = child.getNext();
         }
@@ -117,7 +117,7 @@ public class YamlFrontMatterMarkdownNodeRenderer extends YamlFrontMatterNodeRend
                 || (value.startsWith("{") && value.endsWith("}"));
     }
 
-    private void renderContent(YamlFrontMatterContent content) {
+    private void renderContent(YamlFrontMatterRawContent content) {
         String body = content.getContent();
         writer.raw(body);
         if (!body.endsWith("\n")) {
