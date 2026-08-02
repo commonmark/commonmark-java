@@ -861,15 +861,25 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             return;
         }
 
-        mergeTextNodesInclusive(node.getFirstChild(), node.getLastChild());
+        // Merge adjacent text nodes among the children of `node` and, iteratively, of all its
+        // descendants. An explicit stack is used rather than recursion so that deeply nested
+        // inline content (e.g. thousands of nested emphasis) cannot overflow the call stack.
+        // Each parent's text runs are disjoint from its descendants', so the order in which
+        // parents are processed does not affect the result.
+        Deque<Node> parents = new ArrayDeque<>();
+        parents.addLast(node);
+        while (!parents.isEmpty()) {
+            mergeTextNodesInclusive(parents.removeLast(), parents);
+        }
     }
 
-    private void mergeTextNodesInclusive(Node fromNode, Node toNode) {
+    private void mergeTextNodesInclusive(Node parent, Deque<Node> parents) {
         Text first = null;
         Text last = null;
         int length = 0;
 
-        Node node = fromNode;
+        Node node = parent.getFirstChild();
+        Node toNode = parent.getLastChild();
         while (node != null) {
             if (node instanceof Text) {
                 Text text = (Text) node;
@@ -884,7 +894,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 last = null;
                 length = 0;
 
-                mergeChildTextNodes(node);
+                // Defer this child's own children to the outer loop instead of recursing.
+                if (node.getFirstChild() != null) {
+                    parents.addLast(node);
+                }
             }
             if (node == toNode) {
                 break;

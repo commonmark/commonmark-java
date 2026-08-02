@@ -218,6 +218,26 @@ public class ParserTest {
         throw new AssertionError("unreachable");
     }
 
+    @Test
+    public void deeplyNestedInlineDoesNotOverflowParsing() {
+        // Deeply nested inline emphasis previously overflowed the stack during inline
+        // post-processing: mergeChildTextNodes recursed once per nesting level. Parsing must
+        // complete without a StackOverflowError. (Walking the resulting deep tree remains a
+        // concern for recursive consumers such as renderers/visitors, which is out of scope
+        // here -- this only asserts that the parser itself does not blow the stack.)
+        var n = 50_000;
+        var md = "*".repeat(n) + "x" + "*".repeat(n);
+
+        var document = Parser.builder().build().parse(md);
+
+        // Confirm the tree really is deeply nested, descending iteratively (no recursion).
+        var nesting = 0;
+        for (var node = document; node.getFirstChild() != null; node = node.getFirstChild()) {
+            nesting++;
+        }
+        assertThat(nesting).isGreaterThan(1000);
+    }
+
     private String renderText(Node node) {
         return MarkdownRenderer.builder().build().render(node).trim();
     }
