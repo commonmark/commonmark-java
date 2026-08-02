@@ -1,6 +1,10 @@
 package org.commonmark.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayDeque;
 import java.util.concurrent.TimeUnit;
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.Asserts;
@@ -18,15 +22,23 @@ public class PathologicalTest extends CoreRenderingTestCase {
 
     @Test
     public void nestedStrongEmphasis() {
-        // this is limited by the stack size because visitor is recursive
+        // This is about parsing/rendering capacity, not about maxInlineNesting (which
+        // defaults to 100 and would otherwise cap this at a much shallower depth even though
+        // every level here is a distinct, unambiguous emphasis/strong pair) -- so the limit is
+        // disabled and depth is instead limited by the stack size, because the visitor is
+        // recursive.
         x = 500;
-        assertRendering(
-                "*a **a ".repeat(x) + "b" + " a** a*".repeat(x),
+        var source = "*a **a ".repeat(x) + "b" + " a** a*".repeat(x);
+        var expected =
                 "<p>"
                         + "<em>a <strong>a ".repeat(x)
                         + "b"
                         + " a</strong> a</em>".repeat(x)
-                        + "</p>\n");
+                        + "</p>\n";
+
+        var parser = Parser.builder().maxInlineNesting(Integer.MAX_VALUE).build();
+        var renderer = HtmlRenderer.builder().build();
+        Asserts.assertRendering(source, expected, renderer.render(parser.parse(source)));
     }
 
     @Test
@@ -159,5 +171,82 @@ public class PathologicalTest extends CoreRenderingTestCase {
         var email = "a@" + "a.".repeat(4000) + "a";
         var s = "<" + email + ">";
         assertRendering(s, "<p><a href=\"mailto:" + email + "\">" + email + "</a></p>\n");
+    }
+
+    // The following cases all nest inline nodes one level deeper for a small, constant amount of
+    // input, which would break the recursive renderer. They differ in how the nesting comes about,
+    // and are all limited by maxInlineNesting (which defaults to 100).
+
+    @Test
+    public void nestedEmphasisSamePair() {
+        // The same pair of runs is matched over and over, two characters at a time.
+        int n = 40_000;
+        assertNestingLimited("*".repeat(n) + "x" + "*".repeat(n));
+    }
+
+    @Test
+    public void nestedEmphasisReusedOpener() {
+        // One long run is matched against a series of single-character closers, each of which is
+        // used up immediately, so only the opener is reused.
+        int n = 40_000;
+        assertNestingLimited("*".repeat(n) + "x" + "*".repeat(n) + "b*".repeat(n));
+    }
+
+    @Test
+    public void nestedEmphasisDifferentDelimiters() {
+        // Every level uses a different pair of runs, so no single delimiter is reused.
+        int n = 40_000;
+        assertNestingLimited("*a ".repeat(n) + " b*".repeat(n));
+    }
+
+    @Test
+    public void nestedImages() {
+        // Images can contain images (unlike links, which can't contain links).
+        int n = 40_000;
+        assertNestingLimited("![".repeat(n) + "x" + "](u)".repeat(n));
+    }
+
+    @Test
+    public void nestedEmphasisAndImagesInterleaved() {
+        // Alternating between the two, to check that neither can be used to hide nesting from the
+        // limit of the other.
+        int n = 20_000;
+        assertNestingLimited("*![".repeat(n) + "x" + "](u)*".repeat(n));
+        assertNestingLimited("![*".repeat(n) + "x" + "*](u)".repeat(n));
+    }
+
+    /**
+     * Assert that the source can be parsed and rendered without a {@link StackOverflowError}, and
+     * that the resulting tree is not nested much deeper than the default {@code maxInlineNesting}
+     * of 100 (a few levels of slack for the block nodes and for a limit being applied one level
+     * late).
+     */
+    private void assertNestingLimited(String source) {
+        var document = Parser.builder().build().parse(source);
+
+        assertThat(nesting(document)).isLessThan(110);
+
+        // Doesn't throw StackOverflowError (the renderer is recursive).
+        HtmlRenderer.builder().build().render(document);
+    }
+
+    /** The depth of the deepest node, determined without recursion. */
+    private int nesting(Node document) {
+        var nodes = new ArrayDeque<Node>();
+        var depths = new ArrayDeque<Integer>();
+        nodes.add(document);
+        depths.add(0);
+
+        var max = 0;
+        while (!nodes.isEmpty()) {
+            var node = nodes.removeLast();
+            var depth = depths.removeLast();
+            max = Math.max(max, depth);
+            for (var child = node.getFirstChild(); child != null; child = child.getNext()) {
+                nodes.addLast(child);
+                depths.addLast(depth + 1);
+            }
+        }
+        return max;
     }
 }

@@ -70,6 +70,7 @@ public class DocumentParser implements ParserState {
     private final Set<Character> linkMarkers;
     private final IncludeSourceSpans includeSourceSpans;
     private final int maxOpenBlockParsers;
+    private final int maxInlineNesting;
     private final DocumentBlockParser documentBlockParser;
     private final Definitions definitions = new Definitions();
 
@@ -84,7 +85,8 @@ public class DocumentParser implements ParserState {
             List<LinkProcessor> linkProcessors,
             Set<Character> linkMarkers,
             IncludeSourceSpans includeSourceSpans,
-            int maxOpenBlockParsers) {
+            int maxOpenBlockParsers,
+            int maxInlineNesting) {
         this.blockParserFactories = blockParserFactories;
         this.inlineParserFactory = inlineParserFactory;
         this.inlineContentParserFactories = inlineContentParserFactories;
@@ -93,6 +95,7 @@ public class DocumentParser implements ParserState {
         this.linkMarkers = linkMarkers;
         this.includeSourceSpans = includeSourceSpans;
         this.maxOpenBlockParsers = maxOpenBlockParsers;
+        this.maxInlineNesting = maxInlineNesting;
 
         this.documentBlockParser = new DocumentBlockParser();
         activateBlockParser(new OpenBlockParser(documentBlockParser, 0));
@@ -508,6 +511,7 @@ public class DocumentParser implements ParserState {
                         delimiterProcessors,
                         linkProcessors,
                         linkMarkers,
+                        maxInlineNesting,
                         definitions);
         var inlineParser = inlineParserFactory.create(context);
 

@@ -7,7 +7,11 @@ import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.beta.LinkProcessor;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 
-/** Context for inline parsing. */
+/**
+ * Context for inline parsing.
+ *
+ * <p><em>This interface is not intended to be implemented by clients.</em>
+ */
 public interface InlineParserContext {
 
     /**
@@ -32,6 +36,11 @@ public interface InlineParserContext {
      * @return custom link markers that have been configured with {@link Parser.Builder#linkMarker}.
      */
     Set<Character> getCustomLinkMarkers();
+
+    /**
+     * @return the limit configured with {@link Parser.Builder#maxInlineNesting}
+     */
+    int getMaxInlineNesting();
 
     /**
      * Look up a {@link LinkReferenceDefinition} for a given label.

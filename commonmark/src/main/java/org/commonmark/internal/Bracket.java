@@ -36,6 +36,13 @@ public class Bracket {
      */
     public boolean bracketAfter = false;
 
+    /**
+     * How deeply nested the most deeply nested node in the content of this bracket is, updated as
+     * nodes are added. Used to limit nesting when this bracket forms a link/image, without having
+     * to look at the content nodes (of which there can be many).
+     */
+    public int contentNestingDepth = 0;
+
     public static Bracket link(
             Text bracketNode,
             Position bracketPosition,

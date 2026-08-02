@@ -65,6 +65,11 @@ public class InlineParserContextTest {
                         }
 
                         @Override
+                        public int getMaxInlineNesting() {
+                            return inlineParserContext.getMaxInlineNesting();
+                        }
+
+                        @Override
                         public LinkReferenceDefinition getLinkReferenceDefinition(String label) {
                             return getDefinition(LinkReferenceDefinition.class, label);
                         }

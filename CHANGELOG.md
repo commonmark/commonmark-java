@@ -18,6 +18,10 @@ with the exception that 0.x versions can break between minor versions.
   limit would be exceeded, to protect against malicious input.
 - The default for `maxOpenBlockParsers` for `Parser.Builder` is now 100; configure the
   option to remove the limit.
+- Limit how deeply inline nodes may nest by default (100), see option `maxInlineNesting` in
+  `Parser.Builder`; configure the option to remove the limit. This covers emphasis-like
+  delimiters (e.g. `*` or the ins extension's `+`) as well as images, which can otherwise
+  nest arbitrarily deep for a small amount of input.
 ### Fixed
 - Fix quadratic runtime when parsing pathological inline HTML (#447)
 - YAML front matter extension: Fix inefficient string concatenation for literal-block values (`|`)
@@ -27,6 +31,10 @@ with the exception that 0.x versions can break between minor versions.
 - Fix StackOverflowError when parsing pathological HTML block attributes
 - Fix StackOverflowError when parsing pathological autolink email addresses
 - Fix StackOverflowError when parsing deeply nested emphasis
+- Fix StackOverflowError when rendering/visiting deeply nested inline nodes, by capping nesting
+  depth during parsing (see `maxInlineNesting` above). This can happen with emphasis, e.g.
+  `"*".repeat(n) + "x" + "*".repeat(n)` or `"*a ".repeat(n) + " b*".repeat(n)`, as well as with
+  images, e.g. `"![".repeat(n) + "x" + "](u)".repeat(n)`
 
 ## [0.29.0] - 2026-06-20
 ### Added

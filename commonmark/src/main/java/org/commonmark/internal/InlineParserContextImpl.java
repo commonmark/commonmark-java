@@ -14,6 +14,7 @@ public class InlineParserContextImpl implements InlineParserContext {
     private final List<DelimiterProcessor> delimiterProcessors;
     private final List<LinkProcessor> linkProcessors;
     private final Set<Character> linkMarkers;
+    private final int maxInlineNesting;
     private final Definitions definitions;
 
     public InlineParserContextImpl(
@@ -21,11 +22,13 @@ public class InlineParserContextImpl implements InlineParserContext {
             List<DelimiterProcessor> delimiterProcessors,
             List<LinkProcessor> linkProcessors,
             Set<Character> linkMarkers,
+            int maxInlineNesting,
             Definitions definitions) {
         this.inlineContentParserFactories = inlineContentParserFactories;
         this.delimiterProcessors = delimiterProcessors;
         this.linkProcessors = linkProcessors;
         this.linkMarkers = linkMarkers;
+        this.maxInlineNesting = maxInlineNesting;
         this.definitions = definitions;
     }
 
@@ -47,6 +50,11 @@ public class InlineParserContextImpl implements InlineParserContext {
     @Override
     public Set<Character> getCustomLinkMarkers() {
         return linkMarkers;
+    }
+
+    @Override
+    public int getMaxInlineNesting() {
+        return maxInlineNesting;
     }
 
     @Override

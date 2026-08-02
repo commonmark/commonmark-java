@@ -40,6 +40,14 @@ public interface DelimiterProcessor {
      * <p>Note that removal (unlinking) of the used delimiter {@link Text} nodes is done by the
      * caller.
      *
+     * <p>When a node is created, it is expected to be inserted directly after {@link
+     * DelimiterRun#getOpener()}, which is what {@link Text#insertAfter} on that node does. The
+     * parser looks for the created node there to know how deeply nested it is, so that {@link
+     * org.commonmark.parser.Parser.Builder#maxInlineNesting} can limit it (without this, input such
+     * as a long run of delimiters around a single character nests deeply enough to break recursive
+     * consumers of the tree, e.g. renderers). A processor that inserts the node elsewhere still
+     * works, but its nodes are not counted towards that limit.
+     *
      * @param openingRun the opening delimiter run
      * @param closingRun the closing delimiter run
      * @return how many delimiters were used; must not be greater than length of either opener or

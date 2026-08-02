@@ -219,16 +219,86 @@ public class ParserTest {
     }
 
     @Test
+    public void maxInlineNestingMustBeZeroOrGreater() {
+        assertThatThrownBy(() -> Parser.builder().maxInlineNesting(-1))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void maxInlineNestingLimitsEmphasisNestingDepth() {
+        var parser = Parser.builder().maxInlineNesting(3).build();
+
+        var document = parser.parse("*".repeat(20) + "x" + "*".repeat(20));
+
+        var paragraph = document.getFirstChild();
+        assertThat(paragraph).isInstanceOf(Paragraph.class);
+
+        // Leftover, un-nested delimiters remain as literal text either side.
+        assertThat(paragraph.getFirstChild()).isInstanceOf(Text.class);
+        assertThat(((Text) paragraph.getFirstChild()).getLiteral()).isEqualTo("*".repeat(14));
+        assertThat(paragraph.getLastChild()).isInstanceOf(Text.class);
+        assertThat(((Text) paragraph.getLastChild()).getLiteral()).isEqualTo("*".repeat(14));
+
+        // Nesting itself is capped at the configured depth.
+        var depth = 0;
+        var node = paragraph.getFirstChild().getNext();
+        while (node instanceof StrongEmphasis) {
+            depth++;
+            node = node.getFirstChild();
+        }
+        assertThat(depth).isEqualTo(3);
+        assertThat(node).isInstanceOf(Text.class);
+        assertThat(((Text) node).getLiteral()).isEqualTo("x");
+    }
+
+    @Test
+    public void maxInlineNestingZeroTreatsAllInlineStructureAsText() {
+        var parser = Parser.builder().maxInlineNesting(0).build();
+        var renderer = HtmlRenderer.builder().build();
+
+        assertThat(renderer.render(parser.parse("*a*"))).isEqualTo("<p>*a*</p>\n");
+        assertThat(renderer.render(parser.parse("[a](u)"))).isEqualTo("<p>[a](u)</p>\n");
+        assertThat(renderer.render(parser.parse("![a](u)"))).isEqualTo("<p>![a](u)</p>\n");
+    }
+
+    @Test
+    public void maxInlineNestingTreatsBracketsOverLimitAsText() {
+        var parser = Parser.builder().maxInlineNesting(1).build();
+        var renderer = HtmlRenderer.builder().build();
+
+        // The inner image is within the limit; the outer one would nest a level deeper, so its
+        // brackets are treated as plain text.
+        assertThat(renderer.render(parser.parse("![![a](u)](v)")))
+                .isEqualTo("<p>![<img src=\"u\" alt=\"a\" />](v)</p>\n");
+    }
+
+    @Test
+    public void maxInlineNestingCanBeExceededByOneLevelInsideBrackets() {
+        // The limit is checked when the closing bracket is parsed, but emphasis inside the
+        // brackets is only processed after that, so it isn't counted for the link itself (only for
+        // anything wrapping the link). That means brackets can exceed the limit by one level:
+        // documenting, not prescribing, this behavior. Note the asymmetry with emphasis on the
+        // outside, where the link's depth is visible and the emphasis is treated as text.
+        var parser = Parser.builder().maxInlineNesting(1).build();
+        var renderer = HtmlRenderer.builder().build();
+
+        assertThat(renderer.render(parser.parse("[*a*](u)")))
+                .isEqualTo("<p><a href=\"u\"><em>a</em></a></p>\n");
+        assertThat(renderer.render(parser.parse("*[a](u)*")))
+                .isEqualTo("<p>*<a href=\"u\">a</a>*</p>\n");
+    }
+
+    @Test
     public void deeplyNestedInlineDoesNotOverflowParsing() {
         // Deeply nested inline emphasis previously overflowed the stack during inline
         // post-processing: mergeChildTextNodes recursed once per nesting level. Parsing must
-        // complete without a StackOverflowError. (Walking the resulting deep tree remains a
-        // concern for recursive consumers such as renderers/visitors, which is out of scope
-        // here -- this only asserts that the parser itself does not blow the stack.)
+        // complete without a StackOverflowError. maxInlineNesting is disabled here (it would
+        // otherwise cap nesting depth) since this test is specifically about the text-merging
+        // step, not about the nesting limit itself.
         var n = 50_000;
         var md = "*".repeat(n) + "x" + "*".repeat(n);
 
-        var document = Parser.builder().build().parse(md);
+        var document = Parser.builder().maxInlineNesting(Integer.MAX_VALUE).build().parse(md);
 
         // Confirm the tree really is deeply nested, descending iteratively (no recursion).
         var nesting = 0;

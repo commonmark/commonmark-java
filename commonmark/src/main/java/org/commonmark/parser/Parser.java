@@ -37,6 +37,7 @@ public class Parser {
     private final List<PostProcessor> postProcessors;
     private final IncludeSourceSpans includeSourceSpans;
     private final int maxOpenBlockParsers;
+    private final int maxInlineNesting;
 
     private Parser(Builder builder) {
         this.blockParserFactories =
@@ -50,6 +51,7 @@ public class Parser {
         this.linkMarkers = builder.linkMarkers;
         this.includeSourceSpans = builder.includeSourceSpans;
         this.maxOpenBlockParsers = builder.maxOpenBlockParsers;
+        this.maxInlineNesting = builder.maxInlineNesting;
 
         // Try to construct an inline parser. Invalid configuration might result in an exception,
         // which we want to detect as soon as possible.
@@ -59,6 +61,7 @@ public class Parser {
                         delimiterProcessors,
                         linkProcessors,
                         linkMarkers,
+                        maxInlineNesting,
                         new Definitions());
         this.inlineParserFactory.create(context);
     }
@@ -125,7 +128,8 @@ public class Parser {
                 linkProcessors,
                 linkMarkers,
                 includeSourceSpans,
-                maxOpenBlockParsers);
+                maxOpenBlockParsers,
+                maxInlineNesting);
     }
 
     private Node postProcess(Node document) {
@@ -149,6 +153,7 @@ public class Parser {
         private InlineParserFactory inlineParserFactory;
         private IncludeSourceSpans includeSourceSpans = IncludeSourceSpans.NONE;
         private int maxOpenBlockParsers = 100;
+        private int maxInlineNesting = 100;
 
         /**
          * @return the configured {@link Parser}
@@ -240,6 +245,41 @@ public class Parser {
                 throw new IllegalArgumentException("maxOpenBlockParsers must be >= 0");
             }
             this.maxOpenBlockParsers = maxOpenBlockParsers;
+            return this;
+        }
+
+        /**
+         * Limit how deeply inline nodes may nest inside each other while parsing, to protect
+         * against malicious input. This covers emphasis-like delimiters (e.g. {@code *} or the ins
+         * extension's {@code +}) as well as images, both of which can nest arbitrarily deep for a
+         * small amount of input:
+         *
+         * <ul>
+         *   <li>Some delimiter processors only consume part of a run of delimiters at a time (e.g.
+         *       two {@code *} characters for {@link org.commonmark.node.StrongEmphasis}), so a run
+         *       of delimiters around a single character can nest one level deeper for each pair
+         *       that's consumed, as in {@code "*".repeat(n) + "x" + "*".repeat(n)}.
+         *   <li>Images can contain images, as in {@code "![".repeat(n) + "x" + "](u)".repeat(n)}.
+         * </ul>
+         *
+         * <p>Once the limit is reached, the delimiters or brackets that would nest another level
+         * are treated as plain text instead. Note that the limit applies to the nesting of the
+         * resulting nodes, no matter which of the above (or which combination of them) produced it.
+         *
+         * <p>Deeply nested inline nodes are a problem for any code that walks the resulting tree
+         * recursively, such as the renderers in this library, which would otherwise fail with a
+         * {@link StackOverflowError}.
+         *
+         * <p>The default is 100; use {@link Integer#MAX_VALUE} for no limit.
+         *
+         * @param maxInlineNesting maximum nesting depth of inline nodes, must be zero or greater
+         * @return {@code this}
+         */
+        public Builder maxInlineNesting(int maxInlineNesting) {
+            if (maxInlineNesting < 0) {
+                throw new IllegalArgumentException("maxInlineNesting must be >= 0");
+            }
+            this.maxInlineNesting = maxInlineNesting;
             return this;
         }
 

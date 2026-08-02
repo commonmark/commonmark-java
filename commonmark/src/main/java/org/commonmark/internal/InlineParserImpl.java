@@ -21,6 +21,17 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     private final List<LinkProcessor> linkProcessors;
     private final BitSet specialCharacters;
     private final BitSet linkMarkers;
+    private final int maxInlineNesting;
+
+    /** Whether {@link #maxInlineNesting} is in effect, i.e. whether nesting depth is tracked. */
+    private final boolean limitInlineNesting;
+
+    // How deeply nested each inline node we created is, keyed by node identity. A node's depth is
+    // one more than the deepest recorded depth among the nodes it wraps, so it accounts for its
+    // whole subtree without having to walk it. Both emphasis-like delimiters and links/images
+    // record here and read from here, so neither can be used to hide depth from the other.
+    // Only maintained when limitInlineNesting is set.
+    private final Map<Node, Integer> nestingDepths = new IdentityHashMap<>();
 
     private Map<Character, List<InlineContentParser>> inlineParsers;
     private Scanner scanner;
@@ -45,6 +56,8 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
                 calculateDelimiterProcessors(context.getCustomDelimiterProcessors());
         this.linkProcessors = calculateLinkProcessors(context.getCustomLinkProcessors());
         this.linkMarkers = calculateLinkMarkers(context.getCustomLinkMarkers());
+        this.maxInlineNesting = context.getMaxInlineNesting();
+        this.limitInlineNesting = maxInlineNesting != Integer.MAX_VALUE;
         this.specialCharacters =
                 calculateSpecialCharacters(
                         linkMarkers,
@@ -191,6 +204,7 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         this.trailingSpaces = 0;
         this.lastDelimiter = null;
         this.lastBracket = null;
+        this.nestingDepths.clear();
         this.inlineParsers = createInlineContentParsers();
     }
 
@@ -445,6 +459,20 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private Node wrapBracket(Bracket opener, Node wrapperNode, boolean includeMarker) {
+        // Wrapping this content would nest it one level deeper. Images can contain images, so
+        // without a limit input like "![".repeat(n) + "x" + "](u)".repeat(n) nests arbitrarily
+        // deep, same as for delimiters. Bail out before changing anything; the caller then treats
+        // the brackets as plain text.
+        //
+        // Note that this can under-count by whatever nesting the processDelimiters call below adds
+        // to the content afterwards (e.g. "[*a*](u)" with a limit of 1 still wraps, resulting in
+        // depth 2). That's bounded: the depth recorded at the end of this method is exact by then,
+        // so anything wrapping the result sees the true depth, and the tree can exceed the limit by
+        // at most one level.
+        if (limitInlineNesting && opener.contentNestingDepth >= maxInlineNesting) {
+            return null;
+        }
+
         // Add all nodes between the opening bracket and now (closing bracket) as child nodes of the
         // link
         Node n = opener.bracketNode.getNext();
@@ -472,6 +500,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
         opener.bracketNode.unlink();
         removeLastBracket();
+
+        // Record the depth after removing the bracket, so that it counts towards the content of the
+        // enclosing bracket (if any) instead of this one. Note that processDelimiters above may
+        // have nested the content further, which contentNestingDepth includes by now.
+        recordNestingDepth(wrapperNode, opener.contentNestingDepth + 1);
 
         // Links within links are not allowed. We found this link, so there can be no other links
         // around it.
@@ -508,6 +541,12 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             n = next;
         }
 
+        // Record the depth after removing the bracket, so that it counts towards the content of the
+        // enclosing bracket (if any) instead of this one. The replacement node typically has no
+        // children (e.g. a footnote reference), but a LinkProcessor is free to attach some, so
+        // measure them.
+        recordNestingDepth(node, nestingDepthOfSiblings(node.getFirstChild(), null) + 1);
+
         // Links within links are not allowed. We found this link, so there can be no other links
         // around it. Note that this makes any syntax like `[foo]` behave the same as built-in
         // links, which is probably a good default (it works for footnotes). It might be useful for
@@ -528,7 +567,14 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
     }
 
     private void removeLastBracket() {
-        lastBracket = lastBracket.previous;
+        var bracket = lastBracket;
+        lastBracket = bracket.previous;
+        // Whatever was nested inside this bracket is now content of the enclosing bracket, either
+        // as the child nodes of the link/image this bracket formed, or (if it didn't form one) as
+        // the nodes that were between the brackets.
+        if (lastBracket != null && bracket.contentNestingDepth > lastBracket.contentNestingDepth) {
+            lastBracket.contentNestingDepth = bracket.contentNestingDepth;
+        }
     }
 
     private void disallowPreviousLinks() {
@@ -738,6 +784,21 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // Keep track of the bottom of each kind of opener to have a lower bound on search
         var openerBottoms = new HashMap<DelimiterSearchKey, Delimiter>();
 
+        // Some delimiter processors only consume part of a run per call (e.g. 2 characters for
+        // StrongEmphasis), so a run can be matched over and over, each time nesting the node just
+        // created one level deeper inside a new one. Input like "*".repeat(n) + "x" + "*".repeat(n)
+        // therefore nests as deep as the input is long, which would overflow the stack of any
+        // recursive consumer of the tree (e.g. a renderer).
+        //
+        // To limit that, a match is only allowed if the node it creates would be nested at most
+        // maxInlineNesting levels deep, which is one more than the deepest of the nodes it wraps
+        // (see nestingDepths). Measuring the content this way rather than tracking the delimiters
+        // themselves also covers nesting that builds up without any delimiter being reused, e.g.
+        // "*a ".repeat(n) + " b*".repeat(n), where each level uses a different pair of runs.
+        //
+        // Delimiters that can't be matched are left as plain text by the cleanup at the end of this
+        // method.
+
         // find first closer above stackBottom:
         Delimiter closer = lastDelimiter;
         while (closer != null && closer.previous != stackBottom) {
@@ -763,12 +824,41 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             // Found delimiter closer. Now look back for first matching opener.
             int usedDelims = 0;
             boolean openerFound = false;
+            int matchDepth = 0;
+            Node createdNode = null;
             Delimiter opener = closer.previous;
+            // The depth of the content is monotonically non-decreasing as opener moves further
+            // back (the range it would wrap only grows), so instead of rescanning that
+            // ever-growing range from scratch for every candidate -- which would make a single
+            // closer's search quadratic -- extend a running maximum, scanning each newly-exposed
+            // segment once.
+            Text scanBoundary = closer.getCloser();
+            int contentDepth = 0;
             while (opener != null && opener != stackBottom && opener != openerBottom) {
+                if (limitInlineNesting) {
+                    contentDepth =
+                            Math.max(
+                                    contentDepth,
+                                    nestingDepthOfSiblings(
+                                            opener.getOpener().getNext(), scanBoundary));
+                    scanBoundary = opener.getOpener();
+                    if (contentDepth >= maxInlineNesting) {
+                        // Because the depth only grows as we move further back, no opener can
+                        // match anymore.
+                        break;
+                    }
+                }
+
                 if (opener.canOpen() && opener.delimiterChar == openingDelimiterChar) {
                     usedDelims = delimiterProcessor.process(opener, closer);
                     if (usedDelims > 0) {
                         openerFound = true;
+                        matchDepth = contentDepth + 1;
+                        // The node process() just created is conventionally inserted right after
+                        // the opener's innermost remaining character (all built-in and extension
+                        // DelimiterProcessors follow this); grab it now, before the character
+                        // removal below unlinks that very character.
+                        createdNode = opener.getOpener().getNext();
                         break;
                     }
                 }
@@ -799,6 +889,10 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
             removeDelimitersBetween(opener, closer);
 
+            if (createdNode != null) {
+                recordNestingDepth(createdNode, matchDepth);
+            }
+
             // No delimiter characters left to process, so we can remove delimiter and the now empty
             // node.
             if (opener.length() == 0) {
@@ -816,6 +910,37 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         while (lastDelimiter != null && lastDelimiter != stackBottom) {
             removeDelimiterKeepNode(lastDelimiter);
         }
+    }
+
+    /**
+     * Remember how deeply nested a node we just created is, so that anything wrapping it later sees
+     * the depth it contributes: an enclosing delimiter pair looks it up via {@link
+     * #nestingDepthOfSiblings} (it needs the depth of a range of nodes), an enclosing bracket via
+     * the running maximum on {@link Bracket#contentNestingDepth} (it needs the depth of all content
+     * since the bracket was opened, so it can avoid looking at the nodes at all).
+     */
+    private void recordNestingDepth(Node node, int depth) {
+        if (!limitInlineNesting) {
+            return;
+        }
+        nestingDepths.put(node, depth);
+        if (lastBracket != null && depth > lastBracket.contentNestingDepth) {
+            lastBracket.contentNestingDepth = depth;
+        }
+    }
+
+    // The deepest recorded nesting depth among the siblings starting at first, up to (excluding)
+    // end (or to the last sibling if end is null). Only these direct siblings are inspected, not
+    // their descendants -- each recorded depth already accounts for its own subtree.
+    private int nestingDepthOfSiblings(Node first, Node end) {
+        int depth = 0;
+        for (var node = first; node != null && node != end; node = node.getNext()) {
+            var nodeDepth = nestingDepths.get(node);
+            if (nodeDepth != null && nodeDepth > depth) {
+                depth = nodeDepth;
+            }
+        }
+        return depth;
     }
 
     private void removeDelimitersBetween(Delimiter opener, Delimiter closer) {
