@@ -21,7 +21,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
     private static final String ATTRIBUTE =
             "(?:" + "\\s+" + ATTRIBUTENAME + ATTRIBUTEVALUESPEC + "?)";
 
-    private static final String OPENTAG = "<" + TAGNAME + ATTRIBUTE + "*" + "\\s*/?>";
+    private static final String OPENTAG = "<" + TAGNAME + ATTRIBUTE + "*+" + "\\s*/?>";
     private static final String CLOSETAG = "</" + TAGNAME + "\\s*[>]";
 
     private static final Pattern[][] BLOCK_PATTERNS =

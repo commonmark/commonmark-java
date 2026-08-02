@@ -145,4 +145,11 @@ public class PathologicalTest extends CoreRenderingTestCase {
         var source = sb.toString();
         assertRendering(source, "<p>" + source + "</p>\n");
     }
+
+    @Test
+    public void htmlBlockAttributes() {
+        // ~8 KB: "<a a a a ..." (no closing '>')
+        var s = "<a" + " a".repeat(4000);
+        assertRendering(s, "<p>&lt;a" + " a".repeat(4000) + "</p>\n");
+    }
 }
