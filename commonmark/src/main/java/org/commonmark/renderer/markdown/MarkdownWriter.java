@@ -8,6 +8,7 @@ import org.commonmark.text.CharMatcher;
 public class MarkdownWriter {
 
     private final Appendable buffer;
+    private final String lineSeparator;
 
     private int blockSeparator = 0;
     private char lastChar;
@@ -21,7 +22,12 @@ public class MarkdownWriter {
     private final LinkedList<CharMatcher> rawEscapes = new LinkedList<>();
 
     public MarkdownWriter(Appendable out) {
-        buffer = out;
+        this(out, "\n");
+    }
+
+    public MarkdownWriter(Appendable out, String lineSeparator) {
+        this.buffer = out;
+        this.lineSeparator = lineSeparator;
     }
 
     /** Write the supplied string (raw/unescaped except if {@link #pushRawEscape} was used). */
@@ -53,9 +59,9 @@ public class MarkdownWriter {
         atLineStart = false;
     }
 
-    /** Write a newline (line terminator). */
+    /** Write a line separator (line terminator). */
     public void line() {
-        write('\n');
+        write(lineSeparator);
         writePrefixes();
         atLineStart = true;
     }
@@ -167,6 +173,17 @@ public class MarkdownWriter {
         atLineStart = false;
     }
 
+    private void write(String s) {
+        try {
+            buffer.append(s);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        lastChar = s.charAt(s.length() - 1);
+        atLineStart = false;
+    }
+
     private void write(char c) {
         try {
             append(c, null);
@@ -192,10 +209,10 @@ public class MarkdownWriter {
      */
     private void flushBlockSeparator() {
         if (blockSeparator != 0) {
-            write('\n');
+            write(lineSeparator);
             writePrefixes();
             if (blockSeparator > 1) {
-                write('\n');
+                write(lineSeparator);
                 writePrefixes();
             }
             blockSeparator = 0;

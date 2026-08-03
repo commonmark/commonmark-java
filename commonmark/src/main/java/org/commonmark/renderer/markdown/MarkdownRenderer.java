@@ -27,9 +27,11 @@ import org.commonmark.renderer.Renderer;
  */
 public class MarkdownRenderer implements Renderer {
 
+    private final String lineSeparator;
     private final List<MarkdownNodeRendererFactory> nodeRendererFactories;
 
     private MarkdownRenderer(Builder builder) {
+        this.lineSeparator = builder.lineSeparator;
         this.nodeRendererFactories = new ArrayList<>(builder.nodeRendererFactories.size() + 1);
         this.nodeRendererFactories.addAll(builder.nodeRendererFactories);
         // Add as last. This means clients can override the rendering of core nodes if they want.
@@ -58,7 +60,7 @@ public class MarkdownRenderer implements Renderer {
 
     @Override
     public void render(Node node, Appendable output) {
-        RendererContext context = new RendererContext(new MarkdownWriter(output));
+        var context = new RendererContext(new MarkdownWriter(output, lineSeparator));
         context.render(node);
     }
 
@@ -74,6 +76,7 @@ public class MarkdownRenderer implements Renderer {
      */
     public static class Builder {
 
+        private String lineSeparator = "\n";
         private final List<MarkdownNodeRendererFactory> nodeRendererFactories = new ArrayList<>();
 
         /**
@@ -81,6 +84,18 @@ public class MarkdownRenderer implements Renderer {
          */
         public MarkdownRenderer build() {
             return new MarkdownRenderer(this);
+        }
+
+        /**
+         * Set the line separator (line terminator) that the writer should use. The default is a
+         * newline ({@code \n}) on all systems.
+         *
+         * @param lineSeparator
+         * @return {@code this}
+         */
+        public Builder lineSeparator(String lineSeparator) {
+            this.lineSeparator = lineSeparator;
+            return this;
         }
 
         /**

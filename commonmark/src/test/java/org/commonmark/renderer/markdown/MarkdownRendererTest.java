@@ -313,6 +313,13 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testCustomLineSeparator() {
+        var renderer = MarkdownRenderer.builder().lineSeparator("\r\n").build();
+        assertThat(renderer.render(parse("# Heading\n\nBody\n")))
+                .isEqualTo("# Heading\r\n\r\nBody\r\n");
+    }
+
+    @Test
     public void overrideNodeRender() {
         var nodeRendererFactory =
                 new MarkdownNodeRendererFactory() {
