@@ -1,7 +1,7 @@
 package org.commonmark.ext.front.matter;
 
 import org.commonmark.Extension;
-import org.commonmark.ext.front.matter.parser.RawContentParser;
+import org.commonmark.ext.front.matter.parser.FrontMatterParser;
 import org.commonmark.parser.SourceLine;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +16,7 @@ public class YamlFrontMatterCustomParserTest extends YamlFrontMatterTestCase {
     }
 
     @Test
-    public void separatorCanBePartOfContent() {
+    public void separatorCanBePartOfRawContent() {
         final String input = "---" + "\nstring: '" + "\n---" + "\n'" + "\n..." + "\n" + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
@@ -27,7 +27,7 @@ public class YamlFrontMatterCustomParserTest extends YamlFrontMatterTestCase {
     }
 
     /**
-     * Allows testing {@link org.commonmark.ext.front.matter.FrontMatterParser.SeparatorRole#CONTENT}
+     * Allows testing {@link FrontMatterParser.SeparatorRole#CONTENT}
      */
     class CustomParser implements FrontMatterParser {
         private StringBuilder content;

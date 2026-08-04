@@ -3,6 +3,7 @@ package org.commonmark.ext.front.matter;
 import java.util.Objects;
 import java.util.Set;
 import org.commonmark.Extension;
+import org.commonmark.ext.front.matter.parser.FrontMatterParser;
 import org.commonmark.ext.front.matter.parser.RawContentParser;
 import org.commonmark.ext.front.matter.parser.YamlSubsetParser;
 import org.commonmark.ext.front.matter.internal.YamlFrontMatterBlockParser;
@@ -37,23 +38,23 @@ import org.commonmark.renderer.markdown.MarkdownRenderer;
 public class YamlFrontMatterExtension
         implements Parser.ParserExtension, MarkdownRenderer.MarkdownRendererExtension {
 
-    private final FrontMatterParser.Factory yamlExtractorFactory;
+    private final FrontMatterParser.Factory frontMatterParserFactory;
 
-    private YamlFrontMatterExtension(FrontMatterParser.Factory yamlExtractorFactory) {
-        this.yamlExtractorFactory = Objects.requireNonNull(yamlExtractorFactory);
+    private YamlFrontMatterExtension(FrontMatterParser.Factory frontMatterParserFactory) {
+        this.frontMatterParserFactory = Objects.requireNonNull(frontMatterParserFactory);
     }
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        parserBuilder.customBlockParserFactory(new YamlFrontMatterBlockParser.Factory(yamlExtractorFactory));
+        parserBuilder.customBlockParserFactory(new YamlFrontMatterBlockParser.Factory(frontMatterParserFactory));
     }
 
     public static Extension create() {
         return create(new YamlSubsetParser.Factory());
     }
 
-    public static Extension create(FrontMatterParser.Factory extractor) {
-        return new YamlFrontMatterExtension(extractor);
+    public static Extension create(FrontMatterParser.Factory parser) {
+        return new YamlFrontMatterExtension(parser);
     }
 
     @Override

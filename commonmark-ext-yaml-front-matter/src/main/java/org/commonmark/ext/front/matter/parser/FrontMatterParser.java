@@ -1,5 +1,6 @@
-package org.commonmark.ext.front.matter;
+package org.commonmark.ext.front.matter.parser;
 
+import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
 import org.commonmark.parser.SourceLine;
 
 /**

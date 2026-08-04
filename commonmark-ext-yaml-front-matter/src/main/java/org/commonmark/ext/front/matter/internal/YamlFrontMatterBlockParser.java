@@ -2,7 +2,7 @@ package org.commonmark.ext.front.matter.internal;
 
 import java.util.regex.Pattern;
 
-import org.commonmark.ext.front.matter.FrontMatterParser;
+import org.commonmark.ext.front.matter.parser.FrontMatterParser;
 import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
 import org.commonmark.node.Block;
 import org.commonmark.node.Document;
