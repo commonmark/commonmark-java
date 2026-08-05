@@ -4,14 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Set;
-
 import org.commonmark.Extension;
 import org.commonmark.node.Document;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.Text;
 import org.junit.jupiter.api.Test;
 
-public class YamlFrontMatterMarkdownRendererDataTest extends YamlFrontMatterMarkdownRendererTestCase {
+public class YamlFrontMatterMarkdownRendererDataTest
+        extends YamlFrontMatterMarkdownRendererTestCase {
     private static final Set<Extension> EXTENSIONS = Set.of(YamlFrontMatterExtension.create());
 
     @Override

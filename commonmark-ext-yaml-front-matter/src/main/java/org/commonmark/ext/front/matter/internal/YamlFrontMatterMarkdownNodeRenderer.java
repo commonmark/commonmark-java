@@ -1,9 +1,8 @@
 package org.commonmark.ext.front.matter.internal;
 
 import java.util.List;
-
-import org.commonmark.ext.front.matter.YamlFrontMatterRawContent;
 import org.commonmark.ext.front.matter.YamlFrontMatterNode;
+import org.commonmark.ext.front.matter.YamlFrontMatterRawContent;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext;
 import org.commonmark.renderer.markdown.MarkdownWriter;

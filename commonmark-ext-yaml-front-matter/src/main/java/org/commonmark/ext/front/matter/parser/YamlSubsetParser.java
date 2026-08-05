@@ -1,13 +1,12 @@
 package org.commonmark.ext.front.matter.parser;
 
-import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
-import org.commonmark.ext.front.matter.YamlFrontMatterNode;
-import org.commonmark.parser.SourceLine;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
+import org.commonmark.ext.front.matter.YamlFrontMatterNode;
+import org.commonmark.parser.SourceLine;
 
 public class YamlSubsetParser implements FrontMatterParser {
     private static final Pattern REGEX_METADATA =

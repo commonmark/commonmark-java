@@ -1,20 +1,18 @@
 package org.commonmark.ext.front.matter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.front.matter.parser.RawContentParser;
 import org.commonmark.node.Node;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class YamlFrontMatterRawContentTest extends YamlFrontMatterTestCase {
-    private static final Set<Extension> EXTENSIONS = Set.of(
-            YamlFrontMatterExtension.create(new RawContentParser.Factory())
-    );
+    private static final Set<Extension> EXTENSIONS =
+            Set.of(YamlFrontMatterExtension.create(new RawContentParser.Factory()));
 
     @Override
     Set<Extension> getExtensions() {
@@ -23,7 +21,8 @@ public class YamlFrontMatterRawContentTest extends YamlFrontMatterTestCase {
 
     @Test
     public void frontMatterAsRawContent() {
-        final String input = "---" + "\n  first: foo" + "\n  second: bar" + "\n..." + "\n" + "\ngreat";
+        final String input =
+                "---" + "\n  first: foo" + "\n  second: bar" + "\n..." + "\n" + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
         String content = getFrontMatterContent(input);
@@ -34,12 +33,21 @@ public class YamlFrontMatterRawContentTest extends YamlFrontMatterTestCase {
 
     @Test
     public void indentedDashesDoNotTerminateFrontMatter() {
-        final String input = "---" + "\n  first: foo" + "\n  second: |" + "\n    ---" + "\n  third: bar" + "\n..." + "\n" + "\ngreat";
+        final String input =
+                "---"
+                        + "\n  first: foo"
+                        + "\n  second: |"
+                        + "\n    ---"
+                        + "\n  third: bar"
+                        + "\n..."
+                        + "\n"
+                        + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
         String content = getFrontMatterContent(input);
 
-        assertThat(content).isEqualTo("  first: foo\n" + "  second: |\n" + "    ---\n" + "  third: bar\n");
+        assertThat(content)
+                .isEqualTo("  first: foo\n" + "  second: |\n" + "    ---\n" + "  third: bar\n");
         assertRendering(input, rendered);
     }
 
@@ -48,7 +56,8 @@ public class YamlFrontMatterRawContentTest extends YamlFrontMatterTestCase {
         final String input = "---" + "\nhello: world" + "\n---" + "\n";
 
         Node document = parser.parse(input);
-        YamlFrontMatterRawContent contentNode = (YamlFrontMatterRawContent) document.getFirstChild().getFirstChild();
+        YamlFrontMatterRawContent contentNode =
+                (YamlFrontMatterRawContent) document.getFirstChild().getFirstChild();
 
         contentNode.setContent("see: you\n");
 

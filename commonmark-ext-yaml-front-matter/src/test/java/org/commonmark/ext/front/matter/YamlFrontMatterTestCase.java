@@ -1,14 +1,13 @@
 package org.commonmark.ext.front.matter;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 abstract class YamlFrontMatterTestCase extends RenderingTestCase {
     protected final Parser parser = Parser.builder().extensions(getExtensions()).build();

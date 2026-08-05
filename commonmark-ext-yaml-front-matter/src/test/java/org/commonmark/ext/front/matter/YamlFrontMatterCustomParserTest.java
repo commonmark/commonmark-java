@@ -1,13 +1,12 @@
 package org.commonmark.ext.front.matter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.front.matter.parser.FrontMatterParser;
 import org.commonmark.parser.SourceLine;
 import org.junit.jupiter.api.Test;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class YamlFrontMatterCustomParserTest extends YamlFrontMatterTestCase {
     @Override
@@ -26,9 +25,7 @@ public class YamlFrontMatterCustomParserTest extends YamlFrontMatterTestCase {
         assertRendering(input, rendered);
     }
 
-    /**
-     * Allows testing {@link FrontMatterParser.SeparatorRole#CONTENT}
-     */
+    /** Allows testing {@link FrontMatterParser.SeparatorRole#CONTENT} */
     class CustomParser implements FrontMatterParser {
         private StringBuilder content;
         private boolean separatorAsContent = false;

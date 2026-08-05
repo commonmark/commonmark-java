@@ -1,9 +1,8 @@
 package org.commonmark.ext.front.matter.internal;
 
 import java.util.regex.Pattern;
-
-import org.commonmark.ext.front.matter.parser.FrontMatterParser;
 import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
+import org.commonmark.ext.front.matter.parser.FrontMatterParser;
 import org.commonmark.node.Block;
 import org.commonmark.node.Document;
 import org.commonmark.parser.SourceLine;
@@ -58,7 +57,8 @@ public class YamlFrontMatterBlockParser extends AbstractBlockParser {
             if (parentParser.getBlock() instanceof Document
                     && parentParser.getBlock().getFirstChild() == null
                     && REGEX_BEGIN.matcher(line).matches()) {
-                return BlockStart.of(new YamlFrontMatterBlockParser(frontMatterParserFactory.create()))
+                return BlockStart.of(
+                                new YamlFrontMatterBlockParser(frontMatterParserFactory.create()))
                         .atIndex(state.getNextNonSpaceIndex());
             }
 

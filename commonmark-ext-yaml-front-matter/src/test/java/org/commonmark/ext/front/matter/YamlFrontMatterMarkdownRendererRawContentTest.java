@@ -1,16 +1,15 @@
 package org.commonmark.ext.front.matter;
 
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.front.matter.parser.RawContentParser;
 import org.commonmark.node.Node;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
-public class YamlFrontMatterMarkdownRendererRawContentTest extends YamlFrontMatterMarkdownRendererTestCase {
-    private static final Set<Extension> EXTENSIONS = Set.of(
-            YamlFrontMatterExtension.create(new RawContentParser.Factory())
-    );
+public class YamlFrontMatterMarkdownRendererRawContentTest
+        extends YamlFrontMatterMarkdownRendererTestCase {
+    private static final Set<Extension> EXTENSIONS =
+            Set.of(YamlFrontMatterExtension.create(new RawContentParser.Factory()));
 
     @Override
     protected Set<Extension> getExtensions() {
@@ -27,7 +26,8 @@ public class YamlFrontMatterMarkdownRendererRawContentTest extends YamlFrontMatt
         final String input = "---" + "\nhello: world" + "\n---" + "\n\ngreat";
 
         Node document = parser.parse(input);
-        YamlFrontMatterRawContent contentNode = (YamlFrontMatterRawContent) document.getFirstChild().getFirstChild();
+        YamlFrontMatterRawContent contentNode =
+                (YamlFrontMatterRawContent) document.getFirstChild().getFirstChild();
 
         contentNode.setContent("see: you    ");
 

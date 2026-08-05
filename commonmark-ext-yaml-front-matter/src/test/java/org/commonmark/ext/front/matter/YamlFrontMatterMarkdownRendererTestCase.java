@@ -1,13 +1,12 @@
 package org.commonmark.ext.front.matter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.markdown.MarkdownRenderer;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 abstract class YamlFrontMatterMarkdownRendererTestCase {
     protected final Parser parser = Parser.builder().extensions(getExtensions()).build();
