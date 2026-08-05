@@ -8,23 +8,22 @@ import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
-public class YamlFrontMatterTest extends RenderingTestCase {
+public class YamlFrontMatterDataTest extends YamlFrontMatterTestCase {
     private static final Set<Extension> EXTENSIONS = Set.of(YamlFrontMatterExtension.create());
-    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final HtmlRenderer RENDERER =
-            HtmlRenderer.builder().extensions(EXTENSIONS).build();
+
+    @Override
+    Set<Extension> getExtensions() {
+        return EXTENSIONS;
+    }
 
     @Test
     public void simpleValue() {
         final String input = "---" + "\nhello: world" + "\n..." + "\n" + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(1);
         assertThat(data.keySet().iterator().next()).isEqualTo("hello");
@@ -39,7 +38,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String input = "---" + "\nkey:" + "\n---" + "\n" + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(1);
         assertThat(data.keySet().iterator().next()).isEqualTo("key");
@@ -54,7 +53,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
                 "---" + "\nlist:" + "\n  - value1" + "\n  - value2" + "\n..." + "\n" + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(1);
         assertThat(data).containsKey("list");
@@ -77,7 +76,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
                         + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(1);
         assertThat(data).containsKey("literal");
@@ -93,7 +92,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
                 "---" + "\nliteral: |" + "\n  - hello markdown!" + "\n---" + "\n" + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(1);
         assertThat(data).containsKey("literal");
@@ -119,7 +118,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
                         + "\ngreat";
         final String rendered = "<p>great</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(3);
 
@@ -144,7 +143,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String input = "---\n" + "---\n" + "test";
         final String rendered = "<p>test</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).isEmpty();
 
@@ -158,7 +157,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String rendered =
                 "<h1>hello</h1>\n<h2>hello markdown world!</h2>\n<h2>hello: world</h2>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).isEmpty();
 
@@ -170,7 +169,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String input = "hello\n" + "\n---" + "\nhello: world" + "\n---";
         final String rendered = "<p>hello</p>\n<hr />\n<h2>hello: world</h2>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).isEmpty();
 
@@ -182,7 +181,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String input = "----\n" + "test";
         final String rendered = "<hr />\n<p>test</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).isEmpty();
 
@@ -194,7 +193,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String input = "* ---\n" + "  ---\n" + "test";
         final String rendered = "<ul>\n<li>\n<hr />\n<hr />\n</li>\n</ul>\n<p>test</p>\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).isEmpty();
 
@@ -206,7 +205,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String input = "---" + "\nhello: world" + "\n---" + "\n";
 
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
-        Node document = PARSER.parse(input);
+        Node document = parser.parse(input);
         document.appendChild(new TestNode());
         document.accept(visitor);
 
@@ -220,7 +219,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
     public void nodesCanBeModified() {
         final String input = "---" + "\nhello: world" + "\n---" + "\n";
 
-        Node document = PARSER.parse(input);
+        Node document = parser.parse(input);
         YamlFrontMatterNode node = (YamlFrontMatterNode) document.getFirstChild().getFirstChild();
         node.setKey("see");
         node.setValues(List.of("you"));
@@ -238,7 +237,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
     public void dotInKeys() {
         final String input = "---" + "\nms.author: author" + "\n---" + "\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(1);
         assertThat(data.keySet().iterator().next()).isEqualTo("ms.author");
@@ -251,7 +250,7 @@ public class YamlFrontMatterTest extends RenderingTestCase {
         final String input =
                 "---" + "\nstring: 'It''s me'" + "\nlist:" + "\n  - 'I''m here'" + "\n---" + "\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(2);
         assertThat(data.get("string").get(0)).isEqualTo("It's me");
@@ -268,24 +267,44 @@ public class YamlFrontMatterTest extends RenderingTestCase {
                         + "\n---"
                         + "\n";
 
-        Map<String, List<String>> data = getFrontMatter(input);
+        Map<String, List<String>> data = getFrontMatterData(input);
 
         assertThat(data).hasSize(2);
         assertThat(data.get("string").get(0)).isEqualTo("backslash: \\ quote: \"");
         assertThat(data.get("list").get(0)).isEqualTo("hey");
     }
 
-    @Override
-    protected String render(String source) {
-        return RENDERER.render(PARSER.parse(source));
+    @Test
+    public void contentNodesNotPresent() {
+        final String input = "---" + "\nhello: world" + "\n..." + "\n" + "\ngreat";
+
+        String content = getFrontMatterContent(input);
+
+        assertThat(content).isEmpty();
     }
 
-    private Map<String, List<String>> getFrontMatter(String input) {
+    @Test
+    public void frontMatterPresent() {
+        final String input = "---" + "\nhello: world" + "\n..." + "\n" + "\ngreat";
+
+        Node document = parser.parse(input);
         YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
-        Node document = PARSER.parse(input);
         document.accept(visitor);
 
-        return visitor.getData();
+        assertThat(visitor.getData()).isNotEmpty();
+        assertThat(visitor.isFrontMatterPresent()).isTrue();
+    }
+
+    @Test
+    public void frontMatterNotPresent() {
+        final String input = "great!";
+
+        Node document = parser.parse(input);
+        YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+        document.accept(visitor);
+
+        assertThat(visitor.getData()).isEmpty();
+        assertThat(visitor.isFrontMatterPresent()).isFalse();
     }
 
     // Custom node for tests

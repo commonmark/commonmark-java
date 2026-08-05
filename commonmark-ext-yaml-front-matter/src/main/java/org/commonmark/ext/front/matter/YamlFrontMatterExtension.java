@@ -1,9 +1,14 @@
 package org.commonmark.ext.front.matter;
 
+import java.util.Objects;
 import java.util.Set;
 import org.commonmark.Extension;
+import org.commonmark.ext.front.matter.parser.FrontMatterParser;
+import org.commonmark.ext.front.matter.parser.RawContentParser;
+import org.commonmark.ext.front.matter.parser.YamlSubsetParser;
 import org.commonmark.ext.front.matter.internal.YamlFrontMatterBlockParser;
 import org.commonmark.ext.front.matter.internal.YamlFrontMatterMarkdownNodeRenderer;
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -18,21 +23,38 @@ import org.commonmark.renderer.markdown.MarkdownRenderer;
  * org.commonmark.parser.Parser.Builder#extensions(Iterable)}, {@link
  * HtmlRenderer.Builder#extensions(Iterable)}).
  *
- * <p>The parsed metadata is turned into {@link YamlFrontMatterNode}. You can access the metadata
- * using {@link YamlFrontMatterVisitor}.
+ * <p>By default, the extension parses the subset of YAML with a built-int {@link YamlSubsetParser}.
+ * The parsed metadata is turned into {@link YamlFrontMatterNode}. You can access
+ * the metadata using {@link YamlFrontMatterVisitor#readData(Node)}.
+ *
+ * <p>Alternatively, you can create the extension with {@link RawContentParser.Factory}.
+ * It turns the YAML front matter into {@link YamlFrontMatterRawContent} node, which stores
+ * the entire front matter as a string. You can access the content with
+ * {@link YamlFrontMatterVisitor#readRawContent(Node)} to process it with other tools.
+ *
+ * <p>Implement {@link FrontMatterParser} interface and the corresponding factory to
+ * parse the front matter with a custom parser.
  */
 public class YamlFrontMatterExtension
         implements Parser.ParserExtension, MarkdownRenderer.MarkdownRendererExtension {
 
-    private YamlFrontMatterExtension() {}
+    private final FrontMatterParser.Factory frontMatterParserFactory;
+
+    private YamlFrontMatterExtension(FrontMatterParser.Factory frontMatterParserFactory) {
+        this.frontMatterParserFactory = Objects.requireNonNull(frontMatterParserFactory);
+    }
 
     @Override
     public void extend(Parser.Builder parserBuilder) {
-        parserBuilder.customBlockParserFactory(new YamlFrontMatterBlockParser.Factory());
+        parserBuilder.customBlockParserFactory(new YamlFrontMatterBlockParser.Factory(frontMatterParserFactory));
     }
 
     public static Extension create() {
-        return new YamlFrontMatterExtension();
+        return create(new YamlSubsetParser.Factory());
+    }
+
+    public static Extension create(FrontMatterParser.Factory parser) {
+        return new YamlFrontMatterExtension(parser);
     }
 
     @Override

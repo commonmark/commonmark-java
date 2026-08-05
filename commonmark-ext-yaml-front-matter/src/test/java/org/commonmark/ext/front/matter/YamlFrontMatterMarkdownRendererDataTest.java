@@ -3,21 +3,21 @@ package org.commonmark.ext.front.matter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Set;
+
 import org.commonmark.Extension;
 import org.commonmark.node.Document;
-import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
 import org.commonmark.node.Text;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
-public class YamlFrontMatterMarkdownRendererTest {
+public class YamlFrontMatterMarkdownRendererDataTest extends YamlFrontMatterMarkdownRendererTestCase {
+    private static final Set<Extension> EXTENSIONS = Set.of(YamlFrontMatterExtension.create());
 
-    private static final List<Extension> EXTENSIONS = List.of(YamlFrontMatterExtension.create());
-    private static final Parser PARSER = Parser.builder().extensions(EXTENSIONS).build();
-    private static final MarkdownRenderer RENDERER =
-            MarkdownRenderer.builder().extensions(EXTENSIONS).build();
+    @Override
+    protected Set<Extension> getExtensions() {
+        return EXTENSIONS;
+    }
 
     // ===== Round-trip tests (parse string -> render -> compare to input) =====
 
@@ -59,7 +59,7 @@ public class YamlFrontMatterMarkdownRendererTest {
          * quote, hence why this technically doesn't round-trip.
          */
         var input = "---\nkey: \"value with \\\"double quotes\\\"\"\n---\n\nMarkdown content\n";
-        var rendered = RENDERER.render(PARSER.parse(input));
+        var rendered = renderer.render(parser.parse(input));
         var expected = "---\nkey: 'value with \"double quotes\"'\n---\n\nMarkdown content\n";
         assertThat(rendered).isEqualTo(expected);
     }
@@ -199,16 +199,6 @@ public class YamlFrontMatterMarkdownRendererTest {
                                         "key", List.of("\"quotes within value\""))));
 
         assertRenderedEquals(doc, "---\nkey: '\"quotes within value\"'\n---\n\nMarkdown content\n");
-    }
-
-    private void assertRoundTrip(String input) {
-        String rendered = RENDERER.render(PARSER.parse(input));
-        assertThat(rendered).isEqualTo(input);
-    }
-
-    private void assertRenderedEquals(Node inputNode, String expectedOutput) {
-        var renderedOutput = RENDERER.render(inputNode);
-        assertThat(renderedOutput).isEqualTo(expectedOutput);
     }
 
     private Document buildDocumentWithFrontMatter(List<YamlFrontMatterNode> frontMatterNodes) {

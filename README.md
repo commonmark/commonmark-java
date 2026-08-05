@@ -390,7 +390,8 @@ Use class `InsExtension` in artifact `commonmark-ext-ins`.
 
 ### YAML front matter
 
-Adds support for metadata through a YAML front matter block. This extension only supports a subset of YAML syntax. Here's an example of what's supported:
+Adds support for metadata through a YAML front matter block. The extension uses a built-in parser that supports a subset
+of YAML syntax, suitable for simple use cases. Here's an example of what's supported:
 
 ```markdown
 ---
@@ -407,7 +408,36 @@ literal: |
 document start here
 ```
 
-Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`.
+Use class `YamlFrontMatterExtension` in artifact `commonmark-ext-yaml-front-matter`. To fetch metadata, use `YamlFrontMatterVisitor`:
+
+```java
+import org.commonmark.ext.front.matter.parser.RawContentParser;
+
+List<Extension> extensions = List.of(YamlFrontMatterExtension.create());
+Parser parser = Parser.builder()
+    .extensions(extensions)
+    .build();
+
+Node document = parser.parse(markdownDocument);
+Map<String, List<String>> frontMatter = YamlFrontMatterVisitor.readData(document);
+```
+
+Alternatively, you can use initialize the extension with `RawContentParser` to capture the entire front matter as a
+string for further processing with other tools:
+
+```java
+import org.commonmark.ext.front.matter.parser.RawContentParser;
+
+List<Extension> extensions = List.of(YamlFrontMatterExtension.create(new RawContentParser.Factory()));
+Parser parser = Parser.builder()
+    .extensions(extensions)
+    .build();
+
+Node document = parser.parse(markdownDocument);
+String frontMatter = YamlFrontMatterVisitor.readRawContent(document);
+```
+
+You can also write a custom front matter parser by implementing `FrontMatterParser` interface.
 
 ### Image Attributes
 
