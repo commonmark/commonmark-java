@@ -88,4 +88,29 @@ public class PathologicalTest extends CoreRenderingTestCase {
         // See https://github.com/commonmark/commonmark.js/issues/129
         assertRendering("[](".repeat(x) + "\n", "<p>" + "[](".repeat(x) + "</p>\n");
     }
+
+    // The following cases each start an inline HTML construct whose terminator never occurs, so
+    // every occurrence used to scan the rest of the input again. They all contain a `>` close to
+    // each `<` so that the separate autolink scan for `>` stays cheap and only the inline HTML
+    // scanning is measured. The leading text keeps the line from starting with `<`, which would
+    // parse as an HTML block instead.
+
+    @Test
+    public void htmlProcessingInstructionsWithNoEnd() {
+        // `?>` never occurs because of the space
+        assertRendering("x <? >".repeat(x), "<p>" + "x &lt;? &gt;".repeat(x) + "</p>\n");
+    }
+
+    @Test
+    public void htmlCommentsWithNoEnd() {
+        // `-->` never occurs because of the space
+        assertRendering("x <!-- >".repeat(x), "<p>" + "x &lt;!-- &gt;".repeat(x) + "</p>\n");
+    }
+
+    @Test
+    public void htmlCdataWithNoEnd() {
+        // `]]>` never occurs, there's no `]` at all
+        assertRendering(
+                "x <![CDATA[ >".repeat(x), "<p>" + "x &lt;![CDATA[ &gt;".repeat(x) + "</p>\n");
+    }
 }
