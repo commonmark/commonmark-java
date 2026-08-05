@@ -10,6 +10,8 @@ with the exception that 0.x versions can break between minor versions.
 ### Added
 - New option `lineSeparator` for `MarkdownRenderer.Builder` to change the default line
   separator from `\n` (e.g. to `\r\n`) (#442)
+- YAML front matter extension: Support extracting the raw YAML content so that you can
+  do the YAML parsing using a library (instead of the limited built-in parsing) (#391)
 
 ## [0.29.0] - 2026-06-20
 ### Added
