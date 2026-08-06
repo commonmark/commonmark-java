@@ -42,6 +42,16 @@ public class HtmlInlineParser implements InlineContentParser {
                     .c('`')
                     .build();
 
+    // A scan that ran to the end of the input without finding the terminator it was looking for
+    // proves that no later scan in the same inline snippet can find it either (inline parsing only
+    // moves forward). Remembering that stops each `<` from scanning the rest of the input again,
+    // which would be quadratic for input like `<!--` repeated many times. A parser is created for
+    // each inline snippet, so these don't need to be reset.
+    private boolean noProcessingInstructionEnd;
+    private boolean noCommentEnd;
+    private boolean noCdataEnd;
+    private boolean noDeclarationEnd;
+
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
@@ -146,23 +156,37 @@ public class HtmlInlineParser implements InlineContentParser {
         return false;
     }
 
-    private static boolean tryProcessingInstruction(Scanner scanner) {
+    private boolean tryProcessingInstruction(Scanner scanner) {
         // spec: A processing instruction consists of the string <?, a string of characters not
         // including the string ?>, and the string ?>.
+        if (noProcessingInstructionEnd) {
+            return false;
+        }
         scanner.next();
-        while (scanner.find('?') > 0) {
+        int found;
+        while ((found = scanner.find('?')) > 0) {
             scanner.next();
             if (scanner.next('>')) {
                 return true;
             }
         }
+        // The loop also ends when a `?` is found directly at the current position (`found == 0`),
+        // which is not the end of the input, so only remember the miss when the scan really did
+        // reach the end.
+        noProcessingInstructionEnd = found < 0;
         return false;
     }
 
-    private static boolean tryComment(Scanner scanner) {
+    private boolean tryComment(Scanner scanner) {
         // spec: An [HTML comment](@) consists of `<!-->`, `<!--->`, or  `<!--`, a string of
         // characters not including the string `-->`, and `-->` (see the [HTML
         // spec](https://html.spec.whatwg.org/multipage/parsing.html#markup-declaration-open-state)).
+
+        if (noCommentEnd) {
+            // Both `<!-->` and `<!--->` contain `-->` themselves, so this can't skip a valid short
+            // comment either.
+            return false;
+        }
 
         // Skip first `-`
         scanner.next();
@@ -182,12 +206,18 @@ public class HtmlInlineParser implements InlineContentParser {
             }
         }
 
+        // The loop above only ends when the scan reached the end of the input.
+        noCommentEnd = true;
         return false;
     }
 
-    private static boolean tryCdata(Scanner scanner) {
+    private boolean tryCdata(Scanner scanner) {
         // spec: A CDATA section consists of the string <![CDATA[, a string of characters not
         // including the string ]]>, and the string ]]>.
+
+        if (noCdataEnd) {
+            return false;
+        }
 
         // Skip `[`
         scanner.next();
@@ -200,14 +230,19 @@ public class HtmlInlineParser implements InlineContentParser {
                     scanner.next();
                 }
             }
+            // The loop above only ends when the scan reached the end of the input.
+            noCdataEnd = true;
         }
 
         return false;
     }
 
-    private static boolean tryDeclaration(Scanner scanner) {
+    private boolean tryDeclaration(Scanner scanner) {
         // spec: A declaration consists of the string <!, an ASCII letter, zero or more characters
         // not including the character >, and the character >.
+        if (noDeclarationEnd) {
+            return false;
+        }
         scanner.match(asciiLetter);
         if (scanner.whitespace() <= 0) {
             return false;
@@ -216,6 +251,8 @@ public class HtmlInlineParser implements InlineContentParser {
             scanner.next();
             return true;
         }
+        // `find` only returns a negative value when it reached the end of the input.
+        noDeclarationEnd = true;
         return false;
     }
 
