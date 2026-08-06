@@ -12,6 +12,8 @@ with the exception that 0.x versions can break between minor versions.
   separator from `\n` (e.g. to `\r\n`) (#442)
 - YAML front matter extension: Support extracting the raw YAML content so that you can
   do the YAML parsing using a library (instead of the limited built-in parsing) (#391)
+### Fixed
+- Fix quadratic runtime when parsing pathological inline HTML (#447)
 
 ## [0.29.0] - 2026-06-20
 ### Added
