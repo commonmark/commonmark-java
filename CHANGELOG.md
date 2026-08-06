@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## [Unreleased]
+## [0.30.0] - 2026-08-06
 ### Added
 - New option `lineSeparator` for `MarkdownRenderer.Builder` to change the default line
   separator from `\n` (e.g. to `\r\n`) (#442)
@@ -21,20 +21,24 @@ with the exception that 0.x versions can break between minor versions.
 - Limit how deeply inline nodes may nest by default (100), see option `maxInlineNesting` in
   `Parser.Builder`; configure the option to remove the limit. This covers emphasis-like
   delimiters (e.g. `*` or the ins extension's `+`) as well as images, which can otherwise
-  nest arbitrarily deep for a small amount of input.
+  nest arbitrarily deep for a small amount of input. Anything over the limit is treated as
+  plain text instead.
 ### Fixed
-- Fix quadratic runtime when parsing pathological inline HTML (#447)
-- YAML front matter extension: Fix inefficient string concatenation for literal-block values (`|`)
-- Fix quadratic runtime when parsing pathological emphasis like `"a**b" + "c* ".repeat(100_000)`
-- Fix quadratic runtime when parsing input like `"<".repeat(100_000)`
-- Fix quadratic runtime when parsing pathological backticks
-- Fix StackOverflowError when parsing pathological HTML block attributes
-- Fix StackOverflowError when parsing pathological autolink email addresses
-- Fix StackOverflowError when parsing deeply nested emphasis
-- Fix StackOverflowError when rendering/visiting deeply nested inline nodes, by capping nesting
+- Fix quadratic runtime on various pathological inputs (where inline syntax to start a
+  node is used repeatedly but never finished):
+  - Inline HTML like `"x <!--".repeat(100_000)` (#447)
+  - Autolink starts like `"<".repeat(100_000)`
+  - Emphasis like `"a**b" + "c* ".repeat(100_000)`
+  - Backticks runs of different lengths
+- Fix stack overflow errors when parsing pathological inputs with repeated syntax:
+  - HTML block attributes
+  - Autolink email addresses
+  - Deeply nested emphasis
+- Fix stack overflow error when rendering/visiting deeply nested inline nodes, by capping nesting
   depth during parsing (see `maxInlineNesting` above). This can happen with emphasis, e.g.
   `"*".repeat(n) + "x" + "*".repeat(n)` or `"*a ".repeat(n) + " b*".repeat(n)`, as well as with
   images, e.g. `"![".repeat(n) + "x" + "](u)".repeat(n)`
+- YAML front matter extension: Fix inefficient string concatenation for literal-block values (`|`)
 
 ## [0.29.0] - 2026-06-20
 ### Added
@@ -590,7 +594,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
-[Unreleased]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.29.0...HEAD
+[0.30.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.29.0...commonmark-parent-0.30.0
 [0.29.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.28.0...commonmark-parent-0.29.0
 [0.28.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.27.1...commonmark-parent-0.28.0
 [0.27.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.27.0...commonmark-parent-0.27.1
