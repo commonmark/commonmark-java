@@ -32,7 +32,7 @@ public class TablesExtension
                 TextContentRenderer.TextContentRendererExtension,
                 MarkdownRenderer.MarkdownRendererExtension {
 
-    /** The default limit for the maximum number of cells, see {@link Builder#maxCells(int)}. */
+    /** The default limit for the maximum number of cells, see {@link Builder#maxCells(Integer)}. */
     public static final int DEFAULT_MAX_CELLS = 1_000_000;
 
     private final Integer maxCells;
