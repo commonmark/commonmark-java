@@ -492,15 +492,17 @@ Used by
 
 Some users of this library (feel free to raise a PR if you want to be added):
 * [Atlassian](https://www.atlassian.com/) (where the library was initially developed)
-* Java (OpenJDK) ([link](https://github.com/openjdk/jdk/blob/3895b8fc0b2c6d187080dba6fe08297adad4a480/src/jdk.internal.md/share/classes/module-info.java))
-* [Gerrit](https://www.gerritcodereview.com/) code review/Gitiles ([link](https://gerrit-review.googlesource.com/c/gitiles/+/353794))
+* Java (OpenJDK) ([code](https://github.com/openjdk/jdk/blob/3895b8fc0b2c6d187080dba6fe08297adad4a480/src/jdk.internal.md/share/classes/module-info.java))
+* [Gerrit](https://www.gerritcodereview.com/) code review/Gitiles ([code](https://gerrit-review.googlesource.com/c/gitiles/+/353794))
+* [google-java-format](https://github.com/google/google-java-format) Java formatter (for Markdown in Javadoc)
+* [Apache Tika](https://github.com/apache/tika) toolkit for detecting and extracting metadata and structured text content from various documents
 * [Clerk](https://clerk.vision/) moldable live programming for Clojure
 * [Znai](https://github.com/testingisdocumenting/znai)
-* [Open Note](https://github.com/YangDai2003/OpenNote-Compose) a markdown editor and note-taking app for Android
-* [Quarkus Roq](https://github.com/quarkiverse/quarkus-roq/) The Roq Static Site Generator allows to easily create a static website or blog using Quarkus super-powers.
-* [Lucee](https://github.com/lucee/lucee)
-* [Previewer](https://github.com/sebthom/previewer-eclipse-plugin) an extensible Eclipse plugin that previews Markdown and other text based formats.
-* [Xeres](https://xeres.io) a Peer-to-Peer application where all user generated content is done with markdown
+* [Open Note](https://github.com/YangDai2003/OpenNote-Compose) markdown editor and note-taking app for Android
+* [Quarkus Roq](https://github.com/quarkiverse/quarkus-roq/) static website or blog generator
+* [Lucee](https://github.com/lucee/lucee) dynamic, Java based, tag and scripting language used for rapid web application development
+* [Previewer](https://github.com/sebthom/previewer-eclipse-plugin) Eclipse plugin that previews Markdown and other text based formats
+* [Xeres](https://xeres.io) peer-to-peer application where all user generated content is done with markdown
 
 See also
 --------
