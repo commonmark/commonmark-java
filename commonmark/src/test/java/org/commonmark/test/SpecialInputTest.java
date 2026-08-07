@@ -56,69 +56,222 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     @Test
     public void tightListInBlockQuote() {
         assertRendering(
-                "> *\n> * a", "<blockquote>\n<ul>\n<li></li>\n<li>a</li>\n</ul>\n</blockquote>\n");
+                """
+                > *
+                > * a
+                """,
+                """
+                <blockquote>
+                <ul>
+                <li></li>
+                <li>a</li>
+                </ul>
+                </blockquote>
+                """);
     }
 
     @Test
     public void looseListInBlockQuote() {
         // Second line in block quote is considered blank for purpose of loose list
         assertRendering(
-                "> *\n>\n> * a",
-                "<blockquote>\n<ul>\n<li></li>\n<li>\n<p>a</p>\n</li>\n</ul>\n</blockquote>\n");
+                """
+                > *
+                >
+                > * a
+                """,
+                """
+                <blockquote>
+                <ul>
+                <li></li>
+                <li>
+                <p>a</p>
+                </li>
+                </ul>
+                </blockquote>
+                """);
     }
 
     @Test
     public void lineWithOnlySpacesAfterListBullet() {
-        assertRendering("-  \n  \n  foo\n", "<ul>\n<li></li>\n</ul>\n<p>foo</p>\n");
+        assertRendering(
+                """
+                - \s
+                 \s
+                  foo
+                """,
+                """
+                <ul>
+                <li></li>
+                </ul>
+                <p>foo</p>
+                """);
     }
 
     @Test
     public void listWithTwoSpacesForFirstBullet() {
         // We have two spaces after the bullet, but no content. With content, the next line would be
         // required
-        assertRendering("*  \n  foo\n", "<ul>\n<li>foo</li>\n</ul>\n");
+        assertRendering(
+                """
+                * \s
+                  foo
+                """,
+                """
+                <ul>
+                <li>foo</li>
+                </ul>
+                """);
     }
 
     @Test
     public void orderedListMarkerOnly() {
-        assertRendering("2.", "<ol start=\"2\">\n<li></li>\n</ol>\n");
+        assertRendering(
+                """
+                2.
+                """,
+                """
+                <ol start="2">
+                <li></li>
+                </ol>
+                """);
     }
 
     @Test
     public void columnIsInTabOnPreviousLine() {
         assertRendering(
-                "- foo\n\n\tbar\n\n# baz\n",
-                "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n<h1>baz</h1>\n");
+                """
+                - foo
+
+                \tbar
+
+                # baz
+                """,
+                """
+                <ul>
+                <li>
+                <p>foo</p>
+                <p>bar</p>
+                </li>
+                </ul>
+                <h1>baz</h1>
+                """);
         assertRendering(
-                "- foo\n\n\tbar\n# baz\n",
-                "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n<h1>baz</h1>\n");
+                """
+                - foo
+
+                \tbar
+                # baz
+                """,
+                """
+                <ul>
+                <li>
+                <p>foo</p>
+                <p>bar</p>
+                </li>
+                </ul>
+                <h1>baz</h1>
+                """);
     }
 
     @Test
     public void linkLabelWithBracket() {
-        assertRendering("[a[b]\n\n[a[b]: /", "<p>[a[b]</p>\n<p>[a[b]: /</p>\n");
-        assertRendering("[a]b]\n\n[a]b]: /", "<p>[a]b]</p>\n<p>[a]b]: /</p>\n");
-        assertRendering("[a[b]]\n\n[a[b]]: /", "<p>[a[b]]</p>\n<p>[a[b]]: /</p>\n");
+        assertRendering(
+                """
+                [a[b]
+
+                [a[b]: /
+                """,
+                """
+                <p>[a[b]</p>
+                <p>[a[b]: /</p>
+                """);
+        assertRendering(
+                """
+                [a]b]
+
+                [a]b]: /
+                """,
+                """
+                <p>[a]b]</p>
+                <p>[a]b]: /</p>
+                """);
+        assertRendering(
+                """
+                [a[b]]
+
+                [a[b]]: /
+                """,
+                """
+                <p>[a[b]]</p>
+                <p>[a[b]]: /</p>
+                """);
     }
 
     @Test
     public void linkLabelLength() {
         String label1 = "a".repeat(999);
         assertRendering(
-                "[foo][" + label1 + "]\n\n[" + label1 + "]: /", "<p><a href=\"/\">foo</a></p>\n");
+                """
+                [foo][%s]
+
+                [%s]: /
+                """
+                        .formatted(label1, label1),
+                """
+                <p><a href="/">foo</a></p>
+                """);
         assertRendering(
-                "[foo][x" + label1 + "]\n\n[x" + label1 + "]: /",
-                "<p>[foo][x" + label1 + "]</p>\n<p>[x" + label1 + "]: /</p>\n");
+                """
+                [foo][x%s]
+
+                [x%s]: /
+                """
+                        .formatted(label1, label1),
+                """
+                <p>[foo][x%s]</p>
+                <p>[x%s]: /</p>
+                """
+                        .formatted(label1, label1));
         assertRendering(
-                "[foo][\n" + label1 + "]\n\n[\n" + label1 + "]: /",
-                "<p>[foo][\n" + label1 + "]</p>\n<p>[\n" + label1 + "]: /</p>\n");
+                """
+                [foo][
+                %s]
+
+                [
+                %s]: /
+                """
+                        .formatted(label1, label1),
+                """
+                <p>[foo][
+                %s]</p>
+                <p>[
+                %s]: /</p>
+                """
+                        .formatted(label1, label1));
 
         String label2 = "a\n".repeat(499);
         assertRendering(
-                "[foo][" + label2 + "]\n\n[" + label2 + "]: /", "<p><a href=\"/\">foo</a></p>\n");
+                """
+                [foo][%s]
+
+                [%s]: /
+                """
+                        .formatted(label2, label2),
+                """
+                <p><a href="/">foo</a></p>
+                """);
         assertRendering(
-                "[foo][12" + label2 + "]\n\n[12" + label2 + "]: /",
-                "<p>[foo][12" + label2 + "]</p>\n<p>[12" + label2 + "]: /</p>\n");
+                """
+                [foo][12%s]
+
+                [12%s]: /
+                """
+                        .formatted(label2, label2),
+                """
+                <p>[foo][12%s]</p>
+                <p>[12%s]: /</p>
+                """
+                        .formatted(label2, label2));
     }
 
     @Test
@@ -143,9 +296,25 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         // Backslash escapes ']', so not a valid link label
         assertRendering("[\\]: test", "<p>[]: test</p>\n");
         // Backslash is a literal, so valid
-        assertRendering("[a\\b]\n\n[a\\b]: test", "<p><a href=\"test\">a\\b</a></p>\n");
+        assertRendering(
+                """
+                [a\\b]
+
+                [a\\b]: test
+                """,
+                """
+                <p><a href="test">a\\b</a></p>
+                """);
         // Backslash escapes `]` but there's another `]`, valid
-        assertRendering("[a\\]]\n\n[a\\]]: test", "<p><a href=\"test\">a]</a></p>\n");
+        assertRendering(
+                """
+                [a\\]]
+
+                [a\\]]: test
+                """,
+                """
+                <p><a href="test">a]</a></p>
+                """);
     }
 
     // commonmark/cmark#177
@@ -170,22 +339,29 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     @Test
     public void deeplyIndentedList() {
         assertRendering(
-                "* one\n" + "  * two\n" + "    * three\n" + "      * four",
-                "<ul>\n"
-                        + "<li>one\n"
-                        + "<ul>\n"
-                        + "<li>two\n"
-                        + "<ul>\n"
-                        + "<li>three\n"
-                        + "<ul>\n"
-                        + "<li>four</li>\n"
-                        + "</ul>\n"
-                        + "</li>\n"
-                        + "</ul>\n"
-                        + "</li>\n"
-                        + "</ul>\n"
-                        + "</li>\n"
-                        + "</ul>\n");
+                """
+                * one
+                  * two
+                    * three
+                      * four
+                """,
+                """
+                <ul>
+                <li>one
+                <ul>
+                <li>two
+                <ul>
+                <li>three
+                <ul>
+                <li>four</li>
+                </ul>
+                </li>
+                </ul>
+                </li>
+                </ul>
+                </li>
+                </ul>
+                """);
     }
 
     @Test
@@ -193,7 +369,15 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         // The tab is not treated as 4 spaces here and so does not result in a hard line break, but
         // is just preserved.
         // This matches what commonmark.js did at the time of writing.
-        assertRendering("a\t\nb\n", "<p>a\t\nb</p>\n");
+        assertRendering(
+                """
+                a\t
+                b
+                """,
+                """
+                <p>a\t
+                b</p>
+                """);
     }
 
     @Test
@@ -209,36 +393,67 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     @Test
     public void htmlBlockInterruptingList() {
         assertRendering(
-                "- <script>\n" + "- some text\n" + "some other text\n" + "</script>\n",
-                "<ul>\n"
-                        + "<li>\n"
-                        + "<script>\n"
-                        + "</li>\n"
-                        + "<li>some text\n"
-                        + "some other text\n"
-                        + "</script></li>\n"
-                        + "</ul>\n");
+                """
+                - <script>
+                - some text
+                some other text
+                </script>
+                """,
+                """
+                <ul>
+                <li>
+                <script>
+                </li>
+                <li>some text
+                some other text
+                </script></li>
+                </ul>
+                """);
 
         assertRendering(
-                "- <script>\n" + "- some text\n" + "some other text\n" + "\n" + "</script>\n",
-                "<ul>\n"
-                        + "<li>\n"
-                        + "<script>\n"
-                        + "</li>\n"
-                        + "<li>some text\n"
-                        + "some other text</li>\n"
-                        + "</ul>\n"
-                        + "</script>\n");
+                """
+                - <script>
+                - some text
+                some other text
+
+                </script>
+                """,
+                """
+                <ul>
+                <li>
+                <script>
+                </li>
+                <li>some text
+                some other text</li>
+                </ul>
+                </script>
+                """);
     }
 
     @Test
     public void emphasisAfterHardLineBreak() {
         assertRendering(
-                "Hello  \n" + "**Bar**\n" + "Foo\n",
-                "<p>Hello<br />\n" + "<strong>Bar</strong>\n" + "Foo</p>\n");
+                """
+                Hello \s
+                **Bar**
+                Foo
+                """,
+                """
+                <p>Hello<br />
+                <strong>Bar</strong>
+                Foo</p>
+                """);
 
         assertRendering(
-                "Hello  \n" + "**Bar**  \n" + "Foo\n",
-                "<p>Hello<br />\n" + "<strong>Bar</strong><br />\n" + "Foo</p>\n");
+                """
+                Hello \s
+                **Bar** \s
+                Foo
+                """,
+                """
+                <p>Hello<br />
+                <strong>Bar</strong><br />
+                Foo</p>
+                """);
     }
 }

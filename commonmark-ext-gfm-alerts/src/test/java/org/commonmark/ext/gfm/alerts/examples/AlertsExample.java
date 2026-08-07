@@ -25,17 +25,24 @@ public class AlertsExample {
         var renderer = HtmlRenderer.builder().extensions(List.of(extension)).build();
 
         var markdown =
-                "# GFM Alerts Demo\n\n"
-                        + "> [!NOTE]\n"
-                        + "> Highlights information that users should take into account.\n\n"
-                        + "> [!TIP]\n"
-                        + "> Helpful advice for doing things better.\n\n"
-                        + "> [!IMPORTANT]\n"
-                        + "> Key information users need to know.\n\n"
-                        + "> [!WARNING]\n"
-                        + "> Urgent info that needs immediate attention.\n\n"
-                        + "> [!CAUTION]\n"
-                        + "> Advises about risks or negative outcomes.\n";
+                """
+                # GFM Alerts Demo
+
+                > [!NOTE]
+                > Highlights information that users should take into account.
+
+                > [!TIP]
+                > Helpful advice for doing things better.
+
+                > [!IMPORTANT]
+                > Key information users need to know.
+
+                > [!WARNING]
+                > Urgent info that needs immediate attention.
+
+                > [!CAUTION]
+                > Advises about risks or negative outcomes.
+                """;
 
         var html = renderer.render(parser.parse(markdown));
 
@@ -56,13 +63,18 @@ public class AlertsExample {
         var renderer = HtmlRenderer.builder().extensions(List.of(extension)).build();
 
         var markdown =
-                "# Custom Alert Types\n\n"
-                        + "> [!NOTE]\n"
-                        + "> Useful information that users should know.\n\n"
-                        + "> [!TIP]\n"
-                        + "> Helpful advice for doing things better.\n\n"
-                        + "> [!BUG]\n"
-                        + "> This feature has a known issue with large files (see #42).\n";
+                """
+                # Custom Alert Types
+
+                > [!NOTE]
+                > Useful information that users should know.
+
+                > [!TIP]
+                > Helpful advice for doing things better.
+
+                > [!BUG]
+                > This feature has a known issue with large files (see #42).
+                """;
 
         var html = renderer.render(parser.parse(markdown));
 

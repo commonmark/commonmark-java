@@ -13,7 +13,12 @@ public class DelimitedTest {
     @Test
     public void emphasisDelimiters() {
         String input =
-                "* *emphasis* \n" + "* **strong** \n" + "* _important_ \n" + "* __CRITICAL__ \n";
+                """
+                * *emphasis*\s
+                * **strong**\s
+                * _important_\s
+                * __CRITICAL__\s
+                """;
 
         Parser parser = Parser.builder().build();
         Node document = parser.parse(input);

@@ -20,110 +20,253 @@ public class TaskListItemsTest extends RenderingTestCase {
     @Test
     public void baseCase() {
         assertRendering(
-                "- [x] this is *done*\n",
-                "<ul>\n<li>" + HTML_CHECKED + " this is <em>done</em></li>\n</ul>\n");
+                """
+                - [x] this is *done*
+                """,
+                """
+                <ul>
+                <li>%s this is <em>done</em></li>
+                </ul>
+                """
+                        .formatted(HTML_CHECKED));
 
         assertRendering(
-                "- [ ] do this\n", "<ul>\n<li>" + HTML_UNCHECKED + " do this</li>\n</ul>\n");
+                """
+                - [ ] do this
+                """,
+                """
+                <ul>
+                <li>%s do this</li>
+                </ul>
+                """
+                        .formatted(HTML_UNCHECKED));
 
         assertRendering(
-                "- [x] foo\n" + "  - [ ] bar\n" + "  - [x] baz\n" + "- [ ] bim",
-                "<ul>\n"
-                        + "<li>"
-                        + HTML_CHECKED
-                        + " foo\n"
-                        + "<ul>\n"
-                        + "<li>"
-                        + HTML_UNCHECKED
-                        + " bar</li>\n"
-                        + "<li>"
-                        + HTML_CHECKED
-                        + " baz</li>\n"
-                        + "</ul>\n"
-                        + "</li>\n"
-                        + "<li>"
-                        + HTML_UNCHECKED
-                        + " bim</li>\n"
-                        + "</ul>\n");
+                """
+                - [x] foo
+                  - [ ] bar
+                  - [x] baz
+                - [ ] bim
+                """,
+                """
+                <ul>
+                <li>%s foo
+                <ul>
+                <li>%s bar</li>
+                <li>%s baz</li>
+                </ul>
+                </li>
+                <li>%s bim</li>
+                </ul>
+                """
+                        .formatted(HTML_CHECKED, HTML_UNCHECKED, HTML_CHECKED, HTML_UNCHECKED));
 
         assertRendering(
-                "*   [ ]   do this\n*   [ ]   and this",
-                "<ul>\n<li>"
-                        + HTML_UNCHECKED
-                        + " do this</li>\n<li>"
-                        + HTML_UNCHECKED
-                        + " and this</li>\n</ul>\n");
+                """
+                *   [ ]   do this
+                *   [ ]   and this
+                """,
+                """
+                <ul>
+                <li>%s do this</li>
+                <li>%s and this</li>
+                </ul>
+                """
+                        .formatted(HTML_UNCHECKED, HTML_UNCHECKED));
 
         assertRendering(
-                "+ [x] one\n" + "  - [ ] two\n" + "    * [x] three\n",
-                "<ul>\n"
-                        + "<li>"
-                        + HTML_CHECKED
-                        + " one\n"
-                        + "<ul>\n"
-                        + "<li>"
-                        + HTML_UNCHECKED
-                        + " two\n"
-                        + "<ul>\n"
-                        + "<li>"
-                        + HTML_CHECKED
-                        + " three</li>\n"
-                        + "</ul>\n"
-                        + "</li>\n"
-                        + "</ul>\n"
-                        + "</li>\n"
-                        + "</ul>\n");
+                """
+                + [x] one
+                  - [ ] two
+                    * [x] three
+                """,
+                """
+                <ul>
+                <li>%s one
+                <ul>
+                <li>%s two
+                <ul>
+                <li>%s three</li>
+                </ul>
+                </li>
+                </ul>
+                </li>
+                </ul>
+                """
+                        .formatted(HTML_CHECKED, HTML_UNCHECKED, HTML_CHECKED));
 
         assertRendering(
-                "TODO list\n"
-                        + "---------\n"
-                        + "- [ ] first task\n"
-                        + "- [x] second task\n"
-                        + "- [ ] third task\n\n"
-                        + "Let me know when you are finished",
-                "<h2>TODO list</h2>\n"
-                        + "<ul>\n"
-                        + "<li>"
-                        + HTML_UNCHECKED
-                        + " first task</li>\n"
-                        + "<li>"
-                        + HTML_CHECKED
-                        + " second task</li>\n"
-                        + "<li>"
-                        + HTML_UNCHECKED
-                        + " third task</li>\n"
-                        + "</ul>\n"
-                        + "<p>Let me know when you are finished</p>\n");
+                """
+                TODO list
+                ---------
+                - [ ] first task
+                - [x] second task
+                - [ ] third task
+
+                Let me know when you are finished
+                """,
+                """
+                <h2>TODO list</h2>
+                <ul>
+                <li>%s first task</li>
+                <li>%s second task</li>
+                <li>%s third task</li>
+                </ul>
+                <p>Let me know when you are finished</p>
+                """
+                        .formatted(HTML_UNCHECKED, HTML_CHECKED, HTML_UNCHECKED));
     }
 
     @Test
     public void notListItem() {
-        assertRendering("[x] this is not a task\n", "<p>[x] this is not a task</p>\n");
         assertRendering(
-                " [ ] this is not a task either\n", "<p>[ ] this is not a task either</p>\n");
+                """
+                [x] this is not a task
+                """,
+                """
+                <p>[x] this is not a task</p>
+                """);
+        assertRendering(
+                """
+                 [ ] this is not a task either
+                """,
+                """
+                <p>[ ] this is not a task either</p>
+                """);
     }
 
     @Test
     public void notValidTaskFormat() {
-        assertRendering("- [x]no space\n", "<ul>\n<li>[x]no space</li>\n</ul>\n");
         assertRendering(
-                "- [O] is not a _task_\n", "<ul>\n<li>[O] is not a <em>task</em></li>\n</ul>\n");
-        assertRendering("* [] neither is this\n", "<ul>\n<li>[] neither is this</li>\n</ul>\n");
+                """
+                - [x]no space
+                """,
+                """
+                <ul>
+                <li>[x]no space</li>
+                </ul>
+                """);
         assertRendering(
-                "* [  ] nor this\n" + "* [XX] nor this\n",
-                "<ul>\n<li>[  ] nor this</li>\n<li>[XX] nor this</li>\n</ul>\n");
-        assertRendering("+ [x]] is not a task\n", "<ul>\n<li>[x]] is not a task</li>\n</ul>\n");
-        assertRendering("- [x isn't\n", "<ul>\n<li>[x isn't</li>\n</ul>\n");
-        assertRendering("- [[x is not\n", "<ul>\n<li>[[x is not</li>\n</ul>\n");
-        assertRendering("- x] nope\n", "<ul>\n<li>x] nope</li>\n</ul>\n");
-        assertRendering("- x]] no way\n", "<ul>\n<li>x]] no way</li>\n</ul>\n");
-        assertRendering("+ (x) sorry no\n", "<ul>\n<li>(x) sorry no</li>\n</ul>\n");
-        assertRendering("+ {x} sorry not sorry\n", "<ul>\n<li>{x} sorry not sorry</li>\n</ul>\n");
-        assertRendering("+ [[x]] nooo\n", "<ul>\n<li>[[x]] nooo</li>\n</ul>\n");
+                """
+                - [O] is not a _task_
+                """,
+                """
+                <ul>
+                <li>[O] is not a <em>task</em></li>
+                </ul>
+                """);
         assertRendering(
-                "+ text before [x] is not a task\n",
-                "<ul>\n<li>text before [x] is not a task</li>\n</ul>\n");
-        assertRendering("* [x]  \n* [ ]  \n", "<ul>\n<li>[x]</li>\n<li>[ ]</li>\n</ul>\n");
+                """
+                * [] neither is this
+                """,
+                """
+                <ul>
+                <li>[] neither is this</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                * [  ] nor this
+                * [XX] nor this
+                """,
+                """
+                <ul>
+                <li>[  ] nor this</li>
+                <li>[XX] nor this</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                + [x]] is not a task
+                """,
+                """
+                <ul>
+                <li>[x]] is not a task</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                - [x isn't
+                """,
+                """
+                <ul>
+                <li>[x isn't</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                - [[x is not
+                """,
+                """
+                <ul>
+                <li>[[x is not</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                - x] nope
+                """,
+                """
+                <ul>
+                <li>x] nope</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                - x]] no way
+                """,
+                """
+                <ul>
+                <li>x]] no way</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                + (x) sorry no
+                """,
+                """
+                <ul>
+                <li>(x) sorry no</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                + {x} sorry not sorry
+                """,
+                """
+                <ul>
+                <li>{x} sorry not sorry</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                + [[x]] nooo
+                """,
+                """
+                <ul>
+                <li>[[x]] nooo</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                + text before [x] is not a task
+                """,
+                """
+                <ul>
+                <li>text before [x] is not a task</li>
+                </ul>
+                """);
+        assertRendering(
+                """
+                * [x] \s
+                * [ ] \s
+                """,
+                """
+                <ul>
+                <li>[x]</li>
+                <li>[ ]</li>
+                </ul>
+                """);
     }
 
     @Override

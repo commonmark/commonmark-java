@@ -91,12 +91,14 @@ public class AutolinkTest extends RenderingTestCase {
                         .extensions(EXTENSIONS)
                         .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
                         .build();
-        Node document =
-                parser.parse(
-                        "abc\n"
-                                + "http://example.com/one\n"
-                                + "def http://example.com/two\n"
-                                + "ghi http://example.com/three jkl");
+        var s =
+                """
+                abc
+                http://example.com/one
+                def http://example.com/two
+                ghi http://example.com/three jkl
+                """;
+        Node document = parser.parse(s);
 
         Paragraph paragraph = (Paragraph) document.getFirstChild();
         Text abc = (Text) paragraph.getFirstChild();

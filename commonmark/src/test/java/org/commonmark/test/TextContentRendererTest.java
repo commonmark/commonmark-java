@@ -32,17 +32,56 @@ public class TextContentRendererTest {
         assertCompact(s, "foo bar");
         assertStripped(s, "foo bar");
 
-        s = "foo foo\n\nbar\nbar";
-        assertCompact(s, "foo foo\nbar\nbar");
-        assertSeparate(s, "foo foo\n\nbar\nbar");
+        s =
+                """
+                foo foo
+
+                bar
+                bar""";
+        assertCompact(
+                s,
+                """
+                foo foo
+                bar
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo foo
+
+                bar
+                bar""");
         assertStripped(s, "foo foo bar bar");
     }
 
     @Test
     public void textContentHeading() {
-        assertCompact("# Heading\n\nFoo", "Heading\nFoo");
-        assertSeparate("# Heading\n\nFoo", "Heading\n\nFoo");
-        assertStripped("# Heading\n\nFoo", "Heading: Foo");
+        assertCompact(
+                """
+                # Heading
+
+                Foo
+                """,
+                """
+                        Heading
+                        Foo""");
+        assertSeparate(
+                """
+                # Heading
+
+                Foo
+                """,
+                """
+                        Heading
+
+                        Foo""");
+        assertStripped(
+                """
+                # Heading
+
+                Foo
+                """,
+                "Heading: Foo");
     }
 
     @Test
@@ -57,9 +96,29 @@ public class TextContentRendererTest {
         assertCompact(s, "foo foo bar bar");
         assertStripped(s, "foo foo bar bar");
 
-        s = "foo\n***foo***\nbar\n\n***bar***";
-        assertCompact(s, "foo\nfoo\nbar\nbar");
-        assertSeparate(s, "foo\nfoo\nbar\n\nbar");
+        s =
+                """
+                foo
+                ***foo***
+                bar
+
+                ***bar***
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                foo
+                bar
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+                foo
+                bar
+
+                bar""");
         assertStripped(s, "foo foo bar bar");
     }
 
@@ -67,9 +126,30 @@ public class TextContentRendererTest {
     public void textContentQuotes() {
         String s;
 
-        s = "foo\n>foo\nbar\n\nbar";
-        assertCompact(s, "foo\n«foo\nbar»\nbar");
-        assertSeparate(s, "foo\n\n«foo\nbar»\n\nbar");
+        s =
+                """
+                foo
+                >foo
+                bar
+
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                «foo
+                bar»
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+
+                «foo
+                bar»
+
+                bar""");
         assertStripped(s, "foo «foo bar» bar");
     }
 
@@ -94,52 +174,236 @@ public class TextContentRendererTest {
     public void textContentLists() {
         String s;
 
-        s = "foo\n* foo\n* bar\n\nbar";
-        assertCompact(s, "foo\n* foo\n* bar\nbar");
-        assertSeparate(s, "foo\n\n* foo\n* bar\n\nbar");
+        s =
+                """
+                foo
+                * foo
+                * bar
+
+                bar""";
+        assertCompact(
+                s,
+                """
+                foo
+                * foo
+                * bar
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+
+                * foo
+                * bar
+
+                bar""");
         assertStripped(s, "foo foo bar bar");
 
-        s = "foo\n- foo\n- bar\n\nbar";
-        assertCompact(s, "foo\n- foo\n- bar\nbar");
-        assertSeparate(s, "foo\n\n- foo\n- bar\n\nbar");
+        s =
+                """
+                foo
+                - foo
+                - bar
+
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                - foo
+                - bar
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+
+                - foo
+                - bar
+
+                bar""");
         assertStripped(s, "foo foo bar bar");
 
-        s = "foo\n1. foo\n2. bar\n\nbar";
-        assertCompact(s, "foo\n1. foo\n2. bar\nbar");
-        assertSeparate(s, "foo\n\n1. foo\n2. bar\n\nbar");
+        s =
+                """
+                foo
+                1. foo
+                2. bar
+
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                1. foo
+                2. bar
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+
+                1. foo
+                2. bar
+
+                bar""");
         assertStripped(s, "foo 1. foo 2. bar bar");
 
-        s = "foo\n0) foo\n1) bar\n\nbar";
-        assertCompact(s, "foo\n0) foo\n1) bar\nbar");
-        assertSeparate(s, "foo\n0) foo\n\n1) bar\n\nbar");
+        s =
+                """
+                foo
+                0) foo
+                1) bar
+
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                0) foo
+                1) bar
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+                0) foo
+
+                1) bar
+
+                bar""");
         assertStripped(s, "foo 0) foo 1) bar bar");
 
-        s = "bar\n1. foo\n   1. bar\n2. foo";
-        assertCompact(s, "bar\n1. foo\n   1. bar\n2. foo");
-        assertSeparate(s, "bar\n\n1. foo\n   1. bar\n2. foo");
+        s =
+                """
+                bar
+                1. foo
+                   1. bar
+                2. foo
+                """;
+        assertCompact(
+                s,
+                """
+                bar
+                1. foo
+                   1. bar
+                2. foo""");
+        assertSeparate(
+                s,
+                """
+                bar
+
+                1. foo
+                   1. bar
+                2. foo""");
         assertStripped(s, "bar 1. foo 1. bar 2. foo");
 
-        s = "bar\n* foo\n  - bar\n* foo";
-        assertCompact(s, "bar\n* foo\n  - bar\n* foo");
-        assertSeparate(s, "bar\n\n* foo\n  - bar\n* foo");
+        s =
+                """
+                bar
+                * foo
+                  - bar
+                * foo
+                """;
+        assertCompact(
+                s,
+                """
+                bar
+                * foo
+                  - bar
+                * foo""");
+        assertSeparate(
+                s,
+                """
+                bar
+
+                * foo
+                  - bar
+                * foo""");
         assertStripped(s, "bar foo bar foo");
 
-        s = "bar\n* foo\n  1. bar\n  2. bar\n* foo";
-        assertCompact(s, "bar\n* foo\n  1. bar\n  2. bar\n* foo");
-        assertSeparate(s, "bar\n\n* foo\n  1. bar\n  2. bar\n* foo");
+        s =
+                """
+                bar
+                * foo
+                  1. bar
+                  2. bar
+                * foo
+                """;
+        assertCompact(
+                s,
+                """
+                bar
+                * foo
+                  1. bar
+                  2. bar
+                * foo""");
+        assertSeparate(
+                s,
+                """
+                bar
+
+                * foo
+                  1. bar
+                  2. bar
+                * foo""");
         assertStripped(s, "bar foo 1. bar 2. bar foo");
 
-        s = "bar\n1. foo\n   * bar\n   * bar\n2. foo";
-        assertCompact(s, "bar\n1. foo\n   * bar\n   * bar\n2. foo");
-        assertSeparate(s, "bar\n\n1. foo\n   * bar\n   * bar\n2. foo");
+        s =
+                """
+                bar
+                1. foo
+                   * bar
+                   * bar
+                2. foo
+                """;
+        assertCompact(
+                s,
+                """
+                bar
+                1. foo
+                   * bar
+                   * bar
+                2. foo""");
+        assertSeparate(
+                s,
+                """
+                bar
+
+                1. foo
+                   * bar
+                   * bar
+                2. foo""");
         assertStripped(s, "bar 1. foo bar bar 2. foo");
 
         // For a loose list (not tight)
-        s = "foo\n\n* bar\n\n* baz";
+        s =
+                """
+                foo
+
+                * bar
+
+                * baz
+                """;
         // Compact ignores loose
-        assertCompact(s, "foo\n* bar\n* baz");
+        assertCompact(
+                s,
+                """
+                foo
+                * bar
+                * baz""");
         // Separate preserves it
-        assertSeparate(s, "foo\n\n* bar\n\n* baz");
+        assertSeparate(
+                s,
+                """
+                foo
+
+                * bar
+
+                * baz""");
         assertStripped(s, "foo bar baz");
     }
 
@@ -151,14 +415,43 @@ public class TextContentRendererTest {
     @Test
     public void textContentCodeBlock() {
         String s;
-        s = "foo\n```\nfoo\nbar\n```\nbar";
+        s =
+                """
+                foo
+                ```
+                foo
+                bar
+                ```
+                bar
+                """;
         assertCompact(s, "foo\nfoo\nbar\nbar");
         assertSeparate(s, "foo\n\nfoo\nbar\n\nbar");
         assertStripped(s, "foo foo bar bar");
 
-        s = "foo\n\n    foo\n     bar\nbar";
-        assertCompact(s, "foo\nfoo\n bar\nbar");
-        assertSeparate(s, "foo\n\nfoo\n bar\n\nbar");
+        s =
+                """
+                foo
+
+                    foo
+                     bar
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                foo
+                 bar
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+
+                foo
+                 bar
+
+                bar""");
         assertStripped(s, "foo foo bar bar");
     }
 
@@ -166,32 +459,74 @@ public class TextContentRendererTest {
     public void textContentBreaks() {
         String s;
 
-        s = "foo\nbar";
-        assertCompact(s, "foo\nbar");
-        assertSeparate(s, "foo\nbar");
+        s =
+                """
+                foo
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+                bar""");
         assertStripped(s, "foo bar");
 
-        s = "foo  \nbar";
-        assertCompact(s, "foo\nbar");
-        assertSeparate(s, "foo\nbar");
+        s =
+                """
+                foo \s
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+                bar""");
         assertStripped(s, "foo bar");
 
-        s = "foo\n___\nbar";
-        assertCompact(s, "foo\n***\nbar");
-        assertSeparate(s, "foo\n\n***\n\nbar");
+        s =
+                """
+                foo
+                ___
+                bar
+                """;
+        assertCompact(
+                s,
+                """
+                foo
+                ***
+                bar""");
+        assertSeparate(
+                s,
+                """
+                foo
+
+                ***
+
+                bar""");
         assertStripped(s, "foo bar");
     }
 
     @Test
     public void textContentHtml() {
         String html =
-                "<table>\n"
-                        + "  <tr>\n"
-                        + "    <td>\n"
-                        + "           foobar\n"
-                        + "    </td>\n"
-                        + "  </tr>\n"
-                        + "</table>";
+                """
+                <table>
+                  <tr>
+                    <td>
+                           foobar
+                    </td>
+                  </tr>
+                </table>""";
         assertCompact(html, html);
         assertSeparate(html, html);
 
@@ -201,10 +536,18 @@ public class TextContentRendererTest {
 
     @Test
     public void testContentNestedLists() {
-        var s = "List:\n" + "1. 2) 3. \n" + "end";
+        var s =
+                """
+                List:
+                1. 2) 3.\s
+                end""";
         assertCompact(s, s);
 
-        var s2 = "1. A\n   1) B\n      1. Test";
+        var s2 =
+                """
+                1. A
+                   1) B
+                      1. Test""";
         assertCompact(s2, s2);
     }
 

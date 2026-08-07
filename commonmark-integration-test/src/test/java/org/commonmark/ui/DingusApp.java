@@ -80,10 +80,17 @@ public class DingusApp {
         tabbedPane.addChangeListener(e -> updateOutput(input.getText()));
 
         input.setText(
-                "# Example\n"
-                        + "Enter text *here* and see how it renders on the right.\n\n"
-                        + "* Try\n* this\n\n"
-                        + "```\nor this\n```");
+                """
+                # Example
+                Enter text *here* and see how it renders on the right.
+
+                * Try
+                * this
+
+                ```
+                or this
+                ```
+                """);
         updateOutput(input.getText());
 
         frame.setLayout(new GridLayout());
