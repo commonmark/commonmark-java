@@ -3,7 +3,6 @@ package org.commonmark.test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.testutil.RenderingTestCase;
@@ -16,7 +15,13 @@ public class FencedCodeBlockParserTest extends RenderingTestCase {
 
     @Test
     public void backtickInfo() {
-        Node document = PARSER.parse("```info ~ test\ncode\n```");
+        var s =
+                """
+                ```info ~ test
+                code
+                ```
+                """;
+        var document = PARSER.parse(s);
         FencedCodeBlock codeBlock = (FencedCodeBlock) document.getFirstChild();
         assertThat(codeBlock.getInfo()).isEqualTo("info ~ test");
         assertThat(codeBlock.getLiteral()).isEqualTo("code\n");
@@ -25,34 +30,78 @@ public class FencedCodeBlockParserTest extends RenderingTestCase {
     @Test
     public void backtickInfoDoesntAllowBacktick() {
         assertRendering(
-                "```info ` test\ncode\n```",
-                "<p>```info ` test\ncode</p>\n<pre><code></code></pre>\n");
+                """
+                ```info ` test
+                code
+                ```
+                """,
+                """
+                <p>```info ` test
+                code</p>
+                <pre><code></code></pre>
+                """);
     }
 
     @Test
     public void backtickAndTildeCantBeMixed() {
-        assertRendering("``~`\ncode\n``~`", "<p><code>~` code </code>~`</p>\n");
+        assertRendering(
+                """
+                ``~`
+                code
+                ``~`
+                """,
+                """
+                <p><code>~` code </code>~`</p>
+                """);
     }
 
     @Test
     public void closingCanHaveSpacesAfter() {
-        assertRendering("```\ncode\n```   ", "<pre><code>code\n</code></pre>\n");
+        assertRendering(
+                """
+                ```
+                code
+                ```  \s
+                """,
+                """
+                <pre><code>code
+                </code></pre>
+                """);
     }
 
     @Test
     public void closingCanNotHaveNonSpaces() {
-        assertRendering("```\ncode\n``` a", "<pre><code>code\n``` a\n</code></pre>\n");
+        assertRendering(
+                """
+                ```
+                code
+                ``` a
+                """,
+                """
+                <pre><code>code
+                ``` a
+                </code></pre>
+                """);
     }
 
     @Test
     public void issue151() {
         assertRendering(
-                "```\nthis code\n\nshould not have BRs or paragraphs in it\nok\n```",
-                "<pre><code>this code\n"
-                        + "\n"
-                        + "should not have BRs or paragraphs in it\n"
-                        + "ok\n"
-                        + "</code></pre>\n");
+                """
+                ```
+                this code
+
+                should not have BRs or paragraphs in it
+                ok
+                ```
+                """,
+                """
+                <pre><code>this code
+
+                should not have BRs or paragraphs in it
+                ok
+                </code></pre>
+                """);
     }
 
     @Override

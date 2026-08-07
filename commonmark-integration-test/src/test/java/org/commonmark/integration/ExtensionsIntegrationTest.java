@@ -19,16 +19,27 @@ public class ExtensionsIntegrationTest extends RenderingTestCase {
     @Test
     public void testImageAttributes() {
         assertRendering(
-                "![text](/url.png){height=5 width=6}",
-                "<p><img src=\"/url.png\" alt=\"text\" height=\"5\" width=\"6\" /></p>\n");
+                """
+                ![text](/url.png){height=5 width=6}
+                """,
+                """
+                <p><img src="/url.png" alt="text" height="5" width="6" /></p>
+                """);
     }
 
     @Test
     public void testTaskListItems() {
         assertRendering(
-                "- [ ] task to do\n- [x] task done\n",
-                "<ul>\n<li><input type=\"checkbox\" disabled=\"\"> task to do</li>\n"
-                        + "<li><input type=\"checkbox\" disabled=\"\" checked=\"\"> task done</li>\n</ul>\n");
+                """
+                - [ ] task to do
+                - [x] task done
+                """,
+                """
+                <ul>
+                <li><input type="checkbox" disabled=""> task to do</li>
+                <li><input type="checkbox" disabled="" checked=""> task done</li>
+                </ul>
+                """);
     }
 
     @Override

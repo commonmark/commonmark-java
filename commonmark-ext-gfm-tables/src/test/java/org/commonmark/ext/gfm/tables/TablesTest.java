@@ -30,238 +30,405 @@ public class TablesTest extends RenderingTestCase {
     @Test
     public void separatorMustBeOneOrMore() {
         assertRendering(
-                "Abc|Def\n-|-",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                -|-
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                </table>
+                """);
         assertRendering(
-                "Abc|Def\n--|--",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                --|--
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                </table>
+                """);
     }
 
     @Test
     public void separatorMustNotContainInvalidChars() {
-        assertRendering("Abc|Def\n |-a-|---", "<p>Abc|Def\n|-a-|---</p>\n");
-        assertRendering("Abc|Def\n |:--a|---", "<p>Abc|Def\n|:--a|---</p>\n");
-        assertRendering("Abc|Def\n |:--a--:|---", "<p>Abc|Def\n|:--a--:|---</p>\n");
+        assertRendering(
+                """
+                Abc|Def
+                |-a-|---
+                """,
+                """
+                <p>Abc|Def
+                |-a-|---</p>
+                """);
+        assertRendering(
+                """
+                Abc|Def
+                |:--a|---
+                """,
+                """
+                <p>Abc|Def
+                |:--a|---</p>
+                """);
+        assertRendering(
+                """
+                Abc|Def
+                |:--a--:|---
+                """,
+                """
+                <p>Abc|Def
+                |:--a--:|---</p>
+                """);
     }
 
     @Test
     public void separatorCanHaveLeadingSpaceThenPipe() {
         assertRendering(
-                "Abc|Def\n |---|---",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                 |---|---
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                </table>
+                """);
     }
 
     @Test
     public void separatorCanNotHaveAdjacentPipes() {
-        assertRendering("Abc|Def\n---||---", "<p>Abc|Def\n---||---</p>\n");
+        assertRendering(
+                """
+                Abc|Def
+                ---||---
+                """,
+                """
+                <p>Abc|Def
+                ---||---</p>
+                """);
     }
 
     @Test
     public void separatorNeedsPipes() {
-        assertRendering("Abc|Def\n|--- ---", "<p>Abc|Def\n|--- ---</p>\n");
+        assertRendering(
+                """
+                Abc|Def
+                |--- ---
+                """,
+                """
+                <p>Abc|Def
+                |--- ---</p>
+                """);
     }
 
     @Test
     public void oneHeadNoBody() {
         assertRendering(
-                "Abc|Def\n---|---",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                </table>
+                """);
     }
 
     @Test
     public void oneColumnOneHeadNoBody() {
         String expected =
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "</table>\n";
-        assertRendering("|Abc\n|---\n", expected);
-        assertRendering("|Abc|\n|---|\n", expected);
-        assertRendering("Abc|\n---|\n", expected);
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                </tr>
+                </thead>
+                </table>
+                """;
+        assertRendering(
+                """
+                |Abc
+                |---
+                """,
+                expected);
+        assertRendering(
+                """
+                |Abc|
+                |---|
+                """,
+                expected);
+        assertRendering(
+                """
+                Abc|
+                ---|
+                """,
+                expected);
 
         // Pipe required on separator
-        assertRendering("|Abc\n---\n", "<h2>|Abc</h2>\n");
+        assertRendering(
+                """
+                |Abc
+                ---
+                """,
+                """
+                <h2>|Abc</h2>
+                """);
         // Pipe required on head
-        assertRendering("Abc\n|---\n", "<p>Abc\n|---</p>\n");
+        assertRendering(
+                """
+                Abc
+                |---
+                """,
+                """
+                <p>Abc
+                |---</p>
+                """);
     }
 
     @Test
     public void oneColumnOneHeadOneBody() {
         String expected =
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n";
-        assertRendering("|Abc\n|---\n|1", expected);
-        assertRendering("|Abc|\n|---|\n|1|", expected);
-        assertRendering("Abc|\n---|\n1|", expected);
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                </tr>
+                </tbody>
+                </table>
+                """;
+        assertRendering(
+                """
+                |Abc
+                |---
+                |1
+                """,
+                expected);
+        assertRendering(
+                """
+                |Abc|
+                |---|
+                |1|
+                """,
+                expected);
+        assertRendering(
+                """
+                Abc|
+                ---|
+                1|
+                """,
+                expected);
 
         // Pipe required on separator
-        assertRendering("|Abc\n---\n|1", "<h2>|Abc</h2>\n<p>|1</p>\n");
+        assertRendering(
+                """
+                |Abc
+                ---
+                |1
+                """,
+                """
+                <h2>|Abc</h2>
+                <p>|1</p>
+                """);
     }
 
     @Test
     public void oneHeadOneBody() {
         assertRendering(
-                "Abc|Def\n---|---\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void spaceBeforeSeparator() {
         assertRendering(
-                "  |Abc|Def|\n  |---|---|\n  |1|2|",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                |Abc|Def|
+                |---|---|
+                |1|2|
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void separatorMustNotHaveLessPartsThanHead() {
-        assertRendering("Abc|Def|Ghi\n---|---\n1|2|3", "<p>Abc|Def|Ghi\n---|---\n1|2|3</p>\n");
+        assertRendering(
+                """
+                Abc|Def|Ghi
+                ---|---
+                1|2|3
+                """,
+                """
+                <p>Abc|Def|Ghi
+                ---|---
+                1|2|3</p>
+                """);
     }
 
     @Test
     public void padding() {
         assertRendering(
-                " Abc  | Def \n --- | --- \n 1 | 2 ",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                 Abc  | Def\s
+                 --- | ---\s
+                 1 | 2\s
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void paddingWithCodeBlockIndentation() {
         assertRendering(
-                "Abc|Def\n---|---\n    1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                    1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void pipesOnOutside() {
         assertRendering(
-                "|Abc|Def|\n|---|---|\n|1|2|",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                |Abc|Def|
+                |---|---|
+                |1|2|
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void pipesOnOutsideWhitespaceAfterHeader() {
         assertRendering(
-                "|Abc|Def| \n|---|---|\n|1|2|",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                |Abc|Def|\s
+                |---|---|
+                |1|2|
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
@@ -269,63 +436,81 @@ public class TablesTest extends RenderingTestCase {
         // This is literally what someone has done IRL - it helped to expose
         // an issue with parsing the last header cell correctly
         assertRendering(
-                "||center header||\n" + "-|-------------|-\n" + "1|      2      |3",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th></th>\n"
-                        + "<th>center header</th>\n"
-                        + "<th></th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "<td>3</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                ||center header||
+                -|-------------|-
+                1|      2      |3
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th></th>
+                <th>center header</th>
+                <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void inlineElements() {
         assertRendering(
-                "*Abc*|Def\n---|---\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th><em>Abc</em></th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                *Abc*|Def
+                ---|---
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th><em>Abc</em></th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void escapedPipe() {
         assertRendering(
-                "Abc|Def\n---|---\n1\\|2|20",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1|2</td>\n"
-                        + "<td>20</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                1\\|2|20
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1|2</td>
+                <td>20</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
@@ -334,21 +519,27 @@ public class TablesTest extends RenderingTestCase {
         // followed by a pipe (so two cells). Instead, the `\|` is parsed as an escaped pipe first,
         // so just a single cell. The inline parser then gets `1\|2` which renders as `1|2`.
         assertRendering(
-                "Abc|Def\n---|---\n1\\\\|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1|2</td>\n"
-                        + "<td></td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                1\\\\|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1|2</td>
+                <td></td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
@@ -357,421 +548,580 @@ public class TablesTest extends RenderingTestCase {
         // table, otherwise inline parsing is wrong. So we have to be careful where we do/don't
         // consume the backslash.
         assertRendering(
-                "Abc|Def\n---|---\n1|\\`not code`",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>`not code`</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                1|\\`not code`
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>`not code`</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void backslashAtEnd() {
         assertRendering(
-                "Abc|Def\n---|---\n1|2\\",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2\\</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                1|2\\
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2\\</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void alignLeft() {
         assertRendering(
-                "Abc|Def\n:-|-\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"left\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                :-|-
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="left">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="left">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
         assertRendering(
-                "Abc|Def\n:-|-\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"left\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                :-|-
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="left">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="left">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
         assertRendering(
-                "Abc|Def\n:---|---\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"left\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                :---|---
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="left">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="left">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void alignRight() {
         assertRendering(
-                "Abc|Def\n-:|-\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"right\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"right\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                -:|-
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="right">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="right">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
         assertRendering(
-                "Abc|Def\n--:|--\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"right\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"right\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                --:|--
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="right">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="right">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
         assertRendering(
-                "Abc|Def\n---:|---\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"right\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"right\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---:|---
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="right">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="right">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void alignCenter() {
         assertRendering(
-                "Abc|Def\n:-:|-\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"center\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"center\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                :-:|-
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="center">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="center">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
         assertRendering(
-                "Abc|Def\n:--:|--\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"center\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"center\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                :--:|--
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="center">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="center">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
         assertRendering(
-                "Abc|Def\n:---:|---\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"center\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"center\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                :---:|---
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="center">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="center">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void alignCenterSecond() {
         assertRendering(
-                "Abc|Def\n---|:---:\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th align=\"center\">Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td align=\"center\">2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|:---:
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th align="center">Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td align="center">2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void alignLeftWithSpaces() {
         assertRendering(
-                "Abc|Def\n :--- |---\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"left\">Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                 :--- |---
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="left">Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="left">1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void alignmentMarkerMustBeNextToDashes() {
-        assertRendering("Abc|Def\n: ---|---", "<p>Abc|Def\n: ---|---</p>\n");
-        assertRendering("Abc|Def\n--- :|---", "<p>Abc|Def\n--- :|---</p>\n");
-        assertRendering("Abc|Def\n---|: ---", "<p>Abc|Def\n---|: ---</p>\n");
-        assertRendering("Abc|Def\n---|--- :", "<p>Abc|Def\n---|--- :</p>\n");
+        assertRendering(
+                """
+                Abc|Def
+                : ---|---
+                """,
+                """
+                <p>Abc|Def
+                : ---|---</p>
+                """);
+        assertRendering(
+                """
+                Abc|Def
+                --- :|---
+                """,
+                """
+                <p>Abc|Def
+                --- :|---</p>
+                """);
+        assertRendering(
+                """
+                Abc|Def
+                ---|: ---
+                """,
+                """
+                <p>Abc|Def
+                ---|: ---</p>
+                """);
+        assertRendering(
+                """
+                Abc|Def
+                ---|--- :
+                """,
+                """
+                <p>Abc|Def
+                ---|--- :</p>
+                """);
     }
 
     @Test
     public void bodyCanNotHaveMoreColumnsThanHead() {
         assertRendering(
-                "Abc|Def\n---|---\n1|2|3",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                1|2|3
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void bodyWithFewerColumnsThanHeadResultsInEmptyCells() {
         assertRendering(
-                "Abc|Def|Ghi\n---|---|---\n1|2",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "<th>Ghi</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "<td></td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def|Ghi
+                ---|---|---
+                1|2
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                <th>Ghi</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                <td></td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void insideBlockQuote() {
         assertRendering(
-                "> Abc|Def\n> ---|---\n> 1|2",
-                "<blockquote>\n"
-                        + "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n"
-                        + "</blockquote>\n");
+                """
+                > Abc|Def
+                > ---|---
+                > 1|2
+                """,
+                """
+                <blockquote>
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                </blockquote>
+                """);
     }
 
     @Test
     public void tableWithLazyContinuationLine() {
         assertRendering(
-                "Abc|Def\n---|---\n1|2\nlazy",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "<tr>\n"
-                        + "<td>lazy</td>\n"
-                        + "<td></td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                Abc|Def
+                ---|---
+                1|2
+                lazy
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                <tr>
+                <td>lazy</td>
+                <td></td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void issue142() {
         assertRendering(
-                "||Alveolar|Bilabial\n"
-                        + "|:--|:-:|:-:\n"
-                        + "|**Plosive**|t, d|b\n"
-                        + "|**Tap**|ɾ|",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th align=\"left\"></th>\n"
-                        + "<th align=\"center\">Alveolar</th>\n"
-                        + "<th align=\"center\">Bilabial</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td align=\"left\"><strong>Plosive</strong></td>\n"
-                        + "<td align=\"center\">t, d</td>\n"
-                        + "<td align=\"center\">b</td>\n"
-                        + "</tr>\n"
-                        + "<tr>\n"
-                        + "<td align=\"left\"><strong>Tap</strong></td>\n"
-                        + "<td align=\"center\">ɾ</td>\n"
-                        + "<td align=\"center\"></td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                ||Alveolar|Bilabial
+                |:--|:-:|:-:
+                |**Plosive**|t, d|b
+                |**Tap**|ɾ|""",
+                """
+                <table>
+                <thead>
+                <tr>
+                <th align="left"></th>
+                <th align="center">Alveolar</th>
+                <th align="center">Bilabial</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td align="left"><strong>Plosive</strong></td>
+                <td align="center">t, d</td>
+                <td align="center">b</td>
+                </tr>
+                <tr>
+                <td align="left"><strong>Tap</strong></td>
+                <td align="center">ɾ</td>
+                <td align="center"></td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
     public void danglingPipe() {
         assertRendering(
-                "Abc|Def\n" + "---|---\n" + "1|2\n" + "|",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n"
-                        + "<p>|</p>\n");
+                """
+                Abc|Def
+                ---|---
+                1|2
+                |
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                <p>|</p>
+                """);
 
         assertRendering(
-                "Abc|Def\n" + "---|---\n" + "1|2\n" + "  |  ",
-                "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>Abc</th>\n"
-                        + "<th>Def</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>1</td>\n"
-                        + "<td>2</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n"
-                        + "<p>|</p>\n");
+                """
+                Abc|Def
+                ---|---
+                1|2
+                  | \s
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Abc</th>
+                <th>Def</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>1</td>
+                <td>2</td>
+                </tr>
+                </tbody>
+                </table>
+                <p>|</p>
+                """);
     }
 
     @Test
     public void interruptsParagraph() {
         assertRendering(
-                "text\n" + "|a  |\n" + "|---|\n" + "|b  |",
-                "<p>text</p>\n"
-                        + "<table>\n"
-                        + "<thead>\n"
-                        + "<tr>\n"
-                        + "<th>a</th>\n"
-                        + "</tr>\n"
-                        + "</thead>\n"
-                        + "<tbody>\n"
-                        + "<tr>\n"
-                        + "<td>b</td>\n"
-                        + "</tr>\n"
-                        + "</tbody>\n"
-                        + "</table>\n");
+                """
+                text
+                |a  |
+                |---|
+                |b  |
+                """,
+                """
+                <p>text</p>
+                <table>
+                <thead>
+                <tr>
+                <th>a</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>b</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
     }
 
     @Test
@@ -799,20 +1149,22 @@ public class TablesTest extends RenderingTestCase {
         String rendered = renderer.render(PARSER.parse("Abc|Def\n---|---\n1|2"));
         assertThat(rendered)
                 .isEqualTo(
-                        "<table test=\"block\">\n"
-                                + "<thead test=\"head\">\n"
-                                + "<tr test=\"row\">\n"
-                                + "<th test=\"cell\">Abc</th>\n"
-                                + "<th test=\"cell\">Def</th>\n"
-                                + "</tr>\n"
-                                + "</thead>\n"
-                                + "<tbody test=\"body\">\n"
-                                + "<tr test=\"row\">\n"
-                                + "<td test=\"cell\">1</td>\n"
-                                + "<td test=\"cell\">2</td>\n"
-                                + "</tr>\n"
-                                + "</tbody>\n"
-                                + "</table>\n");
+                        """
+                        <table test="block">
+                        <thead test="head">
+                        <tr test="row">
+                        <th test="cell">Abc</th>
+                        <th test="cell">Def</th>
+                        </tr>
+                        </thead>
+                        <tbody test="body">
+                        <tr test="row">
+                        <td test="cell">1</td>
+                        <td test="cell">2</td>
+                        </tr>
+                        </tbody>
+                        </table>
+                        """);
     }
 
     @Test
@@ -832,20 +1184,22 @@ public class TablesTest extends RenderingTestCase {
         String rendered = renderer.render(PARSER.parse("Abc|Def\n-----|---\n1|2"));
         assertThat(rendered)
                 .isEqualTo(
-                        "<table>\n"
-                                + "<thead>\n"
-                                + "<tr>\n"
-                                + "<th width=\"5em\">Abc</th>\n"
-                                + "<th width=\"3em\">Def</th>\n"
-                                + "</tr>\n"
-                                + "</thead>\n"
-                                + "<tbody>\n"
-                                + "<tr>\n"
-                                + "<td>1</td>\n"
-                                + "<td>2</td>\n"
-                                + "</tr>\n"
-                                + "</tbody>\n"
-                                + "</table>\n");
+                        """
+                        <table>
+                        <thead>
+                        <tr>
+                        <th width="5em">Abc</th>
+                        <th width="3em">Def</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                        <td>1</td>
+                        <td>2</td>
+                        </tr>
+                        </tbody>
+                        </table>
+                        """);
     }
 
     @Test
@@ -937,7 +1291,15 @@ public class TablesTest extends RenderingTestCase {
                         .extensions(EXTENSIONS)
                         .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
                         .build();
-        var document = parser.parse("a\n" + "bc\n" + "|de|\n" + "|---|\n" + "|fg|");
+        var document =
+                parser.parse(
+                        """
+                        a
+                        bc
+                        |de|
+                        |---|
+                        |fg|
+                        """);
 
         var paragraph = (Paragraph) document.getFirstChild();
         var text = (Text) paragraph.getFirstChild();

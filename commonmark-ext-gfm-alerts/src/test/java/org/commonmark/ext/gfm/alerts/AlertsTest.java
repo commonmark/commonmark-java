@@ -59,10 +59,12 @@ public class AlertsTest extends RenderingTestCase {
 
         assertThat(renderer.render(parser.parse("> [!INFO]\n> Custom alert")))
                 .isEqualTo(
-                        "<div class=\"markdown-alert markdown-alert-info\" data-alert-type=\"info\">\n"
-                                + "<p class=\"markdown-alert-title\">Information</p>\n"
-                                + "<p>Custom alert</p>\n"
-                                + "</div>\n");
+                        """
+                        <div class="markdown-alert markdown-alert-info" data-alert-type="info">
+                        <p class="markdown-alert-title">Information</p>
+                        <p>Custom alert</p>
+                        </div>
+                        """);
     }
 
     @Test
@@ -77,23 +79,33 @@ public class AlertsTest extends RenderingTestCase {
         var parser = Parser.builder().extensions(Set.of(extension)).build();
         var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
-        assertThat(
-                        renderer.render(
-                                parser.parse(
-                                        "> [!INFO]\n> Info content\n\n> [!SUCCESS]\n> Success content\n\n> [!DANGER]\n> Danger content")))
+        var s =
+                """
+                > [!INFO]
+                > Info content
+
+                > [!SUCCESS]
+                > Success content
+
+                > [!DANGER]
+                > Danger content
+                """;
+        assertThat(renderer.render(parser.parse(s)))
                 .isEqualTo(
-                        "<div class=\"markdown-alert markdown-alert-info\" data-alert-type=\"info\">\n"
-                                + "<p class=\"markdown-alert-title\">Information</p>\n"
-                                + "<p>Info content</p>\n"
-                                + "</div>\n"
-                                + "<div class=\"markdown-alert markdown-alert-success\" data-alert-type=\"success\">\n"
-                                + "<p class=\"markdown-alert-title\">Success!</p>\n"
-                                + "<p>Success content</p>\n"
-                                + "</div>\n"
-                                + "<div class=\"markdown-alert markdown-alert-danger\" data-alert-type=\"danger\">\n"
-                                + "<p class=\"markdown-alert-title\">Danger!</p>\n"
-                                + "<p>Danger content</p>\n"
-                                + "</div>\n");
+                        """
+                        <div class="markdown-alert markdown-alert-info" data-alert-type="info">
+                        <p class="markdown-alert-title">Information</p>
+                        <p>Info content</p>
+                        </div>
+                        <div class="markdown-alert markdown-alert-success" data-alert-type="success">
+                        <p class="markdown-alert-title">Success!</p>
+                        <p>Success content</p>
+                        </div>
+                        <div class="markdown-alert markdown-alert-danger" data-alert-type="danger">
+                        <p class="markdown-alert-title">Danger!</p>
+                        <p>Danger content</p>
+                        </div>
+                        """);
     }
 
     @Test
@@ -103,12 +115,19 @@ public class AlertsTest extends RenderingTestCase {
         var parser = Parser.builder().extensions(Set.of(extension)).build();
         var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
-        assertThat(renderer.render(parser.parse("> [!NOTE]\n> Standard type")))
+        var s =
+                """
+                > [!NOTE]
+                > Standard type
+                """;
+        assertThat(renderer.render(parser.parse(s)))
                 .isEqualTo(
-                        "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                                + "<p class=\"markdown-alert-title\">Note</p>\n"
-                                + "<p>Standard type</p>\n"
-                                + "</div>\n");
+                        """
+                        <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                        <p class="markdown-alert-title">Note</p>
+                        <p>Standard type</p>
+                        </div>
+                        """);
     }
 
     @Test
@@ -118,12 +137,19 @@ public class AlertsTest extends RenderingTestCase {
         var parser = Parser.builder().extensions(Set.of(extension)).build();
         var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
-        assertThat(renderer.render(parser.parse("> [!NOTE]\n> Localized title")))
+        var s =
+                """
+                > [!NOTE]
+                > Localized title
+                """;
+        assertThat(renderer.render(parser.parse(s)))
                 .isEqualTo(
-                        "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                                + "<p class=\"markdown-alert-title\">Nota</p>\n"
-                                + "<p>Localized title</p>\n"
-                                + "</div>\n");
+                        """
+                        <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                        <p class="markdown-alert-title">Nota</p>
+                        <p>Localized title</p>
+                        </div>
+                        """);
     }
 
     // Custom type validation
@@ -162,33 +188,61 @@ public class AlertsTest extends RenderingTestCase {
         var parser = Parser.builder().extensions(Set.of(extension)).build();
         var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
-        assertThat(renderer.render(parser.parse("> [!NOTE]\n> Regular block quote")))
+        var s =
+                """
+                > [!NOTE]
+                > Regular block quote
+                """;
+        assertThat(renderer.render(parser.parse(s)))
                 .isEqualTo(
-                        "<blockquote>\n"
-                                + "<p>[!NOTE]\n"
-                                + "Regular block quote</p>\n"
-                                + "</blockquote>\n");
+                        """
+                        <blockquote>
+                        <p>[!NOTE]
+                        Regular block quote</p>
+                        </blockquote>
+                        """);
 
-        assertThat(renderer.render(parser.parse("> [!TIP]\n> Regular block quote")))
+        s =
+                """
+                > [!TIP]
+                > Regular block quote
+                """;
+        assertThat(renderer.render(parser.parse(s)))
                 .isEqualTo(
-                        "<blockquote>\n"
-                                + "<p>[!TIP]\n"
-                                + "Regular block quote</p>\n"
-                                + "</blockquote>\n");
+                        """
+                        <blockquote>
+                        <p>[!TIP]
+                        Regular block quote</p>
+                        </blockquote>
+                        """);
 
-        assertThat(renderer.render(parser.parse("> [!IMPORTANT]\n> Alert")))
+        s =
+                """
+                > [!IMPORTANT]
+                > Alert
+                """;
+        assertThat(renderer.render(parser.parse(s)))
                 .isEqualTo(
-                        "<div class=\"markdown-alert markdown-alert-important\" data-alert-type=\"important\">\n"
-                                + "<p class=\"markdown-alert-title\">Important</p>\n"
-                                + "<p>Alert</p>\n"
-                                + "</div>\n");
+                        """
+                        <div class="markdown-alert markdown-alert-important" data-alert-type="important">
+                        <p class="markdown-alert-title">Important</p>
+                        <p>Alert</p>
+                        </div>
+                        """);
 
-        assertThat(renderer.render(parser.parse("> [!BUG]\n> Alert")))
+        s =
+                """
+                > [!BUG]
+                > Alert
+                """;
+        assertThat(renderer.render(parser.parse(s)))
                 .isEqualTo(
-                        "<div class=\"markdown-alert markdown-alert-bug\" data-alert-type=\"bug\">\n"
-                                + "<p class=\"markdown-alert-title\">Known Bug</p>\n"
-                                + "<p>Alert</p>\n"
-                                + "</div>\n");
+                        """
+                        <div class="markdown-alert markdown-alert-bug" data-alert-type="bug">
+                        <p class="markdown-alert-title">Known Bug</p>
+                        <p>Alert</p>
+                        </div>
+                        """);
     }
 
     // Overwriting types validation
@@ -222,130 +276,198 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void customTitle() {
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom title\n> Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom title</p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] Custom title
+                > Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom title</p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleNoSpace() {
         assertRenderingCustomTitles(
-                "> [!NOTE]Custom title\n> Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom title</p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE]Custom title
+                > Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom title</p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleExtraSpace() {
         assertRenderingCustomTitles(
-                "> [!NOTE]            Custom title  \n>    Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom title</p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE]            Custom title \s
+                >    Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom title</p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleNoHardLineBreak() {
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom title\\\n>    Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom title\\</p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] Custom title\\
+                >    Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom title\\</p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleWithComment() {
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom title <!-- Comment -->  \n>    Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom title <!-- Comment --></p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] Custom title <!-- Comment --> \s
+                >    Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom title <!-- Comment --></p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleWithInlineFormatting() {
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom _title <ins>with **formatting**</ins>_\n> Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom <em>title <ins>with <strong>formatting</strong></ins></em></p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] Custom _title <ins>with **formatting**</ins>_
+                > Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom <em>title <ins>with <strong>formatting</strong></ins></em></p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleWithLinkAndCode() {
         assertRenderingCustomTitles(
-                "> [!IMPORTANT] See [docs](https://example.com) or `run()`\n> Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-important\" data-alert-type=\"important\">\n"
-                        + "<p class=\"markdown-alert-title\">See <a href=\"https://example.com\">docs</a> or <code>run()</code></p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                > [!IMPORTANT] See [docs](https://example.com) or `run()`
+                > Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-important" data-alert-type="important">
+                <p class="markdown-alert-title">See <a href="https://example.com">docs</a> or <code>run()</code></p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleLeadingEmptyLines() {
         assertRenderingCustomTitles(
-                ">\n>  \n> [!NOTE] Custom **title**\n> Note with a custom title",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom <strong>title</strong></p>\n"
-                        + "<p>Note with a custom title</p>\n"
-                        + "</div>\n");
+                """
+                >
+                > \s
+                > [!NOTE] Custom **title**
+                > Note with a custom title
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom <strong>title</strong></p>
+                <p>Note with a custom title</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleNoOverlappingInlines() {
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom _title with **opening `delimiters\n> Note` with** closing delimiters_",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom _title with **opening `delimiters</p>\n"
-                        + "<p>Note` with** closing delimiters_</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] Custom _title with **opening `delimiters
+                > Note` with** closing delimiters_
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom _title with **opening `delimiters</p>
+                <p>Note` with** closing delimiters_</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleIgnoresBlockContent() {
         assertRenderingCustomTitles(
-                "> [!NOTE] ## Custom title looks like an ATX heading\n>But it's not",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">## Custom title looks like an ATX heading</p>\n"
-                        + "<p>But it's not</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] ## Custom title looks like an ATX heading
+                >But it's not
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">## Custom title looks like an ATX heading</p>
+                <p>But it's not</p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleNoBody() {
         // Alerts with no body are allowed.
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom _title_\n>  \n>\n>",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom <em>title</em></p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] Custom _title_
+                > \s
+                >
+                >
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom <em>title</em></p>
+                </div>
+                """);
     }
 
     @Test
     public void customTitleNoBodyNoSpace() {
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom _title_",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom <em>title</em></p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE] Custom _title_
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom <em>title</em></p>
+                </div>
+                """);
     }
 
     @Test
     public void onlyTrailingWhitespaceIsNotCustomTitle() {
         assertRenderingCustomTitles(
-                "> [!NOTE]   \n> Body text",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Note</p>\n"
-                        + "<p>Body text</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE]  \s
+                > Body text
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Note</p>
+                <p>Body text</p>
+                </div>
+                """);
     }
 
     // Lazy continuation
@@ -353,21 +475,31 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void noLazyContinuationAfterMarker() {
         assertRendering(
-                "> [!NOTE]\nBody text",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Note</p>\n"
-                        + "</div>\n"
-                        + "<p>Body text</p>\n");
+                """
+                > [!NOTE]
+                Body text
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Note</p>
+                </div>
+                <p>Body text</p>
+                """);
     }
 
     @Test
     public void noLazyContinuationAfterTitle() {
         assertRenderingCustomTitles(
-                "> [!NOTE] Custom title\nBody text",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Custom title</p>\n"
-                        + "</div>\n"
-                        + "<p>Body text</p>\n");
+                """
+                > [!NOTE] Custom title
+                Body text
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Custom title</p>
+                </div>
+                <p>Body text</p>
+                """);
     }
 
     // Alert markers take precedence over link reference definitions
@@ -375,32 +507,53 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void alertTakesPrecedence() {
         assertRenderingCustomTitles(
-                "> [!NOTE]: https://example.com\n> Body text\n\n[!NOTE]",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">: https://example.com</p>\n"
-                        + "<p>Body text</p>\n"
-                        + "</div>\n"
-                        + "<p>[!NOTE]</p>\n");
+                """
+                > [!NOTE]: https://example.com
+                > Body text
+
+                [!NOTE]
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">: https://example.com</p>
+                <p>Body text</p>
+                </div>
+                <p>[!NOTE]</p>
+                """);
     }
 
     @Test
     public void alertTakesPrecedenceBefore() {
         assertRenderingCustomTitles(
-                "> [!NOTE]\n> Body text\n\n[!NOTE]: https://example.com",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Note</p>\n"
-                        + "<p>Body text</p>\n"
-                        + "</div>\n");
+                """
+                > [!NOTE]
+                > Body text
+
+                [!NOTE]: https://example.com
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Note</p>
+                <p>Body text</p>
+                </div>
+                """);
     }
 
     @Test
     public void alertTakesPrecedenceAfter() {
         assertRenderingCustomTitles(
-                "[!NOTE]: https://example.com\n\n> [!NOTE]\n> Body text",
-                "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">\n"
-                        + "<p class=\"markdown-alert-title\">Note</p>\n"
-                        + "<p>Body text</p>\n"
-                        + "</div>\n");
+                """
+                [!NOTE]: https://example.com
+
+                > [!NOTE]
+                > Body text
+                """,
+                """
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Note</p>
+                <p>Body text</p>
+                </div>
+                """);
     }
 
     // Nested alerts
@@ -408,37 +561,55 @@ public class AlertsTest extends RenderingTestCase {
     @Test
     public void noNestedAlertsByDefault() {
         assertRendering(
-                "> [!TIP]\n> Body\n\n- > [!TIP]\n   > Nested body",
-                "<div class=\"markdown-alert markdown-alert-tip\" data-alert-type=\"tip\">\n"
-                        + "<p class=\"markdown-alert-title\">Tip</p>\n"
-                        + "<p>Body</p>\n"
-                        + "</div>\n"
-                        + "<ul>\n"
-                        + "<li>\n"
-                        + "<blockquote>\n"
-                        + "<p>[!TIP]\n"
-                        + "Nested body</p>\n"
-                        + "</blockquote>\n"
-                        + "</li>\n"
-                        + "</ul>\n");
+                """
+                > [!TIP]
+                > Body
+
+                - > [!TIP]
+                   > Nested body
+                """,
+                """
+                <div class="markdown-alert markdown-alert-tip" data-alert-type="tip">
+                <p class="markdown-alert-title">Tip</p>
+                <p>Body</p>
+                </div>
+                <ul>
+                <li>
+                <blockquote>
+                <p>[!TIP]
+                Nested body</p>
+                </blockquote>
+                </li>
+                </ul>
+                """);
     }
 
     @Test
     public void noNestedAlertsByDefaultLeadingEmptyLines() {
         assertRendering(
-                ">\n>   \n> [!TIP]\n> Body\n\n- > [!TIP]\n   > Nested body",
-                "<div class=\"markdown-alert markdown-alert-tip\" data-alert-type=\"tip\">\n"
-                        + "<p class=\"markdown-alert-title\">Tip</p>\n"
-                        + "<p>Body</p>\n"
-                        + "</div>\n"
-                        + "<ul>\n"
-                        + "<li>\n"
-                        + "<blockquote>\n"
-                        + "<p>[!TIP]\n"
-                        + "Nested body</p>\n"
-                        + "</blockquote>\n"
-                        + "</li>\n"
-                        + "</ul>\n");
+                """
+                >
+                >  \s
+                > [!TIP]
+                > Body
+
+                - > [!TIP]
+                   > Nested body
+                """,
+                """
+                <div class="markdown-alert markdown-alert-tip" data-alert-type="tip">
+                <p class="markdown-alert-title">Tip</p>
+                <p>Body</p>
+                </div>
+                <ul>
+                <li>
+                <blockquote>
+                <p>[!TIP]
+                Nested body</p>
+                </blockquote>
+                </li>
+                </ul>
+                """);
     }
 
     @Test
@@ -448,50 +619,49 @@ public class AlertsTest extends RenderingTestCase {
         var renderer = HtmlRenderer.builder().extensions(Set.of(extension)).build();
 
         var source =
-                String.join(
-                        "\n",
-                        "> [!TIP]",
-                        "> Tip body",
-                        "> > [!IMPORTANT]",
-                        "> > Important body",
-                        "",
-                        "- > [!NOTE]",
-                        "  > Nested body",
-                        "  >",
-                        "  > 1. Ordered list body",
-                        "  >",
-                        "  >    > [!CAUTION]",
-                        "  >    >",
-                        "  >    > Deeply nested body");
-        var expected =
-                String.join(
-                        "\n",
-                        "<div class=\"markdown-alert markdown-alert-tip\" data-alert-type=\"tip\">",
-                        "<p class=\"markdown-alert-title\">Tip</p>",
-                        "<p>Tip body</p>",
-                        "<div class=\"markdown-alert markdown-alert-important\" data-alert-type=\"important\">",
-                        "<p class=\"markdown-alert-title\">Important</p>",
-                        "<p>Important body</p>",
-                        "</div>",
-                        "</div>",
-                        "<ul>",
-                        "<li>",
-                        "<div class=\"markdown-alert markdown-alert-note\" data-alert-type=\"note\">",
-                        "<p class=\"markdown-alert-title\">Note</p>",
-                        "<p>Nested body</p>",
-                        "<ol>",
-                        "<li>",
-                        "<p>Ordered list body</p>",
-                        "<div class=\"markdown-alert markdown-alert-caution\" data-alert-type=\"caution\">",
-                        "<p class=\"markdown-alert-title\">Caution</p>",
-                        "<p>Deeply nested body</p>",
-                        "</div>",
-                        "</li>",
-                        "</ol>",
-                        "</div>",
-                        "</li>",
-                        "</ul>\n");
+                """
+                > [!TIP]
+                > Tip body
+                > > [!IMPORTANT]
+                > > Important body
 
+                - > [!NOTE]
+                  > Nested body
+                  >
+                  > 1. Ordered list body
+                  >
+                  >    > [!CAUTION]
+                  >    >
+                  >    > Deeply nested body
+                  """;
+        var expected =
+                """
+                <div class="markdown-alert markdown-alert-tip" data-alert-type="tip">
+                <p class="markdown-alert-title">Tip</p>
+                <p>Tip body</p>
+                <div class="markdown-alert markdown-alert-important" data-alert-type="important">
+                <p class="markdown-alert-title">Important</p>
+                <p>Important body</p>
+                </div>
+                </div>
+                <ul>
+                <li>
+                <div class="markdown-alert markdown-alert-note" data-alert-type="note">
+                <p class="markdown-alert-title">Note</p>
+                <p>Nested body</p>
+                <ol>
+                <li>
+                <p>Ordered list body</p>
+                <div class="markdown-alert markdown-alert-caution" data-alert-type="caution">
+                <p class="markdown-alert-title">Caution</p>
+                <p>Deeply nested body</p>
+                </div>
+                </li>
+                </ol>
+                </div>
+                </li>
+                </ul>
+                """;
         assertThat(renderer.render(parser.parse(source))).isEqualTo(expected);
     }
 
@@ -499,7 +669,12 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void alertParsedAsAlertNode() {
-        var document = PARSER.parse("> [!NOTE]\n> This is a note");
+        var document =
+                PARSER.parse(
+                        """
+                        > [!NOTE]
+                        > This is a note
+                        """);
         var firstChild = document.getFirstChild();
         assertThat(firstChild).isInstanceOf(Alert.class);
         var alert = (Alert) firstChild;
@@ -522,7 +697,11 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void titleSourcePositionPreserved() {
-        var source = "> [!NOTE] Custom title\n> Body text";
+        var source =
+                """
+                > [!NOTE] Custom title
+                > Body text
+                """;
         var document = PARSER_CUSTOM_TITLES.parse(source);
         var alert = (Alert) document.getFirstChild();
         var title = (AlertTitle) alert.getFirstChild();
@@ -533,7 +712,15 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void titleSourcePositionPreservedBetweenBlocks() {
-        var source = "- List\n\n> [!NOTE] Custom title\n> Body text\n\nPlain paragraph";
+        var source =
+                """
+                - List
+
+                > [!NOTE] Custom title
+                > Body text
+
+                Plain paragraph
+                """;
         var document = PARSER_CUSTOM_TITLES.parse(source);
         var alert = (Alert) document.getFirstChild().getNext();
         var title = (AlertTitle) alert.getFirstChild();
@@ -544,7 +731,11 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void titleSourcePositionWithLeadingAndTrailingSpaces() {
-        var source = "> [!NOTE]    Custom title   \n> Body text";
+        var source =
+                """
+                > [!NOTE]    Custom title  \s
+                > Body text
+                """;
         var document = PARSER_CUSTOM_TITLES.parse(source);
         var alert = (Alert) document.getFirstChild();
         var title = (AlertTitle) alert.getFirstChild();
@@ -555,7 +746,11 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void titleWithInlineFormattingSourcePosition() {
-        var source = "> [!NOTE] Custom _title_\n> Body text";
+        var source =
+                """
+                > [!NOTE] Custom _title_
+                > Body text
+                """;
         var document = PARSER_CUSTOM_TITLES.parse(source);
         var alert = (Alert) document.getFirstChild();
         var title = (AlertTitle) alert.getFirstChild();
@@ -583,7 +778,11 @@ public class AlertsTest extends RenderingTestCase {
 
     @Test
     public void titleWithNestedInlineFormattingSourcePosition() {
-        var source = "> [!NOTE] Text with **bold _and italic_**\n> Body text";
+        var source =
+                """
+                > [!NOTE] Text with **bold _and italic_**
+                > Body text
+                """;
         var document = PARSER_CUSTOM_TITLES.parse(source);
         var alert = (Alert) document.getFirstChild();
         var title = (AlertTitle) alert.getFirstChild();
