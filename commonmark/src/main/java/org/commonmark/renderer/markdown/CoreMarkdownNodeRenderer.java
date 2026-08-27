@@ -65,9 +65,9 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 Heading.class,
                 HtmlBlock.class,
                 HtmlInline.class,
-                Image.class,
+                InlineImage.class,
                 IndentedCodeBlock.class,
-                Link.class,
+                InlineLink.class,
                 ListItem.class,
                 OrderedList.class,
                 Paragraph.class,
@@ -337,12 +337,12 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     @Override
-    public void visit(Link link) {
+    public void visit(InlineLink link) {
         writeLinkLike(link.getTitle(), link.getDestination(), link, "[");
     }
 
     @Override
-    public void visit(Image image) {
+    public void visit(InlineImage image) {
         writeLinkLike(image.getTitle(), image.getDestination(), image, "![");
     }
 

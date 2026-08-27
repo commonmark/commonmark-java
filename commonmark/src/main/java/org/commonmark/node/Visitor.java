@@ -29,11 +29,11 @@ public interface Visitor {
 
     void visit(HtmlBlock htmlBlock);
 
-    void visit(Image image);
+    void visit(InlineImage inlineImage);
 
     void visit(IndentedCodeBlock indentedCodeBlock);
 
-    void visit(Link link);
+    void visit(InlineLink inlineLink);
 
     void visit(ListItem listItem);
 

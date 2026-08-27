@@ -31,10 +31,10 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
                 HtmlBlock.class,
                 ThematicBreak.class,
                 IndentedCodeBlock.class,
-                Link.class,
+                InlineLink.class,
                 ListItem.class,
                 OrderedList.class,
-                Image.class,
+                InlineImage.class,
                 Emphasis.class,
                 StrongEmphasis.class,
                 Text.class,
@@ -133,7 +133,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
     }
 
     @Override
-    public void visit(Image image) {
+    public void visit(InlineImage image) {
         writeLink(image, image.getTitle(), image.getDestination());
     }
 
@@ -149,7 +149,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
     }
 
     @Override
-    public void visit(Link link) {
+    public void visit(InlineLink link) {
         writeLink(link, link.getTitle(), link.getDestination());
     }
 

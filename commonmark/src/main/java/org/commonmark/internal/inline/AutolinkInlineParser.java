@@ -2,7 +2,7 @@ package org.commonmark.internal.inline;
 
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.commonmark.node.Link;
+import org.commonmark.node.InlineLink;
 import org.commonmark.node.Text;
 import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.beta.*;
@@ -43,7 +43,7 @@ public class AutolinkInlineParser implements InlineContentParser {
             }
 
             if (destination != null) {
-                Link link = new Link(destination, null);
+                InlineLink link = new InlineLink(destination, null);
                 Text text = new Text(content);
                 text.setSourceSpans(textSource.getSourceSpans());
                 link.appendChild(text);

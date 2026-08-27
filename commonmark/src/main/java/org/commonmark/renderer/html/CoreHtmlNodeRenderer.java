@@ -31,10 +31,10 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
                 HtmlBlock.class,
                 ThematicBreak.class,
                 IndentedCodeBlock.class,
-                Link.class,
+                InlineLink.class,
                 ListItem.class,
                 OrderedList.class,
-                Image.class,
+                InlineImage.class,
                 Emphasis.class,
                 StrongEmphasis.class,
                 Text.class,
@@ -144,7 +144,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     }
 
     @Override
-    public void visit(Link link) {
+    public void visit(InlineLink link) {
         Map<String, String> attrs = new LinkedHashMap<>();
         String url = link.getDestination();
 
@@ -183,7 +183,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     }
 
     @Override
-    public void visit(Image image) {
+    public void visit(InlineImage image) {
         String url = image.getDestination();
 
         AltTextVisitor altTextVisitor = new AltTextVisitor();

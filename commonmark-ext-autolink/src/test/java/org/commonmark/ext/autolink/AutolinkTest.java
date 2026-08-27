@@ -106,7 +106,7 @@ public class AutolinkTest extends RenderingTestCase {
 
         assertThat(abc.getNext()).isInstanceOf(SoftLineBreak.class);
 
-        Link one = (Link) abc.getNext().getNext();
+        InlineLink one = (InlineLink) abc.getNext().getNext();
         assertThat(one.getDestination()).isEqualTo("http://example.com/one");
         assertThat(one.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 4, 22)));
 
@@ -116,7 +116,7 @@ public class AutolinkTest extends RenderingTestCase {
         assertThat(def.getLiteral()).isEqualTo("def ");
         assertThat(def.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 0, 27, 4)));
 
-        Link two = (Link) def.getNext();
+        InlineLink two = (InlineLink) def.getNext();
         assertThat(two.getDestination()).isEqualTo("http://example.com/two");
         assertThat(two.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 4, 31, 22)));
 
@@ -126,7 +126,7 @@ public class AutolinkTest extends RenderingTestCase {
         assertThat(ghi.getLiteral()).isEqualTo("ghi ");
         assertThat(ghi.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 0, 54, 4)));
 
-        Link three = (Link) ghi.getNext();
+        InlineLink three = (InlineLink) ghi.getNext();
         assertThat(three.getDestination()).isEqualTo("http://example.com/three");
         assertThat(three.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 4, 58, 24)));
 

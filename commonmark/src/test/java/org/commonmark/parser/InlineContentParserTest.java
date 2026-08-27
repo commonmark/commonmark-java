@@ -47,7 +47,7 @@ class InlineContentParserTest {
                         .customInlineContentParserFactory(new BangInlineParser.Factory())
                         .build();
         var doc = parser.parse("![image](url) !notimage");
-        var image = Nodes.find(doc, Image.class);
+        var image = Nodes.find(doc, InlineImage.class);
         assertThat(image.getDestination()).isEqualTo("url");
         assertThat(((Text) image.getNext()).getLiteral()).isEqualTo(" ");
         // Class

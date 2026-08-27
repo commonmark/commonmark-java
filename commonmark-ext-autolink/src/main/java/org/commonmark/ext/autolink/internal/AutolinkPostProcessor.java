@@ -67,7 +67,7 @@ public class AutolinkPostProcessor implements PostProcessor {
             if (span instanceof LinkSpan) {
                 String destination = getDestination((LinkSpan) span, textNode.getLiteral());
 
-                Link linkNode = new Link(destination, null);
+                InlineLink linkNode = new InlineLink(destination, null);
                 linkNode.appendChild(textNode);
                 linkNode.setSourceSpans(textNode.getSourceSpans());
                 lastNode = insertNode(linkNode, lastNode);
@@ -113,7 +113,7 @@ public class AutolinkPostProcessor implements PostProcessor {
         int inLink = 0;
 
         @Override
-        public void visit(Link link) {
+        public void visit(InlineLink link) {
             inLink++;
             super.visit(link);
             inLink--;

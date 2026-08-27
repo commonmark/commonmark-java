@@ -1,7 +1,7 @@
 package org.commonmark.internal.inline;
 
-import org.commonmark.node.Image;
-import org.commonmark.node.Link;
+import org.commonmark.node.InlineImage;
+import org.commonmark.node.InlineLink;
 import org.commonmark.node.LinkReferenceDefinition;
 import org.commonmark.parser.InlineParserContext;
 import org.commonmark.parser.beta.LinkInfo;
@@ -31,9 +31,9 @@ public class CoreLinkProcessor implements LinkProcessor {
     private static LinkResult process(
             LinkInfo linkInfo, Scanner scanner, String destination, String title) {
         if (linkInfo.marker() != null && linkInfo.marker().getLiteral().equals("!")) {
-            return LinkResult.wrapTextIn(new Image(destination, title), scanner.position())
+            return LinkResult.wrapTextIn(new InlineImage(destination, title), scanner.position())
                     .includeMarker();
         }
-        return LinkResult.wrapTextIn(new Link(destination, title), scanner.position());
+        return LinkResult.wrapTextIn(new InlineLink(destination, title), scanner.position());
     }
 }
