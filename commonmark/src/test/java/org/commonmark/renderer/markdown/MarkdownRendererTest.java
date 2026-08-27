@@ -286,6 +286,15 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testLinkReferenceDefinitions() {
+        assertRoundTrip("[foo]: /url\n");
+        assertRoundTrip("[foo]: /url \"title\"\n");
+        assertRoundTrip("[foo]: <>\n");
+        assertRoundTrip("[foo]: </my uri>\n");
+        assertRoundTrip("[Foo*bar\\]]: /url\n");
+    }
+
+    @Test
     public void testImages() {
         assertRoundTrip("![link](/uri)\n");
         assertRoundTrip("![link](/uri \"title\")\n");

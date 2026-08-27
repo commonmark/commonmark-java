@@ -68,6 +68,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 InlineImage.class,
                 IndentedCodeBlock.class,
                 InlineLink.class,
+                LinkReferenceDefinition.class,
                 ListItem.class,
                 OrderedList.class,
                 Paragraph.class,
@@ -344,6 +345,27 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     @Override
     public void visit(InlineImage image) {
         writeLinkLike(image.getTitle(), image.getDestination(), image, "![");
+    }
+
+    @Override
+    public void visit(LinkReferenceDefinition def) {
+        writer.raw('[');
+        writer.raw(def.getLabel());
+        writer.raw("]: ");
+        if (def.getDestination().isEmpty() || contains(def.getDestination(), linkDestinationNeedsAngleBrackets)) {
+            writer.raw('<');
+            writer.text(def.getDestination(), linkDestinationEscapeInAngleBrackets);
+            writer.raw('>');
+        } else {
+            writer.raw(def.getDestination());
+        }
+        if (def.getTitle() != null) {
+            writer.raw(' ');
+            writer.raw('"');
+            writer.text(def.getTitle(), linkTitleEscapeInQuotes);
+            writer.raw('"');
+        }
+        writer.block();
     }
 
     @Override
