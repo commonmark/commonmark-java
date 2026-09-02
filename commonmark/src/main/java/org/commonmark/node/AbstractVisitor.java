@@ -69,6 +69,11 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
+    public void visit(ReferenceImage referenceImage) {
+        visitChildren(referenceImage);
+    }
+
+    @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
         visitChildren(indentedCodeBlock);
     }
@@ -76,6 +81,11 @@ public abstract class AbstractVisitor implements Visitor {
     @Override
     public void visit(InlineLink inlineLink) {
         visitChildren(inlineLink);
+    }
+
+    @Override
+    public void visit(ReferenceLink referenceLink) {
+        visitChildren(referenceLink);
     }
 
     @Override

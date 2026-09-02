@@ -28,6 +28,13 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             AsciiMatcher.builder().c('<').c('>').c('\n').c('\\').build();
     private final CharMatcher linkTitleEscapeInQuotes =
             AsciiMatcher.builder().c('"').c('\n').c('\\').build();
+    // ] must be escaped in full reference labels from getLabel()
+    private final CharMatcher linkLabelEscape =
+            AsciiMatcher.builder().c(']').build();
+    // Inside [...] when writing Text children as a label: [ and ] would break bracket matching,
+    // \ starts an escape sequence — all three must be escaped. * and _ are fine unescaped.
+    private final CharMatcher linkLabelContentEscape =
+            AsciiMatcher.builder().c('[').c(']').c('\\').build();
 
     private final Pattern orderedListMarkerPattern = Pattern.compile("^([0-9]{1,9})([.)])");
 
@@ -66,9 +73,11 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 HtmlBlock.class,
                 HtmlInline.class,
                 InlineImage.class,
+                ReferenceImage.class,
                 IndentedCodeBlock.class,
                 InlineLink.class,
                 LinkReferenceDefinition.class,
+                ReferenceLink.class,
                 ListItem.class,
                 OrderedList.class,
                 Paragraph.class,
@@ -343,8 +352,18 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     }
 
     @Override
+    public void visit(ReferenceLink link) {
+        writeReferenceLinkLike(link.getLabel(), link, "[");
+    }
+
+    @Override
     public void visit(InlineImage image) {
         writeLinkLike(image.getTitle(), image.getDestination(), image, "![");
+    }
+
+    @Override
+    public void visit(ReferenceImage image) {
+        writeReferenceLinkLike(image.getLabel(), image, "![");
     }
 
     @Override
@@ -530,6 +549,47 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
             return List.of(parts).subList(0, parts.length - 1);
         } else {
             return List.of(parts);
+        }
+    }
+
+    private void writeReferenceLinkLike(String label, Node node, String opener) {
+        writer.raw(opener);
+        if (label == null || label.isEmpty()) {
+            // Shortcut [text] or collapsed [text][]: the display text IS the label, so write Text
+            // children raw to avoid emphasis chars (* _) being escaped — link labels match them
+            // literally, so escaping would break the lookup.
+            writeChildrenRaw(node);
+        } else {
+            // Full reference [text][label]: display text is independent of label, safe to escape.
+            visitChildren(node);
+        }
+        writer.raw(']');
+        if (label == null) {
+            // Shortcut reference: [text]
+        } else if (label.isEmpty()) {
+            // Collapsed reference: [text][]
+            writer.raw("[]");
+        } else {
+            // Full reference: [text][label]
+            writer.raw('[');
+            writer.text(label, linkLabelEscape);
+            writer.raw(']');
+        }
+    }
+
+    /**
+     * Write child nodes into a link label bracket — Text literals are written with only
+     * label-specific escaping ([ ] \), leaving * and _ unescaped so they round-trip correctly
+     * through label matching.
+     */
+    private void writeChildrenRaw(Node node) {
+        for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+            if (child instanceof Text) {
+                writer.text(((Text) child).getLiteral(), linkLabelContentEscape);
+            } else {
+                // Non-text children (e.g. code spans) — visit normally
+                child.accept(this);
+            }
         }
     }
 

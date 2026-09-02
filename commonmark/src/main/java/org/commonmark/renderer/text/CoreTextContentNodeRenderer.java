@@ -32,9 +32,11 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
                 ThematicBreak.class,
                 IndentedCodeBlock.class,
                 InlineLink.class,
+                ReferenceLink.class,
                 ListItem.class,
                 OrderedList.class,
                 InlineImage.class,
+                ReferenceImage.class,
                 Emphasis.class,
                 StrongEmphasis.class,
                 Text.class,
@@ -138,6 +140,11 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
     }
 
     @Override
+    public void visit(ReferenceImage image) {
+        writeLink(image, image.getTitle(), image.getDestination());
+    }
+
+    @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
         var literal = stripTrailingNewline(indentedCodeBlock.getLiteral());
         if (stripNewlines()) {
@@ -150,6 +157,11 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
 
     @Override
     public void visit(InlineLink link) {
+        writeLink(link, link.getTitle(), link.getDestination());
+    }
+
+    @Override
+    public void visit(ReferenceLink link) {
         writeLink(link, link.getTitle(), link.getDestination());
     }
 

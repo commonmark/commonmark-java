@@ -32,9 +32,11 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
                 ThematicBreak.class,
                 IndentedCodeBlock.class,
                 InlineLink.class,
+                ReferenceLink.class,
                 ListItem.class,
                 OrderedList.class,
                 InlineImage.class,
+                ReferenceImage.class,
                 Emphasis.class,
                 StrongEmphasis.class,
                 Text.class,
@@ -164,6 +166,26 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     }
 
     @Override
+    public void visit(ReferenceLink link) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        String url = link.getDestination();
+
+        if (context.shouldSanitizeUrls()) {
+            url = context.urlSanitizer().sanitizeLinkUrl(url);
+            attrs.put("rel", "nofollow");
+        }
+
+        url = context.encodeUrl(url);
+        attrs.put("href", url);
+        if (link.getTitle() != null) {
+            attrs.put("title", link.getTitle());
+        }
+        html.tag("a", getAttrs(link, "a", attrs));
+        visitChildren(link);
+        html.tag("/a");
+    }
+
+    @Override
     public void visit(ListItem listItem) {
         html.tag("li", getAttrs(listItem, "li"));
         visitChildren(listItem);
@@ -184,6 +206,28 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(InlineImage image) {
+        String url = image.getDestination();
+
+        AltTextVisitor altTextVisitor = new AltTextVisitor();
+        image.accept(altTextVisitor);
+        String altText = altTextVisitor.getAltText();
+
+        Map<String, String> attrs = new LinkedHashMap<>();
+        if (context.shouldSanitizeUrls()) {
+            url = context.urlSanitizer().sanitizeImageUrl(url);
+        }
+
+        attrs.put("src", context.encodeUrl(url));
+        attrs.put("alt", altText);
+        if (image.getTitle() != null) {
+            attrs.put("title", image.getTitle());
+        }
+
+        html.tag("img", getAttrs(image, "img", attrs), true);
+    }
+
+    @Override
+    public void visit(ReferenceImage image) {
         String url = image.getDestination();
 
         AltTextVisitor altTextVisitor = new AltTextVisitor();

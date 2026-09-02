@@ -8,7 +8,7 @@ package org.commonmark.node;
  * <ul>
  *   <li>{@link InlineLink} &ndash; {@code [text](/uri "title")}
  *   <li>{@link ReferenceLink} &ndash; {@code [text][label]}, {@code [text][]}, {@code [text]}
- *   <li>{@link Autolink} &ndash; {@code <https://example.com>}
+ *   <li>{@link AutoLink} &ndash; {@code <https://example.com>}
  * </ul>
  *
  * @see <a href="http://spec.commonmark.org/0.31.2/#links">CommonMark Spec</a>

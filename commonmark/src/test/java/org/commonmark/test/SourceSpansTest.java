@@ -498,11 +498,11 @@ public class SourceSpansTest {
         assertInlineSpans("\n[text](/url)", InlineLink.class, SourceSpan.of(1, 0, 1, 12));
         assertInlineSpans("\n[text](/url)", Text.class, SourceSpan.of(1, 1, 2, 4));
 
-        assertInlineSpans("\n[text]\n\n[text]: /url", InlineLink.class, SourceSpan.of(1, 0, 1, 6));
+        assertInlineSpans("\n[text]\n\n[text]: /url", ReferenceLink.class, SourceSpan.of(1, 0, 1, 6));
         assertInlineSpans("\n[text]\n\n[text]: /url", Text.class, SourceSpan.of(1, 1, 2, 4));
-        assertInlineSpans("\n[text][]\n\n[text]: /url", InlineLink.class, SourceSpan.of(1, 0, 1, 8));
+        assertInlineSpans("\n[text][]\n\n[text]: /url", ReferenceLink.class, SourceSpan.of(1, 0, 1, 8));
         assertInlineSpans("\n[text][]\n\n[text]: /url", Text.class, SourceSpan.of(1, 1, 2, 4));
-        assertInlineSpans("\n[text][ref]\n\n[ref]: /url", InlineLink.class, SourceSpan.of(1, 0, 1, 11));
+        assertInlineSpans("\n[text][ref]\n\n[ref]: /url", ReferenceLink.class, SourceSpan.of(1, 0, 1, 11));
         assertInlineSpans("\n[text][ref]\n\n[ref]: /url", Text.class, SourceSpan.of(1, 1, 2, 4));
         assertInlineSpans("\n[notalink]", Text.class, SourceSpan.of(1, 0, 1, 10));
     }

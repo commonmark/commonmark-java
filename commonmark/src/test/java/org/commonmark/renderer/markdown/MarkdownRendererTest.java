@@ -295,6 +295,18 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testReferenceLinks() {
+        // Full reference
+        assertRoundTrip("[foo]: /url\n\n[foo][foo]\n");
+        // Collapsed reference
+        assertRoundTrip("[foo]: /url\n\n[foo][]\n");
+        // Shortcut reference
+        assertRoundTrip("[foo]: /url\n\n[foo]\n");
+        // Shortcut with * in label
+        assertRoundTrip("[Foo*bar\\]]: /url\n\n[Foo*bar\\]]\n");
+    }
+
+    @Test
     public void testImages() {
         assertRoundTrip("![link](/uri)\n");
         assertRoundTrip("![link](/uri \"title\")\n");
