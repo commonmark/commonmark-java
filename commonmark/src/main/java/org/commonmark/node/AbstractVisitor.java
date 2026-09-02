@@ -79,6 +79,11 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
+    public void visit(AutoLink autoLink) {
+        // AutoLink has no children
+    }
+
+    @Override
     public void visit(InlineLink inlineLink) {
         visitChildren(inlineLink);
     }

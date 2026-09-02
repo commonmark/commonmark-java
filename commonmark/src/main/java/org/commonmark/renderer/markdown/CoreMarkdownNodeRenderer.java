@@ -75,6 +75,7 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
                 InlineImage.class,
                 ReferenceImage.class,
                 IndentedCodeBlock.class,
+                AutoLink.class,
                 InlineLink.class,
                 LinkReferenceDefinition.class,
                 ReferenceLink.class,
@@ -344,6 +345,13 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         writer.raw("**");
         super.visit(strongEmphasis);
         writer.raw("**");
+    }
+
+    @Override
+    public void visit(AutoLink autoLink) {
+        writer.raw('<');
+        writer.raw(autoLink.getContent());
+        writer.raw('>');
     }
 
     @Override

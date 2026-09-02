@@ -2,8 +2,7 @@ package org.commonmark.internal.inline;
 
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.commonmark.node.InlineLink;
-import org.commonmark.node.Text;
+import org.commonmark.node.AutoLink;
 import org.commonmark.parser.SourceLines;
 import org.commonmark.parser.beta.*;
 import org.commonmark.text.AsciiMatcher;
@@ -24,6 +23,7 @@ public class AutolinkInlineParser implements InlineContentParser {
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
         Scanner scanner = inlineParserState.scanner();
+        Position openBracket = scanner.position();
         scanner.next();
         Position textStart = scanner.position();
         if (scanner.find(ANGLE_BRACKETS) > 0) {
@@ -31,23 +31,17 @@ public class AutolinkInlineParser implements InlineContentParser {
                 return ParsedInline.none();
             }
 
-            SourceLines textSource = scanner.getSource(textStart, scanner.position());
-            String content = textSource.getContent();
-            scanner.next();
+            String content = scanner.getSource(textStart, scanner.position()).getContent();
+            scanner.next(); // consume '>'
+            Position afterCloseBracket = scanner.position();
 
-            String destination = null;
-            if (URI.matcher(content).matches()) {
-                destination = content;
-            } else if (EMAIL.matcher(content).matches()) {
-                destination = "mailto:" + content;
-            }
+            boolean uri = URI.matcher(content).matches();
+            boolean email = !uri && EMAIL.matcher(content).matches();
 
-            if (destination != null) {
-                InlineLink link = new InlineLink(destination, null);
-                Text text = new Text(content);
-                text.setSourceSpans(textSource.getSourceSpans());
-                link.appendChild(text);
-                return ParsedInline.of(link, scanner.position());
+            if (uri || email) {
+                AutoLink autoLink = new AutoLink(content, email);
+                autoLink.setSourceSpans(scanner.getSource(openBracket, afterCloseBracket).getSourceSpans());
+                return ParsedInline.of(autoLink, afterCloseBracket);
             }
         }
         return ParsedInline.none();

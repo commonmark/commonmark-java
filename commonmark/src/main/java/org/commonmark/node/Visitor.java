@@ -35,6 +35,8 @@ public interface Visitor {
 
     void visit(IndentedCodeBlock indentedCodeBlock);
 
+    void visit(AutoLink autoLink);
+
     void visit(InlineLink inlineLink);
 
     void visit(ReferenceLink referenceLink);

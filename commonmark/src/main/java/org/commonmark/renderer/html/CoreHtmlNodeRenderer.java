@@ -31,6 +31,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
                 HtmlBlock.class,
                 ThematicBreak.class,
                 IndentedCodeBlock.class,
+                AutoLink.class,
                 InlineLink.class,
                 ReferenceLink.class,
                 ListItem.class,
@@ -143,6 +144,20 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
         renderCodeBlock(indentedCodeBlock.getLiteral(), indentedCodeBlock, Map.of());
+    }
+
+    @Override
+    public void visit(AutoLink autoLink) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        String url = autoLink.getDestination();
+        if (context.shouldSanitizeUrls()) {
+            url = context.urlSanitizer().sanitizeLinkUrl(url);
+            attrs.put("rel", "nofollow");
+        }
+        attrs.put("href", context.encodeUrl(url));
+        html.tag("a", getAttrs(autoLink, "a", attrs));
+        html.text(autoLink.getContent());
+        html.tag("/a");
     }
 
     @Override

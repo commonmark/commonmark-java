@@ -31,6 +31,7 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
                 HtmlBlock.class,
                 ThematicBreak.class,
                 IndentedCodeBlock.class,
+                AutoLink.class,
                 InlineLink.class,
                 ReferenceLink.class,
                 ListItem.class,
@@ -153,6 +154,11 @@ public class CoreTextContentNodeRenderer extends AbstractVisitor implements Node
             textContent.write(literal);
         }
         textContent.block();
+    }
+
+    @Override
+    public void visit(AutoLink autoLink) {
+        textContent.write(autoLink.getContent());
     }
 
     @Override

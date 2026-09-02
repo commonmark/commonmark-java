@@ -467,7 +467,7 @@ public class SourceSpansTest {
 
     @Test
     public void inlineAutolink() {
-        assertInlineSpans("see <https://example.org>", InlineLink.class, SourceSpan.of(0, 4, 4, 21));
+        assertInlineSpans("see <https://example.org>", AutoLink.class, SourceSpan.of(0, 4, 4, 21));
     }
 
     @Test

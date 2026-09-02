@@ -307,6 +307,13 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void testAutoLinks() {
+        assertRoundTrip("<http://example.com>\n");
+        assertRoundTrip("<foo@example.com>\n");
+        assertRoundTrip("<http://example.com/path?q=1&r=2>\n");
+    }
+
+    @Test
     public void testImages() {
         assertRoundTrip("![link](/uri)\n");
         assertRoundTrip("![link](/uri \"title\")\n");
