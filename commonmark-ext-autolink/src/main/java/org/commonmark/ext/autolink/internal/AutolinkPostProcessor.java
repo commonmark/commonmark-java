@@ -2,7 +2,9 @@ package org.commonmark.ext.autolink.internal;
 
 import java.util.*;
 import org.commonmark.ext.autolink.AutolinkType;
+import org.commonmark.ext.autolink.BareAutoLink;
 import org.commonmark.node.*;
+import org.commonmark.node.AutoLink;
 import org.commonmark.parser.PostProcessor;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
@@ -65,10 +67,8 @@ public class AutolinkPostProcessor implements PostProcessor {
 
             Text textNode = createTextNode(literal, span, sourceSpan);
             if (span instanceof LinkSpan) {
-                String destination = getDestination((LinkSpan) span, textNode.getLiteral());
-
-                InlineLink linkNode = new InlineLink(destination, null);
-                linkNode.appendChild(textNode);
+                AutolinkType autolinkType = getAutolinkType((LinkSpan) span);
+                BareAutoLink linkNode = new BareAutoLink(textNode.getLiteral(), autolinkType);
                 linkNode.setSourceSpans(textNode.getSourceSpans());
                 lastNode = insertNode(linkNode, lastNode);
             } else {
@@ -91,16 +91,14 @@ public class AutolinkPostProcessor implements PostProcessor {
         return textNode;
     }
 
-    private static String getDestination(LinkSpan linkSpan, String linkText) {
+    private static AutolinkType getAutolinkType(LinkSpan linkSpan) {
         var type = linkSpan.getType();
-
         if (type == LinkType.EMAIL) {
-            return "mailto:" + linkText;
+            return AutolinkType.EMAIL;
         } else if (type == LinkType.WWW) {
-            // Use http instead of https (see https://github.github.com/gfm/#extended-www-autolink)
-            return "http://" + linkText;
+            return AutolinkType.WWW;
         } else {
-            return linkText;
+            return AutolinkType.URL;
         }
     }
 
@@ -116,6 +114,37 @@ public class AutolinkPostProcessor implements PostProcessor {
         public void visit(InlineLink link) {
             inLink++;
             super.visit(link);
+            inLink--;
+        }
+
+        @Override
+        public void visit(ReferenceLink link) {
+            inLink++;
+            super.visit(link);
+            inLink--;
+        }
+
+        @Override
+        public void visit(AutoLink link) {
+            // Spec autolinks are already links — don't linkify their content
+            inLink++;
+            super.visit(link);
+            inLink--;
+        }
+
+        @Override
+        public void visit(InlineImage image) {
+            // Don't linkify text inside image alt text
+            inLink++;
+            super.visit(image);
+            inLink--;
+        }
+
+        @Override
+        public void visit(ReferenceImage image) {
+            // Don't linkify text inside image alt text
+            inLink++;
+            super.visit(image);
             inLink--;
         }
 
