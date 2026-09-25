@@ -38,8 +38,12 @@ public class BackticksInlineParser implements InlineContentParser {
         while (scanner.find('`') > 0) {
             var beforeClosing = scanner.position();
             var length = scanner.matchMultiple('`');
-            // Keep track of last position of backticks run of this length
-            backtickPositions.put(length, beforeClosing);
+            // Keep track of last position of backticks run of this length. Once the whole input
+            // has been scanned, the map already holds the last positions, so don't overwrite them
+            // with earlier ones.
+            if (!scannedToEnd) {
+                backtickPositions.put(length, beforeClosing);
+            }
             if (length == openingLength) {
                 Code node = new Code();
 

@@ -456,4 +456,11 @@ public class SpecialInputTest extends CoreRenderingTestCase {
                 Foo</p>
                 """);
     }
+
+    @Test
+    public void codeSpansAfterUnclosedBackticks() {
+        assertRendering("`` `a` `c`", "<p>`` <code>a</code> <code>c</code></p>\n");
+        assertRendering(
+                "`` `a` `c` `e`", "<p>`` <code>a</code> <code>c</code> <code>e</code></p>\n");
+    }
 }
