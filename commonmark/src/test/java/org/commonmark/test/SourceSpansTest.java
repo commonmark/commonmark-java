@@ -467,7 +467,7 @@ public class SourceSpansTest {
 
     @Test
     public void inlineAutolink() {
-        assertInlineSpans("see <https://example.org>", Link.class, SourceSpan.of(0, 4, 4, 21));
+        assertInlineSpans("see <https://example.org>", AutoLink.class, SourceSpan.of(0, 4, 4, 21));
     }
 
     @Test
@@ -495,14 +495,14 @@ public class SourceSpansTest {
 
     @Test
     public void links() {
-        assertInlineSpans("\n[text](/url)", Link.class, SourceSpan.of(1, 0, 1, 12));
+        assertInlineSpans("\n[text](/url)", InlineLink.class, SourceSpan.of(1, 0, 1, 12));
         assertInlineSpans("\n[text](/url)", Text.class, SourceSpan.of(1, 1, 2, 4));
 
-        assertInlineSpans("\n[text]\n\n[text]: /url", Link.class, SourceSpan.of(1, 0, 1, 6));
+        assertInlineSpans("\n[text]\n\n[text]: /url", ReferenceLink.class, SourceSpan.of(1, 0, 1, 6));
         assertInlineSpans("\n[text]\n\n[text]: /url", Text.class, SourceSpan.of(1, 1, 2, 4));
-        assertInlineSpans("\n[text][]\n\n[text]: /url", Link.class, SourceSpan.of(1, 0, 1, 8));
+        assertInlineSpans("\n[text][]\n\n[text]: /url", ReferenceLink.class, SourceSpan.of(1, 0, 1, 8));
         assertInlineSpans("\n[text][]\n\n[text]: /url", Text.class, SourceSpan.of(1, 1, 2, 4));
-        assertInlineSpans("\n[text][ref]\n\n[ref]: /url", Link.class, SourceSpan.of(1, 0, 1, 11));
+        assertInlineSpans("\n[text][ref]\n\n[ref]: /url", ReferenceLink.class, SourceSpan.of(1, 0, 1, 11));
         assertInlineSpans("\n[text][ref]\n\n[ref]: /url", Text.class, SourceSpan.of(1, 1, 2, 4));
         assertInlineSpans("\n[notalink]", Text.class, SourceSpan.of(1, 0, 1, 10));
     }

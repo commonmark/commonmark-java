@@ -1,66 +1,26 @@
 package org.commonmark.node;
 
 /**
- * A link with a destination and an optional title; the link text is in child nodes.
+ * A link; the link text is in child nodes.
  *
- * <p>Example for an inline link in a CommonMark document:
- *
- * <pre><code>
- * [link](/uri "title")
- * </code></pre>
- *
- * <p>The corresponding Link node would look like this:
+ * <p>Implementations represent the different syntactic forms a link can take:
  *
  * <ul>
- *   <li>{@link #getDestination()} returns {@code "/uri"}
- *   <li>{@link #getTitle()} returns {@code "title"}
- *   <li>A {@link Text} child node with {@link Text#getLiteral() getLiteral} that returns {@code
- *       "link"}
+ *   <li>{@link InlineLink} &ndash; {@code [text](/uri "title")}
+ *   <li>{@link ReferenceLink} &ndash; {@code [text][label]}, {@code [text][]}, {@code [text]}
+ *   <li>{@link AutoLink} &ndash; {@code <https://example.com>}
  * </ul>
- *
- * <p>Note that the text in the link can contain inline formatting, so it could also contain an
- * {@link Image} or {@link Emphasis}, etc.
  *
  * @see <a href="http://spec.commonmark.org/0.31.2/#links">CommonMark Spec</a>
  */
-public class Link extends Node {
+public interface Link {
 
-    private String destination;
-    private String title;
-
-    public Link() {}
-
-    public Link(String destination, String title) {
-        this.destination = destination;
-        this.title = title;
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
+    /** The link destination (URL), e.g. {@code /uri}. */
+    String getDestination();
 
     /**
-     * @return the title or null
+     * The link title, or {@code null} if not present. This is the optional tooltip text, e.g.
+     * {@code "title"} in {@code [text](/uri "title")}.
      */
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    protected String toStringAttributes() {
-        return "destination=" + destination + ", title=" + title;
-    }
+    String getTitle();
 }

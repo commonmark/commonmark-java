@@ -78,7 +78,7 @@ public class HtmlRendererTest {
     @Test
     public void attributeEscaping() {
         Paragraph paragraph = new Paragraph();
-        Link link = new Link();
+        InlineLink link = new InlineLink();
         link.setDestination("&colon;");
         paragraph.appendChild(link);
         assertThat(defaultRenderer().render(paragraph))
@@ -88,7 +88,7 @@ public class HtmlRendererTest {
     @Test
     public void rawUrlsShouldNotFilterDangerousProtocols() {
         Paragraph paragraph = new Paragraph();
-        Link link = new Link();
+        InlineLink link = new InlineLink();
         link.setDestination("javascript:alert(5);");
         paragraph.appendChild(link);
         assertThat(rawUrlsRenderer().render(paragraph))
@@ -98,14 +98,14 @@ public class HtmlRendererTest {
     @Test
     public void sanitizedUrlsShouldSetRelNoFollow() {
         Paragraph paragraph = new Paragraph();
-        Link link = new Link();
+        InlineLink link = new InlineLink();
         link.setDestination("/exampleUrl");
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
                 .isEqualTo("<p><a rel=\"nofollow\" href=\"/exampleUrl\"></a></p>\n");
 
         paragraph = new Paragraph();
-        link = new Link();
+        link = new InlineLink();
         link.setDestination("https://google.com");
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
@@ -115,21 +115,21 @@ public class HtmlRendererTest {
     @Test
     public void sanitizedUrlsShouldAllowSafeProtocols() {
         Paragraph paragraph = new Paragraph();
-        Link link = new Link();
+        InlineLink link = new InlineLink();
         link.setDestination("http://google.com");
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
                 .isEqualTo("<p><a rel=\"nofollow\" href=\"http://google.com\"></a></p>\n");
 
         paragraph = new Paragraph();
-        link = new Link();
+        link = new InlineLink();
         link.setDestination("https://google.com");
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
                 .isEqualTo("<p><a rel=\"nofollow\" href=\"https://google.com\"></a></p>\n");
 
         paragraph = new Paragraph();
-        link = new Link();
+        link = new InlineLink();
         link.setDestination("mailto:foo@bar.example.com");
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
@@ -138,7 +138,7 @@ public class HtmlRendererTest {
         String image =
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAQSURBVBhXY/iPBVBf8P9/AG8TY51nJdgkAAAAAElFTkSuQmCC";
         paragraph = new Paragraph();
-        link = new Link();
+        link = new InlineLink();
         link.setDestination(image);
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
@@ -148,14 +148,14 @@ public class HtmlRendererTest {
     @Test
     public void sanitizedUrlsShouldFilterDangerousProtocols() {
         Paragraph paragraph = new Paragraph();
-        Link link = new Link();
+        InlineLink link = new InlineLink();
         link.setDestination("javascript:alert(5);");
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
                 .isEqualTo("<p><a rel=\"nofollow\" href=\"\"></a></p>\n");
 
         paragraph = new Paragraph();
-        link = new Link();
+        link = new InlineLink();
         link.setDestination("ftp://google.com");
         paragraph.appendChild(link);
         assertThat(sanitizeUrlsRenderer().render(paragraph))
@@ -282,7 +282,7 @@ public class HtmlRendererTest {
                         new NodeRenderer() {
                             @Override
                             public Set<Class<? extends Node>> getNodeTypes() {
-                                return Set.of(Link.class);
+                                return Set.of(InlineLink.class);
                             }
 
                             @Override

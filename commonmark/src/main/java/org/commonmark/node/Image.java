@@ -1,49 +1,25 @@
 package org.commonmark.node;
 
 /**
- * An image, e.g.:
+ * An image; the alt text is in child nodes.
  *
- * <pre>
- * ![foo](/url "title")
- * </pre>
+ * <p>Implementations represent the different syntactic forms an image can take:
+ *
+ * <ul>
+ *   <li>{@link InlineImage} &ndash; {@code ![text](/uri "title")}
+ *   <li>{@link ReferenceImage} &ndash; {@code ![text][label]}, {@code ![text][]}, {@code ![text]}
+ * </ul>
  *
  * @see <a href="https://spec.commonmark.org/0.31.2/#images">CommonMark Spec</a>
  */
-public class Image extends Node {
+public interface Image {
 
-    private String destination;
-    private String title;
+    /** The image destination (URL), e.g. {@code /uri}. */
+    String getDestination();
 
-    public Image() {}
-
-    public Image(String destination, String title) {
-        this.destination = destination;
-        this.title = title;
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    protected String toStringAttributes() {
-        return "destination=" + destination + ", title=" + title;
-    }
+    /**
+     * The image title, or {@code null} if not present. This is the optional tooltip text, e.g.
+     * {@code "title"} in {@code ![text](/uri "title")}.
+     */
+    String getTitle();
 }

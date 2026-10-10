@@ -1,0 +1,49 @@
+package org.commonmark.node;
+
+/**
+ * An image, e.g.:
+ *
+ * <pre>
+ * ![foo](/url "title")
+ * </pre>
+ *
+ * @see <a href="https://spec.commonmark.org/0.31.2/#images">CommonMark Spec</a>
+ */
+public class InlineImage extends Node implements Image {
+
+    private String destination;
+    private String title;
+
+    public InlineImage() {}
+
+    public InlineImage(String destination, String title) {
+        this.destination = destination;
+        this.title = title;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
+    public String getDestination() {
+        return destination;
+    }
+
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    @Override
+    protected String toStringAttributes() {
+        return "destination=" + destination + ", title=" + title;
+    }
+}

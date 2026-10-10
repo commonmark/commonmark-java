@@ -2,7 +2,7 @@ package org.commonmark.parser.beta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.commonmark.node.Link;
+import org.commonmark.node.InlineLink;
 import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
 import org.commonmark.test.Nodes;
@@ -21,7 +21,7 @@ class LinkProcessorTest {
         // and will have tests ensuring that the marker is part of the parsed node, not the text.
         var parser = Parser.builder().linkMarker('^').build();
         var doc = parser.parse("^[test](url)");
-        var link = Nodes.find(doc, Link.class);
+        var link = Nodes.find(doc, InlineLink.class);
         assertThat(link.getDestination()).isEqualTo("url");
         assertThat(((Text) link.getPrevious()).getLiteral()).isEqualTo("^");
     }

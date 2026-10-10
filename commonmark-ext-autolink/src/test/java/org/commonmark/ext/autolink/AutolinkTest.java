@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Set;
 import org.commonmark.Extension;
+import org.commonmark.ext.autolink.BareAutoLink;
 import org.commonmark.node.*;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.testutil.RenderingTestCase;
 import org.junit.jupiter.api.Test;
 
@@ -65,6 +67,13 @@ public class AutolinkTest extends RenderingTestCase {
     }
 
     @Test
+    public void dontLinkTextWithinImages() {
+        assertRendering(
+                "![http://example.com](/img.png)",
+                "<p><img src=\"/img.png\" alt=\"http://example.com\" /></p>\n");
+    }
+
+    @Test
     public void dontLinkTextWithinLinks() {
         assertRendering(
                 "<http://example.com>",
@@ -106,7 +115,7 @@ public class AutolinkTest extends RenderingTestCase {
 
         assertThat(abc.getNext()).isInstanceOf(SoftLineBreak.class);
 
-        Link one = (Link) abc.getNext().getNext();
+        BareAutoLink one = (BareAutoLink) abc.getNext().getNext();
         assertThat(one.getDestination()).isEqualTo("http://example.com/one");
         assertThat(one.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(1, 0, 4, 22)));
 
@@ -116,7 +125,7 @@ public class AutolinkTest extends RenderingTestCase {
         assertThat(def.getLiteral()).isEqualTo("def ");
         assertThat(def.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 0, 27, 4)));
 
-        Link two = (Link) def.getNext();
+        BareAutoLink two = (BareAutoLink) def.getNext();
         assertThat(two.getDestination()).isEqualTo("http://example.com/two");
         assertThat(two.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(2, 4, 31, 22)));
 
@@ -126,13 +135,30 @@ public class AutolinkTest extends RenderingTestCase {
         assertThat(ghi.getLiteral()).isEqualTo("ghi ");
         assertThat(ghi.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 0, 54, 4)));
 
-        Link three = (Link) ghi.getNext();
+        BareAutoLink three = (BareAutoLink) ghi.getNext();
         assertThat(three.getDestination()).isEqualTo("http://example.com/three");
         assertThat(three.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 4, 58, 24)));
 
         Text jkl = (Text) three.getNext();
         assertThat(jkl.getLiteral()).isEqualTo(" jkl");
         assertThat(jkl.getSourceSpans()).isEqualTo(List.of(SourceSpan.of(3, 28, 82, 4)));
+    }
+
+    @Test
+    public void markdownRoundtrip() {
+        var markdownRenderer = MarkdownRenderer.builder().extensions(EXTENSIONS).build();
+
+        // URL: rendered verbatim, re-parses to same link
+        assertThat(markdownRenderer.render(PARSER.parse("foo http://example.com bar")))
+                .isEqualTo("foo http://example.com bar\n");
+
+        // Email: rendered verbatim (no mailto: in markdown output)
+        assertThat(markdownRenderer.render(PARSER.parse("contact foo@example.com please")))
+                .isEqualTo("contact foo@example.com please\n");
+
+        // WWW: rendered verbatim (no http:// prefix in markdown output)
+        assertThat(markdownRenderer.render(PARSER.parse("visit www.example.com today")))
+                .isEqualTo("visit www.example.com today\n");
     }
 
     @Override

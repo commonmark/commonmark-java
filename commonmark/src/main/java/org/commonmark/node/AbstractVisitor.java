@@ -64,8 +64,13 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(Image image) {
-        visitChildren(image);
+    public void visit(InlineImage inlineImage) {
+        visitChildren(inlineImage);
+    }
+
+    @Override
+    public void visit(ReferenceImage referenceImage) {
+        visitChildren(referenceImage);
     }
 
     @Override
@@ -74,8 +79,18 @@ public abstract class AbstractVisitor implements Visitor {
     }
 
     @Override
-    public void visit(Link link) {
-        visitChildren(link);
+    public void visit(AutoLink autoLink) {
+        // AutoLink has no children
+    }
+
+    @Override
+    public void visit(InlineLink inlineLink) {
+        visitChildren(inlineLink);
+    }
+
+    @Override
+    public void visit(ReferenceLink referenceLink) {
+        visitChildren(referenceLink);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.commonmark.test;
 
 import java.util.Set;
-import org.commonmark.node.Link;
+import org.commonmark.node.InlineLink;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
@@ -561,7 +561,7 @@ public class TextContentRendererTest {
 
                             @Override
                             public Set<Class<? extends Node>> getNodeTypes() {
-                                return Set.of(Link.class);
+                                return Set.of(InlineLink.class);
                             }
 
                             @Override
