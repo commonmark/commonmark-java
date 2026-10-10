@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.30.1] - 2026-10-11
+### Changed
+- Improve MarkdownRenderer performance by appending unescaped spans in bulk (#456)
+### Fixed
+- Fix parsing code spans after an unclosed backtick string; a regression that
+  was introduced in the previous version (0.30.0) (#459)
+
 ## [0.30.0] - 2026-08-06
 ### Added
 - New option `lineSeparator` for `MarkdownRenderer.Builder` to change the default line
@@ -594,6 +601,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
+[0.30.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.0...commonmark-parent-0.30.1
 [0.30.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.29.0...commonmark-parent-0.30.0
 [0.29.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.28.0...commonmark-parent-0.29.0
 [0.28.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.27.1...commonmark-parent-0.28.0
