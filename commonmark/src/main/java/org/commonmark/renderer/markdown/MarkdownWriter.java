@@ -158,9 +158,7 @@ public class MarkdownWriter {
                 // Normal fast path
                 buffer.append(s);
             } else {
-                for (int i = 0; i < s.length(); i++) {
-                    append(s.charAt(i), escape);
-                }
+                append(s, escape);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -219,16 +217,40 @@ public class MarkdownWriter {
         }
     }
 
+    private void append(String s, CharMatcher escape) throws IOException {
+        // Append unescaped spans in bulk; per-char appends are slow for most Appendables
+        // (e.g. Writer, where each char is a synchronized call).
+        int end = s.length();
+        int start = 0;
+        for (int i = 0; i < end; i++) {
+            char c = s.charAt(i);
+            if (needsEscaping(c, escape)) {
+                if (start < i) {
+                    buffer.append(s, start, i);
+                }
+                appendEscaped(c);
+                start = i + 1;
+            }
+        }
+        if (start < end) {
+            buffer.append(s, start, end);
+        }
+    }
+
     private void append(char c, CharMatcher escape) throws IOException {
         if (needsEscaping(c, escape)) {
-            if (c == '\n') {
-                // Can't escape this with \, use numeric character reference
-                buffer.append("&#10;");
-            } else {
-                buffer.append('\\');
-                buffer.append(c);
-            }
+            appendEscaped(c);
         } else {
+            buffer.append(c);
+        }
+    }
+
+    private void appendEscaped(char c) throws IOException {
+        if (c == '\n') {
+            // Can't escape this with \, use numeric character reference
+            buffer.append("&#10;");
+        } else {
+            buffer.append('\\');
             buffer.append(c);
         }
     }

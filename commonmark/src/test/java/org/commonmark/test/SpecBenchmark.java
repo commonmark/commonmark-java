@@ -1,9 +1,11 @@
 package org.commonmark.test;
 
+import java.io.StringWriter;
 import java.util.List;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.testutil.TestResources;
 import org.commonmark.testutil.example.ExampleReader;
 import org.openjdk.jmh.annotations.*;
@@ -23,6 +25,7 @@ public class SpecBenchmark {
             ExampleReader.readExampleSources(TestResources.getSpec());
     private static final Parser PARSER = Parser.builder().build();
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().build();
+    private static final MarkdownRenderer MARKDOWN_RENDERER = MarkdownRenderer.builder().build();
 
     private static final Node SPEC_NODE = PARSER.parse(SPEC);
 
@@ -58,6 +61,18 @@ public class SpecBenchmark {
     @Benchmark
     public long renderWholeSpec() {
         return RENDERER.render(SPEC_NODE).length();
+    }
+
+    @Benchmark
+    public long renderMarkdownWholeSpec() {
+        return MARKDOWN_RENDERER.render(SPEC_NODE).length();
+    }
+
+    @Benchmark
+    public long renderMarkdownWholeSpecToWriter() {
+        StringWriter writer = new StringWriter();
+        MARKDOWN_RENDERER.render(SPEC_NODE, writer);
+        return writer.getBuffer().length();
     }
 
     private static long parseAndRender(List<String> examples) {
