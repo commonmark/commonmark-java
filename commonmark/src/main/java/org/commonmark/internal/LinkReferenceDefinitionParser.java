@@ -30,6 +30,7 @@ public class LinkReferenceDefinitionParser {
     private String destination;
     private char titleDelimiter;
     private StringBuilder title;
+    private int titleSourceSpanStart = -1;
     private boolean referenceValid = false;
 
     public void parse(SourceLine line) {
@@ -226,6 +227,7 @@ public class LinkReferenceDefinitionParser {
 
         if (titleDelimiter != '\0') {
             state = State.TITLE;
+            titleSourceSpanStart = sourceSpans.size();
             title = new StringBuilder();
             scanner.next();
             if (!scanner.hasNext()) {
@@ -277,17 +279,28 @@ public class LinkReferenceDefinitionParser {
             return;
         }
 
+        boolean incompleteTitle = state == State.TITLE;
         String d = Escaping.unescapeString(destination);
-        String t = title != null ? Escaping.unescapeString(title.toString()) : null;
+        String t =
+                !incompleteTitle && title != null
+                        ? Escaping.unescapeString(title.toString())
+                        : null;
         LinkReferenceDefinition definition = new LinkReferenceDefinition(label.toString(), d, t);
-        definition.setSourceSpans(sourceSpans);
-        sourceSpans.clear();
+        if (incompleteTitle) {
+            definition.setSourceSpans(
+                    new ArrayList<>(sourceSpans.subList(0, titleSourceSpanStart)));
+            sourceSpans.subList(0, titleSourceSpanStart).clear();
+        } else {
+            definition.setSourceSpans(sourceSpans);
+            sourceSpans.clear();
+        }
         definitions.add(definition);
 
         label = null;
         referenceValid = false;
         destination = null;
         title = null;
+        titleSourceSpanStart = -1;
     }
 
     private static <T> void removeLast(int n, List<T> list) {

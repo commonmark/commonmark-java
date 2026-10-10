@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.commonmark.internal.LinkReferenceDefinitionParser.State;
 import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.junit.jupiter.api.Test;
 
@@ -167,6 +168,25 @@ class LinkReferenceDefinitionParserTest {
         assertThat(parser.getState()).isEqualTo(State.PARAGRAPH);
 
         assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
+    }
+
+    @Test
+    void testUnclosedMultilineTitleKeepsParagraphSourceSpans() {
+        SourceSpan definitionSpan = SourceSpan.of(0, 0, 0, 11);
+        SourceSpan paragraphSpan = SourceSpan.of(1, 0, 12, 14);
+
+        parse("[foo]: /url");
+        parser.addSourceSpan(definitionSpan);
+        parse("(partial title");
+        parser.addSourceSpan(paragraphSpan);
+
+        var definitions = parser.getDefinitions();
+
+        assertThat(definitions).hasSize(1);
+        assertDef(definitions.get(0), "foo", "/url", null);
+        assertThat(definitions.get(0).getSourceSpans()).containsExactly(definitionSpan);
+        assertThat(parser.getParagraphLines().getContent()).isEqualTo("(partial title");
+        assertThat(parser.getParagraphSourceSpans()).containsExactly(paragraphSpan);
     }
 
     @Test
