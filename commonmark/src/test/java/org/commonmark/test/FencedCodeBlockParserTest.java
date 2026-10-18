@@ -28,6 +28,36 @@ public class FencedCodeBlockParserTest extends RenderingTestCase {
     }
 
     @Test
+    public void backtickInfoCanStartWithTilde() {
+        var s =
+                """
+                ```~/.bashrc
+                code
+                ```
+                """;
+        var document = PARSER.parse(s);
+        FencedCodeBlock codeBlock = (FencedCodeBlock) document.getFirstChild();
+        assertThat(codeBlock.getFenceCharacter()).isEqualTo("`");
+        assertThat(codeBlock.getOpeningFenceLength()).isEqualTo(3);
+        assertThat(codeBlock.getInfo()).isEqualTo("~/.bashrc");
+        assertThat(codeBlock.getLiteral()).isEqualTo("code\n");
+    }
+
+    @Test
+    public void tildeInfoCanStartWithBacktick() {
+        assertRendering(
+                """
+                ~~~`info`
+                code
+                ~~~
+                """,
+                """
+                <pre><code class="language-`info`">code
+                </code></pre>
+                """);
+    }
+
+    @Test
     public void backtickInfoDoesntAllowBacktick() {
         assertRendering(
                 """

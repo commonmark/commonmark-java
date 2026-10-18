@@ -94,30 +94,19 @@ public class FencedCodeBlockParser extends AbstractBlockParser {
     // spec: A code fence is a sequence of at least three consecutive backtick characters (`) or
     // tildes (~). (Tildes and backticks cannot be mixed.)
     private static FencedCodeBlockParser checkOpener(CharSequence line, int index, int indent) {
-        int backticks = 0;
-        int tildes = 0;
+        // The fence is only the run of the first character, the info string can start directly
+        // after it with the other character (e.g. "```~" or "~~~`").
         int length = line.length();
-        loop:
-        for (int i = index; i < length; i++) {
-            switch (line.charAt(i)) {
-                case '`':
-                    backticks++;
-                    break;
-                case '~':
-                    tildes++;
-                    break;
-                default:
-                    break loop;
-            }
-        }
-        if (backticks >= 3 && tildes == 0) {
+        int backticks = Characters.skip('`', line, index, length) - index;
+        int tildes = Characters.skip('~', line, index, length) - index;
+        if (backticks >= 3) {
             // spec: If the info string comes after a backtick fence, it may not contain any
             // backtick characters.
             if (Characters.find('`', line, index + backticks) != -1) {
                 return null;
             }
             return new FencedCodeBlockParser('`', backticks, indent);
-        } else if (tildes >= 3 && backticks == 0) {
+        } else if (tildes >= 3) {
             // spec: Info strings for tilde code blocks can contain backticks and tildes
             return new FencedCodeBlockParser('~', tildes, indent);
         } else {
