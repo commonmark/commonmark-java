@@ -58,4 +58,4 @@ jobs:
           distribution: 'zulu'
 
       - name: Android Lint checks
-        run: cd commonmark-android-test && ./gradlew :app:lint
+        run: cd commonmark-android-test && ./gradlew :app:lint && ./gradlew :app:printAnimalsnifferTasks
