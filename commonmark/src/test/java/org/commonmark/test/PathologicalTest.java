@@ -207,6 +207,13 @@ public class PathologicalTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void nestedImagesParsing() {
+        int n = 80_000;
+        var md = "![".repeat(n) + "x" + "](u)".repeat(n); // ~480 KB
+        Parser.builder().build().parse(md);
+    }
+
+    @Test
     public void nestedEmphasisAndImagesInterleaved() {
         // Alternating between the two, to check that neither can be used to hide nesting from the
         // limit of the other.

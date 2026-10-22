@@ -2,6 +2,7 @@ package org.commonmark.parser.beta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import org.commonmark.node.Link;
 import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
@@ -9,6 +10,25 @@ import org.commonmark.test.Nodes;
 import org.junit.jupiter.api.Test;
 
 class LinkProcessorTest {
+
+    @Test
+    void linkTextIsAvailableDuringProcessing() {
+        var texts = new ArrayList<String>();
+        var parser =
+                Parser.builder()
+                        .linkProcessor(
+                                (info, scanner, context) -> {
+                                    var position = scanner.position();
+                                    texts.add(info.text(scanner));
+                                    assertThat(scanner.position()).isEqualTo(position);
+                                    return LinkResult.none();
+                                })
+                        .build();
+        parser.parse("![outer\n![inner](image)](outer)\n\n[other](url)");
+        parser.parse("[another](url)");
+
+        assertThat(texts).containsExactly("inner", "outer\n![inner](image)", "other", "another");
+    }
 
     @Test
     void testLinkMarkerShouldNotBeIncludedByDefault() {

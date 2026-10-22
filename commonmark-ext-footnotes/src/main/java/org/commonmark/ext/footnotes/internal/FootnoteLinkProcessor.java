@@ -30,7 +30,7 @@ public class FootnoteLinkProcessor implements LinkProcessor {
             return LinkResult.none();
         }
 
-        var text = linkInfo.text();
+        var text = linkInfo.text(scanner);
         if (!text.startsWith("^")) {
             // Footnote reference needs to start with [^
             return LinkResult.none();

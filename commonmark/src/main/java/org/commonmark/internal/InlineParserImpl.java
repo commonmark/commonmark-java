@@ -422,11 +422,11 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         // Maybe an inline link/image
         var destinationTitle = parseInlineDestinationTitle(scanner);
         if (destinationTitle != null) {
-            var text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
             return new LinkInfoImpl(
                     opener.markerNode,
                     opener.bracketNode,
-                    text,
+                    opener.contentPosition,
+                    beforeClose,
                     null,
                     destinationTitle.destination,
                     destinationTitle.title,
@@ -453,9 +453,15 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
             return null;
         }
 
-        var text = scanner.getSource(opener.contentPosition, beforeClose).getContent();
         return new LinkInfoImpl(
-                opener.markerNode, opener.bracketNode, text, label, null, null, afterClose);
+                opener.markerNode,
+                opener.bracketNode,
+                opener.contentPosition,
+                beforeClose,
+                label,
+                null,
+                null,
+                afterClose);
     }
 
     private Node wrapBracket(Bracket opener, Node wrapperNode, boolean includeMarker) {
@@ -1112,7 +1118,9 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
 
         private final Text marker;
         private final Text openingBracket;
-        private final String text;
+        private final Position textStart;
+        private final Position textEnd;
+        private String text;
         private final String label;
         private final String destination;
         private final String title;
@@ -1121,14 +1129,16 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         private LinkInfoImpl(
                 Text marker,
                 Text openingBracket,
-                String text,
+                Position textStart,
+                Position textEnd,
                 String label,
                 String destination,
                 String title,
                 Position afterTextBracket) {
             this.marker = marker;
             this.openingBracket = openingBracket;
-            this.text = text;
+            this.textStart = textStart;
+            this.textEnd = textEnd;
             this.label = label;
             this.destination = destination;
             this.title = title;
@@ -1146,7 +1156,12 @@ public class InlineParserImpl implements InlineParser, InlineParserState {
         }
 
         @Override
-        public String text() {
+        public String text(Scanner scanner) {
+            // Inline links don't need the source text unless a custom processor requests it.
+            // Copying it eagerly for each nested image would take quadratic time.
+            if (text == null) {
+                text = scanner.getSource(textStart, textEnd).getContent();
+            }
             return text;
         }
 

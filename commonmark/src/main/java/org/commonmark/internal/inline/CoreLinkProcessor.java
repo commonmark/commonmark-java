@@ -19,7 +19,7 @@ public class CoreLinkProcessor implements LinkProcessor {
         }
 
         var label = linkInfo.label();
-        var ref = label != null && !label.isEmpty() ? label : linkInfo.text();
+        var ref = label != null && !label.isEmpty() ? label : linkInfo.text(scanner);
         var def = context.getDefinition(LinkReferenceDefinition.class, ref);
         if (def != null) {
             // Reference link

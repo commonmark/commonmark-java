@@ -7,11 +7,15 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 with the exception that 0.x versions can break between minor versions.
 
 ## [Unreleased]
+### Changed
+- To get link text in `LinkProcessor`, `Scanner` needs to be passed to
+  `LinkInfo#text` now
 ### Fixed
 - Fix parsing of unclosed titles for link reference definitions, fix source
   spans in resulting paragraph (#460)
 - Fix quadratic runtime for a large number of lines in a single paragraph
   starting with potential block opening characters
+- Fix quadratic runtime for parsing deeply nested image brackets
 
 ## [0.30.1] - 2026-10-11
 ### Changed

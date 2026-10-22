@@ -44,12 +44,19 @@ public interface LinkInfo {
     /** The text node of the opening bracket {@code [}. */
     Text openingBracket();
 
-    /** The text between the first brackets, e.g. `foo` in `[foo][bar]`. */
-    String text();
+    /**
+     * The text between the first brackets, e.g. `foo` in `[foo][bar]`.
+     *
+     * <p>Call this during link processing with the scanner passed to {@link LinkProcessor#process}.
+     * The text is extracted without changing the scanner's position.
+     *
+     * @param scanner the scanner passed to the link processor
+     */
+    String text(Scanner scanner);
 
     /**
-     * The label, or null for inline links or for shortcut links (in which case {@link #text()}
-     * should be used as the label).
+     * The label, or null for inline links or for shortcut links (in which case {@link
+     * #text(Scanner)} should be used as the label).
      */
     String label();
 
