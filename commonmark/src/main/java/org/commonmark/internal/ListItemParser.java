@@ -3,7 +3,6 @@ package org.commonmark.internal;
 import org.commonmark.node.Block;
 import org.commonmark.node.ListBlock;
 import org.commonmark.node.ListItem;
-import org.commonmark.node.Paragraph;
 import org.commonmark.parser.block.AbstractBlockParser;
 import org.commonmark.parser.block.BlockContinue;
 import org.commonmark.parser.block.ParserState;
@@ -18,7 +17,9 @@ public class ListItemParser extends AbstractBlockParser {
      */
     private int contentIndent;
 
-    private boolean hadBlankLine;
+    private boolean lineBlank;
+
+    private boolean previousLineBlank;
 
     public ListItemParser(int markerIndent, int contentIndent) {
         this.contentIndent = contentIndent;
@@ -33,8 +34,10 @@ public class ListItemParser extends AbstractBlockParser {
 
     @Override
     public boolean canContain(Block childBlock) {
-        if (hadBlankLine) {
-            // We saw a blank line in this list item, that means the list block is loose.
+        if (previousLineBlank) {
+            // A new block starts after a blank line, and blank lines after an empty list item end
+            // the item, so this item already has a block before the blank line. That means the
+            // list block is loose.
             //
             // spec: if any of its constituent list items directly contain two block-level elements
             // with a blank line between them
@@ -53,15 +56,15 @@ public class ListItemParser extends AbstractBlockParser {
 
     @Override
     public BlockContinue tryContinue(ParserState state) {
-        if (state.isBlank()) {
+        // Only remember whether the previous line was blank, so that blank lines inside a block
+        // that continues afterwards (e.g. a code block) don't affect if the list is tight.
+        previousLineBlank = lineBlank;
+        lineBlank = state.isBlank();
+        if (lineBlank) {
             if (block.getFirstChild() == null) {
                 // Blank line after empty list item
                 return BlockContinue.none();
             } else {
-                Block activeBlock = state.getActiveBlockParser().getBlock();
-                // If the active block is a code block, blank lines in it should not affect if the
-                // list is tight.
-                hadBlankLine = activeBlock instanceof Paragraph || activeBlock instanceof ListItem;
                 return BlockContinue.atIndex(state.getNextNonSpaceIndex());
             }
         }

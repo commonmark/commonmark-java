@@ -244,4 +244,108 @@ public class ListTightLooseTest extends CoreRenderingTestCase {
                 </ol>
                 """);
     }
+
+    @Test
+    public void looseBlankLineAfterHtmlBlock() {
+        assertRendering(
+                """
+                - <!-- comment -->
+
+                  bar
+                """,
+                """
+                <ul>
+                <li>
+                <!-- comment -->
+                <p>bar</p>
+                </li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void looseBlankLineAfterIndentedCodeBlock() {
+        assertRendering(
+                """
+                -     foo
+
+                  bar
+                """,
+                """
+                <ul>
+                <li>
+                <pre><code>foo
+                </code></pre>
+                <p>bar</p>
+                </li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void looseBlankLineAfterSetextHeading() {
+        assertRendering(
+                """
+                - foo
+                  -
+
+                  bar
+                """,
+                """
+                <ul>
+                <li>
+                <h2>foo</h2>
+                <p>bar</p>
+                </li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void tightListWithIndentedCodeBlock() {
+        assertRendering(
+                """
+                -     foo
+
+                      bar
+                  baz
+                """,
+                """
+                <ul>
+                <li>
+                <pre><code>foo
+
+                bar
+                </code></pre>
+                baz</li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void tightOuterWithLooseNested() {
+        // The blank line is between two blocks of the nested item, not between two blocks of the
+        // outer item.
+        assertRendering(
+                """
+                - a
+                  - b
+
+                    c
+                  # d
+                """,
+                """
+                <ul>
+                <li>a
+                <ul>
+                <li>
+                <p>b</p>
+                <p>c</p>
+                </li>
+                </ul>
+                <h1>d</h1>
+                </li>
+                </ul>
+                """);
+    }
 }
