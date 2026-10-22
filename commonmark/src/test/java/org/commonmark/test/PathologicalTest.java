@@ -215,6 +215,14 @@ public class PathologicalTest extends CoreRenderingTestCase {
         assertNestingLimited("![*".repeat(n) + "x" + "*](u)".repeat(n));
     }
 
+    @Test
+    public void paragraphOfLinesThatTryBlockStarts() {
+        // Lines that don't start with a letter make the parser try every block start
+        // (e.g. lists) while the paragraph stays open; that must not cost O(lines) per line.
+        int n = 1_000_000;
+        assertRendering("1\n".repeat(n), "<p>" + "1\n".repeat(n - 1) + "1</p>\n");
+    }
+
     /**
      * Assert that the source can be parsed and rendered without a {@link StackOverflowError}, and
      * that the resulting tree is not nested much deeper than the default {@code maxInlineNesting}

@@ -22,7 +22,7 @@ public class LinkReferenceDefinitionParser {
 
     private State state = State.START_DEFINITION;
 
-    private final List<SourceLine> paragraphLines = new ArrayList<>();
+    private SourceLines paragraphLines = new SourceLines();
     private final List<LinkReferenceDefinition> definitions = new ArrayList<>();
     private final List<SourceSpan> sourceSpans = new ArrayList<>();
 
@@ -34,7 +34,7 @@ public class LinkReferenceDefinitionParser {
     private int referenceSourceSpanCount;
 
     public void parse(SourceLine line) {
-        paragraphLines.add(line);
+        paragraphLines.addLine(line);
         if (state == State.PARAGRAPH) {
             // We're in a paragraph now. Link reference definitions can only appear at the
             // beginning, so once we're in a paragraph, there's no going back.
@@ -99,7 +99,7 @@ public class LinkReferenceDefinitionParser {
      * @return the lines that are normal paragraph content, without newlines
      */
     SourceLines getParagraphLines() {
-        return SourceLines.of(paragraphLines);
+        return paragraphLines;
     }
 
     List<SourceSpan> getParagraphSourceSpans() {
@@ -122,7 +122,8 @@ public class LinkReferenceDefinitionParser {
                                 sourceSpans.subList(
                                         Math.max(sourceSpans.size() - lines, 0),
                                         sourceSpans.size())));
-        removeLast(lines, paragraphLines);
+        var l = paragraphLines.getLines();
+        paragraphLines = SourceLines.of(l.subList(0, Math.max(l.size() - lines, 0)));
         removeLast(lines, sourceSpans);
         return removedSpans;
     }
@@ -201,7 +202,7 @@ public class LinkReferenceDefinitionParser {
             // Destination was at end of line, so this is a valid reference for sure (and maybe a
             // title). If not at end of line, wait for title to be valid first.
             referenceValid = true;
-            paragraphLines.clear();
+            paragraphLines = new SourceLines();
         } else if (whitespace == 0) {
             // spec: The title must be separated from the link destination by whitespace
             return false;
@@ -271,7 +272,7 @@ public class LinkReferenceDefinitionParser {
             return false;
         }
         referenceValid = true;
-        paragraphLines.clear();
+        paragraphLines = new SourceLines();
 
         // See if there's another definition.
         state = State.START_DEFINITION;

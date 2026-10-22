@@ -10,7 +10,8 @@ with the exception that 0.x versions can break between minor versions.
 ### Fixed
 - Fix parsing of unclosed titles for link reference definitions, fix source
   spans in resulting paragraph (#460)
-
+- Fix quadratic runtime for a large number of lines in a single paragraph
+  starting with potential block opening characters
 
 ## [0.30.1] - 2026-10-11
 ### Changed
