@@ -31,6 +31,7 @@ public class LinkReferenceDefinitionParser {
     private char titleDelimiter;
     private StringBuilder title;
     private boolean referenceValid = false;
+    private int referenceSourceSpanCount;
 
     public void parse(SourceLine line) {
         paragraphLines.add(line);
@@ -87,6 +88,11 @@ public class LinkReferenceDefinitionParser {
 
     public void addSourceSpan(SourceSpan sourceSpan) {
         sourceSpans.add(sourceSpan);
+        // Clearing paragraphLines commits the current line to a valid definition. Its span
+        // arrives after parsing, so record the boundary here.
+        if (paragraphLines.isEmpty()) {
+            referenceSourceSpanCount = sourceSpans.size();
+        }
     }
 
     /**
@@ -278,10 +284,14 @@ public class LinkReferenceDefinitionParser {
         }
 
         String d = Escaping.unescapeString(destination);
-        String t = title != null ? Escaping.unescapeString(title.toString()) : null;
+        String t =
+                state != State.TITLE && title != null
+                        ? Escaping.unescapeString(title.toString())
+                        : null;
         LinkReferenceDefinition definition = new LinkReferenceDefinition(label.toString(), d, t);
-        definition.setSourceSpans(sourceSpans);
-        sourceSpans.clear();
+        definition.setSourceSpans(sourceSpans.subList(0, referenceSourceSpanCount));
+        sourceSpans.subList(0, referenceSourceSpanCount).clear();
+        referenceSourceSpanCount = 0;
         definitions.add(definition);
 
         label = null;

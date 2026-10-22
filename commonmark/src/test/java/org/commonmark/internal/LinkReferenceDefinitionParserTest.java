@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.commonmark.internal.LinkReferenceDefinitionParser.State;
 import org.commonmark.node.LinkReferenceDefinition;
+import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.SourceLine;
 import org.junit.jupiter.api.Test;
 
@@ -159,14 +160,64 @@ class LinkReferenceDefinitionParserTest {
 
     @Test
     void testTitleMultiline4() {
+        var definitionSpan = SourceSpan.of(0, 0, 0, 11);
+        var titleSpan = SourceSpan.of(1, 0, 12, 6);
+        var invalidSpan = SourceSpan.of(2, 0, 19, 4);
         parse("[foo]: /url");
+        parser.addSourceSpan(definitionSpan);
         assertThat(parser.getState()).isEqualTo(State.START_TITLE);
         parse("(title");
+        parser.addSourceSpan(titleSpan);
         assertThat(parser.getState()).isEqualTo(State.TITLE);
         parse("foo(");
+        parser.addSourceSpan(invalidSpan);
         assertThat(parser.getState()).isEqualTo(State.PARAGRAPH);
 
         assertDef(parser.getDefinitions().get(0), "foo", "/url", null);
+        assertThat(parser.getDefinitions().get(0).getSourceSpans()).containsExactly(definitionSpan);
+        assertParagraphLines("(title\nfoo(", parser);
+        assertThat(parser.getParagraphSourceSpans()).containsExactly(titleSpan, invalidSpan);
+    }
+
+    @Test
+    void testUnclosedMultilineTitleKeepsParagraphSourceSpans() {
+        var definitionSpan = SourceSpan.of(0, 0, 0, 11);
+        var paragraphSpan = SourceSpan.of(1, 0, 12, 14);
+
+        parse("[foo]: /url");
+        parser.addSourceSpan(definitionSpan);
+        parse("(partial title");
+        parser.addSourceSpan(paragraphSpan);
+
+        var definitions = parser.getDefinitions();
+
+        assertThat(definitions).hasSize(1);
+        assertDef(definitions.get(0), "foo", "/url", null);
+        assertThat(definitions.get(0).getSourceSpans()).containsExactly(definitionSpan);
+        assertParagraphLines("(partial title", parser);
+        assertThat(parser.getParagraphSourceSpans()).containsExactly(paragraphSpan);
+    }
+
+    @Test
+    void testMultilineTitleWithTrailingGarbageKeepsParagraphSourceSpans() {
+        var definitionSpan = SourceSpan.of(0, 0, 0, 11);
+        var titleSpan = SourceSpan.of(1, 0, 12, 6);
+        var invalidSpan = SourceSpan.of(2, 0, 19, 18);
+
+        parse("[foo]: /url");
+        parser.addSourceSpan(definitionSpan);
+        parse("\"title");
+        parser.addSourceSpan(titleSpan);
+        parse("continued\" garbage");
+        parser.addSourceSpan(invalidSpan);
+
+        var definitions = parser.getDefinitions();
+
+        assertThat(definitions).hasSize(1);
+        assertDef(definitions.get(0), "foo", "/url", null);
+        assertThat(definitions.get(0).getSourceSpans()).containsExactly(definitionSpan);
+        assertParagraphLines("\"title\ncontinued\" garbage", parser);
+        assertThat(parser.getParagraphSourceSpans()).containsExactly(titleSpan, invalidSpan);
     }
 
     @Test
