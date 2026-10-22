@@ -6,13 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
-## [Unreleased]
+## [0.31.0] - 2026-10-22
 ### Changed
 - To get link text in `LinkProcessor`, `Scanner` needs to be passed to
   `LinkInfo#text` now
 ### Fixed
-- Fix parsing of unclosed titles for link reference definitions, fix source
+- Correctly parse unclosed titles for link reference definitions, fix source
   spans in resulting paragraph (#460)
+- Keep partially consumed tab when an HTML block starts or continues in a block quote (#462)
+- Make list loose for blank line after HTML block or indented code (#463)
+- Allow info string of fenced code to start with the other fence character (#464)
 - Fix quadratic runtime for a large number of lines in a single paragraph
   starting with potential block opening characters
 - Fix quadratic runtime for parsing deeply nested image brackets
@@ -612,7 +615,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
-[Unreleased]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.1...HEAD
+[0.31.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.1...commonmark-parent-0.31.0
 [0.30.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.0...commonmark-parent-0.30.1
 [0.30.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.29.0...commonmark-parent-0.30.0
 [0.29.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.28.0...commonmark-parent-0.29.0
