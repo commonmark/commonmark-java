@@ -463,4 +463,12 @@ public class SpecialInputTest extends CoreRenderingTestCase {
         assertRendering(
                 "`` `a` `c` `e`", "<p>`` <code>a</code> <code>c</code> <code>e</code></p>\n");
     }
+
+    @Test
+    public void htmlBlockInBlockQuoteAfterPartiallyConsumedTab() {
+        // The tab after ">" is 3 columns wide; one is consumed by the block quote marker and the
+        // remaining 2 belong to the HTML block content, same as for other block types
+        assertRendering(">\t<div>", "<blockquote>\n  <div>\n</blockquote>\n");
+        assertRendering("> <div>\n>\tfoo", "<blockquote>\n<div>\n  foo\n</blockquote>\n");
+    }
 }

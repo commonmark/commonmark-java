@@ -391,6 +391,10 @@ public class DocumentParser implements ParserState {
     }
 
     private void setNewIndex(int newIndex) {
+        if (newIndex == index) {
+            // Staying where we are, so keep a partially consumed tab (e.g. after ">\t") as it is
+            return;
+        }
         if (newIndex >= nextNonSpace) {
             // We can start from here, no need to calculate tab stops again
             index = nextNonSpace;
