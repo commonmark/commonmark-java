@@ -13,7 +13,8 @@ public class Scanner {
      * "previous" methods).
      *
      * <p>Note that we can use NULL to represent this because CommonMark does not allow those in the
-     * input (we replace them in the beginning of parsing).
+     * input (we replace them in the beginning of parsing). It is not a searchable source character:
+     * {@link #find(char)} and {@link #findPrev(char)} skip it instead of matching it.
      */
     public static final char END = '\0';
 
@@ -120,6 +121,30 @@ public class Scanner {
     }
 
     /**
+     * Move back by one UTF-16 code unit.
+     *
+     * <p>This reverses {@link #next()}. Lines yield a synthetic newline between lines and no
+     * newline after the final line: from index zero the position moves to the previous line's
+     * length (that newline), and from the end of input it moves to the last character, or across
+     * an empty final line to the preceding newline. At the beginning of the input, including an
+     * empty input, the position is left unchanged.
+     */
+    public void prev() {
+        if (index > 0) {
+            index--;
+        } else if (lineIndex > 0) {
+            lineIndex--;
+            if (lineIndex < lines.size()) {
+                setLine(lines.get(lineIndex));
+            } else {
+                // Landed past the end (after next() at EOF); same representation as next().
+                setLine(SourceLine.of("", null));
+            }
+            index = lineLength;
+        }
+    }
+
+    /**
      * Check if the specified char is next and advance the position.
      *
      * @param c the char to check (including newline characters)
@@ -221,6 +246,100 @@ public class Scanner {
         }
     }
 
+    /**
+     * Find the nearest occurrence of {@code c} at or before the current position.
+     *
+     * <p>The current character is included, matching {@link #find(char)}, so an immediate match
+     * returns {@code 0}. {@link #END} is skipped and never matches. From the end of input a match
+     * on the character immediately before the end returns {@code 1}. A newline between lines can
+     * be matched. If {@code c} does not occur, the scanner is left at the beginning of the input
+     * and {@code -1} is returned.
+     *
+     * @param c character to find (including a newline)
+     * @return the number of UTF-16 code units moved backward, or {@code -1} if not found
+     */
+    public int findPrev(char c) {
+        return findPrev(c, null, 0, 0);
+    }
+
+    /**
+     * Find the nearest character matched by {@code matcher} at or before the current position.
+     *
+     * <p>See {@link #findPrev(char)} for the current position, {@link #END}, and a search that
+     * reaches the beginning of the input. {@link #END} is not passed to {@code matcher}.
+     *
+     * @param matcher matcher applied to each character
+     * @return the number of UTF-16 code units moved backward, or {@code -1} if not found
+     */
+    public int findPrev(CharMatcher matcher) {
+        return findPrev(END, matcher, 0, 0);
+    }
+
+    /**
+     * Find the nearest occurrence of {@code c} at or before the current position and at or after
+     * {@code bound}.
+     *
+     * <p>{@code bound} is inclusive: the character there is examined, and the search never moves
+     * before it. If {@code bound} is the current position, only that character is checked. If there
+     * is no match, the scanner is left at {@code bound} and {@code -1} is returned. {@link #END} is
+     * skipped and never matches. On an empty input the search returns {@code -1}; the position at
+     * the beginning of that input is a valid bound.
+     *
+     * <p>The bound is checked before the scanner moves. It must have valid coordinates for this
+     * scanner and must not be after the current position. As with {@link #setPosition(Position)},
+     * positions are expected to come from the same scanner.
+     *
+     * @param c character to find (including a newline)
+     * @param bound inclusive lower bound
+     * @return the number of UTF-16 code units moved backward, or {@code -1} if not found
+     * @throws IllegalArgumentException if {@code bound} is after the current position or outside
+     *     the input
+     */
+    public int findPrev(char c, Position bound) {
+        checkLowerBound(bound);
+        return findPrev(c, null, bound.lineIndex, bound.index);
+    }
+
+    /**
+     * Find the nearest character matched by {@code matcher} at or before the current position and
+     * at or after {@code bound}.
+     *
+     * <p>See {@link #findPrev(char, Position)} for the bound, {@link #END}, and a search with no
+     * match. {@link #END} is not passed to {@code matcher}.
+     *
+     * @param matcher matcher applied to each character
+     * @param bound inclusive lower bound
+     * @return the number of UTF-16 code units moved backward, or {@code -1} if not found
+     * @throws IllegalArgumentException if {@code bound} is after the current position or outside
+     *     the input
+     */
+    public int findPrev(CharMatcher matcher, Position bound) {
+        checkLowerBound(bound);
+        return findPrev(END, matcher, bound.lineIndex, bound.index);
+    }
+
+    // matcher == null matches c exactly, so the char overloads allocate nothing per character.
+    private int findPrev(char c, CharMatcher matcher, int boundLine, int boundIndex) {
+        int count = 0;
+        while (true) {
+            char cur = peek();
+            if (cur != END && (matcher != null ? matcher.matches(cur) : cur == c)) {
+                return count;
+            }
+            if (lineIndex == boundLine && index == boundIndex) {
+                return -1;
+            }
+            int lineBefore = lineIndex;
+            int indexBefore = index;
+            prev();
+            // Beginning of input: prev() is a no-op, so stop instead of spinning.
+            if (lineIndex == lineBefore && index == indexBefore) {
+                return -1;
+            }
+            count++;
+        }
+    }
+
     // Don't expose the int index, because it would be good if we could switch input to a
     // List<String> of lines later instead of one contiguous String.
     public Position position() {
@@ -278,6 +397,37 @@ public class Scanner {
         if (index < 0 || index > line.getContent().length()) {
             throw new IllegalArgumentException(
                     "Index " + index + " out of range, line length: " + line.getContent().length());
+        }
+    }
+
+    private void checkLowerBound(Position position) {
+        // Empty input has no lines; its only position is the canonical (0, 0) cursor.
+        if (lines.isEmpty()) {
+            if (position.lineIndex != 0) {
+                throw new IllegalArgumentException(
+                        "Line index "
+                                + position.lineIndex
+                                + " out of range, number of lines: "
+                                + lines.size());
+            }
+            if (position.index != 0) {
+                throw new IllegalArgumentException(
+                        "Index " + position.index + " out of range, line length: 0");
+            }
+        } else {
+            checkPosition(position.lineIndex, position.index);
+        }
+        if (position.lineIndex > lineIndex
+                || (position.lineIndex == lineIndex && position.index > index)) {
+            throw new IllegalArgumentException(
+                    "Bound line "
+                            + position.lineIndex
+                            + " index "
+                            + position.index
+                            + " is after the current position line "
+                            + lineIndex
+                            + " index "
+                            + index);
         }
     }
 }
