@@ -27,10 +27,10 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
     private final CharMatcher textEscapeInHeading;
     private final CharMatcher linkDestinationNeedsAngleBrackets =
             AsciiMatcher.builder().c(' ').c('(').c(')').c('<').c('>').c('\n').c('\\').build();
-    private final CharMatcher linkDestinationEscapeInAngleBrackets =
-            AsciiMatcher.builder().c('<').c('>').c('\n').c('\\').build();
+    private final CharMatcher linkDestinationEscape =
+            AsciiMatcher.builder().c('<').c('>').c('\n').c('\\').c('&').build();
     private final CharMatcher linkTitleEscapeInQuotes =
-            AsciiMatcher.builder().c('"').c('\n').c('\\').build();
+            AsciiMatcher.builder().c('"').c('\n').c('\\').c('&').build();
 
     private final Pattern orderedListMarkerPattern = Pattern.compile("^([0-9]{1,9})([.)])");
 
@@ -523,10 +523,10 @@ public class CoreMarkdownNodeRenderer extends AbstractVisitor implements NodeRen
         writer.raw('(');
         if (contains(destination, linkDestinationNeedsAngleBrackets)) {
             writer.raw('<');
-            writer.text(destination, linkDestinationEscapeInAngleBrackets);
+            writer.text(destination, linkDestinationEscape);
             writer.raw('>');
         } else {
-            writer.raw(destination);
+            writer.text(destination, linkDestinationEscape);
         }
         if (title != null) {
             writer.raw(' ');
