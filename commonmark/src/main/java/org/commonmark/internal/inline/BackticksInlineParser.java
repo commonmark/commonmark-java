@@ -1,5 +1,6 @@
 package org.commonmark.internal.inline;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -77,7 +78,7 @@ public class BackticksInlineParser implements InlineContentParser {
     public static class Factory implements InlineContentParserFactory {
         @Override
         public Set<Character> getTriggerCharacters() {
-            return Set.of('`');
+            return Collections.singleton('`');
         }
 
         @Override

@@ -1,5 +1,6 @@
 package org.commonmark.internal.inline;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.internal.util.Html5Entities;
 import org.commonmark.node.Text;
@@ -58,7 +59,7 @@ public class EntityInlineParser implements InlineContentParser {
 
         @Override
         public Set<Character> getTriggerCharacters() {
-            return Set.of('&');
+            return Collections.singleton('&');
         }
 
         @Override

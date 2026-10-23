@@ -1,5 +1,6 @@
 package org.commonmark.ext.task.list.items;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.task.list.items.internal.TaskListItemHtmlNodeRenderer;
@@ -53,7 +54,7 @@ public class TaskListItemsExtension
 
                     @Override
                     public Set<Character> getSpecialCharacters() {
-                        return Set.of();
+                        return Collections.emptySet();
                     }
                 });
     }

@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.strikethrough;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.strikethrough.internal.StrikethroughDelimiterProcessor;
@@ -96,7 +97,7 @@ public class StrikethroughExtension
 
                     @Override
                     public Set<Character> getSpecialCharacters() {
-                        return Set.of('~');
+                        return Collections.singleton('~');
                     }
                 });
     }

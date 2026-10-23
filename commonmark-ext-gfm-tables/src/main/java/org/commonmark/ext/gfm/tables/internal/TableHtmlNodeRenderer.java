@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.tables.internal;
 
+import java.util.Collections;
 import java.util.Map;
 import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Node;
@@ -63,15 +64,17 @@ public class TableHtmlNodeRenderer extends TableNodeRenderer {
     }
 
     private Map<String, String> getAttributes(Node node, String tagName) {
-        return context.extendAttributes(node, tagName, Map.of());
+        return context.extendAttributes(node, tagName, Collections.emptyMap());
     }
 
     private Map<String, String> getCellAttributes(TableCell tableCell, String tagName) {
         if (tableCell.getAlignment() != null) {
             return context.extendAttributes(
-                    tableCell, tagName, Map.of("align", getAlignValue(tableCell.getAlignment())));
+                    tableCell,
+                    tagName,
+                    Collections.singletonMap("align", getAlignValue(tableCell.getAlignment())));
         } else {
-            return context.extendAttributes(tableCell, tagName, Map.of());
+            return context.extendAttributes(tableCell, tagName, Collections.emptyMap());
         }
     }
 

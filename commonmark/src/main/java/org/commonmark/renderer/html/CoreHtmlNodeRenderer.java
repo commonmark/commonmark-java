@@ -1,5 +1,8 @@
 package org.commonmark.renderer.html;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,27 +24,29 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(
-                Document.class,
-                Heading.class,
-                Paragraph.class,
-                BlockQuote.class,
-                BulletList.class,
-                FencedCodeBlock.class,
-                HtmlBlock.class,
-                ThematicBreak.class,
-                IndentedCodeBlock.class,
-                Link.class,
-                ListItem.class,
-                OrderedList.class,
-                Image.class,
-                Emphasis.class,
-                StrongEmphasis.class,
-                Text.class,
-                Code.class,
-                HtmlInline.class,
-                SoftLineBreak.class,
-                HardLineBreak.class);
+        return Collections.unmodifiableSet(
+                new HashSet<>(
+                        Arrays.asList(
+                                Document.class,
+                                Heading.class,
+                                Paragraph.class,
+                                BlockQuote.class,
+                                BulletList.class,
+                                FencedCodeBlock.class,
+                                HtmlBlock.class,
+                                ThematicBreak.class,
+                                IndentedCodeBlock.class,
+                                Link.class,
+                                ListItem.class,
+                                OrderedList.class,
+                                Image.class,
+                                Emphasis.class,
+                                StrongEmphasis.class,
+                                Text.class,
+                                Code.class,
+                                HtmlInline.class,
+                                SoftLineBreak.class,
+                                HardLineBreak.class)));
     }
 
     @Override
@@ -140,7 +145,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
 
     @Override
     public void visit(IndentedCodeBlock indentedCodeBlock) {
-        renderCodeBlock(indentedCodeBlock.getLiteral(), indentedCodeBlock, Map.of());
+        renderCodeBlock(indentedCodeBlock.getLiteral(), indentedCodeBlock, Collections.emptyMap());
     }
 
     @Override
@@ -294,7 +299,7 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
     }
 
     private Map<String, String> getAttrs(Node node, String tagName) {
-        return getAttrs(node, tagName, Map.of());
+        return getAttrs(node, tagName, Collections.emptyMap());
     }
 
     private Map<String, String> getAttrs(

@@ -1,5 +1,6 @@
 package org.commonmark.ext.autolink;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import org.commonmark.Extension;
@@ -57,7 +58,12 @@ public class AutolinkExtension implements Parser.ParserExtension {
                 throw new NullPointerException("linkTypes must not be null");
             }
 
-            return this.linkTypes(Set.of(linkTypes));
+            if (linkTypes.length == 0) {
+                throw new IllegalArgumentException("linkTypes must not be empty");
+            }
+
+            this.linkTypes = EnumSet.copyOf(Arrays.asList(linkTypes));
+            return this;
         }
 
         /**

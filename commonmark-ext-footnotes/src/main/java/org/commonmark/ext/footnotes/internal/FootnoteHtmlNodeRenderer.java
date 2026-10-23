@@ -82,7 +82,12 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(FootnoteReference.class, InlineFootnote.class, FootnoteDefinition.class);
+        return Collections.unmodifiableSet(
+                new HashSet<>(
+                        Arrays.asList(
+                                FootnoteReference.class,
+                                InlineFootnote.class,
+                                FootnoteDefinition.class)));
     }
 
     @Override
@@ -203,7 +208,10 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
     }
 
     private void renderReference(Node node, ReferenceInfo referenceInfo) {
-        html.tag("sup", context.extendAttributes(node, "sup", Map.of("class", "footnote-ref")));
+        html.tag(
+                "sup",
+                context.extendAttributes(
+                        node, "sup", Collections.singletonMap("class", "footnote-ref")));
 
         var href = "#" + referenceInfo.definitionId;
         var attrs = new LinkedHashMap<String, String>();
@@ -231,7 +239,7 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
                     // Because we're manually rendering the <p> for the last paragraph, do the same
                     // for all other paragraphs for consistency (Paragraph rendering might be
                     // overwritten by a custom renderer).
-                    html.tag("p", context.extendAttributes(node, "p", Map.of()));
+                    html.tag("p", context.extendAttributes(node, "p", Collections.emptyMap()));
                     renderChildren(node);
                     html.tag("/p");
                     html.line();
@@ -241,14 +249,14 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
                 node = node.getNext();
             }
 
-            html.tag("p", context.extendAttributes(lastParagraph, "p", Map.of()));
+            html.tag("p", context.extendAttributes(lastParagraph, "p", Collections.emptyMap()));
             renderChildren(lastParagraph);
             html.raw(" ");
             renderBackrefs(def, referencedDefinition);
             html.tag("/p");
             html.line();
         } else if (def instanceof InlineFootnote) {
-            html.tag("p", context.extendAttributes(def, "p", Map.of()));
+            html.tag("p", context.extendAttributes(def, "p", Collections.emptyMap()));
             renderChildren(def);
             html.raw(" ");
             renderBackrefs(def, referencedDefinition);
@@ -283,7 +291,8 @@ public class FootnoteHtmlNodeRenderer implements NodeRenderer {
             if (refNumber > 1) {
                 html.tag(
                         "sup",
-                        context.extendAttributes(def, "sup", Map.of("class", "footnote-ref")));
+                        context.extendAttributes(
+                                def, "sup", Collections.singletonMap("class", "footnote-ref")));
                 html.raw(String.valueOf(refNumber));
                 html.tag("/sup");
             }

@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.commonmark.ext.gfm.alerts.Alert;
@@ -40,7 +41,9 @@ public class AlertHtmlNodeRenderer extends AlertNodeRenderer {
 
         // Render alert title
         htmlWriter.tag(
-                "p", context.extendAttributes(alert, "p", Map.of("class", "markdown-alert-title")));
+                "p",
+                context.extendAttributes(
+                        alert, "p", Collections.singletonMap("class", "markdown-alert-title")));
         var first = alert.getFirstChild();
         if (first instanceof AlertTitle) {
             renderChildren(first);

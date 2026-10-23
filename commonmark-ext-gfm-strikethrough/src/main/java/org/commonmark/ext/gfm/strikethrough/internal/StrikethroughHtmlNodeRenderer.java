@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.strikethrough.internal;
 
+import java.util.Collections;
 import java.util.Map;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
@@ -17,7 +18,8 @@ public class StrikethroughHtmlNodeRenderer extends StrikethroughNodeRenderer {
 
     @Override
     public void render(Node node) {
-        Map<String, String> attributes = context.extendAttributes(node, "del", Map.of());
+        Map<String, String> attributes =
+                context.extendAttributes(node, "del", Collections.emptyMap());
         html.tag("del", attributes);
         renderChildren(node);
         html.tag("/del");

@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.alerts;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -121,7 +122,7 @@ public class AlertsExtension
 
                     @Override
                     public Set<Character> getSpecialCharacters() {
-                        return Set.of();
+                        return Collections.emptySet();
                     }
                 });
     }

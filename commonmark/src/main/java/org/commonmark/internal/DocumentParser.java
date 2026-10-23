@@ -20,7 +20,7 @@ public class DocumentParser implements ParserState {
 
     private static final Set<Class<? extends Block>> CORE_FACTORY_TYPES =
             new LinkedHashSet<>(
-                    List.of(
+                    Arrays.asList(
                             BlockQuote.class,
                             Heading.class,
                             FencedCodeBlock.class,

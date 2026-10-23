@@ -1,5 +1,6 @@
 package org.commonmark.ext.footnotes;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.footnotes.internal.*;
@@ -83,7 +84,7 @@ public class FootnotesExtension
 
                     @Override
                     public Set<Character> getSpecialCharacters() {
-                        return Set.of();
+                        return Collections.emptySet();
                     }
                 });
     }

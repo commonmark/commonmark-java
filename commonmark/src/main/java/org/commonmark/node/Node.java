@@ -120,7 +120,9 @@ public abstract class Node {
      * @since 0.16.0
      */
     public List<SourceSpan> getSourceSpans() {
-        return sourceSpans != null ? Collections.unmodifiableList(sourceSpans) : List.of();
+        return sourceSpans != null
+                ? Collections.unmodifiableList(sourceSpans)
+                : Collections.emptyList();
     }
 
     /**

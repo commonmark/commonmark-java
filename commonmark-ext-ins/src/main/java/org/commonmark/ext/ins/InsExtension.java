@@ -1,5 +1,6 @@
 package org.commonmark.ext.ins;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.ins.internal.InsDelimiterProcessor;
@@ -64,7 +65,7 @@ public class InsExtension
                         // We technically don't need to escape single occurrences of +, but that's
                         // all the extension API
                         // exposes currently.
-                        return Set.of('+');
+                        return Collections.singleton('+');
                     }
                 });
     }

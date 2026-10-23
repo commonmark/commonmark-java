@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.tables;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.internal.TableBlockParser;
@@ -78,7 +79,7 @@ public class TablesExtension
 
                     @Override
                     public Set<Character> getSpecialCharacters() {
-                        return Set.of('|');
+                        return Collections.singleton('|');
                     }
                 });
     }
