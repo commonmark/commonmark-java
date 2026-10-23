@@ -54,4 +54,6 @@ android {
 
 dependencies {
     implementation('org.nibor.autolink:autolink:0.11.0')
+
+    signature 'net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature'
 }
