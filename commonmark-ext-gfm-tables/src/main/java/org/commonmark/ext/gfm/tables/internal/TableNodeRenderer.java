@@ -1,5 +1,8 @@
 package org.commonmark.ext.gfm.tables.internal;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.commonmark.ext.gfm.tables.*;
 import org.commonmark.node.Node;
@@ -9,12 +12,14 @@ abstract class TableNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(
-                TableBlock.class,
-                TableHead.class,
-                TableBody.class,
-                TableRow.class,
-                TableCell.class);
+        return Collections.unmodifiableSet(
+                new HashSet<>(
+                        Arrays.asList(
+                                TableBlock.class,
+                                TableHead.class,
+                                TableBody.class,
+                                TableRow.class,
+                                TableCell.class)));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.commonmark.parser.block;
 
+import java.util.Collections;
 import java.util.List;
 import org.commonmark.node.Block;
 import org.commonmark.node.DefinitionMap;
@@ -34,7 +35,7 @@ public abstract class AbstractBlockParser implements BlockParser {
 
     @Override
     public List<DefinitionMap<?>> getDefinitions() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override

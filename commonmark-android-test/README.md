@@ -6,8 +6,8 @@ Current `minSdk` is 19
 
 Requirements:
 
-* Java 11 or above
-* Android SDK 30
+* Java 17 or above (supported by the Gradle wrapper version)
+* Android SDK Platform 30 and SDK Build Tools 36.0.0
 
 Configuration
 -----

@@ -1,5 +1,6 @@
 package org.commonmark.internal.inline;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.commonmark.internal.util.Escaping;
@@ -37,7 +38,7 @@ public class BackslashInlineParser implements InlineContentParser {
     public static class Factory implements InlineContentParserFactory {
         @Override
         public Set<Character> getTriggerCharacters() {
-            return Set.of('\\');
+            return Collections.singleton('\\');
         }
 
         @Override

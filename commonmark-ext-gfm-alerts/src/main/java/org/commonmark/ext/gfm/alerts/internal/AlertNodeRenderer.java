@@ -1,5 +1,6 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.ext.gfm.alerts.Alert;
 import org.commonmark.ext.gfm.alerts.AlertTitle;
@@ -10,7 +11,7 @@ public abstract class AlertNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(Alert.class);
+        return Collections.singleton(Alert.class);
     }
 
     @Override

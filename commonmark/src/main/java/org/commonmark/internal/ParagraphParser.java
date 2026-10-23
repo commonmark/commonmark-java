@@ -1,5 +1,6 @@
 package org.commonmark.internal;
 
+import java.util.Collections;
 import java.util.List;
 import org.commonmark.node.*;
 import org.commonmark.parser.InlineParser;
@@ -52,7 +53,7 @@ public class ParagraphParser extends AbstractBlockParser {
         for (var def : linkReferenceDefinitionParser.getDefinitions()) {
             map.putIfAbsent(def.getLabel(), def);
         }
-        return List.of(map);
+        return Collections.singletonList(map);
     }
 
     @Override

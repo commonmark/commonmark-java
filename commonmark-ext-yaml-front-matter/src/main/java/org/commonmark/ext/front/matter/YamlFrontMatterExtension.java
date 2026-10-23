@@ -1,5 +1,6 @@
 package org.commonmark.ext.front.matter;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import org.commonmark.Extension;
@@ -69,7 +70,7 @@ public class YamlFrontMatterExtension
 
                     @Override
                     public Set<Character> getSpecialCharacters() {
-                        return Set.of();
+                        return Collections.emptySet();
                     }
                 });
     }

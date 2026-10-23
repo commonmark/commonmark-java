@@ -1,5 +1,6 @@
 package org.commonmark.internal.inline;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.node.HtmlInline;
 import org.commonmark.parser.beta.*;
@@ -260,7 +261,7 @@ public class HtmlInlineParser implements InlineContentParser {
 
         @Override
         public Set<Character> getTriggerCharacters() {
-            return Set.of('<');
+            return Collections.singleton('<');
         }
 
         @Override

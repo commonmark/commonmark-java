@@ -1,5 +1,6 @@
 package org.commonmark.ext.footnotes.internal;
 
+import java.util.Collections;
 import java.util.List;
 import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.node.Block;
@@ -54,7 +55,7 @@ public class FootnoteBlockParser extends AbstractBlockParser {
     public List<DefinitionMap<?>> getDefinitions() {
         var map = new DefinitionMap<>(FootnoteDefinition.class);
         map.putIfAbsent(block.getLabel(), block);
-        return List.of(map);
+        return Collections.singletonList(map);
     }
 
     public static class Factory implements BlockParserFactory {

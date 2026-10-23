@@ -1,3 +1,8 @@
+// Check Java API usage
+plugins {
+    id 'ru.vyarus.animalsniffer' version '2.0.1'
+}
+
 apply plugin: 'com.android.application'
 
 android {
@@ -6,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "org.commonmark.android.test"
-        minSdk 19
+        minSdk 24
         targetSdk 30
         versionCode 1
         versionName "1.0"
@@ -49,4 +54,6 @@ android {
 
 dependencies {
     implementation('org.nibor.autolink:autolink:0.11.0')
+
+    signature 'net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature'
 }

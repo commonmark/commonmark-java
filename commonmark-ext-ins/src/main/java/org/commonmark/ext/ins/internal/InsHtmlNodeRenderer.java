@@ -1,5 +1,6 @@
 package org.commonmark.ext.ins.internal;
 
+import java.util.Collections;
 import java.util.Map;
 import org.commonmark.node.Node;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
@@ -17,7 +18,8 @@ public class InsHtmlNodeRenderer extends InsNodeRenderer {
 
     @Override
     public void render(Node node) {
-        Map<String, String> attributes = context.extendAttributes(node, "ins", Map.of());
+        Map<String, String> attributes =
+                context.extendAttributes(node, "ins", Collections.emptyMap());
         html.tag("ins", attributes);
         renderChildren(node);
         html.tag("/ins");

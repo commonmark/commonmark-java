@@ -1,5 +1,8 @@
 package org.commonmark.ext.footnotes.internal;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.commonmark.ext.footnotes.FootnoteDefinition;
 import org.commonmark.ext.footnotes.FootnoteReference;
@@ -21,7 +24,12 @@ public class FootnoteMarkdownNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(FootnoteReference.class, InlineFootnote.class, FootnoteDefinition.class);
+        return Collections.unmodifiableSet(
+                new HashSet<>(
+                        Arrays.asList(
+                                FootnoteReference.class,
+                                InlineFootnote.class,
+                                FootnoteDefinition.class)));
     }
 
     @Override

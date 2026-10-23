@@ -1,13 +1,14 @@
 package org.commonmark.renderer.html;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import org.commonmark.internal.util.Escaping;
 
 public class HtmlWriter {
 
-    private static final Map<String, String> NO_ATTRIBUTES = Map.of();
+    private static final Map<String, String> NO_ATTRIBUTES = Collections.emptyMap();
 
     private final Appendable buffer;
     private char lastChar = 0;

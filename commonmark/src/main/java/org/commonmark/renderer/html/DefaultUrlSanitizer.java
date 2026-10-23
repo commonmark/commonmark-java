@@ -11,7 +11,7 @@ public class DefaultUrlSanitizer implements UrlSanitizer {
     private Set<String> protocols;
 
     public DefaultUrlSanitizer() {
-        this(List.of("http", "https", "mailto", "data"));
+        this(Collections.unmodifiableList(Arrays.asList("http", "https", "mailto", "data")));
     }
 
     public DefaultUrlSanitizer(Collection<String> protocols) {

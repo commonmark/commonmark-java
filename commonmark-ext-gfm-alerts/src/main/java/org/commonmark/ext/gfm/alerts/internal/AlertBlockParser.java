@@ -1,6 +1,6 @@
 package org.commonmark.ext.gfm.alerts.internal;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -91,7 +91,7 @@ public class AlertBlockParser extends AbstractBlockParser {
         // Set source spans on the title node from the source line
         var sourceSpan = titleLine.getSourceSpan();
         if (sourceSpan != null) {
-            titleNode.setSourceSpans(List.of(sourceSpan));
+            titleNode.setSourceSpans(Collections.singletonList(sourceSpan));
         }
 
         // Body blocks were attached as children during block parsing. Prepend the title.

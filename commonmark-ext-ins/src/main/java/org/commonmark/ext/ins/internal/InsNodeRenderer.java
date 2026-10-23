@@ -1,5 +1,6 @@
 package org.commonmark.ext.ins.internal;
 
+import java.util.Collections;
 import java.util.Set;
 import org.commonmark.ext.ins.Ins;
 import org.commonmark.node.Node;
@@ -9,6 +10,6 @@ abstract class InsNodeRenderer implements NodeRenderer {
 
     @Override
     public Set<Class<? extends Node>> getNodeTypes() {
-        return Set.of(Ins.class);
+        return Collections.singleton(Ins.class);
     }
 }
