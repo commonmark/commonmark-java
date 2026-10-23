@@ -26,7 +26,7 @@ extensible library with the following features:
 
 The library is supported on Java 11 and later. It works on Android too,
 but that is on a best-effort basis, please report problems. For Android the
-minimum API level is 19, see the
+minimum API level is 24, see the
 [commonmark-android-test](commonmark-android-test)
 directory.
 

@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "org.commonmark.android.test"
-        minSdk 19
+        minSdk 24
         targetSdk 30
         versionCode 1
         versionName "1.0"
