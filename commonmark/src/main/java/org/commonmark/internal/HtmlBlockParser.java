@@ -34,7 +34,7 @@ public class HtmlBlockParser extends AbstractBlockParser {
                 },
                 {Pattern.compile("^<!--"), Pattern.compile("-->")},
                 {Pattern.compile("^<[?]"), Pattern.compile("\\?>")},
-                {Pattern.compile("^<![A-Z]"), Pattern.compile(">")},
+                {Pattern.compile("^<![A-Za-z]"), Pattern.compile(">")},
                 {Pattern.compile("^<!\\[CDATA\\["), Pattern.compile("\\]\\]>")},
                 {
                     Pattern.compile(

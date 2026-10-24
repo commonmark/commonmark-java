@@ -28,7 +28,7 @@ public class HtmlInlineParserTest extends CoreRenderingTestCase {
         assertRendering("inline <?? <?php ?>", "<p>inline &lt;?? <?php ?></p>\n");
         assertRendering(
                 "inline <![x]]> <![CDATA[a]]>", "<p>inline &lt;![x]]&gt; <![CDATA[a]]></p>\n");
-        assertRendering("inline <!foo> <!bar baz>", "<p>inline &lt;!foo&gt; <!bar baz></p>\n");
+        assertRendering("inline <!1> <!bar baz>", "<p>inline &lt;!1&gt; <!bar baz></p>\n");
     }
 
     @Test
@@ -45,12 +45,12 @@ public class HtmlInlineParserTest extends CoreRenderingTestCase {
 
     @Test
     public void declaration() {
-        // Whitespace is mandatory
-        assertRendering("inline <!FOO>", "<p>inline &lt;!FOO&gt;</p>\n");
+        assertRendering("inline <!FOO>", "<p>inline <!FOO></p>\n");
         assertRendering("inline <!FOO >", "<p>inline <!FOO ></p>\n");
         assertRendering("inline <!FOO 'bar'>", "<p>inline <!FOO 'bar'></p>\n");
 
         // Lowercase
         assertRendering("inline <!foo bar>", "<p>inline <!foo bar></p>\n");
+        assertRendering("inline <!foo>", "<p>inline <!foo></p>\n");
     }
 }
