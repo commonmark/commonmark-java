@@ -49,6 +49,12 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void htmlBlockDeclarationWithLowercaseLetter() {
+        assertRendering("<!doctype html>", "<!doctype html>\n");
+        assertRendering("<!x\nfoo>\nbar", "<!x\nfoo>\n<p>bar</p>\n");
+    }
+
+    @Test
     public void indentedCodeBlockWithMixedTabsAndSpaces() {
         assertRendering("    foo\n\tbar", "<pre><code>foo\nbar\n</code></pre>\n");
     }
