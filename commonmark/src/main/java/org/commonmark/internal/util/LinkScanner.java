@@ -123,7 +123,7 @@ public class LinkScanner {
             char c = scanner.peek();
             switch (c) {
                 case ' ':
-                    return !empty;
+                    return !empty && parens == 0;
                 case '\\':
                     scanner.next();
                     if (isEscapable(scanner.peek())) {
@@ -149,14 +149,14 @@ public class LinkScanner {
                 default:
                     // or control character
                     if (Character.isISOControl(c)) {
-                        return !empty;
+                        return !empty && parens == 0;
                     }
                     scanner.next();
                     break;
             }
             empty = false;
         }
-        return true;
+        return parens == 0;
     }
 
     private static boolean isEscapable(char c) {
