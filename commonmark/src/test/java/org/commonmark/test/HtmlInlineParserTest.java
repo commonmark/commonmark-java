@@ -22,10 +22,16 @@ public class HtmlInlineParserTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void processingInstruction() {
+        assertRendering("inline <??>", "<p>inline <??></p>\n");
+        assertRendering("inline <?a??>", "<p>inline <?a??></p>\n");
+        assertRendering("inline <?? <?php ?>", "<p>inline <?? <?php ?></p>\n");
+    }
+
+    @Test
     public void afterFailedAttempt() {
         // A `<` that doesn't start inline HTML must not stop a later one from being parsed
         assertRendering("inline <!- <!-- a -->", "<p>inline &lt;!- <!-- a --></p>\n");
-        assertRendering("inline <?? <?php ?>", "<p>inline &lt;?? <?php ?></p>\n");
         assertRendering(
                 "inline <![x]]> <![CDATA[a]]>", "<p>inline &lt;![x]]&gt; <![CDATA[a]]></p>\n");
         assertRendering("inline <!foo> <!bar baz>", "<p>inline &lt;!foo&gt; <!bar baz></p>\n");

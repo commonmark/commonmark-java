@@ -164,17 +164,13 @@ public class HtmlInlineParser implements InlineContentParser {
             return false;
         }
         scanner.next();
-        int found;
-        while ((found = scanner.find('?')) > 0) {
+        while (scanner.find('?') >= 0) {
             scanner.next();
             if (scanner.next('>')) {
                 return true;
             }
         }
-        // The loop also ends when a `?` is found directly at the current position (`found == 0`),
-        // which is not the end of the input, so only remember the miss when the scan really did
-        // reach the end.
-        noProcessingInstructionEnd = found < 0;
+        noProcessingInstructionEnd = true;
         return false;
     }
 
