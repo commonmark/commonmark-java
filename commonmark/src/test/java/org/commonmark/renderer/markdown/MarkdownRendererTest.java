@@ -8,6 +8,8 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class MarkdownRendererTest {
 
@@ -295,6 +297,60 @@ public class MarkdownRendererTest {
         assertRoundTrip("![a](<b\\>c>)\n");
         assertRoundTrip("![a](<b\\\\\\>c>)\n");
         assertRoundTrip("![a](/uri \"foo \\\" bar\")\n");
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "/url?value=&copy;",
+                "/my uri?value=&copy;",
+                "/url?value=&#65;",
+                "/url?value=&#x41;",
+                "/url?a=1&b=2"
+            })
+    public void testLinkDestinationPreservesLiteralAmpersands(String destination) {
+        Link link = new Link(destination, null);
+        link.appendChild(new Text("link"));
+
+        Link reparsed = (Link) parse(render(link)).getFirstChild().getFirstChild();
+        assertThat(reparsed.getDestination()).isEqualTo(destination);
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "/url?value=&copy;",
+                "/my uri?value=&copy;",
+                "/url?value=&#65;",
+                "/url?value=&#x41;",
+                "/url?a=1&b=2"
+            })
+    public void testImageDestinationPreservesLiteralAmpersands(String destination) {
+        Image image = new Image(destination, null);
+        image.appendChild(new Text("image"));
+
+        Image reparsed = (Image) parse(render(image)).getFirstChild().getFirstChild();
+        assertThat(reparsed.getDestination()).isEqualTo(destination);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"literal &copy;", "literal &#65;", "literal &#x41;", "bread & butter"})
+    public void testLinkTitlePreservesLiteralAmpersands(String title) {
+        Link link = new Link("/url", title);
+        link.appendChild(new Text("link"));
+
+        Link reparsed = (Link) parse(render(link)).getFirstChild().getFirstChild();
+        assertThat(reparsed.getTitle()).isEqualTo(title);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"literal &copy;", "literal &#65;", "literal &#x41;", "bread & butter"})
+    public void testImageTitlePreservesLiteralAmpersands(String title) {
+        Image image = new Image("/url", title);
+        image.appendChild(new Text("image"));
+
+        Image reparsed = (Image) parse(render(image)).getFirstChild().getFirstChild();
+        assertThat(reparsed.getTitle()).isEqualTo(title);
     }
 
     @Test
