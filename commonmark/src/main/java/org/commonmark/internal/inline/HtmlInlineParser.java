@@ -241,9 +241,6 @@ public class HtmlInlineParser implements InlineContentParser {
             return false;
         }
         scanner.match(asciiLetter);
-        if (scanner.whitespace() <= 0) {
-            return false;
-        }
         if (scanner.find('>') >= 0) {
             scanner.next();
             return true;
