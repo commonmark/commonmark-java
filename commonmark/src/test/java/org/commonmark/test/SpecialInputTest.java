@@ -214,6 +214,16 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void linkReferenceDefinitionWithUnbalancedParens() {
+        // Parentheses in a link destination must be balanced, otherwise it's not a definition
+        assertRendering("[foo]: (", "<p>[foo]: (</p>\n");
+        assertRendering("[foo]: (\nbar", "<p>[foo]: (\nbar</p>\n");
+        assertRendering("[foo]: a(b\n\n[foo]", "<p>[foo]: a(b</p>\n<p>[foo]</p>\n");
+        assertRendering(
+                "[foo]: a(b) \"t\"\n\n[foo]", "<p><a href=\"a(b)\" title=\"t\">foo</a></p>\n");
+    }
+
+    @Test
     public void linkLabelLength() {
         String label1 = "a".repeat(999);
         assertRendering(
