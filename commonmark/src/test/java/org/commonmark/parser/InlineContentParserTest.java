@@ -64,21 +64,22 @@ class InlineContentParserTest {
                         .customInlineContentParserFactory(new DestinationInlineParser.Factory())
                         .build();
 
-        var doc = parser.parse("img(not-a-link-)more-text) more text");
+        var doc = parser.parse("img(a-link) more text");
         var inline = Nodes.find(doc, DestinationInline.class);
         assertThat(((Text) inline.getPrevious()).getLiteral()).isEqualTo("img");
-        assertThat(inline.getDestination()).isEqualTo("not-a-link-)more-text");
+        assertThat(inline.getDestination()).isEqualTo("a-link");
         assertThat(((Text) inline.getNext()).getLiteral()).isEqualTo(" more text");
 
-        doc = parser.parse("img(not-a-link-)more-text)");
+        doc = parser.parse("img(a-link-)more-text) more text");
         inline = Nodes.find(doc, DestinationInline.class);
-        assertThat(inline.getDestination()).isEqualTo("not-a-link-)more-text");
+        assertThat(((Text) inline.getPrevious()).getLiteral()).isEqualTo("img");
+        assertThat(inline.getDestination()).isEqualTo("a-link-)more-text");
+        assertThat(((Text) inline.getNext()).getLiteral()).isEqualTo(" more text");
+
+        doc = parser.parse("img(a-link-)more-text)");
+        inline = Nodes.find(doc, DestinationInline.class);
+        assertThat(inline.getDestination()).isEqualTo("a-link-)more-text");
         assertThat(inline.getNext()).isNull();
-
-        doc = parser.parse("img(not-a-link) more text");
-        inline = Nodes.find(doc, DestinationInline.class);
-        assertThat(inline.getDestination()).isEqualTo("not-a-link");
-        assertThat(((Text) inline.getNext()).getLiteral()).isEqualTo(" more text");
 
         doc = parser.parse("img() more text");
         inline = Nodes.find(doc, DestinationInline.class);

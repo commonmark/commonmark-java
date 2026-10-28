@@ -147,12 +147,11 @@ class ScannerTest {
     }
 
     @Test
-    void testPrev() {
+    void testFindPrevSingleSteps() {
         Scanner scanner = Scanner.of(SourceLines.of(SourceLine.of("abc", null)));
         Position start = scanner.position();
         scanner.next();
         Position b = scanner.position();
-        assertThat(scanner.peek()).isEqualTo('b');
         scanner.next();
         Position c = scanner.position();
         scanner.next();
@@ -160,81 +159,60 @@ class ScannerTest {
         assertThat(scanner.peek()).isEqualTo('\0');
         assertThat(scanner.hasNext()).isFalse();
 
-        scanner.prev();
+        assertThat(scanner.findPrev('c', start)).isEqualTo(1);
         assertThat(scanner.position()).isEqualTo(c);
-        assertThat(scanner.peek()).isEqualTo('c');
-        scanner.prev();
+        assertThat(scanner.findPrev('b', start)).isEqualTo(1);
         assertThat(scanner.position()).isEqualTo(b);
-        assertThat(scanner.peek()).isEqualTo('b');
-        scanner.prev();
+        assertThat(scanner.findPrev('a', start)).isEqualTo(1);
+        assertThat(scanner.position()).isEqualTo(start);
+
+        // A miss at the beginning stays there.
+        assertThat(scanner.findPrev('z', start)).isEqualTo(-1);
         assertThat(scanner.position()).isEqualTo(start);
         assertThat(scanner.peek()).isEqualTo('a');
 
-        // No-op at the beginning.
-        scanner.prev();
-        assertThat(scanner.position()).isEqualTo(start);
-        assertThat(scanner.peek()).isEqualTo('a');
-
-        scanner.next();
-        scanner.prev();
-        assertThat(scanner.position()).isEqualTo(start);
-        assertThat(scanner.peek()).isEqualTo('a');
-
+        // Stepping back from the end and forward again returns to the end.
         scanner.setPosition(eof);
-        scanner.prev();
+        assertThat(scanner.findPrev('c', start)).isEqualTo(1);
         scanner.next();
         assertThat(scanner.position()).isEqualTo(eof);
         assertThat(scanner.peek()).isEqualTo('\0');
-
-        Scanner empty = Scanner.of(SourceLines.empty());
-        Position emptyPos = empty.position();
-        empty.prev();
-        assertThat(empty.position()).isEqualTo(emptyPos);
-        assertThat(empty.peek()).isEqualTo('\0');
-        assertThat(empty.hasNext()).isFalse();
 
         Scanner emptyLine = Scanner.of(SourceLines.of(SourceLine.of("", null)));
         Position emptyLinePos = emptyLine.position();
         assertThat(emptyLine.peek()).isEqualTo('\0');
         assertThat(emptyLine.hasNext()).isFalse();
-        emptyLine.prev();
+        assertThat(emptyLine.findPrev(ch -> true, emptyLinePos)).isEqualTo(-1);
         assertThat(emptyLine.position()).isEqualTo(emptyLinePos);
         assertThat(emptyLine.peek()).isEqualTo('\0');
     }
 
     @Test
-    void testPrevAcrossLines() {
+    void testFindPrevAcrossLines() {
         Scanner scanner =
                 Scanner.of(
                         SourceLines.of(
                                 List.of(SourceLine.of("ab", null), SourceLine.of("c", null))));
         Position start = scanner.position();
         scanner.next();
-        assertThat(scanner.peek()).isEqualTo('b');
         scanner.next();
         Position newline = scanner.position();
         assertThat(scanner.peek()).isEqualTo('\n');
         scanner.next();
-        assertThat(scanner.peek()).isEqualTo('c');
         scanner.next();
         assertThat(scanner.peek()).isEqualTo('\0');
         assertThat(scanner.hasNext()).isFalse();
 
-        scanner.prev();
-        assertThat(scanner.peek()).isEqualTo('c');
-        scanner.prev();
+        assertThat(scanner.findPrev('c', start)).isEqualTo(1);
+        assertThat(scanner.findPrev('\n', start)).isEqualTo(1);
         assertThat(scanner.position()).isEqualTo(newline);
-        assertThat(scanner.peek()).isEqualTo('\n');
-        scanner.prev();
+        assertThat(scanner.findPrev('b', start)).isEqualTo(1);
         assertThat(scanner.peek()).isEqualTo('b');
         scanner.next();
         assertThat(scanner.position()).isEqualTo(newline);
-        assertThat(scanner.peek()).isEqualTo('\n');
-        scanner.prev();
-        scanner.prev();
+        assertThat(scanner.findPrev('a', start)).isEqualTo(2);
         assertThat(scanner.position()).isEqualTo(start);
-        assertThat(scanner.peek()).isEqualTo('a');
-        scanner.prev();
+        assertThat(scanner.findPrev('z', start)).isEqualTo(-1);
         assertThat(scanner.position()).isEqualTo(start);
 
         // Unequal lengths: cached line content/length must follow the line we step onto.
@@ -242,13 +220,12 @@ class ScannerTest {
                 Scanner.of(
                         SourceLines.of(
                                 List.of(SourceLine.of("a", null), SourceLine.of("bbb", null))));
+        Position unevenStart = uneven.position();
         uneven.next();
         uneven.next();
         assertThat(uneven.peek()).isEqualTo('b');
-        uneven.prev();
-        assertThat(uneven.peek()).isEqualTo('\n');
-        uneven.prev();
-        assertThat(uneven.peek()).isEqualTo('a');
+        assertThat(uneven.findPrev('\n', unevenStart)).isEqualTo(1);
+        assertThat(uneven.findPrev('a', unevenStart)).isEqualTo(1);
         uneven.next();
         assertThat(uneven.peek()).isEqualTo('\n');
         uneven.next();
@@ -256,7 +233,7 @@ class ScannerTest {
         uneven.next();
         uneven.next();
         assertThat(uneven.peek()).isEqualTo('\0');
-        uneven.prev();
+        assertThat(uneven.findPrev('b', unevenStart)).isEqualTo(1);
         assertThat(uneven.peek()).isEqualTo('b');
 
         // Consecutive empty lines, including an empty final line: no newline after the last line.
@@ -270,13 +247,16 @@ class ScannerTest {
         Position blanksStart = blanks.position();
         assertThat(blanks.peek()).isEqualTo('\n');
         blanks.next();
+        Position secondNewline = blanks.position();
         assertThat(blanks.peek()).isEqualTo('\n');
         blanks.next();
+        Position blanksEof = blanks.position();
         assertThat(blanks.peek()).isEqualTo('\0');
         assertThat(blanks.hasNext()).isFalse();
-        blanks.prev();
-        assertThat(blanks.peek()).isEqualTo('\n');
-        blanks.prev();
+        assertThat(blanks.findPrev('\n', blanksStart)).isEqualTo(1);
+        assertThat(blanks.position()).isEqualTo(secondNewline);
+        blanks.setPosition(blanksEof);
+        assertThat(blanks.findPrev('x', blanksStart)).isEqualTo(-1);
         assertThat(blanks.position()).isEqualTo(blanksStart);
         assertThat(blanks.peek()).isEqualTo('\n');
         blanks.next();
@@ -286,8 +266,7 @@ class ScannerTest {
         // Empty final line steps back onto the preceding newline, not a made-up terminal one.
         Scanner trailingBlank =
                 Scanner.of(
-                        SourceLines.of(
-                                List.of(SourceLine.of("a", null), SourceLine.of("", null))));
+                        SourceLines.of(List.of(SourceLine.of("a", null), SourceLine.of("", null))));
         Position trailingStart = trailingBlank.position();
         trailingBlank.next();
         Position precedingNewline = trailingBlank.position();
@@ -295,13 +274,12 @@ class ScannerTest {
         trailingBlank.next();
         assertThat(trailingBlank.peek()).isEqualTo('\0');
         assertThat(trailingBlank.hasNext()).isFalse();
-        trailingBlank.prev();
+        assertThat(trailingBlank.findPrev(ch -> true, trailingStart)).isEqualTo(1);
         assertThat(trailingBlank.position()).isEqualTo(precedingNewline);
         assertThat(trailingBlank.peek()).isEqualTo('\n');
         trailingBlank.next();
         assertThat(trailingBlank.peek()).isEqualTo('\0');
-        trailingBlank.prev();
-        trailingBlank.prev();
+        assertThat(trailingBlank.findPrev('a', trailingStart)).isEqualTo(2);
         assertThat(trailingBlank.position()).isEqualTo(trailingStart);
         assertThat(trailingBlank.peek()).isEqualTo('a');
     }
@@ -310,23 +288,23 @@ class ScannerTest {
     void testFindPrev() {
         Scanner scanner = Scanner.of(SourceLines.of(SourceLine.of("abXcdX", null)));
         Position start = scanner.position();
-        assertThat(scanner.findPrev('a')).isEqualTo(0);
+        assertThat(scanner.findPrev('a', start)).isEqualTo(0);
         assertThat(scanner.position()).isEqualTo(start);
-        assertThat(scanner.findPrev(c -> c == 'a')).isEqualTo(0);
+        assertThat(scanner.findPrev(c -> c == 'a', start)).isEqualTo(0);
         assertThat(scanner.position()).isEqualTo(start);
 
         scanner.next();
         scanner.next();
         Position firstX = scanner.position();
         assertThat(scanner.peek()).isEqualTo('X');
-        assertThat(scanner.findPrev('X')).isEqualTo(0);
+        assertThat(scanner.findPrev('X', start)).isEqualTo(0);
         assertThat(scanner.position()).isEqualTo(firstX);
 
         scanner.next();
         scanner.next();
         // Between the two matches: the nearer (earlier) X, not one after the cursor.
         assertThat(scanner.peek()).isEqualTo('d');
-        assertThat(scanner.findPrev('X')).isEqualTo(2);
+        assertThat(scanner.findPrev('X', start)).isEqualTo(2);
         assertThat(scanner.position()).isEqualTo(firstX);
 
         scanner.next();
@@ -337,33 +315,33 @@ class ScannerTest {
         scanner.next();
         assertThat(scanner.peek()).isEqualTo('\0');
         // Match immediately before EOF counts the step off the sentinel.
-        assertThat(scanner.findPrev('X')).isEqualTo(1);
+        assertThat(scanner.findPrev('X', start)).isEqualTo(1);
         assertThat(scanner.position()).isEqualTo(secondX);
         assertThat(scanner.peek()).isEqualTo('X');
 
         scanner.next();
-        assertThat(scanner.findPrev(c -> c == 'X')).isEqualTo(1);
+        assertThat(scanner.findPrev(c -> c == 'X', start)).isEqualTo(1);
         assertThat(scanner.position()).isEqualTo(secondX);
 
-        assertThat(scanner.findPrev('z')).isEqualTo(-1);
+        assertThat(scanner.findPrev('z', start)).isEqualTo(-1);
         assertThat(scanner.position()).isEqualTo(start);
         assertThat(scanner.peek()).isEqualTo('a');
 
         scanner.setPosition(secondX);
         scanner.next();
-        assertThat(scanner.findPrev(Scanner.END)).isEqualTo(-1);
+        assertThat(scanner.findPrev(Scanner.END, start)).isEqualTo(-1);
         assertThat(scanner.position()).isEqualTo(start);
         scanner.setPosition(secondX);
         scanner.next();
-        assertThat(scanner.findPrev(c -> c == Scanner.END)).isEqualTo(-1);
+        assertThat(scanner.findPrev(c -> c == Scanner.END, start)).isEqualTo(-1);
         assertThat(scanner.position()).isEqualTo(start);
 
         CharMatcher any = c -> true;
         scanner.setPosition(secondX);
-        assertThat(scanner.findPrev(any)).isEqualTo(0);
+        assertThat(scanner.findPrev(any, start)).isEqualTo(0);
         assertThat(scanner.position()).isEqualTo(secondX);
         scanner.next();
-        assertThat(scanner.findPrev(any)).isEqualTo(1);
+        assertThat(scanner.findPrev(any, start)).isEqualTo(1);
         assertThat(scanner.position()).isEqualTo(secondX);
         assertThat(scanner.peek()).isEqualTo('X');
 
@@ -371,30 +349,32 @@ class ScannerTest {
                 Scanner.of(
                         SourceLines.of(
                                 List.of(SourceLine.of("ab", null), SourceLine.of("c", null))));
+        Position linesStart = lines.position();
         lines.next();
         lines.next();
         Position newline = lines.position();
         lines.next();
         lines.next();
         assertThat(lines.peek()).isEqualTo('\0');
-        assertThat(lines.findPrev('\n')).isEqualTo(2);
+        assertThat(lines.findPrev('\n', linesStart)).isEqualTo(2);
         assertThat(lines.position()).isEqualTo(newline);
         assertThat(lines.peek()).isEqualTo('\n');
-        assertThat(lines.findPrev(c -> c == '\n')).isEqualTo(0);
+        assertThat(lines.findPrev(c -> c == '\n', linesStart)).isEqualTo(0);
         assertThat(lines.position()).isEqualTo(newline);
 
         Scanner empty = Scanner.of(SourceLines.empty());
         Position emptyPos = empty.position();
-        assertThat(empty.findPrev('a')).isEqualTo(-1);
-        assertThat(empty.findPrev(Scanner.END)).isEqualTo(-1);
-        assertThat(empty.findPrev(any)).isEqualTo(-1);
-        assertThat(empty.findPrev(c -> c == Scanner.END)).isEqualTo(-1);
+        assertThat(empty.findPrev('a', emptyPos)).isEqualTo(-1);
+        assertThat(empty.findPrev(Scanner.END, emptyPos)).isEqualTo(-1);
+        assertThat(empty.findPrev(any, emptyPos)).isEqualTo(-1);
+        assertThat(empty.findPrev(c -> c == Scanner.END, emptyPos)).isEqualTo(-1);
         assertThat(empty.position()).isEqualTo(emptyPos);
         assertThat(empty.peek()).isEqualTo('\0');
 
         Scanner text = Scanner.of(SourceLines.of(SourceLine.of("a", null)));
+        Position textStart = text.position();
         text.next();
-        assertThat(text.findPrev(any)).isEqualTo(1);
+        assertThat(text.findPrev(any, textStart)).isEqualTo(1);
         assertThat(text.peek()).isEqualTo('a');
     }
 
@@ -532,6 +512,7 @@ class ScannerTest {
     @Test
     void testCodeUnitMovement() {
         Scanner scanner = Scanner.of(SourceLines.of(SourceLine.of("A\uD83D\uDE0AZ", null)));
+        Position start = scanner.position();
         assertThat(scanner.peek()).isEqualTo('A');
         assertThat(scanner.peekCodePoint()).isEqualTo('A');
         assertThat(scanner.peekPreviousCodePoint()).isEqualTo('\0');
@@ -556,33 +537,33 @@ class ScannerTest {
         assertThat(scanner.peekCodePoint()).isEqualTo('\0');
         assertThat(scanner.peekPreviousCodePoint()).isEqualTo('Z');
 
-        scanner.prev();
+        assertThat(scanner.findPrev('Z', start)).isEqualTo(1);
         assertThat(scanner.peek()).isEqualTo('Z');
-        scanner.prev();
+        assertThat(scanner.findPrev('\uDE0A', start)).isEqualTo(1);
         assertThat(scanner.peek()).isEqualTo('\uDE0A');
         assertThat(scanner.peekCodePoint()).isEqualTo('\uDE0A');
         assertThat(scanner.peekPreviousCodePoint()).isEqualTo('\uD83D');
-        scanner.prev();
+        assertThat(scanner.findPrev('\uD83D', start)).isEqualTo(1);
         assertThat(scanner.peek()).isEqualTo('\uD83D');
         assertThat(scanner.peekCodePoint()).isEqualTo(128522);
         assertThat(scanner.peekPreviousCodePoint()).isEqualTo('A');
 
         scanner.next();
         assertThat(scanner.peek()).isEqualTo('\uDE0A');
-        scanner.prev();
+        assertThat(scanner.findPrev('\uD83D', start)).isEqualTo(1);
         assertThat(scanner.peek()).isEqualTo('\uD83D');
         assertThat(scanner.peekCodePoint()).isEqualTo(128522);
 
         while (scanner.hasNext()) {
             scanner.next();
         }
-        assertThat(scanner.findPrev('\uDE0A')).isEqualTo(2);
+        assertThat(scanner.findPrev('\uDE0A', start)).isEqualTo(2);
         assertThat(scanner.peek()).isEqualTo('\uDE0A');
         assertThat(scanner.peekCodePoint()).isEqualTo('\uDE0A');
         while (scanner.hasNext()) {
             scanner.next();
         }
-        assertThat(scanner.findPrev('\uD83D')).isEqualTo(3);
+        assertThat(scanner.findPrev('\uD83D', start)).isEqualTo(3);
         assertThat(scanner.peek()).isEqualTo('\uD83D');
         assertThat(scanner.peekCodePoint()).isEqualTo(128522);
         assertThat(scanner.peekPreviousCodePoint()).isEqualTo('A');
@@ -597,12 +578,13 @@ class ScannerTest {
                                 SourceLine.of("cde", SourceSpan.of(11, 4, 20, 3))),
                         0,
                         0);
+        Position start = scanner.position();
         while (scanner.hasNext()) {
             scanner.next();
         }
         Position end = scanner.position();
         assertThat(scanner.peek()).isEqualTo('\0');
-        assertThat(scanner.findPrev('b')).isEqualTo(5);
+        assertThat(scanner.findPrev('b', start)).isEqualTo(5);
         assertThat(scanner.peek()).isEqualTo('b');
         assertSourceLines(
                 scanner.getSource(scanner.position(), end),
