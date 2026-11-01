@@ -224,6 +224,20 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void listCanNotInterruptParagraphWithOnlyLinkReferenceDefinitions() {
+        // The paragraph is still open, so the same rules apply as for a paragraph with text: an
+        // ordered list must start with 1 and an empty list item can not interrupt it
+        assertRendering(
+                "[foo]: /url\n2. a\n\n[foo]", "<p>2. a</p>\n<p><a href=\"/url\">foo</a></p>\n");
+        assertRendering("[foo]: /url\n-\n\n[foo]", "<p>-</p>\n<p><a href=\"/url\">foo</a></p>\n");
+        assertRendering("[foo]: /url \"t\"\n2. a", "<p>2. a</p>\n");
+        assertRendering("> [foo]: /url\n> 2. a", "<blockquote>\n<p>2. a</p>\n</blockquote>\n");
+        // These can interrupt it
+        assertRendering("[foo]: /url\n1. a", "<ol>\n<li>a</li>\n</ol>\n");
+        assertRendering("[foo]: /url\n- a", "<ul>\n<li>a</li>\n</ul>\n");
+    }
+
+    @Test
     public void linkLabelLength() {
         String label1 = "a".repeat(999);
         assertRendering(

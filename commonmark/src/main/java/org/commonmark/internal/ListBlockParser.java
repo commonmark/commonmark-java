@@ -211,7 +211,8 @@ public class ListBlockParser extends AbstractBlockParser {
             }
             int markerIndex = state.getNextNonSpaceIndex();
             int markerColumn = state.getColumn() + state.getIndent();
-            boolean inParagraph = !matchedBlockParser.getParagraphLines().isEmpty();
+            // A paragraph that only has link reference definitions so far is still open
+            boolean inParagraph = matched.getBlock() instanceof Paragraph;
             ListData listData =
                     parseList(state.getLine().getContent(), markerIndex, markerColumn, inParagraph);
             if (listData == null) {
