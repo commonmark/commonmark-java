@@ -9,6 +9,8 @@ import org.commonmark.parser.beta.InlineContentParserFactory;
 import org.commonmark.parser.beta.InlineParserState;
 import org.commonmark.parser.beta.ParsedInline;
 import org.commonmark.test.Nodes;
+import org.commonmark.text.AsciiMatcher;
+import org.commonmark.text.CharMatcher;
 import org.junit.jupiter.api.Test;
 
 class InlineContentParserTest {
@@ -53,6 +55,47 @@ class InlineContentParserTest {
         // Class
         assertThat(image.getNext().getNext()).isInstanceOf(BangInline.class);
         assertThat(((Text) image.getNext().getNext().getNext()).getLiteral()).isEqualTo("notimage");
+    }
+
+    @Test
+    void backwardSearchInlineContentParser() {
+        var parser =
+                Parser.builder()
+                        .customInlineContentParserFactory(new DestinationInlineParser.Factory())
+                        .build();
+
+        var doc = parser.parse("img(a-link) more text");
+        var inline = Nodes.find(doc, DestinationInline.class);
+        assertThat(((Text) inline.getPrevious()).getLiteral()).isEqualTo("img");
+        assertThat(inline.getDestination()).isEqualTo("a-link");
+        assertThat(((Text) inline.getNext()).getLiteral()).isEqualTo(" more text");
+
+        doc = parser.parse("img(a-link-)more-text) more text");
+        inline = Nodes.find(doc, DestinationInline.class);
+        assertThat(((Text) inline.getPrevious()).getLiteral()).isEqualTo("img");
+        assertThat(inline.getDestination()).isEqualTo("a-link-)more-text");
+        assertThat(((Text) inline.getNext()).getLiteral()).isEqualTo(" more text");
+
+        doc = parser.parse("img(a-link-)more-text)");
+        inline = Nodes.find(doc, DestinationInline.class);
+        assertThat(inline.getDestination()).isEqualTo("a-link-)more-text");
+        assertThat(inline.getNext()).isNull();
+
+        doc = parser.parse("img() more text");
+        inline = Nodes.find(doc, DestinationInline.class);
+        assertThat(inline.getDestination()).isEqualTo("");
+        assertThat(((Text) inline.getNext()).getLiteral()).isEqualTo(" more text");
+
+        doc = parser.parse("img(not-a-link more text");
+        assertThat(Nodes.tryFind(doc, DestinationInline.class)).isNull();
+        assertThat(((Text) doc.getFirstChild().getFirstChild()).getLiteral())
+                .isEqualTo("img(not-a-link more text");
+
+        // The ')' before the saved opening position is outside the inclusive bound.
+        doc = parser.parse("before)img(not-a-link more text");
+        assertThat(Nodes.tryFind(doc, DestinationInline.class)).isNull();
+        assertThat(((Text) doc.getFirstChild().getFirstChild()).getLiteral())
+                .isEqualTo("before)img(not-a-link more text");
     }
 
     private static class DollarInline extends CustomNode {
@@ -101,6 +144,55 @@ class InlineContentParserTest {
             @Override
             public InlineContentParser create() {
                 return new DollarInlineParser();
+            }
+        }
+    }
+
+    /**
+     * Custom image-like syntax {@code (destination)} whose destination may itself contain {@code
+     * )}. The closer is the last {@code )} before whitespace or the end of input, and it must not
+     * be before the opening parenthesis.
+     */
+    private static class DestinationInline extends CustomNode {
+        private final String destination;
+
+        public DestinationInline(String destination) {
+            this.destination = destination;
+        }
+
+        public String getDestination() {
+            return destination;
+        }
+    }
+
+    private static class DestinationInlineParser implements InlineContentParser {
+
+        private static final CharMatcher WHITESPACE =
+                AsciiMatcher.builder().anyOf(" \t\n\u000B\f\r").build();
+
+        @Override
+        public ParsedInline tryParse(InlineParserState inlineParserState) {
+            var scanner = inlineParserState.scanner();
+            scanner.next();
+            var contentStart = scanner.position();
+            scanner.find(WHITESPACE);
+            if (scanner.findPrev(')', contentStart) == -1) {
+                return ParsedInline.none();
+            }
+            var destination = scanner.getSource(contentStart, scanner.position()).getContent();
+            scanner.next();
+            return ParsedInline.of(new DestinationInline(destination), scanner.position());
+        }
+
+        static class Factory implements InlineContentParserFactory {
+            @Override
+            public Set<Character> getTriggerCharacters() {
+                return Set.of('(');
+            }
+
+            @Override
+            public InlineContentParser create() {
+                return new DestinationInlineParser();
             }
         }
     }
