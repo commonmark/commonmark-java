@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.32.0] - 2026-11-01
+### Added
+- `Scanner` API for extensions now has `findPrev` methods to search backwards,
+  which can be useful for some syntax (#466)
+### Changed
+- Fix Android incompatibility with minSdk < 30: The minSdk required is now 24.
+### Fixed
+- Allow consecutive question marks in inline processing instructions (#471)
+- Allow HTML declarations with lowercase letters and without whitespace (#469)
+- Reject link reference definitions with unbalanced parentheses in the destination (#470)
+- Don't let lists interrupt a paragraph with only link reference definitions (#472)
+- `MarkdownRenderer`: Preserve literal ampersands in links and images (#468)
+
 ## [0.31.0] - 2026-10-22
 ### Changed
 - To get link text in `LinkProcessor`, `Scanner` needs to be passed to
@@ -615,6 +628,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
+[0.32.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.31.0...commonmark-parent-0.32.0
 [0.31.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.1...commonmark-parent-0.31.0
 [0.30.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.0...commonmark-parent-0.30.1
 [0.30.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.29.0...commonmark-parent-0.30.0
