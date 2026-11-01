@@ -23,10 +23,10 @@ jobs:
           distribution: temurin
           # See https://central.sonatype.org/publish/publish-portal-maven/
           server-id: central
-          server-username: CENTRAL_USERNAME # env variable to use for username in release
-          server-password: CENTRAL_PASSWORD # env variable to use for password in release
+          server-username-env-var: CENTRAL_USERNAME
+          server-password-env-var: CENTRAL_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable to use for passphrase in release
+          gpg-passphrase-env-var: MAVEN_GPG_PASSPHRASE
 
       - name: Set up Git user
         run: |
