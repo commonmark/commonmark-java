@@ -20,6 +20,7 @@
         <module>commonmark-ext-gfm-alerts</module>
         <module>commonmark-ext-gfm-strikethrough</module>
         <module>commonmark-ext-gfm-tables</module>
+        <module>commonmark-ext-github</module>
         <module>commonmark-ext-heading-anchor</module>
         <module>commonmark-ext-image-attributes</module>
         <module>commonmark-ext-ins</module>
@@ -181,6 +182,11 @@
             <dependency>
                 <groupId>org.commonmark</groupId>
                 <artifactId>commonmark-ext-gfm-tables</artifactId>
+                <version>0.32.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.commonmark</groupId>
+                <artifactId>commonmark-ext-github</artifactId>
                 <version>0.32.1-SNAPSHOT</version>
             </dependency>
             <dependency>

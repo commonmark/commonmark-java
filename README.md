@@ -313,6 +313,20 @@ HtmlRenderer renderer = HtmlRenderer.builder()
 
 To configure another extension in the above example, just add it to the list.
 
+To enable tables, strikethrough, autolinks, task list items, alerts, and footnotes
+together, use the `org.commonmark:commonmark-ext-github` dependency. Pass its preset
+to both builders:
+
+```java
+import org.commonmark.ext.github.GitHubExtensions;
+
+List<Extension> extensions = GitHubExtensions.create();
+Parser parser = Parser.builder().extensions(extensions).build();
+HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
+```
+
+Other extensions can still be enabled individually.
+
 The following extensions are developed with this library, each in their
 own artifact.
 
