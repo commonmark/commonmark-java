@@ -63,13 +63,17 @@ public class AlertsExtension
      * The standard GitHub Flavored Markdown (GFM) types that the extension enables by default.
      * These can be overwritten with {@link Builder#setAllowedTypes(Map)}.
      */
-    public static final Map<String, String> STANDARD_TYPES =
-            Map.ofEntries(
-                    Map.entry("NOTE", "Note"),
-                    Map.entry("TIP", "Tip"),
-                    Map.entry("IMPORTANT", "Important"),
-                    Map.entry("WARNING", "Warning"),
-                    Map.entry("CAUTION", "Caution"));
+    public static final Map<String, String> STANDARD_TYPES;
+
+    static {
+        Map<String, String> types = new HashMap<>();
+        types.put("NOTE", "Note");
+        types.put("TIP", "Tip");
+        types.put("IMPORTANT", "Important");
+        types.put("WARNING", "Warning");
+        types.put("CAUTION", "Caution");
+        STANDARD_TYPES = Collections.unmodifiableMap(types);
+    }
 
     /** A map of alert marker ({@code [!TYPE]}) to the default title for that marker. */
     private final Map<String, String> allowedTypes;
