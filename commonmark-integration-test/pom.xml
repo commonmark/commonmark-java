@@ -18,6 +18,10 @@
         </dependency>
         <dependency>
             <groupId>org.commonmark</groupId>
+            <artifactId>commonmark-ext-github</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonmark</groupId>
             <artifactId>commonmark-ext-autolink</artifactId>
         </dependency>
         <dependency>

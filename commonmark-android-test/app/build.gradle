@@ -36,10 +36,14 @@ android {
                 [
                         '../../commonmark',
                         '../../commonmark-ext-autolink',
+                        '../../commonmark-ext-footnotes',
+                        '../../commonmark-ext-gfm-alerts',
                         '../../commonmark-ext-gfm-strikethrough',
                         '../../commonmark-ext-gfm-tables',
+                        '../../commonmark-ext-github',
                         '../../commonmark-ext-heading-anchor',
                         '../../commonmark-ext-ins',
+                        '../../commonmark-ext-task-list-items',
                         '../../commonmark-ext-yaml-front-matter'
                 ].forEach { d ->
                     // don't include module-info files, otherwise we get
