@@ -20,6 +20,19 @@ public class SpecialInputTest extends CoreRenderingTestCase {
     }
 
     @Test
+    public void surrogateCharacterReferenceShouldBeReplaced() {
+        // The reference is well-formed, but a surrogate is not a valid Unicode code point, so it
+        // must be replaced by U+FFFD (same as cmark and commonmark.js)
+        assertRendering("&#xD800;", "<p>\uFFFD</p>\n");
+        assertRendering("&#55296;", "<p>\uFFFD</p>\n");
+        assertRendering("&#xDFFF;", "<p>\uFFFD</p>\n");
+        assertRendering("before&#xD800;after", "<p>before\uFFFDafter</p>\n");
+        // Code points outside the surrogate range are not affected
+        assertRendering("&#x1F600;", "<p>\uD83D\uDE00</p>\n");
+        assertRendering("&#x10FFFF;", "<p>\uDBFF\uDFFF</p>\n");
+    }
+
+    @Test
     public void crLfAsLineSeparatorShouldBeParsed() {
         assertRendering("foo\r\nbar", "<p>foo\nbar</p>\n");
     }

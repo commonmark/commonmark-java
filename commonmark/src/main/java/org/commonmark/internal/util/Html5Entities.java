@@ -30,7 +30,11 @@ public class Html5Entities {
 
             try {
                 int codePoint = Integer.parseInt(value, base);
-                if (codePoint == 0) {
+                // The spec says that invalid Unicode code points are replaced by the REPLACEMENT
+                // CHARACTER. The surrogate range is not a set of valid code points.
+                if (codePoint == 0
+                        || (codePoint >= Character.MIN_SURROGATE
+                                && codePoint <= Character.MAX_SURROGATE)) {
                     return "\uFFFD";
                 }
                 return new String(Character.toChars(codePoint));
