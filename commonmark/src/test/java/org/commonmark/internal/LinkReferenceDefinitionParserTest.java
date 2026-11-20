@@ -92,6 +92,14 @@ class LinkReferenceDefinitionParserTest {
     }
 
     @Test
+    void testDestinationFollowedByOtherText() {
+        assertParagraph("[foo]: /url bar");
+        // Another definition-like text on the same line must not be parsed as a definition
+        assertParagraph("[foo]: /url [bar]: /url2");
+        assertParagraph("[foo]: /url``_> [bar]: /url2");
+    }
+
+    @Test
     void testTitle() {
         parse("[foo]: /url 'title'");
         assertThat(parser.getState()).isEqualTo(State.START_DEFINITION);

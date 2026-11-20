@@ -206,6 +206,13 @@ public class LinkReferenceDefinitionParser {
         } else if (whitespace == 0) {
             // spec: The title must be separated from the link destination by whitespace
             return false;
+        } else {
+            char c = scanner.peek();
+            if (c != '"' && c != '\'' && c != '(') {
+                // Other text after the destination on the same line, so this is not a link
+                // reference definition (and not the start of another one either)
+                return false;
+            }
         }
 
         state = State.START_TITLE;
