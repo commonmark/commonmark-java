@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [0.33.0] - 2026-11-20
+### Added
+- New artifact `org.commonmark:commonmark-ext-github` with a `GitHubExtensions`
+  class to simplify using all GitHub extensions together. If you need to configure
+  one of the extensions, you can still use individual ones of course. (#475)
+### Fixed
+- Replace numeric character references to unpaired surrogates with U+FFFD (#474)
+
 ## [0.32.0] - 2026-11-01
 ### Added
 - `Scanner` API for extensions now has `findPrev` methods to search backwards,
@@ -628,6 +636,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
+[0.33.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.32.0...commonmark-parent-0.33.0
 [0.32.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.31.0...commonmark-parent-0.32.0
 [0.31.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.1...commonmark-parent-0.31.0
 [0.30.1]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.0...commonmark-parent-0.30.1
