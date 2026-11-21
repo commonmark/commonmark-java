@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.text.Characters;
 
 /**
  * The node renderer that renders all the core nodes (comes last in the order of node renderers).
@@ -111,13 +112,12 @@ public class CoreHtmlNodeRenderer extends AbstractVisitor implements NodeRendere
         Map<String, String> attributes = new LinkedHashMap<>();
         String info = fencedCodeBlock.getInfo();
         if (info != null && !info.isEmpty()) {
-            int space = info.indexOf(" ");
-            String language;
-            if (space == -1) {
-                language = info;
-            } else {
-                language = info.substring(0, space);
+            // The language is the first word of the info string, which ends at a space or tab
+            int end = 0;
+            while (end < info.length() && !Characters.isSpaceOrTab(info, end)) {
+                end++;
             }
+            String language = info.substring(0, end);
             attributes.put("class", "language-" + language);
         }
         renderCodeBlock(literal, fencedCodeBlock, attributes);
