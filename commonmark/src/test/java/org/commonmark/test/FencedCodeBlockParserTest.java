@@ -58,16 +58,6 @@ public class FencedCodeBlockParserTest extends RenderingTestCase {
     }
 
     @Test
-    public void languageEndsAtTab() {
-        assertRendering(
-                "```py\tx\ncode\n```\n",
-                """
-                <pre><code class="language-py">code
-                </code></pre>
-                """);
-    }
-
-    @Test
     public void backtickInfoDoesntAllowBacktick() {
         assertRendering(
                 """

@@ -304,6 +304,12 @@ public class HtmlRendererTest {
     }
 
     @Test
+    public void fencedCodeLanguageEndsAtTab() {
+        assertThat(defaultRenderer().render(parse("```py\tx\ncode\n```\n")))
+                .isEqualTo("<pre><code class=\"language-py\">code\n</code></pre>\n");
+    }
+
+    @Test
     public void imageAltTextWithSoftLineBreak() {
         assertThat(defaultRenderer().render(parse("![foo\nbar](/url)\n")))
                 .isEqualTo("<p><img src=\"/url\" alt=\"foo\nbar\" /></p>\n");
