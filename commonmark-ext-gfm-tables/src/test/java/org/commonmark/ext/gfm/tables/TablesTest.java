@@ -328,6 +328,32 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void separatorMustNotHaveMorePartsThanHead() {
+        assertRendering(
+                """
+                Abc|Def
+                ---|-|-
+                1|2
+                """,
+                """
+                <p>Abc|Def
+                ---|-|-
+                1|2</p>
+                """);
+        assertRendering(
+                """
+                a|b|c
+                -|-|-|-
+                d|e|f
+                """,
+                """
+                <p>a|b|c
+                -|-|-|-
+                d|e|f</p>
+                """);
+    }
+
+    @Test
     public void padding() {
         assertRendering(
                 """

@@ -312,7 +312,9 @@ public class TableBlockParser extends AbstractBlockParser {
                 if (columns != null && !columns.isEmpty()) {
                     SourceLine paragraph = paragraphLines.get(paragraphLines.size() - 1);
                     List<SourceLine> headerCells = split(paragraph);
-                    if (columns.size() >= headerCells.size()) {
+                    // spec: The header row must match the delimiter row in the number of cells.
+                    // If not, a table will not be recognized
+                    if (columns.size() == headerCells.size()) {
                         var parser = new TableBlockParser(columns, paragraph, maxCells);
                         return BlockStart.of(parser)
                                 .atIndex(state.getIndex())
