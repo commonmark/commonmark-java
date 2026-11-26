@@ -1,6 +1,7 @@
 package org.commonmark.internal;
 
 import org.commonmark.node.Block;
+import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.ListBlock;
 import org.commonmark.node.ListItem;
 import org.commonmark.parser.block.AbstractBlockParser;
@@ -57,8 +58,9 @@ public class ListItemParser extends AbstractBlockParser {
     @Override
     public BlockContinue tryContinue(ParserState state) {
         // Only remember whether the previous line was blank, so that blank lines inside a block
-        // that continues afterwards (e.g. a code block) don't affect if the list is tight.
-        previousLineBlank = lineBlank;
+        // that continues afterwards (e.g. a code block) don't affect if the list is tight. If a
+        // fenced code block is still open, the blank line was part of it.
+        previousLineBlank = lineBlank && !isInFencedCodeBlock(state);
         lineBlank = state.isBlank();
         if (lineBlank) {
             if (block.getFirstChild() == null) {
@@ -75,5 +77,9 @@ public class ListItemParser extends AbstractBlockParser {
             // Note: We'll hit this case for lazy continuation lines, they will get added later.
             return BlockContinue.none();
         }
+    }
+
+    static boolean isInFencedCodeBlock(ParserState state) {
+        return state.getActiveBlockParser().getBlock() instanceof FencedCodeBlock;
     }
 }

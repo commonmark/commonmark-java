@@ -50,7 +50,13 @@ public class ListBlockParser extends AbstractBlockParser {
             hadBlankLine = true;
             linesAfterBlank = 0;
         } else if (hadBlankLine) {
-            linesAfterBlank++;
+            if (linesAfterBlank == 0 && ListItemParser.isInFencedCodeBlock(state)) {
+                // The blank line was part of a fenced code block that is still open, so it
+                // doesn't separate list items
+                hadBlankLine = false;
+            } else {
+                linesAfterBlank++;
+            }
         }
         // List blocks themselves don't have any markers, only list items. So try to stay in the
         // list. If there is a block start other than list item, canContain makes sure that this
