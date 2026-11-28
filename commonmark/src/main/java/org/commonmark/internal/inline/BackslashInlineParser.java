@@ -2,11 +2,10 @@ package org.commonmark.internal.inline;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.regex.Pattern;
-import org.commonmark.internal.util.Escaping;
 import org.commonmark.node.HardLineBreak;
 import org.commonmark.node.Text;
 import org.commonmark.parser.beta.*;
+import org.commonmark.text.AsciiMatcher;
 
 /**
  * Parse a backslash-escaped special character, adding either the escaped character, a hard line
@@ -15,7 +14,11 @@ import org.commonmark.parser.beta.*;
  */
 public class BackslashInlineParser implements InlineContentParser {
 
-    private static final Pattern ESCAPABLE = Pattern.compile('^' + Escaping.ESCAPABLE);
+    // The characters matched by Escaping.ESCAPABLE (ASCII punctuation)
+    private static final AsciiMatcher ESCAPABLE =
+            AsciiMatcher.builder()
+                    .anyOf("!\"#$%&'()*+,./:;<=>?@[\\]^_`{|}~-")
+                    .build();
 
     @Override
     public ParsedInline tryParse(InlineParserState inlineParserState) {
@@ -27,7 +30,7 @@ public class BackslashInlineParser implements InlineContentParser {
         if (next == '\n') {
             scanner.next();
             return ParsedInline.of(new HardLineBreak(), scanner.position());
-        } else if (ESCAPABLE.matcher(String.valueOf(next)).matches()) {
+        } else if (ESCAPABLE.matches(next)) {
             scanner.next();
             return ParsedInline.of(new Text(String.valueOf(next)), scanner.position());
         } else {
