@@ -249,7 +249,9 @@ public class DocumentParser implements ParserState {
         // Unless last matched container is a code block, try new container starts,
         // adding children to the last matched container:
         boolean tryBlockStarts =
-                blockParser.getBlock() instanceof Paragraph || blockParser.isContainer();
+                blockParser.getBlock() instanceof Paragraph
+                        || blockParser.isContainer()
+                        || blockParser.canHaveLazyContinuationLines();
         while (tryBlockStarts) {
             lastIndex = index;
             findNextNonSpace();

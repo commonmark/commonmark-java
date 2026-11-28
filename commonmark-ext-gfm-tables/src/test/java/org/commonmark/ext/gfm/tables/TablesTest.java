@@ -1151,6 +1151,140 @@ public class TablesTest extends RenderingTestCase {
     }
 
     @Test
+    public void bulletListWithPipeEndsTable() {
+        assertRendering(
+                """
+                | Header |
+                | --- |
+                * | [Keep me](https://example.com/) |
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Header</th>
+                </tr>
+                </thead>
+                </table>
+                <ul>
+                <li>| <a href="https://example.com/">Keep me</a> |</li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void bodyRowThenBulletListWithPipeEndsTable() {
+        assertRendering(
+                """
+                | Header |
+                | --- |
+                | a |
+                - | b |
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Header</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>a</td>
+                </tr>
+                </tbody>
+                </table>
+                <ul>
+                <li>| b |</li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void otherBlockStartsEndTable() {
+        // Each of these lines contains a pipe but starts another block, which ends the table.
+        assertRendering(
+                """
+                | Header |
+                | --- |
+                > | quote |
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Header</th>
+                </tr>
+                </thead>
+                </table>
+                <blockquote>
+                <p>| quote |</p>
+                </blockquote>
+                """);
+        assertRendering(
+                """
+                | Header |
+                | --- |
+                # heading | x
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Header</th>
+                </tr>
+                </thead>
+                </table>
+                <h1>heading | x</h1>
+                """);
+        assertRendering(
+                """
+                | Header |
+                | --- |
+                ```a|b
+                code
+                ```
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Header</th>
+                </tr>
+                </thead>
+                </table>
+                <pre><code class="language-a|b">code
+                </code></pre>
+                """);
+    }
+
+    @Test
+    public void indentedLineWithPipeStaysTableRow() {
+        // An indented code block can not interrupt a table, just like it can not interrupt a
+        // paragraph.
+        assertRendering(
+                """
+                | Header |
+                | --- |
+                    | a |
+                """,
+                """
+                <table>
+                <thead>
+                <tr>
+                <th>Header</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>a</td>
+                </tr>
+                </tbody>
+                </table>
+                """);
+    }
+
+    @Test
     public void attributeProviderIsApplied() {
         AttributeProviderFactory factory =
                 context ->

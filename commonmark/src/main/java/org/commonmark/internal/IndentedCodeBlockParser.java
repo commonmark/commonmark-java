@@ -60,10 +60,12 @@ public class IndentedCodeBlockParser extends AbstractBlockParser {
 
         @Override
         public BlockStart tryStart(ParserState state, MatchedBlockParser matchedBlockParser) {
-            // An indented code block cannot interrupt a paragraph.
+            // An indented code block cannot interrupt a paragraph (or any other block that takes
+            // lazy continuation lines, like a table).
             if (state.getIndent() >= Parsing.CODE_BLOCK_INDENT
                     && !state.isBlank()
-                    && !(state.getActiveBlockParser().getBlock() instanceof Paragraph)) {
+                    && !(state.getActiveBlockParser().getBlock() instanceof Paragraph)
+                    && !state.getActiveBlockParser().canHaveLazyContinuationLines()) {
                 return BlockStart.of(new IndentedCodeBlockParser())
                         .atColumn(state.getColumn() + Parsing.CODE_BLOCK_INDENT);
             } else {
