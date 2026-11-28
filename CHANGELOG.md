@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html),
 with the exception that 0.x versions can break between minor versions.
 
+## [Unreleased]
+### Fixed
+- GFM tables: a line that starts another block (a list item, block quote, heading,
+  fenced code block, HTML block) now ends the table, also when it contains a pipe.
+  Before, such a line was parsed as a table row. An indented code block still can not
+  interrupt a table, like it can not interrupt a paragraph.
+
 ## [0.33.0] - 2026-11-20
 ### Added
 - New artifact `org.commonmark:commonmark-ext-github` with a `GitHubExtensions`
@@ -636,6 +643,7 @@ API breaking changes (caused by changes in spec):
 Initial release of commonmark-java, a port of commonmark.js with extensions
 for autolinking URLs, GitHub flavored strikethrough and tables.
 
+[Unreleased]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.33.0...HEAD
 [0.33.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.32.0...commonmark-parent-0.33.0
 [0.32.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.31.0...commonmark-parent-0.32.0
 [0.31.0]: https://github.com/commonmark/commonmark-java/compare/commonmark-parent-0.30.1...commonmark-parent-0.31.0
