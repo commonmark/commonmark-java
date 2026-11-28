@@ -348,4 +348,71 @@ public class ListTightLooseTest extends CoreRenderingTestCase {
                 </ul>
                 """);
     }
+
+    @Test
+    public void tightListWithBlankLineInUnclosedFencedCodeBlock() {
+        // The blank line is part of the fenced code block, so it doesn't separate the items
+        assertRendering(
+                """
+                - a
+                - ```
+
+                - b
+                """,
+                """
+                <ul>
+                <li>a</li>
+                <li>
+                <pre><code>
+                </code></pre>
+                </li>
+                <li>b</li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void tightOuterWithBlankLineInNestedFencedCodeBlock() {
+        assertRendering(
+                """
+                - - ```
+
+                  b
+                """,
+                """
+                <ul>
+                <li>
+                <ul>
+                <li>
+                <pre><code>
+                </code></pre>
+                </li>
+                </ul>
+                b</li>
+                </ul>
+                """);
+    }
+
+    @Test
+    public void looseBlankLineAfterFencedCodeBlockInBlockQuote() {
+        // The blank line ends the block quote, so it isn't part of the fenced code block
+        assertRendering(
+                """
+                - > ```
+
+                - b
+                """,
+                """
+                <ul>
+                <li>
+                <blockquote>
+                <pre><code></code></pre>
+                </blockquote>
+                </li>
+                <li>
+                <p>b</p>
+                </li>
+                </ul>
+                """);
+    }
 }
